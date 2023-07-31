@@ -65,7 +65,7 @@ import { formatAxis } from '/@/utils/formatTime';
 import { NextLoading } from '/@/utils/loading';
 import { useLoginApi, useLogin } from '/@/api/login/index.ts';
 import { encryptData, decryptData } from '/@/utils/aes';
-import { log } from 'console';
+import JSEncrypt from 'jsencrypt'; //引入模块
 // 定义变量内容
 const { t } = useI18n();
 const storesThemeConfig = useThemeConfig();
@@ -101,7 +101,9 @@ const onSignIn = (formEl: FormInstance | undefined) => {
 			try {
 				state.loading.signIn = true;
 				let paw = ruleForm.password.trim();
-				const res = await useLoginApi(ruleForm.userName.trim(), paw);
+				// 加密密码
+				let datapw = encryptData(paw);
+				const res = await useLoginApi(ruleForm.userName.trim(), datapw);
 				// 存储 token 到浏览器缓存
 				Session.set('token', res.token);
 				Cookies.set('userName', res.userName);

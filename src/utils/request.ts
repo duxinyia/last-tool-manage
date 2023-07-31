@@ -7,7 +7,7 @@ import qs from 'qs';
 const service: AxiosInstance = axios.create({
 	// baseURL: import.meta.env.VITE_API_URL
 	// baseURL: 'http://10.151.128.172:8088/',
-	baseURL: 'http://10.157.189.246:7263/',
+	baseURL: 'http://10.179.180.85:7263/',
 	timeout: 50000,
 	headers: { 'Content-Type': 'application/json' },
 	paramsSerializer: {
