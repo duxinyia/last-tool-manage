@@ -1,11 +1,16 @@
 <template>
-	<div class="layout-logo" v-if="setShowLogo" @click="onThemeConfigChange">
+	<div class="layout-logo" v-if="onThemeConfigChange" @click="onThemeConfigChange">
 		<img :src="logoMini" class="layout-logo-medium-img" />
+
 		<!-- <span>{{ themeConfig.globalTitle }}</span> -->
 	</div>
-	<div class="layout-logo-size" v-else @click="onThemeConfigChange">
-		<img :src="logoMini" class="layout-logo-size-img" />
+	<div class="layout-logo" v-else @click="onThemeConfigChange">
+		<img :src="logoBall" class="layout-logo-medium-img" />
 	</div>
+
+	<!-- <div class="layout-logo-size" v-else @click="onThemeConfigChange">
+		<img :src="logoMini" class="layout-logo-size-img" />
+	</div> -->
 </template>
 
 <script setup lang="ts" name="layoutLogo">
@@ -13,6 +18,7 @@ import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useThemeConfig } from '/@/stores/themeConfig';
 import logoMini from '/@/assets/images/new_logo.png';
+import logoBall from '/@/assets/images/_logo.png';
 
 // 定义变量内容
 const storesThemeConfig = useThemeConfig();

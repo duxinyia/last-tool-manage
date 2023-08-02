@@ -5,16 +5,18 @@
 				<el-button size="default" class="ml10 buttonBorder" @click="onOpenAddRole('add')" type="primary" plain
 					><el-icon><ele-Plus /></el-icon>{{ $t('message.allButton.addBtn') }}</el-button
 				>
-
-				<el-button size="default" class="ml10 buttonBorder" @click="onOpenAddRole('del')" color="#D33939" plain>
-					<el-icon><ele-Delete /></el-icon>
-					{{ $t('message.allButton.bulkDeletionBtn') }}
-				</el-button>
+				<el-popconfirm :title="$t('确定删除选中项吗？')" @confirm="onBulkDeletion">
+					<template #reference>
+						<el-button size="default" :disabled="state.selectlist.length <= 0" class="ml10 buttonBorder" color="#D33939" plain
+							><el-icon><ele-Delete /></el-icon>{{ $t('message.allButton.bulkDeletionBtn') }}</el-button
+						>
+					</template>
+				</el-popconfirm>
 			</div>
 			<div class="table-footer-tool">
 				<!-- <SvgIcon name="iconfont icon-dayinji" :size="19" title="打印" @click="onPrintTable" /> -->
-				<SvgIcon name="iconfont icon-btn-daoru" :size="22" :title="$t('message.tooltip.import')" />
-				<SvgIcon name="iconfont icon-btn-daochu" :size="22" :title="$t('message.tooltip.export')" @click="onImportTable" />
+				<SvgIcon name="iconfont icon-btn-daoru" :size="22" :title="$t('message.tooltip.import')" @click="onImportTable('imp')" />
+				<SvgIcon name="iconfont icon-btn-daochu" :size="22" :title="$t('message.tooltip.export')" @click="onExportTable" />
 				<SvgIcon name="iconfont icon-refresh-line" :size="23" :title="$t('message.tooltip.refresh')" @click="onRefreshTable" />
 				<el-popover
 					placement="top-end"
@@ -31,7 +33,7 @@
 					<template #default>
 						<div class="tool-box">
 							<el-tooltip :content="$t('message.pages.dragsort')" placement="top-start">
-								<SvgIcon name="fa fa-question-circle-o" :size="17" class="ml11" color="#909399" />
+								<el-icon class="ml11" color="#909399" :size="17"><ele-QuestionFilled /></el-icon>
 							</el-tooltip>
 							<el-checkbox
 								v-model="state.checkListAll"
@@ -46,7 +48,7 @@
 						<el-scrollbar>
 							<div ref="toolSetRef" class="tool-sortable">
 								<div class="tool-sortable-item" v-for="v in header" :key="v.key" :data-key="v.key">
-									<i class="fa fa-arrows-alt handle cursor-pointer"></i>
+									<el-icon :size="17" class="handle cursor-pointer"><ele-Rank /></el-icon>
 									<el-checkbox v-model="v.isCheck" size="default" class="ml12 mr8" :label="$t(v.title)" @change="onCheckChange" />
 								</div>
 							</div>
@@ -93,14 +95,14 @@
 					</template>
 
 					<template v-if="item.type === 'status'">
-						<!-- <el-tag type="success" v-if="scope.row.status === true">启用</el-tag>
-						<el-tag type="info" v-else>禁用</el-tag> -->
-						<el-switch
+						<el-tag type="success" v-if="scope.row.status === true">启用</el-tag>
+						<el-tag type="info" v-else>禁用</el-tag>
+						<!-- <el-switch
 							v-model="scope.row[item.key]"
 							inline-prompt
 							:active-text="$t('message.allButton.startup')"
 							:inactive-text="$t('message.allButton.disable')"
-						></el-switch>
+						></el-switch> -->
 					</template>
 
 					<template v-else>
@@ -142,7 +144,7 @@
 			>
 			</el-pagination>
 		</div>
-		<Dialog ref="roleDialogRef" :dialogConfig="dialogConfig" />
+		<Dialog ref="roleDialogRef" :dialogConfig="dialogConfig" @downloadTemp="ondownloadTemp" @importTableData="onimportTableData" @addData="addData" />
 	</div>
 </template>
 
@@ -188,7 +190,7 @@ const props = defineProps({
 });
 
 // 定义子组件向父组件传值/事件
-const emit = defineEmits(['delRow', 'pageChange', 'sortHeader', 'importTable']);
+const emit = defineEmits(['delRow', 'pageChange', 'sortHeader', 'importTable', 'loadTemp', 'importTableData', 'addData']);
 // 打开新增角色弹窗
 const onOpenAddRole = (type: string) => {
 	roleDialogRef.value.openDialog(type);
@@ -196,6 +198,10 @@ const onOpenAddRole = (type: string) => {
 // 打开修改角色弹窗
 const onOpenEditRole = (type: string, row: Object) => {
 	roleDialogRef.value.openDialog(type, row);
+};
+// 打开导入弹窗
+const onImportTable = (type: string) => {
+	roleDialogRef.value.openDialog(type);
 };
 // 定义变量内容
 const { t } = useI18n();
@@ -243,7 +249,11 @@ const onSelectionChange = (val: EmptyObjectType[]) => {
 };
 // 删除当前项
 const onDelRow = (row: EmptyObjectType) => {
-	emit('delRow', row);
+	emit('delRow', row, 'delRow');
+};
+// 批量删除
+const onBulkDeletion = () => {
+	emit('delRow', state.selectlist, 'bulkDel');
 };
 // 分页改变
 const onHandleSizeChange = (val: number) => {
@@ -293,12 +303,23 @@ const onPrintTable = () => {
 	});
 };
 // 导出
-const onImportTable = () => {
-	if (state.selectlist.length <= 0) return ElMessage.warning('请先选择要导出的数据');
+const onExportTable = () => {
+	// if (state.selectlist.length <= 0) return ElMessage.warning('请先选择要导出的数据');
 	props.header.forEach((item) => {
 		item.title = t(item.title);
 	});
-	emit('importTable');
+	emit('importTable', state.selectlist);
+};
+const ondownloadTemp = () => {
+	emit('loadTemp');
+};
+// 导入表格
+const onimportTableData = (raw) => {
+	emit('importTableData', raw);
+};
+// 新增修改
+const addData = (form, type) => {
+	emit('addData', form, type);
 };
 // 刷新
 const onRefreshTable = () => {

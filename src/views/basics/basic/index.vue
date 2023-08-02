@@ -9,7 +9,10 @@
 				@delRow="onTableDelRow"
 				@pageChange="onTablePageChange"
 				@sortHeader="onSortHeader"
-				@importTable="onImportTableData"
+				@importTable="onExportTableData"
+				@loadTemp="ondownloadTemp"
+				@importTableData="onImportTable"
+				@addData="addData"
 			/>
 		</div>
 	</div>
@@ -18,7 +21,16 @@
 <script setup lang="ts" name="basicsBasic">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { getParentIdListApi, getBaseDaListApi, getBaseDownloadApi } from '/@/api/basics/basic.ts';
+import {
+	getParentIdListApi,
+	getBaseDaListApi,
+	getBaseDownloadApi,
+	getImportDataApi,
+	getBaseDaInsertApi,
+	getBaseDaUpdateApi,
+	getDownloadTemplateApi,
+	getBaseDaDeleteApi,
+} from '/@/api/basics/basic.ts';
 import { useI18n } from 'vue-i18n';
 // 引入导出Excel表格依赖
 import * as FileSaver from 'file-saver';
@@ -50,14 +62,14 @@ const state = reactive<TableDemoState>({
 			isSerialNo: true, // 是否显示表格序号
 			isSelection: true, // 是否显示表格多选
 			isOperate: true, // 是否显示表格操作栏
-			isEditBtn: false, //是否显示修改按钮
+			isEditBtn: true, //是否显示修改按钮
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{
-				label: 'message.pages.parentNode',
+				label: '类别',
 				prop: 'parentid',
-				placeholder: 'message.pages.placeParentNode',
+				placeholder: '请输入类别',
 				required: false,
 				type: 'select',
 				options: [],
@@ -79,7 +91,10 @@ const state = reactive<TableDemoState>({
 		// 打印标题
 		printName: '表格打印演示',
 		// 弹窗表单
-		dialogConfig: [{ label: '父节点', prop: 'workno', placeholder: '请输入父节点', required: true, type: 'select' }],
+		dialogConfig: [
+			{ label: '类别', prop: 'parentid', placeholder: '请输入分类', required: true, type: 'select', options: [], editDisable: 'true' },
+			{ label: '名称', prop: 'dataname', placeholder: '请输入名称', required: true, type: 'input' },
+		],
 	},
 });
 
@@ -95,7 +110,7 @@ const getTableData = async () => {
 	};
 	const res = await getBaseDaListApi(data);
 	state.tableData.data = res.data;
-	state.tableData.config.total = state.tableData.data.length;
+	state.tableData.config.total = res.total;
 	setTimeout(() => {
 		state.tableData.config.loading = false;
 	}, 500);
@@ -104,14 +119,30 @@ const getTableData = async () => {
 const getSelect = async () => {
 	const res = await getParentIdListApi();
 	state.tableData.search[0].options = res.pars;
+	state.tableData.dialogConfig[0].options = res.pars;
 };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
 	tableRef.value.pageReset();
 };
+// 新增数据  修改数据
+const addData = async (ruleForm, type) => {
+	const res = type === 'add' ? await getBaseDaInsertApi(ruleForm) : await getBaseDaUpdateApi(ruleForm);
+	getTableData();
+};
+
 // 删除当前项回调
-const onTableDelRow = (row: EmptyObjectType) => {
+const onTableDelRow = async (row: EmptyObjectType, type) => {
+	let rows = [];
+	if (type === 'bulkDel') {
+		Object.keys(row).forEach((key) => {
+			rows.push(row[key].runid);
+		});
+	} else {
+		rows.push(row.runid);
+	}
+	const res = await getBaseDaDeleteApi(rows);
 	ElMessage.success(`${t('message.allButton.deleteBtn')}${row.dataname}${t('message.hint.success')}`);
 	getTableData();
 };
@@ -126,8 +157,31 @@ const onSortHeader = (data: TableHeaderType[]) => {
 	state.tableData.header = data;
 };
 // 导出
-const onImportTableData = async () => {
-	const res = await getBaseDownloadApi();
+const onExportTableData = async (row: EmptyObjectType) => {
+	let rows = [];
+	Object.keys(row).forEach((key) => {
+		rows.push(row[key].runid);
+	});
+	const res = await getBaseDownloadApi(rows);
+	let blob = new Blob([res], {
+		// 这里一定要和后端对应，不然可能出现乱码或者打不开文件
+		type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+	});
+
+	if (window.navigator.msSaveOrOpenBlob) {
+		navigator.msSaveBlob(blob, fileName);
+	} else {
+		const link = document.createElement('a');
+		link.href = window.URL.createObjectURL(blob);
+		link.download = `${t('message.router.basicsBasic')} ${new Date().toLocaleString()}.xlsx`; // 在前端也可以设置文件名字
+		link.click();
+		//释放内存
+		window.URL.revokeObjectURL(link.href);
+	}
+};
+// 下载模版
+const ondownloadTemp = async () => {
+	const res = await getDownloadTemplateApi();
 	let blob = new Blob([res], {
 		// 这里一定要和后端对应，不然可能出现乱码或者打不开文件
 		type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -137,12 +191,22 @@ const onImportTableData = async () => {
 	} else {
 		const link = document.createElement('a');
 		link.href = window.URL.createObjectURL(blob);
-		link.download = `${t('message.router.basicsBasic')} ${new Date().toLocaleString()}.xls`; // 在前端也可以设置文件名字
+		link.download = `${t('message.router.basicsBasic')} ${new Date().toLocaleString()}模版.xlsx`; // 在前端也可以设置文件名字
 		link.click();
 		//释放内存
 		window.URL.revokeObjectURL(link.href);
 	}
 };
+
+// 导入表格
+const onImportTable = async (raw) => {
+	console.log(raw);
+
+	const res = await getImportDataApi(raw.raw);
+	ElMessage.success('导入数据成功！');
+	getTableData();
+};
+
 // 页面加载时
 onMounted(() => {
 	getSelect();

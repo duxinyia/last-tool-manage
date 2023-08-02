@@ -17,6 +17,13 @@ export function useLoginApi(userName:String,password:String) {
 				}
 			});
 }
+// 获取新的token
+// export function getTokenApi() {
+// 	return request({
+// 		url: '/api/User/ReplaceToken',
+// 		method: 'post',
+// 	});
+// }
 export function useLogin(params: object) {
 	return request({
 		url: '/Login/InterUserLogin',

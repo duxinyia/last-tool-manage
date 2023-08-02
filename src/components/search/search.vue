@@ -27,7 +27,7 @@
 								v-else-if="val.type === 'date'"
 								style="width: 100%"
 							/>
-							<el-select v-model="state.form[val.prop]" :placeholder="val.placeholder" v-else-if="val.type === 'select'" style="width: 100%">
+							<el-select v-model="state.form[val.prop]" :placeholder="$t(val.placeholder)" v-else-if="val.type === 'select'" style="width: 100%">
 								<el-option v-for="item in val.options" :key="item.value" :label="item.label" :value="item.value"> </el-option>
 							</el-select>
 						</el-form-item>
@@ -45,9 +45,9 @@
 							<el-button size="default" type="primary" @click="onSearch(tableSearchRef)"
 								><el-icon> <ele-Search /> </el-icon>{{ $t('message.allButton.searchBtn') }}
 							</el-button>
-							<el-button size="default" type="info" class="ml10" @click="onReset(tableSearchRef)"
+							<!-- <el-button size="default" type="info" class="ml10" @click="onReset(tableSearchRef)"
 								><el-icon><ele-RefreshLeft /></el-icon> {{ $t('message.allButton.resetBtn') }}
-							</el-button>
+							</el-button> -->
 						</div>
 					</el-form-item>
 				</el-col>
