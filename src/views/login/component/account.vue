@@ -98,31 +98,35 @@ const onSignIn = (formEl: FormInstance | undefined) => {
 	const { ruleForm } = state;
 	formEl.validate(async (valid: boolean) => {
 		if (valid) {
-			try {
-				state.loading.signIn = true;
-				let paw = ruleForm.password.trim();
-				// 加密密码
-				let datapw = encryptData(paw);
-				const res = await useLoginApi(ruleForm.userName.trim(), datapw);
-				// 存储 token 到浏览器缓存
+			// try {
+			state.loading.signIn = true;
+			let paw = ruleForm.password.trim();
+			// 加密密码
+			// let datapw = encryptData(paw);
+			let datapw = paw;
+			const res = await useLoginApi(ruleForm.userName.trim(), datapw);
+			// 存储 token 到浏览器缓存
+			if (res) {
 				Session.set('token', res.token);
 				Cookies.set('userName', res.userName);
 				Cookies.set('userId', res.userId);
-				if (!themeConfig.value.isRequestRoutes) {
-					// 前端控制路由，2、请注意执行顺序（目前走的这个）
-					const isNoPower = await initFrontEndControlRoutes();
-					signInSuccess(isNoPower);
-				} else {
-					// 模拟后端控制路由，isRequestRoutes 为 true，则开启后端控制路由
-					// 添加完动态路由，再进行 router 跳转，否则可能报错 No match found for location with path "/"
-					const isNoPower = await initBackEndControlRoutes();
-					// 执行完 initBackEndControlRoutes，再执行 signInSuccess
-					signInSuccess(isNoPower);
-				}
-			} catch (err: any) {
-				state.loading.signIn = false;
-				console.log(err);
 			}
+
+			if (!themeConfig.value.isRequestRoutes) {
+				// 前端控制路由，2、请注意执行顺序（目前走的这个）
+				const isNoPower = await initFrontEndControlRoutes();
+				signInSuccess(isNoPower);
+			} else {
+				// 模拟后端控制路由，isRequestRoutes 为 true，则开启后端控制路由
+				// 添加完动态路由，再进行 router 跳转，否则可能报错 No match found for location with path "/"
+				const isNoPower = await initBackEndControlRoutes();
+				// 执行完 initBackEndControlRoutes，再执行 signInSuccess
+				signInSuccess(isNoPower);
+			}
+			// } catch (err: any) {
+			// 	state.loading.signIn = false;
+			// 	console.log(err);
+			// }
 		} else {
 		}
 	});

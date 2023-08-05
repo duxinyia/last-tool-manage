@@ -1,7 +1,7 @@
 <template>
 	<div class="table-container">
 		<div class="table-footer">
-			<div class="allBtn">
+			<div class="allBtn" v-if="config.isButton">
 				<el-button size="default" class="ml10 buttonBorder" @click="onOpenAddRole('add')" type="primary" plain
 					><el-icon><ele-Plus /></el-icon>{{ $t('message.allButton.addBtn') }}</el-button
 				>
@@ -15,8 +15,8 @@
 			</div>
 			<div class="table-footer-tool">
 				<!-- <SvgIcon name="iconfont icon-dayinji" :size="19" title="打印" @click="onPrintTable" /> -->
-				<SvgIcon name="iconfont icon-btn-daoru" :size="22" :title="$t('message.tooltip.import')" @click="onImportTable('imp')" />
-				<SvgIcon name="iconfont icon-btn-daochu" :size="22" :title="$t('message.tooltip.export')" @click="onExportTable" />
+				<!-- <SvgIcon name="iconfont icon-btn-daoru" :size="22" :title="$t('message.tooltip.import')" @click="onImportTable('imp')" />
+				<SvgIcon name="iconfont icon-btn-daochu" :size="22" :title="$t('message.tooltip.export')" @click="onExportTable" /> -->
 				<SvgIcon name="iconfont icon-refresh-line" :size="23" :title="$t('message.tooltip.refresh')" @click="onRefreshTable" />
 				<el-popover
 					placement="top-end"
@@ -70,8 +70,9 @@
 			:header-row-style="{ background: '#f2f5fa' }"
 			v-loading="config.loading"
 			@selection-change="onSelectionChange"
+			@cell-click="cellClick"
 		>
-			<el-table-column type="selection" :reserve-selection="true" width="30" v-if="config.isSelection" />
+			<el-table-column type="selection" :reserve-selection="false" width="30" v-if="config.isSelection" />
 			<el-table-column align="center" type="index" :label="$t('message.pages.no')" width="60" v-if="config.isSerialNo" />
 			<el-table-column
 				align="center"
@@ -111,18 +112,25 @@
 				</template>
 			</el-table-column>
 
-			<el-table-column align="center" :label="$t('message.pages.operation')" :width="config.isEditBtn ? 240 : 150" v-if="config.isOperate">
+			<el-table-column align="center" :label="$t('message.pages.operation')" :width="btnConfig.length >= 3 ? 320 : 240" v-if="config.isOperate">
 				<template v-slot="scope">
-					<el-button v-if="config.isEditBtn" @click="onOpenEditRole('edit', scope.row)" color="#39D339" plain class="button buttonBorder"
-						><el-icon><ele-Edit /></el-icon>{{ $t('message.allButton.editBtn') }}</el-button
-					>
-					<el-popconfirm :title="$t('message.hint.suredel')" @confirm="onDelRow(scope.row)">
-						<template #reference>
-							<el-button class="button buttonBorder" color="#D33939" plain
-								><el-icon><ele-Delete /></el-icon>{{ $t('message.allButton.deleteBtn') }}</el-button
-							>
-						</template>
-					</el-popconfirm>
+					<template v-for="btn in btnConfig" :key="btn.type">
+						<el-button
+							v-if="!btn.isSure"
+							@click="btn.type === 'edit' ? onOpenEditRole(btn.type, scope.row) : onOpenOther(scope)"
+							:color="btn.color"
+							plain
+							class="button buttonBorder"
+							><el-icon><ele-Edit /></el-icon>{{ $t(btn.name) }}</el-button
+						>
+						<el-popconfirm v-if="btn.isSure" :title="$t('message.hint.suredel')" @confirm="onDelRow(scope.row)">
+							<template #reference>
+								<el-button class="button buttonBorder" :color="btn.color" plain
+									><el-icon><ele-Delete /></el-icon>{{ $t(btn.name) }}</el-button
+								>
+							</template>
+						</el-popconfirm>
+					</template>
 				</template>
 			</el-table-column>
 			<template #empty>
@@ -187,10 +195,25 @@ const props = defineProps({
 		type: Array<EmptyObjectType>,
 		default: () => [],
 	},
+	// 按钮
+	btnConfig: {
+		type: Array<EmptyObjectType>,
+		default: () => [],
+	},
 });
 
 // 定义子组件向父组件传值/事件
-const emit = defineEmits(['delRow', 'pageChange', 'sortHeader', 'importTable', 'loadTemp', 'importTableData', 'addData']);
+const emit = defineEmits([
+	'delRow',
+	'pageChange',
+	'sortHeader',
+	'importTable',
+	'loadTemp',
+	'importTableData',
+	'addData',
+	'onOpenOtherDialog',
+	'cellclick',
+]);
 // 打开新增角色弹窗
 const onOpenAddRole = (type: string) => {
 	roleDialogRef.value.openDialog(type);
@@ -198,6 +221,10 @@ const onOpenAddRole = (type: string) => {
 // 打开修改角色弹窗
 const onOpenEditRole = (type: string, row: Object) => {
 	roleDialogRef.value.openDialog(type, row);
+};
+// 打开送样(其他)弹窗
+const onOpenOther = (scope: Object) => {
+	emit('onOpenOtherDialog', scope);
 };
 // 打开导入弹窗
 const onImportTable = (type: string) => {
@@ -243,9 +270,13 @@ const onCheckChange = () => {
 	state.checkListAll = headers === props.header.length;
 	state.checkListIndeterminate = headers > 0 && headers < props.header.length;
 };
-// 表格多选改变时，用于导出
+// 表格多选改变时，用于导出和删除
 const onSelectionChange = (val: EmptyObjectType[]) => {
 	state.selectlist = val;
+};
+// 点击单元格触发
+const cellClick = (scope: Object) => {
+	emit('cellclick', scope);
 };
 // 删除当前项
 const onDelRow = (row: EmptyObjectType) => {

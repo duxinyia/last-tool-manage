@@ -1,7 +1,7 @@
 <template>
 	<div class="table-demo-container layout-padding">
 		<div class="table-demo-padding layout-padding-view layout-padding-auto">
-			<TableSearch v-if="state.tableData.search[0].options.length > 0" :search="state.tableData.search" @search="onSearch" />
+			<TableSearch :search="state.tableData.search" @search="onSearch" />
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
@@ -18,19 +18,11 @@
 	</div>
 </template>
 
-<script setup lang="ts" name="basicsBasic">
+<script setup lang="ts" name="partnoNoSearch">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import {
-	getParentIdListApi,
-	getBaseDaListApi,
-	getBaseDownloadApi,
-	getImportDataApi,
-	getBaseDaInsertApi,
-	getBaseDaUpdateApi,
-	getDownloadTemplateApi,
-	getBaseDaDeleteApi,
-} from '/@/api/basics/basic.ts';
+
+import { getMaterialListApi, getAddMaterialApi, getModifyMaterialApi, getInvalidMaterialApi } from '/@/api/partno/noSearch.ts';
 import { useI18n } from 'vue-i18n';
 // 引入导出Excel表格依赖
 import * as FileSaver from 'file-saver';
@@ -47,10 +39,11 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'dataname', colWidth: '', title: 'message.pages.name1', type: 'text', isCheck: true },
-			{ key: 'datacode', colWidth: '', title: 'message.pages.code', type: 'text', isCheck: true },
-			{ key: 'type', colWidth: '', title: 'message.pages.groupType', type: 'text', isCheck: true },
-			{ key: 'runstatus', colWidth: '', title: 'message.pages.state', type: 'status', isCheck: true },
+			{ key: 'matNo', colWidth: '', title: '料号', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '', title: '中文', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '', title: 'NameEn', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '图纸编号', type: 'text', isCheck: true },
+			{ key: 'specs', colWidth: '', title: '规格', type: 'text', isCheck: true },
 			{ key: 'creator', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
 			{ key: 'createtime', title: 'message.pages.creationTime', type: 'text', isCheck: true },
 		],
@@ -62,7 +55,6 @@ const state = reactive<TableDemoState>({
 			isSerialNo: true, // 是否显示表格序号
 			isSelection: true, // 是否显示表格多选
 			isOperate: true, // 是否显示表格操作栏
-			isEditBtn: true, //是否显示修改按钮
 			isButton: true, //是否显示表格上面的新增删除按钮
 		},
 		btnConfig: [
@@ -70,23 +62,10 @@ const state = reactive<TableDemoState>({
 			{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true },
 		],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-		search: [
-			{
-				label: '类别',
-				prop: 'parentid',
-				placeholder: '请输入类别',
-				required: false,
-				type: 'select',
-				options: [],
-			},
-			{ label: 'message.pages.name1', prop: 'dataName', placeholder: 'message.pages.placeName1', required: false, type: 'input' },
-			{ label: 'message.pages.code', prop: 'dataCode', placeholder: 'message.pages.placeCode', required: false, type: 'input' },
-		],
+		search: [{ label: '料号', prop: 'matNo', placeholder: '请输入料号', required: false, type: 'input' }],
 		// 给后端的数据
 		form: {
-			parentid: '',
-			dataName: '',
-			dataCode: '',
+			matNo: '',
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -97,16 +76,13 @@ const state = reactive<TableDemoState>({
 		printName: '表格打印演示',
 		// 弹窗表单
 		dialogConfig: [
-			{
-				label: '类别',
-				prop: 'parentid',
-				placeholder: '请输入分类',
-				required: true,
-				type: 'select',
-				options: [],
-				editDisable: 'true',
-			},
-			{ label: '名称', prop: 'dataname', placeholder: '请输入名称', required: true, type: 'input' },
+			{ label: '料号', prop: 'matNo', placeholder: '请输入料号', required: true, type: 'input' },
+			{ label: '中文', prop: 'nameCh', placeholder: '请输入中文', required: true, type: 'input' },
+			{ label: 'NameEn', prop: 'nameEn', placeholder: '请输入NameEn', required: true, type: 'input' },
+			{ label: '图纸编号', prop: 'drawNo', placeholder: '请输入图纸编号', required: true, type: 'input' },
+			{ label: '规格', prop: 'specs', placeholder: '请输入规格', required: true, type: 'input' },
+			{ label: '图纸文件', prop: 'drawPath', placeholder: '请选择文件', required: true, type: 'inputFile', xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
+			{ label: '备注', prop: 'describe', placeholder: '请输入备注', required: true, type: 'textarea', xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
 		],
 	},
 });
@@ -116,24 +92,17 @@ const getTableData = async () => {
 	state.tableData.config.loading = true;
 	const form = state.tableData.form;
 	let data = {
-		parentid: form.parentid,
-		dataName: form.dataName,
-		dataCode: form.dataCode,
+		matNo: form.matNo,
 		page: state.tableData.page,
 	};
-	const res = await getBaseDaListApi(data);
+	const res = await getMaterialListApi(data);
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
 	if (res.status) {
 		state.tableData.config.loading = false;
 	}
 };
-// 下拉框数据
-const getSelect = async () => {
-	const res = await getParentIdListApi();
-	state.tableData.search[0].options = res.data.pars;
-	state.tableData.dialogConfig[0].options = res.data.pars;
-};
+
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
@@ -141,7 +110,7 @@ const onSearch = (data: EmptyObjectType) => {
 };
 // 新增数据  修改数据
 const addData = async (ruleForm, type) => {
-	const res = type === 'add' ? await getBaseDaInsertApi(ruleForm) : await getBaseDaUpdateApi(ruleForm);
+	const res = type === 'add' ? await getAddMaterialApi(ruleForm) : await getModifyMaterialApi(ruleForm);
 	if (res.status) {
 		type === 'add' ? ElMessage.success(`新增成功`) : ElMessage.success(`修改成功`);
 	}
@@ -153,13 +122,15 @@ const onTableDelRow = async (row: EmptyObjectType, type) => {
 	let rows = [];
 	if (type === 'bulkDel') {
 		Object.keys(row).forEach((key) => {
-			rows.push(row[key].runid);
+			rows.push(row[key].matNo);
 		});
 	} else {
-		rows.push(row.runid);
+		rows.push(row.matNo);
 	}
-	const res = await getBaseDaDeleteApi(rows);
-	ElMessage.success(`${t('message.allButton.deleteBtn')}${row.dataname}${t('message.hint.success')}`);
+	const res = await getInvalidMaterialApi(rows);
+	type === 'bulkDel'
+		? ElMessage.success(`删除成功`)
+		: ElMessage.success(`${t('message.allButton.deleteBtn')}${row.matNo}${t('message.hint.success')}`);
 	getTableData();
 };
 // 分页改变时回调
@@ -225,7 +196,7 @@ const onImportTable = async (raw) => {
 
 // 页面加载时
 onMounted(() => {
-	getSelect();
+	getTableData();
 });
 </script>
 

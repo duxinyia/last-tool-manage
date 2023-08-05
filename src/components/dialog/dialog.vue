@@ -3,13 +3,53 @@
 		<el-dialog :title="state.dialog.title" v-model="state.dialog.isShowDialog" width="769px">
 			<el-form v-if="state.dialog.type !== 'imp'" ref="dialogFormRef" :model="state.ruleForm" size="default" label-width="80px">
 				<el-row :gutter="35">
-					<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20" v-for="item in dialogConfig" :key="item.prop">
+					<el-col
+						:xs="item.xs || 24"
+						:sm="item.sm || 12"
+						:md="item.md || 12"
+						:lg="item.md || 12"
+						:xl="item.xl || 12"
+						class="mb20"
+						v-for="item in dialogConfig"
+						:key="item.prop"
+					>
 						<el-form-item
 							:label="item.label"
 							:prop="item.prop"
-							:rules="[{ required: item.required, message: `${item.label}不能为空`, trigger: item.type === 'input' ? 'blur' : 'change' }]"
+							:rules="[
+								{
+									required: item.required,
+									message: `${item.label}不能为空`,
+									trigger: item.type === 'input' || item.type === 'inputFile' || item.type === 'textarea' ? 'blur' : 'change',
+								},
+							]"
 						>
 							<el-input v-if="item.type === 'input'" v-model="state.ruleForm[item.prop]" :placeholder="item.placeholder" clearable></el-input>
+
+							<el-input v-if="item.type === 'inputFile'" v-model="state.ruleForm[item.prop]" :placeholder="item.placeholder" clearable>
+								<template #prepend
+									><el-upload
+										v-model:file-list="inputfileList"
+										:auto-upload="false"
+										ref="inputuploadRefs"
+										action=""
+										class="upload"
+										drag
+										:limit="1"
+										:show-file-list="false"
+										:on-exceed="inputHandleExceed"
+										:on-change="inputHandleChange"
+									>
+										<el-button type="primary" class="ml1">浏览文件</el-button>
+									</el-upload></template
+								>
+								<template #append
+									><el-button :disabled="state.ruleForm[item.prop] ? false : true" @click="inputsubmitUpload" type="primary" class="ml1"
+										>上传文件</el-button
+									></template
+								>
+							</el-input>
+
 							<el-select
 								v-model="state.ruleForm[item.prop]"
 								:placeholder="item.placeholder"
@@ -25,6 +65,14 @@
 								active-text="启"
 								inactive-text="禁"
 							></el-switch>
+							<el-input
+								:width="224"
+								v-if="item.type === 'textarea'"
+								v-model="state.ruleForm[item.prop]"
+								type="textarea"
+								:placeholder="item.placeholder"
+								maxlength="150"
+							></el-input>
 						</el-form-item>
 					</el-col>
 				</el-row>
@@ -79,6 +127,7 @@ import { i18n } from '/@/i18n/index';
 import { ElMessage, genFileId } from 'element-plus';
 import type { UploadInstance, UploadProps, UploadUserFile } from 'element-plus';
 import { UploadFilled } from '@element-plus/icons-vue';
+import { getUploadFileApi } from '/@/api/global/index.ts';
 
 // 引入组件
 const IconSelector = defineAsyncComponent(() => import('/@/components/iconSelector/index.vue'));
@@ -97,11 +146,14 @@ const props = defineProps({
 });
 
 const uploadRefs = ref<UploadInstance>();
+const inputuploadRefs = ref<UploadInstance>();
 const fileList = ref<UploadUserFile[]>([]);
+const inputfileList = ref<UploadUserFile[]>([]);
 const fileListName = ref();
 // 定义变量内容
 const dialogFormRef = ref<FormInstance>();
 const uploadForm = ref();
+const inputuploadForm = ref();
 const state = reactive({
 	ruleForm: {},
 	dialog: {
@@ -127,7 +179,7 @@ const openDialog = (type: string, row?: any) => {
 		});
 	} else if (type === 'edit') {
 		nextTick(() => {
-			dialogFormRef.value.clearValidate();
+			dialogFormRef.value?.clearValidate();
 		});
 		state.dialog.title = '修改';
 		state.dialog.submitTxt = '修 改';
@@ -173,7 +225,33 @@ const initFormField = () => {
 	if (props.dialogConfig.length <= 0) return false;
 	props.dialogConfig.forEach((v) => (state.ruleForm[v.prop] = ''));
 };
+// input框里面的数据
+const inputHandleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
+	props.dialogConfig.forEach((v) => {
+		if (v.type === 'inputFile') {
+			state.ruleForm[v.prop] = uploadFile.name;
+		}
+	});
+	inputuploadForm.value = uploadFile;
+};
 
+//可以在选中时自动替换上一个文件
+const inputHandleExceed: UploadProps['onExceed'] = (files) => {
+	inputuploadRefs.value[0]!.clearFiles();
+	const file = files[0] as UploadRawFile;
+	file.uid = genFileId();
+	inputuploadRefs.value[0]!.handleStart(file);
+};
+
+// 上传文件
+const inputsubmitUpload = async () => {
+	// inputuploadRefs.value[0]!.submit();
+	const res = await getUploadFileApi(0, inputuploadForm.value.raw);
+	state.ruleForm['drawPath'] = res.data;
+	if (res.status) {
+		ElMessage.success(`上传成功`);
+	}
+};
 // // 上传错误提示
 // const handleError = () => {
 // 	ElMessage.error('导入数据失败，请您重新上传！');
@@ -205,7 +283,6 @@ const initFormField = () => {
 const handleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
 	fileListName.value = uploadFile.name;
 	uploadForm.value = uploadFile;
-	console.log(uploadFile);
 };
 
 //可以在选中时自动替换上一个文件
@@ -215,9 +292,10 @@ const handleExceed: UploadProps['onExceed'] = (files) => {
 	file.uid = genFileId();
 	uploadRefs.value!.handleStart(file);
 };
+
 // 上传文件
 const submitUpload = () => {
-	// uploadRefs.value!.submit();
+	uploadRefs.value!.submit();
 	emit('importTableData', uploadForm.value);
 	closeDialog();
 };
@@ -244,5 +322,11 @@ defineExpose({
 	padding: 0;
 	background-color: transparent;
 	border-radius: unset;
+}
+:deep(.el-input-group__prepend) {
+	padding: 0;
+}
+.input-file {
+	display: flex;
 }
 </style>

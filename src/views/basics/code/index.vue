@@ -53,7 +53,12 @@ const state = reactive<TableDemoState>({
 			isSelection: true, // 是否显示表格多选
 			isOperate: true, // 是否显示表格操作栏
 			isEditBtn: true, //是否显示修改按钮
+			isButton: true, //是否显示表格上面的新增删除按钮
 		},
+		btnConfig: [
+			{ type: 'edit', name: 'message.allButton.editBtn', color: '#39D339', isSure: false },
+			{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true },
+		],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{
@@ -95,11 +100,11 @@ const getTableData = async () => {
 		page: state.tableData.page,
 	};
 	const res = await getSearchBaseMachine(data);
-	state.tableData.data = res.data;
-	state.tableData.config.total = res.total;
-	setTimeout(() => {
+	state.tableData.data = res.data.data;
+	state.tableData.config.total = res.data.total;
+	if (res.status) {
 		state.tableData.config.loading = false;
-	}, 500);
+	}
 };
 
 // 搜索点击时表单回调
@@ -110,6 +115,9 @@ const onSearch = (data: EmptyObjectType) => {
 // 新增数据  修改数据
 const addData = async (ruleForm, type) => {
 	const res = type === 'add' ? await getBaseMachineAddApi(ruleForm) : await getBaseMachineUpdateApi(ruleForm);
+	if (res.status) {
+		type === 'add' ? ElMessage.success(`新增成功`) : ElMessage.success(`修改成功`);
+	}
 	getTableData();
 };
 // 删除当前项回调

@@ -34,7 +34,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'bu', colWidth: '', title: 'message.pages.bu', type: 'text', isCheck: true },
 			{ key: 'name', colWidth: '', title: 'message.pages.name', type: 'text', isCheck: true },
 			{ key: 'workno', colWidth: '', title: 'message.pages.workno', type: 'text', isCheck: true },
-			{ key: 'status', colWidth: '', title: 'message.pages.state', isCheck: true },
+			{ key: 'status', colWidth: '', title: 'message.pages.state', type: 'status', isCheck: true },
 			{ key: 'creat', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
 			{ key: 'times', title: 'message.pages.creationTime', type: 'text', isCheck: true },
 		],
@@ -46,12 +46,16 @@ const state = reactive<TableDemoState>({
 			isSerialNo: true, // 是否显示表格序号
 			isSelection: true, // 是否显示表格多选
 			isOperate: true, // 是否显示表格操作栏
-			isEditBtn: false,
+			isButton: true, //是否显示表格上面的新增删除按钮
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: 'message.pages.workno', prop: 'address', placeholder: 'message.account.accountPlaceholder1', required: false, type: 'input' },
 			{ label: 'message.pages.name', prop: 'name', placeholder: 'message.pages.placename', required: false, type: 'input' },
+		],
+		btnConfig: [
+			{ type: 'edit', name: 'message.allButton.editBtn', color: '#39D339', isSure: false },
+			{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true },
 		],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		param: {

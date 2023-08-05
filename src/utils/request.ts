@@ -2,14 +2,13 @@ import axios, { AxiosInstance } from 'axios';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Session } from '/@/utils/storage';
 import qs from 'qs';
-const refreshToken: AxiosInstance = axios.create({
-	baseURL: 'http://10.179.180.85:7263/',
-});
 // 配置新建一个 axios 实例
 const service: AxiosInstance = axios.create({
 	// baseURL: import.meta.env.VITE_API_URL,
 	// baseURL: 'http://10.151.128.172:8088/',
-	baseURL: 'http://10.179.180.85:7263/',
+	// baseURL: 'http://10.179.180.85:7263/',
+	baseURL: 'http://10.157.189.237:8001/',
+	
 	timeout: 50000,
 	headers: { 'Content-Type': 'application/json' },
 	paramsSerializer: {
@@ -22,7 +21,6 @@ const service: AxiosInstance = axios.create({
 // 添加请求拦截器
 service.interceptors.request.use(
 	(config) => {
-		checkResponse(config);
 		// 在发送请求之前做些什么 token
 		if (Session.get('token')) {
 			config.headers.Authorization = `Bearer ${Session.get('token')}`;
@@ -38,6 +36,8 @@ service.interceptors.request.use(
 // 添加响应拦截器
 service.interceptors.response.use(
 	(response) => {
+		checkResponse(response);
+		
 		// 对响应数据做点什么
 		const res = response.data;
 		if (res.code && res.code !== 0) {
@@ -47,7 +47,7 @@ service.interceptors.response.use(
 			}else if(res.code===500||res.Code===500){
 				ElMessage.error(res.message||res.Message);
 			}
-			return res.data;
+			return res;
 		} else {
 			return res;
 		}
@@ -58,11 +58,13 @@ service.interceptors.response.use(
 			ElMessage.error('网络超时');
 		} else if (error.message == 'Network Error') {
 			ElMessage.error('网络连接错误');
-		} else if(error.response.data.code===401){
+		} 
+		else if(error.response.data.code===401){
 			Session.clear();
 			window.location.href = '/'; // 去登录页
-			ElMessageBox.alert('你已被登出，请重新登录', '提示', {})	
-		}else {
+		ElMessage.error("登录过期，请重新登录")
+		}
+		else {
 			if (error.response.data) ElMessage.error(error.response.statusText)
 			else ElMessage.error('接口路径找不到');
 		}
@@ -72,24 +74,26 @@ service.interceptors.response.use(
 const checkResponse =(config:any) =>{
 	//刷新token
 	if (!config.headers) {
-			if (config.getResponseHeader("vol_exp") == "1") {
+			if (config.getResponseHeader("toolsys_exp") == "1") {
 					replaceToken();
 			}
 	}
-	else if (config.headers.vol_exp == "1") {
+	else if (config.headers.toolsys_exp == "1") {
 			replaceToken();
 	}
 }
+// 拿到新的token
 const replaceToken=async()=>{
-	const data=await refreshToken({
+	const data=await service({
 		url: '/api/User/ReplaceToken',
 		method: 'POST',
 	})
-	if(data.status){
+	if(data.data){
 		Session.set('token', data.data);	
 	}else {
-		ElMessage.error(data.message)
 		Session.clear();
+		window.location.href = '/'; // 去登录页
+		ElMessage.error("登录过期，请重新登录")
 	}
 }
 // 导出 axios 实例
