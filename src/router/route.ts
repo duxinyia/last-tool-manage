@@ -282,7 +282,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 				component: () => import('/@/layout/routerView/parent.vue'),
 				redirect: '',
 				meta: {
-					title: '料号',
+					title: 'message.router.matNo',
 					isLink: '',
 					isHide: false,
 					isKeepAlive: true,
@@ -297,7 +297,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 						name: 'partnoNoSearch',
 						component: () => import('/@/views/partno/noSearch/index.vue'),
 						meta: {
-							title: '料号查询',
+							title: 'message.router.matSearch',
 							isLink: '',
 							isHide: false,
 							isKeepAlive: true,
@@ -311,7 +311,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 						name: 'partnoSampleDelivery',
 						component: () => import('/@/views/partno/sampleDelivery/index.vue'),
 						meta: {
-							title: '料号送样',
+							title: 'message.router.matSample',
 							isLink: '',
 							isHide: false,
 							isKeepAlive: true,
@@ -325,7 +325,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 						name: 'partnoSendReceive',
 						component: () => import('/@/views/partno/sendReceive/index.vue'),
 						meta: {
-							title: '送样收货',
+							title: 'message.router.sampleReceive',
 							isLink: '',
 							isHide: false,
 							isKeepAlive: true,
@@ -339,7 +339,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 						name: 'partnoAcceptance',
 						component: () => import('/@/views/partno/acceptance/index.vue'),
 						meta: {
-							title: '样品验收',
+							title: 'message.router.sampleAcceptance',
 							isLink: '',
 							isHide: false,
 							isKeepAlive: true,

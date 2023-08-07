@@ -14,7 +14,7 @@
 						:key="item.prop"
 					>
 						<el-form-item
-							:label="item.label"
+							:label="$t(item.label)"
 							:prop="item.prop"
 							:rules="[
 								{
@@ -24,9 +24,9 @@
 								},
 							]"
 						>
-							<el-input v-if="item.type === 'input'" v-model="state.ruleForm[item.prop]" :placeholder="item.placeholder" clearable></el-input>
+							<el-input v-if="item.type === 'input'" v-model="state.ruleForm[item.prop]" :placeholder="$t(item.placeholder)" clearable></el-input>
 
-							<el-input v-if="item.type === 'inputFile'" v-model="state.ruleForm[item.prop]" :placeholder="item.placeholder" clearable>
+							<el-input v-if="item.type === 'inputFile'" v-model="state.ruleForm[item.prop]" :placeholder="$t(item.placeholder)" clearable>
 								<template #prepend
 									><el-upload
 										v-model:file-list="inputfileList"
@@ -52,7 +52,7 @@
 
 							<el-select
 								v-model="state.ruleForm[item.prop]"
-								:placeholder="item.placeholder"
+								:placeholder="$t(item.placeholder)"
 								v-if="item.type === 'select'"
 								:disabled="state.dialog.isdisable"
 							>
@@ -62,8 +62,8 @@
 								v-if="item.type === 'switch'"
 								v-model="state.ruleForm[item.prop]"
 								inline-prompt
-								active-text="启"
-								inactive-text="禁"
+								:active-text="$t('message.allButton.startup')"
+								:inactive-text="$t('message.allButton.disable')"
 							></el-switch>
 							<el-input
 								:width="224"

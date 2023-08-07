@@ -13,6 +13,11 @@ export default {
 		requisition: 'requisition',
 		toolsReturn: 'return the tools',
 		report: 'report',
+		matNo:'material number',
+		matSearch:'material number search',
+		matSample:'send samples with material',
+		sampleReceive:'send samples and receive',
+		sampleAcceptance:'acceptance samples'
 	},
 	staticRoutes: {
 		signIn: 'signIn',

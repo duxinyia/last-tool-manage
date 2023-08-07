@@ -34,7 +34,7 @@ export function useTitle() {
 	const { themeConfig } = storeToRefs(stores);
 	nextTick(() => {
 		let webTitle = '';
-		let globalTitle: string = themeConfig.value.globalTitle;
+		let globalTitle: string = i18n.global.t(themeConfig.value.globalTitle);
 		const { path, meta } = router.currentRoute.value;
 		if (path === '/login') {
 			webTitle = <string>meta.title;

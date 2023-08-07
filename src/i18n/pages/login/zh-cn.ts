@@ -56,7 +56,20 @@ export default {
 		placeParentNode:'请输入父节点',
 		placeName1:'请输入名称',
 		placeCode:'请输入代码',
-		
+		matNo:'料号',
+		nameCh:'中文',
+		drawNo:'图纸编号',
+		specs:'规格',
+		drawPath:'图纸文件',
+		describe:'备注',
+		placeMatNo:'请输入料号',
+		placeNameCh:'请输入中文',
+		placeNameEn:'请输入NameEn',
+		placeDrawNo:'请输入图纸编号',
+		placeSpecs:'请输入规格',
+		placeDrawPath:'请选择文件',
+		placeDescribe:'请输入备注',
+		template:'模版'
 	},
 	hint:{
 		success:'成功!',

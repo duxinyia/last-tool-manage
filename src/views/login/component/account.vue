@@ -107,9 +107,9 @@ const onSignIn = (formEl: FormInstance | undefined) => {
 			const res = await useLoginApi(ruleForm.userName.trim(), datapw);
 			// 存储 token 到浏览器缓存
 			if (res) {
-				Session.set('token', res.token);
-				Cookies.set('userName', res.userName);
-				Cookies.set('userId', res.userId);
+				Session.set('token', res.data.token);
+				Cookies.set('userName', res.data.userName);
+				Cookies.set('userId', res.data.userId);
 			}
 
 			if (!themeConfig.value.isRequestRoutes) {

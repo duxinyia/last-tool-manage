@@ -9,8 +9,9 @@
 				@pageChange="onTablePageChange"
 				@onOpenOtherDialog="openSampleDialog"
 				@cellclick="matnoClick"
+				:cellStyle="state.tableData.cellStyle"
 			/>
-			<SampleDialog ref="sampleDialogRef" />
+			<Dialog ref="sampleDialogRef" v-bind="state.dialogData" />
 		</div>
 	</div>
 </template>
@@ -18,15 +19,15 @@
 <script setup lang="ts" name="partnoSampleDelivery">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { getMaterialListApi } from '/@/api/partno/sampleDelivery.ts';
+import { getMaterialListApi, getGetSampleApi } from '/@/api/partno/sampleDelivery.ts';
 import { useI18n } from 'vue-i18n';
 
 // 引入表格组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 // 引入上面的表单组件
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
-// 引入送样弹窗组件
-const SampleDialog = defineAsyncComponent(() => import('./dialog.vue'));
+// 引入送样和点击料号弹窗组件
+const Dialog = defineAsyncComponent(() => import('./dialog.vue'));
 // 定义变量内容
 const { t } = useI18n();
 const sampleDialogRef = ref();
@@ -38,13 +39,13 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'matNo', colWidth: '', title: '料号', type: 'text', isCheck: true },
-			{ key: 'nameCh', colWidth: '', title: '中文', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: 'NameEn', type: 'text', isCheck: true },
-			{ key: 'drawNo', colWidth: '', title: '图纸编号', type: 'text', isCheck: true },
-			{ key: 'specs', colWidth: '', title: '规格', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: 'message.pages.drawNo', type: 'text', isCheck: true },
+			{ key: 'specs', colWidth: '', title: 'message.pages.specs', type: 'text', isCheck: true },
 		],
-		// 配置项（必传）
+		// 表格配置项（必传）
 		config: {
 			total: 0, // 列表总数
 			loading: true, // loading 加载
@@ -68,8 +69,41 @@ const state = reactive<TableDemoState>({
 			pageSize: 10,
 		},
 	},
+	dialogData: {
+		// 点击料号弹窗表格数据
+		headerData: [
+			{ key: 'matNo', colWidth: '', title: '送样单号', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			{ key: 'sampleQty', colWidth: '', title: '送样数量', type: 'text', isCheck: true },
+			{ key: 'sampleTime', colWidth: '', title: '送样时间', type: 'text', isCheck: true },
+			{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
+			{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+		],
+		// 点击送料表格数据
+		otherHeaderData: [
+			{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'input', isCheck: true },
+			{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'input', isCheck: true },
+			{ key: 'sampleQty', colWidth: '', title: '送样数量', type: 'input', isCheck: true },
+			{ key: 'sampleTime', colWidth: '', title: '送样时间', type: 'time', isCheck: true },
+			{ key: 'needsQty', colWidth: '', title: '需求送样数量', type: 'input', isCheck: true },
+		],
+		// 单元格样式
+		cellStyle: null,
+	},
 });
-
+const changeToStyle = (data: any[], keyList: string[], indList: number[]) => {
+	return ({ row, column, rowIndex, columnIndex }) => {
+		for (let j = 0; j < keyList.length; j++) {
+			let i = keyList[j];
+			let ind = indList[j];
+			if (columnIndex === ind) {
+				return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+			}
+		}
+	};
+};
+state.tableData.cellStyle = changeToStyle(state.tableData.data, ['matNo'], [2]);
 // 初始化列表数据
 const getTableData = async () => {
 	state.tableData.config.loading = true;
@@ -85,7 +119,11 @@ const getTableData = async () => {
 		state.tableData.config.loading = false;
 	}
 };
-
+// const cellStyle = (rows) => {
+// 	if (rows.columnIndex === 2) {
+// 		return { color: 'red' };
+// 	}
+// };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
@@ -99,14 +137,22 @@ const onTablePageChange = (page: TableDemoPageType) => {
 	getTableData();
 };
 
-// 打开送样弹窗
+// 打开送样弹窗 1
 const openSampleDialog = (scope: Object) => {
-	sampleDialogRef.value.openDialog(scope);
+	sampleDialogRef.value.openDialog(scope, 1);
 };
-// 点击料号
-const matnoClick = (scope) => {
-	console.log(1, scope);
+// 点击料号 2
+const matnoClick = async (row, column) => {
+	const res = await getGetSampleApi(row.matNo);
+	console.log(res);
+
+	console.log(row);
+	console.log(column);
+	if (column.property === 'matNo') {
+		sampleDialogRef.value.openDialog(row, 2);
+	}
 };
+
 // 页面加载时
 onMounted(() => {
 	getTableData();

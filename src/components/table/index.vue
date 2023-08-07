@@ -67,10 +67,11 @@
 			stripe
 			style="width: 100%"
 			:row-style="{ height: '10px' }"
-			:header-row-style="{ background: '#f2f5fa' }"
+			:header-row-style="{ background: '#dce9fd' }"
 			v-loading="config.loading"
 			@selection-change="onSelectionChange"
 			@cell-click="cellClick"
+			:cell-style="cellStyle"
 		>
 			<el-table-column type="selection" :reserve-selection="false" width="30" v-if="config.isSelection" />
 			<el-table-column align="center" type="index" :label="$t('message.pages.no')" width="60" v-if="config.isSerialNo" />
@@ -105,7 +106,6 @@
 							:inactive-text="$t('message.allButton.disable')"
 						></el-switch> -->
 					</template>
-
 					<template v-else>
 						{{ scope.row[item.key] }}
 					</template>
@@ -200,6 +200,13 @@ const props = defineProps({
 		type: Array<EmptyObjectType>,
 		default: () => [],
 	},
+	// 单元格样式
+	cellStyle: {
+		type: Function,
+		default: () => {
+			return Function;
+		},
+	},
 });
 
 // 定义子组件向父组件传值/事件
@@ -274,10 +281,11 @@ const onCheckChange = () => {
 const onSelectionChange = (val: EmptyObjectType[]) => {
 	state.selectlist = val;
 };
-// 点击单元格触发
-const cellClick = (scope: Object) => {
-	emit('cellclick', scope);
+// 点击单元格触发row, column
+const cellClick = (row: Object, column: Object) => {
+	emit('cellclick', row, column);
 };
+
 // 删除当前项
 const onDelRow = (row: EmptyObjectType) => {
 	emit('delRow', row, 'delRow');
@@ -427,6 +435,7 @@ defineExpose({
 	}
 	:deep(.el-table th.el-table__cell) {
 		background-color: unset;
+		color: var(--el-color-primary);
 	}
 }
 </style>

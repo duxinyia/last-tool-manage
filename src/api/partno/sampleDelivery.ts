@@ -15,6 +15,15 @@ export function getTakeSampleApi(data:Object) {
   	data:data
   });
 }
+// 点击料号信息
+export function getGetSampleApi(matNo:string) {
+  return request({
+    url: '/api/Material/GetSample',
+    method: 'GET',
+  	params:{matNo}
+  });
+}
+
 
 
 

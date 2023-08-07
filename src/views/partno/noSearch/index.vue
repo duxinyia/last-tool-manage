@@ -39,11 +39,11 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'matNo', colWidth: '', title: '料号', type: 'text', isCheck: true },
-			{ key: 'nameCh', colWidth: '', title: '中文', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: 'NameEn', type: 'text', isCheck: true },
-			{ key: 'drawNo', colWidth: '', title: '图纸编号', type: 'text', isCheck: true },
-			{ key: 'specs', colWidth: '', title: '规格', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: 'message.pages.drawNo', type: 'text', isCheck: true },
+			{ key: 'specs', colWidth: '', title: 'message.pages.specs', type: 'text', isCheck: true },
 			{ key: 'creator', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
 			{ key: 'createtime', title: 'message.pages.creationTime', type: 'text', isCheck: true },
 		],
@@ -76,13 +76,35 @@ const state = reactive<TableDemoState>({
 		printName: '表格打印演示',
 		// 弹窗表单
 		dialogConfig: [
-			{ label: '料号', prop: 'matNo', placeholder: '请输入料号', required: true, type: 'input' },
-			{ label: '中文', prop: 'nameCh', placeholder: '请输入中文', required: true, type: 'input' },
-			{ label: 'NameEn', prop: 'nameEn', placeholder: '请输入NameEn', required: true, type: 'input' },
-			{ label: '图纸编号', prop: 'drawNo', placeholder: '请输入图纸编号', required: true, type: 'input' },
-			{ label: '规格', prop: 'specs', placeholder: '请输入规格', required: true, type: 'input' },
-			{ label: '图纸文件', prop: 'drawPath', placeholder: '请选择文件', required: true, type: 'inputFile', xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
-			{ label: '备注', prop: 'describe', placeholder: '请输入备注', required: true, type: 'textarea', xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
+			{ label: 'message.pages.matNo', prop: 'matNo', placeholder: 'message.pages.placeMatNo', required: true, type: 'input' },
+			{ label: 'message.pages.nameCh', prop: 'nameCh', placeholder: 'message.pages.placeNameCh', required: true, type: 'input' },
+			{ label: 'NameEn', prop: 'nameEn', placeholder: 'message.pages.placeNameEn', required: true, type: 'input' },
+			{ label: 'message.pages.drawNo', prop: 'drawNo', placeholder: 'message.pages.placeDrawNo', required: true, type: 'input' },
+			{ label: 'message.pages.specs', prop: 'specs', placeholder: 'message.pages.placeSpecs', required: true, type: 'input' },
+			{
+				label: 'message.pages.drawPath',
+				prop: 'drawPath',
+				placeholder: 'message.pages.placeDrawPath',
+				required: true,
+				type: 'inputFile',
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
+			},
+			{
+				label: 'message.pages.describe',
+				prop: 'describe',
+				placeholder: 'message.pages.placeDescribe',
+				required: true,
+				type: 'textarea',
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
+			},
 		],
 	},
 });
@@ -178,7 +200,7 @@ const ondownloadTemp = async () => {
 	} else {
 		const link = document.createElement('a');
 		link.href = window.URL.createObjectURL(blob);
-		link.download = `${t('message.router.basicsBasic')} ${new Date().toLocaleString()}模版.xlsx`; // 在前端也可以设置文件名字
+		link.download = `${t('message.router.basicsBasic')} ${new Date().toLocaleString()}${t('message.pages.template')}.xlsx`; // 在前端也可以设置文件名字
 		link.click();
 		//释放内存
 		window.URL.revokeObjectURL(link.href);
@@ -188,9 +210,8 @@ const ondownloadTemp = async () => {
 // 导入表格
 const onImportTable = async (raw) => {
 	console.log(raw);
-
 	const res = await getImportDataApi(raw.raw);
-	ElMessage.success('导入数据成功！');
+	res.status && ElMessage.success('导入数据成功！');
 	getTableData();
 };
 

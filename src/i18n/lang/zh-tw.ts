@@ -13,6 +13,11 @@ export default {
 		requisition: '請購管理',
 		toolsReturn: '治工具退庫',
 		report: '報表管理',
+		matNo:'料號',
+		matSearch:'料號查詢',
+		matSample:'料號送樣',
+		sampleReceive:'送樣收貨',
+		sampleAcceptance:'樣品驗收'
 	},
 	staticRoutes: {
 		signIn: '登入',
