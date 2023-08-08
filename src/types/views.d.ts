@@ -296,7 +296,7 @@ declare type TableHeaderType = {
 	width: string;
 	title: string;
 	type: string | number;
-	colWidth: string;
+	colWidth?: string;
 	width?: string | number;
 	height?: string | number;
 	isCheck: boolean;
@@ -310,7 +310,20 @@ declare type TableSearchType = {
 	type: string;
 	options?: SelectOptionType[];
 };
-
+declare type TableButtonType = {
+	type: string;
+	name: string;
+	color: string;
+	isSure: boolean;
+};
+declare type DialogConfigType = {
+	label: string;
+	prop: string;
+	placeholder: string;
+	required:boolean;
+	type: string;
+	value:  string;
+};
 declare type TableDemoState = {
 	tableData: {
 		data: EmptyObjectType[];
@@ -322,9 +335,13 @@ declare type TableDemoState = {
 			isSelection: boolean;
 			isSerialNo: boolean;
 			isOperate: boolean;
+			isButton:boolean;
 		};
 		search: TableSearchType[];
-		param: EmptyObjectType;
+		btnConfig:TableButtonType[];
+		page: EmptyObjectType;
 		printName: string;
+		form:EmptyObjectType;
+		dialogConfig: DialogConfigType[];
 	};
 };
