@@ -44,7 +44,6 @@ declare interface ThemeConfigState {
 	themeConfig: {
 		isDrawer: boolean;
 		primary: string;
-		danger:string,
 		topBar: string;
 		topBarColor: string;
 		isTopBarColorGradual: boolean;

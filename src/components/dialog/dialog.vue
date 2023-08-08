@@ -19,14 +19,14 @@
 							:rules="[
 								{
 									required: item.required,
-									message: `${item.label}不能为空`,
+									message: `${$t(item.label)}不能为空`,
 									trigger: item.type === 'input' || item.type === 'inputFile' || item.type === 'textarea' ? 'blur' : 'change',
 								},
 							]"
 						>
 							<el-input v-if="item.type === 'input'" v-model="state.ruleForm[item.prop]" :placeholder="$t(item.placeholder)" clearable></el-input>
 
-							<el-input v-if="item.type === 'inputFile'" v-model="state.ruleForm[item.prop]" :placeholder="$t(item.placeholder)" clearable>
+							<el-input disabled v-if="item.type === 'inputFile'" v-model="state.ruleForm[item.prop]" :placeholder="$t(item.placeholder)" clearable>
 								<template #prepend
 									><el-upload
 										v-model:file-list="inputfileList"
@@ -43,11 +43,10 @@
 										<el-button type="primary" class="ml1">浏览文件</el-button>
 									</el-upload></template
 								>
-								<template #append
-									><el-button :disabled="state.ruleForm[item.prop] ? false : true" @click="inputsubmitUpload" type="primary" class="ml1"
-										>上传文件</el-button
-									></template
-								>
+								<template #append v-if="state.ruleForm[item.prop]"
+									><el-button @click="inputsubmitUpload" type="primary" class="ml1">上传文件</el-button>
+									<el-button v-if="state.ruleForm['drawPath'].includes('/')" class="look-file" @click="lookUpload">查看文件</el-button>
+								</template>
 							</el-input>
 
 							<el-select
@@ -70,7 +69,7 @@
 								v-if="item.type === 'textarea'"
 								v-model="state.ruleForm[item.prop]"
 								type="textarea"
-								:placeholder="item.placeholder"
+								:placeholder="$t(item.placeholder)"
 								maxlength="150"
 							></el-input>
 						</el-form-item>
@@ -175,6 +174,7 @@ const openDialog = (type: string, row?: any) => {
 		state.dialog.submitTxt = '新 增';
 		// 清空表单，此项需加表单验证才能使用
 		nextTick(() => {
+			inputuploadForm.value = '';
 			dialogFormRef.value.resetFields();
 		});
 	} else if (type === 'edit') {
@@ -215,7 +215,6 @@ const onSubmit = (formEl: FormInstance | undefined) => {
 	formEl.validate((valid: boolean) => {
 		if (valid) {
 			emit('addData', state.ruleForm, state.dialog.type);
-			closeDialog(); // 关闭弹窗
 		} else {
 		}
 	});
@@ -245,12 +244,13 @@ const inputHandleExceed: UploadProps['onExceed'] = (files) => {
 
 // 上传文件
 const inputsubmitUpload = async () => {
-	// inputuploadRefs.value[0]!.submit();
 	const res = await getUploadFileApi(0, inputuploadForm.value.raw);
 	state.ruleForm['drawPath'] = res.data;
-	if (res.status) {
-		ElMessage.success(`上传成功`);
-	}
+	res.status && ElMessage.success(`上传成功`);
+};
+// 查看上传的文件
+const lookUpload = () => {
+	window.open(`${import.meta.env.VITE_API_URL}${state.ruleForm['drawPath']}`, '_blank');
 };
 // // 上传错误提示
 // const handleError = () => {
@@ -297,7 +297,7 @@ const handleExceed: UploadProps['onExceed'] = (files) => {
 const submitUpload = () => {
 	uploadRefs.value!.submit();
 	emit('importTableData', uploadForm.value);
-	closeDialog();
+	// closeDialog();
 };
 // 页面加载时
 onMounted(() => {
@@ -307,6 +307,7 @@ onMounted(() => {
 // 暴露变量
 defineExpose({
 	openDialog,
+	closeDialog,
 });
 </script>
 
@@ -328,5 +329,8 @@ defineExpose({
 }
 .input-file {
 	display: flex;
+}
+.look-file {
+	color: var(--el-color-primary) !important;
 }
 </style>

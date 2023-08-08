@@ -1,9 +1,8 @@
 <template>
 	<el-config-provider :size="getGlobalComponentSize" :locale="getGlobalI18n">
-		<router-view v-show="setLockScreen" />
-		<LockScreen v-if="themeConfig.isLockScreen" />
-		<Setings ref="setingsRef" v-show="setLockScreen" />
-		<CloseFull v-if="!themeConfig.isLockScreen" />
+		<router-view />
+		<Setings ref="setingsRef" />
+		<CloseFull />
 	</el-config-provider>
 </template>
 <!-- https://github.com/lyt-Top/vue-next-admin -->
@@ -20,11 +19,8 @@ import mittBus from '/@/utils/mitt';
 import setIntroduction from '/@/utils/setIconfont';
 
 // 引入组件
-const LockScreen = defineAsyncComponent(() => import('/@/layout/lockScreen/index.vue'));
 const Setings = defineAsyncComponent(() => import('/@/layout/navBars/topBar/setings.vue'));
 const CloseFull = defineAsyncComponent(() => import('/@/layout/navBars/topBar/closeFull.vue'));
-
-const Sponsors = defineAsyncComponent(() => import('/@/layout/sponsors/index.vue'));
 
 // 定义变量内容
 const { messages, locale } = useI18n();
@@ -33,13 +29,6 @@ const route = useRoute();
 const stores = useTagsViewRoutes();
 const storesThemeConfig = useThemeConfig();
 const { themeConfig } = storeToRefs(storesThemeConfig);
-
-// 设置锁屏时组件显示隐藏
-const setLockScreen = computed(() => {
-	// 防止锁屏后，刷新出现不相关界面
-	// https://gitee.com/lyt-top/vue-next-admin/issues/I6AF8P
-	return themeConfig.value.isLockScreen ? themeConfig.value.lockScreenTime > 1 : themeConfig.value.lockScreenTime >= 0;
-});
 
 // 获取全局组件大小
 const getGlobalComponentSize = computed(() => {

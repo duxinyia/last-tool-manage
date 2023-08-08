@@ -29,12 +29,8 @@ export const useUserInfo = defineStore('userInfo', {
 		async getApiUserInfo() {
 			return new Promise((resolve) => {
 				setTimeout(() => {
-					// 模拟数据，请求接口时，记得删除多余代码及对应依赖的引入
 					const userName = Cookies.get('userName');
-					const userId = Cookies.get('userId');
-					
-					
-					// 模拟数据
+					const userId = Cookies.get('userId');		
 					let defaultRoles: Array<string> = [];
 					let defaultAuthBtnList: Array<string> = [];
 					// admin 页面权限标识，对应路由 meta.roles，用于控制路由的显示/隐藏

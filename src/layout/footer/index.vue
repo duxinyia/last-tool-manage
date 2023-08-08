@@ -1,7 +1,7 @@
 <template>
 	<div class="layout-footer pb15">
 		<div class="layout-footer-warp">
-			<div>Made by lyt with ❤️</div>
+			<div>三赢科技 ❤️</div>
 			<div class="mt5">深圳市</div>
 		</div>
 	</div>

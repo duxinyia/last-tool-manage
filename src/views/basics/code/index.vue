@@ -10,8 +10,9 @@
 				@pageChange="onTablePageChange"
 				@sortHeader="onSortHeader"
 				@importTable="onImportTableData"
-				@addData="addData"
+				@openAdd="openDialog"
 			/>
+			<Dialog ref="codeDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="addData" />
 		</div>
 	</div>
 </template>
@@ -27,9 +28,11 @@ import * as XLSX from 'xlsx';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
-
+// 引入组件
+const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 // 定义变量内容
 const { t } = useI18n();
+const codeDialogRef = ref();
 const tableRef = ref<RefType>();
 const state = reactive<TableDemoState>({
 	tableData: {
@@ -112,13 +115,19 @@ const onSearch = (data: EmptyObjectType) => {
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
 	tableRef.value.pageReset();
 };
+// 打开弹窗
+const openDialog = (type: string, row: Object) => {
+	codeDialogRef.value.openDialog(type, row);
+};
+
 // 新增数据  修改数据
 const addData = async (ruleForm, type) => {
 	const res = type === 'add' ? await getBaseMachineAddApi(ruleForm) : await getBaseMachineUpdateApi(ruleForm);
 	if (res.status) {
 		type === 'add' ? ElMessage.success(`新增成功`) : ElMessage.success(`修改成功`);
+		codeDialogRef.value.closeDialog();
+		getTableData();
 	}
-	getTableData();
 };
 // 删除当前项回调
 const onTableDelRow = async (row: EmptyObjectType, type) => {
@@ -134,8 +143,6 @@ const onTableDelRow = async (row: EmptyObjectType, type) => {
 	if (res.status) {
 		ElMessage.success(`${t('message.allButton.deleteBtn')}${row.dataname}${t('message.hint.success')}`);
 		getTableData();
-	} else {
-		ElMessage.warning(res.message);
 	}
 };
 // 分页改变时回调

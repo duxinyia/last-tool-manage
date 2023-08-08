@@ -93,7 +93,7 @@ declare type EmptyObjectType<T = any> = {
 	[key: string]: T;
 };
 
-// 申明 select option
+// 申明 select option下拉
 declare type SelectOptionType = {
 	value: string | number;
 	label: string | number;

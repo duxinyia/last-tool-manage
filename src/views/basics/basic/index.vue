@@ -10,9 +10,14 @@
 				@pageChange="onTablePageChange"
 				@sortHeader="onSortHeader"
 				@importTable="onExportTableData"
-				@loadTemp="ondownloadTemp"
-				@importTableData="onImportTable"
+				@openAdd="openDialog"
+			/>
+			<Dialog
+				ref="basicDialogRef"
+				:dialogConfig="state.tableData.dialogConfig"
 				@addData="addData"
+				@downloadTemp="ondownloadTemp"
+				@importTableData="onImportTable"
 			/>
 		</div>
 	</div>
@@ -38,9 +43,12 @@ import * as XLSX from 'xlsx';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
+// 引入组件
+const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 // 定义变量内容
 const { t } = useI18n();
 const tableRef = ref<RefType>();
+const basicDialogRef = ref();
 const state = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
@@ -139,13 +147,18 @@ const onSearch = (data: EmptyObjectType) => {
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
 	tableRef.value.pageReset();
 };
+// 打开弹窗
+const openDialog = (type: string, row: Object) => {
+	basicDialogRef.value.openDialog(type, row);
+};
 // 新增数据  修改数据
 const addData = async (ruleForm, type) => {
 	const res = type === 'add' ? await getBaseDaInsertApi(ruleForm) : await getBaseDaUpdateApi(ruleForm);
 	if (res.status) {
 		type === 'add' ? ElMessage.success(`新增成功`) : ElMessage.success(`修改成功`);
+		basicDialogRef.value.closeDialog();
+		getTableData();
 	}
-	getTableData();
 };
 
 // 删除当前项回调
@@ -159,8 +172,10 @@ const onTableDelRow = async (row: EmptyObjectType, type) => {
 		rows.push(row.runid);
 	}
 	const res = await getBaseDaDeleteApi(rows);
-	ElMessage.success(`${t('message.allButton.deleteBtn')}${row.dataname}${t('message.hint.success')}`);
-	getTableData();
+	if (res.status) {
+		ElMessage.success(`${t('message.allButton.deleteBtn')}${row.dataname}${t('message.hint.success')}`);
+		getTableData();
+	}
 };
 // 分页改变时回调
 const onTablePageChange = (page: TableDemoPageType) => {
@@ -216,11 +231,12 @@ const ondownloadTemp = async () => {
 
 // 导入表格
 const onImportTable = async (raw) => {
-	console.log(raw);
-
 	const res = await getImportDataApi(raw.raw);
-	ElMessage.success('导入数据成功！');
-	getTableData();
+	if (res.status) {
+		ElMessage.success('导入数据成功！');
+		getTableData();
+		basicDialogRef.value.closeDialog();
+	}
 };
 
 // 页面加载时

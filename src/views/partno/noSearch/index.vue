@@ -10,9 +10,14 @@
 				@pageChange="onTablePageChange"
 				@sortHeader="onSortHeader"
 				@importTable="onExportTableData"
-				@loadTemp="ondownloadTemp"
-				@importTableData="onImportTable"
+				@openAdd="openDialog"
+			/>
+			<Dialog
+				ref="noSearchDialogRef"
+				:dialogConfig="state.tableData.dialogConfig"
 				@addData="addData"
+				@downloadTemp="ondownloadTemp"
+				@importTableData="onImportTable"
 			/>
 		</div>
 	</div>
@@ -30,9 +35,11 @@ import * as XLSX from 'xlsx';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
+const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 // 定义变量内容
 const { t } = useI18n();
 const tableRef = ref<RefType>();
+const noSearchDialogRef = ref();
 const state = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
@@ -116,6 +123,7 @@ const getTableData = async () => {
 	let data = {
 		matNo: form.matNo,
 		page: state.tableData.page,
+		queryType: 1,
 	};
 	const res = await getMaterialListApi(data);
 	state.tableData.data = res.data.data;
@@ -130,13 +138,22 @@ const onSearch = (data: EmptyObjectType) => {
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
 	tableRef.value.pageReset();
 };
+// 打开弹窗
+const openDialog = (type: string, row: Object) => {
+	noSearchDialogRef.value.openDialog(type, row);
+};
 // 新增数据  修改数据
 const addData = async (ruleForm, type) => {
-	const res = type === 'add' ? await getAddMaterialApi(ruleForm) : await getModifyMaterialApi(ruleForm);
-	if (res.status) {
-		type === 'add' ? ElMessage.success(`新增成功`) : ElMessage.success(`修改成功`);
+	if (ruleForm.drawPath.includes('/')) {
+		const res = type === 'add' ? await getAddMaterialApi(ruleForm) : await getModifyMaterialApi(ruleForm);
+		if (res.status) {
+			type === 'add' ? ElMessage.success(`新增成功`) : ElMessage.success(`修改成功`);
+			noSearchDialogRef.value.closeDialog();
+			getTableData();
+		}
+	} else {
+		ElMessage.error(`新增失败,请点击上传文件按钮进行上传`);
 	}
-	getTableData();
 };
 
 // 删除当前项回调
@@ -150,10 +167,12 @@ const onTableDelRow = async (row: EmptyObjectType, type) => {
 		rows.push(row.matNo);
 	}
 	const res = await getInvalidMaterialApi(rows);
-	type === 'bulkDel'
-		? ElMessage.success(`删除成功`)
-		: ElMessage.success(`${t('message.allButton.deleteBtn')}${row.matNo}${t('message.hint.success')}`);
-	getTableData();
+	if (res.status) {
+		type === 'bulkDel'
+			? ElMessage.success(`删除成功`)
+			: ElMessage.success(`${t('message.allButton.deleteBtn')}${row.matNo}${t('message.hint.success')}`);
+		getTableData();
+	}
 };
 // 分页改变时回调
 const onTablePageChange = (page: TableDemoPageType) => {

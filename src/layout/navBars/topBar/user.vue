@@ -46,7 +46,9 @@
 				:class="!state.isScreenfull ? 'icon-quanping' : 'icon-tuichuquanping'"
 			></i>
 		</div>
-		<div class="layout-navbars-breadcrumb-user-icon mr10">{{ currentTime }}</div>
+		<div class="layout-navbars-breadcrumb-user-icon mr10">
+			<span class="layout-navbars-breadcrumb-user-link">{{ currentTime }}</span>
+		</div>
 		<el-dropdown :show-timeout="70" :hide-timeout="50" @command="onHandleCommandClick">
 			<span class="layout-navbars-breadcrumb-user-link">
 				<!-- <img :src="userInfos.photo" class="layout-navbars-breadcrumb-user-link-photo mr5" /> -->
@@ -59,9 +61,9 @@
 			</span>
 			<template #dropdown>
 				<el-dropdown-menu>
-					<el-dropdown-item command="/system/menu">{{ $t('message.user.dropdown1') }}</el-dropdown-item>
+					<el-dropdown-item command="/basics/purchase">{{ $t('message.user.dropdown1') }}</el-dropdown-item>
 					<el-dropdown-item command="/404">{{ $t('message.user.dropdown3') }}</el-dropdown-item>
-					<el-dropdown-item command="/401">{{ $t('message.user.dropdown4') }}</el-dropdown-item>
+					<!-- <el-dropdown-item command="/401">{{ $t('message.user.dropdown4') }}</el-dropdown-item> -->
 					<el-dropdown-item divided command="logOut">{{ $t('message.user.dropdown5') }}</el-dropdown-item>
 				</el-dropdown-menu>
 			</template>

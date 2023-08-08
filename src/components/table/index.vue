@@ -2,7 +2,7 @@
 	<div class="table-container">
 		<div class="table-footer">
 			<div class="allBtn" v-if="config.isButton">
-				<el-button size="default" class="ml10 buttonBorder" @click="onOpenAddRole('add')" type="primary" plain
+				<el-button size="default" class="ml10 buttonBorder" @click="onOpenAdd('add')" type="primary" plain
 					><el-icon><ele-Plus /></el-icon>{{ $t('message.allButton.addBtn') }}</el-button
 				>
 				<el-popconfirm :title="$t('确定删除选中项吗？')" @confirm="onBulkDeletion">
@@ -97,7 +97,7 @@
 					</template>
 
 					<template v-if="item.type === 'status'">
-						<el-tag type="success" v-if="scope.row.status === true">启用</el-tag>
+						<el-tag type="success" v-if="scope.row.runstatus === 1">启用</el-tag>
 						<el-tag type="info" v-else>禁用</el-tag>
 						<!-- <el-switch
 							v-model="scope.row[item.key]"
@@ -117,7 +117,7 @@
 					<template v-for="btn in btnConfig" :key="btn.type">
 						<el-button
 							v-if="!btn.isSure"
-							@click="btn.type === 'edit' ? onOpenEditRole(btn.type, scope.row) : onOpenOther(scope)"
+							@click="btn.type === 'edit' ? onOpenEdit(btn.type, scope.row) : onOpenOther(scope)"
 							:color="btn.color"
 							plain
 							class="button buttonBorder"
@@ -152,7 +152,6 @@
 			>
 			</el-pagination>
 		</div>
-		<Dialog ref="roleDialogRef" :dialogConfig="dialogConfig" @downloadTemp="ondownloadTemp" @importTableData="onimportTableData" @addData="addData" />
 	</div>
 </template>
 
@@ -166,7 +165,7 @@ import { useThemeConfig } from '/@/stores/themeConfig';
 import '/@/theme/tableTool.scss';
 import { useI18n } from 'vue-i18n';
 // 引入组件
-const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
+// const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 
 // 定义父组件传过来的值
 const props = defineProps({
@@ -191,10 +190,10 @@ const props = defineProps({
 		default: () => '',
 	},
 	// 弹出框内容
-	dialogConfig: {
-		type: Array<EmptyObjectType>,
-		default: () => [],
-	},
+	// dialogConfig: {
+	// 	type: Array<EmptyObjectType>,
+	// 	default: () => [],
+	// },
 	// 按钮
 	btnConfig: {
 		type: Array<EmptyObjectType>,
@@ -215,19 +214,19 @@ const emit = defineEmits([
 	'pageChange',
 	'sortHeader',
 	'importTable',
-	'loadTemp',
 	'importTableData',
-	'addData',
 	'onOpenOtherDialog',
 	'cellclick',
+	'openAdd',
+	'openImp',
 ]);
-// 打开新增角色弹窗
-const onOpenAddRole = (type: string) => {
-	roleDialogRef.value.openDialog(type);
+// 打开新增弹窗
+const onOpenAdd = (type: string) => {
+	emit('openAdd', type);
 };
-// 打开修改角色弹窗
-const onOpenEditRole = (type: string, row: Object) => {
-	roleDialogRef.value.openDialog(type, row);
+// 打开修改弹窗
+const onOpenEdit = (type: string, row: Object) => {
+	emit('openAdd', type, row);
 };
 // 打开送样(其他)弹窗
 const onOpenOther = (scope: Object) => {
@@ -235,7 +234,8 @@ const onOpenOther = (scope: Object) => {
 };
 // 打开导入弹窗
 const onImportTable = (type: string) => {
-	roleDialogRef.value.openDialog(type);
+	emit('openAdd', type);
+	// roleDialogRef.value.openDialog(type);
 };
 // 定义变量内容
 const { t } = useI18n();
@@ -349,17 +349,12 @@ const onExportTable = () => {
 	});
 	emit('importTable', state.selectlist);
 };
-const ondownloadTemp = () => {
-	emit('loadTemp');
-};
+
 // 导入表格
 const onimportTableData = (raw) => {
 	emit('importTableData', raw);
 };
-// 新增修改
-const addData = (form, type) => {
-	emit('addData', form, type);
-};
+
 // 刷新
 const onRefreshTable = () => {
 	emit('pageChange', state.page);
@@ -422,7 +417,7 @@ defineExpose({
 		border: 0px !important;
 	}
 	:deep(.el-table__cell) {
-		padding: 8px 0px !important;
+		// padding: 8px 0px !important;
 	}
 	.footer {
 		display: flex;
