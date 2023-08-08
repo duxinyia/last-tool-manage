@@ -351,7 +351,7 @@ const onExportTable = () => {
 };
 
 // 导入表格
-const onimportTableData = (raw) => {
+const onimportTableData = (raw: EmptyObjectType) => {
 	emit('importTableData', raw);
 };
 

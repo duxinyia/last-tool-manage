@@ -1,7 +1,11 @@
 <template>
 	<div class="table-demo-container layout-padding">
 		<div class="table-demo-padding layout-padding-view layout-padding-auto">
-			<TableSearch v-if="state.tableData.search[0].options.length > 0" :search="state.tableData.search" @search="onSearch" />
+			<TableSearch
+				v-if="state.tableData.search[0].options && state.tableData.search[0].options.length > 0"
+				:search="state.tableData.search"
+				@search="onSearch"
+			/>
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
@@ -35,11 +39,8 @@ import {
 	getBaseDaUpdateApi,
 	getDownloadTemplateApi,
 	getBaseDaDeleteApi,
-} from '/@/api/basics/basic.ts';
+} from '/@/api/basics/basic';
 import { useI18n } from 'vue-i18n';
-// 引入导出Excel表格依赖
-import * as FileSaver from 'file-saver';
-import * as XLSX from 'xlsx';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
@@ -60,7 +61,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'type', colWidth: '', title: 'message.pages.groupType', type: 'text', isCheck: true },
 			{ key: 'runstatus', colWidth: '', title: 'message.pages.state', type: 'status', isCheck: true },
 			{ key: 'creator', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
-			{ key: 'createtime', title: 'message.pages.creationTime', type: 'text', isCheck: true },
+			{ key: 'createtime', colWidth: '', title: 'message.pages.creationTime', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -112,7 +113,7 @@ const state = reactive<TableDemoState>({
 				required: true,
 				type: 'select',
 				options: [],
-				editDisable: 'true',
+				editDisable: true,
 			},
 			{ label: '名称', prop: 'dataname', placeholder: '请输入名称', required: true, type: 'input' },
 		],
@@ -140,7 +141,9 @@ const getTableData = async () => {
 const getSelect = async () => {
 	const res = await getParentIdListApi();
 	state.tableData.search[0].options = res.data.pars;
-	state.tableData.dialogConfig[0].options = res.data.pars;
+	if (state.tableData.dialogConfig) {
+		state.tableData.dialogConfig[0].options = res.data.pars;
+	}
 };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
@@ -152,7 +155,7 @@ const openDialog = (type: string, row: Object) => {
 	basicDialogRef.value.openDialog(type, row);
 };
 // 新增数据  修改数据
-const addData = async (ruleForm, type) => {
+const addData = async (ruleForm: object, type: string) => {
 	const res = type === 'add' ? await getBaseDaInsertApi(ruleForm) : await getBaseDaUpdateApi(ruleForm);
 	if (res.status) {
 		type === 'add' ? ElMessage.success(`新增成功`) : ElMessage.success(`修改成功`);
@@ -162,7 +165,7 @@ const addData = async (ruleForm, type) => {
 };
 
 // 删除当前项回调
-const onTableDelRow = async (row: EmptyObjectType, type) => {
+const onTableDelRow = async (row: EmptyObjectType, type: string) => {
 	let rows = [];
 	if (type === 'bulkDel') {
 		Object.keys(row).forEach((key) => {
@@ -189,48 +192,49 @@ const onSortHeader = (data: TableHeaderType[]) => {
 };
 // 导出
 const onExportTableData = async (row: EmptyObjectType) => {
-	let rows = [];
+	let rows: EmptyArrayType = [];
 	Object.keys(row).forEach((key) => {
 		rows.push(row[key].runid);
 	});
-	const res = await getBaseDownloadApi(rows);
+	const res: any = await getBaseDownloadApi(rows);
 	let blob = new Blob([res], {
 		// 这里一定要和后端对应，不然可能出现乱码或者打不开文件
 		type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 	});
 
-	if (window.navigator.msSaveOrOpenBlob) {
-		navigator.msSaveBlob(blob, fileName);
-	} else {
-		const link = document.createElement('a');
-		link.href = window.URL.createObjectURL(blob);
-		link.download = `${t('message.router.basicsBasic')} ${new Date().toLocaleString()}.xlsx`; // 在前端也可以设置文件名字
-		link.click();
-		//释放内存
-		window.URL.revokeObjectURL(link.href);
-	}
+	// if (window.navigator.msSaveOrOpenBlob) {
+	// 	navigator.msSaveBlob(blob, fileName);
+	// } else {
+	const link = document.createElement('a');
+	link.href = window.URL.createObjectURL(blob);
+	link.download = `${t('message.router.basicsBasic')} ${new Date().toLocaleString()}.xlsx`; // 在前端也可以设置文件名字
+	link.click();
+	//释放内存
+	window.URL.revokeObjectURL(link.href);
+	// }
 };
 // 下载模版
 const ondownloadTemp = async () => {
-	const res = await getDownloadTemplateApi();
+	const res: any = await getDownloadTemplateApi();
 	let blob = new Blob([res], {
 		// 这里一定要和后端对应，不然可能出现乱码或者打不开文件
 		type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 	});
-	if (window.navigator.msSaveOrOpenBlob) {
-		navigator.msSaveBlob(blob, fileName);
-	} else {
-		const link = document.createElement('a');
-		link.href = window.URL.createObjectURL(blob);
-		link.download = `${t('message.router.basicsBasic')} ${new Date().toLocaleString()}模版.xlsx`; // 在前端也可以设置文件名字
-		link.click();
-		//释放内存
-		window.URL.revokeObjectURL(link.href);
-	}
+	// if (window.navigator.msSaveOrOpenBlob) {
+	// 	navigator.msSaveBlob(blob, fileName);
+	// }
+	// else {
+	const link = document.createElement('a');
+	link.href = window.URL.createObjectURL(blob);
+	link.download = `${t('message.router.basicsBasic')} ${new Date().toLocaleString()}模版.xlsx`; // 在前端也可以设置文件名字
+	link.click();
+	//释放内存
+	window.URL.revokeObjectURL(link.href);
+	// }
 };
 
 // 导入表格
-const onImportTable = async (raw) => {
+const onImportTable = async (raw: EmptyObjectType) => {
 	const res = await getImportDataApi(raw.raw);
 	if (res.status) {
 		ElMessage.success('导入数据成功！');

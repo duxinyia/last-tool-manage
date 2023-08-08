@@ -9,9 +9,9 @@
 				@pageChange="onTablePageChange"
 				@onOpenOtherDialog="openSampleDialog"
 				@cellclick="matnoClick"
-				:cellStyle="state.tableData.cellStyle"
+				:cellStyle="cellStyle"
 			/>
-			<Dialog ref="sendReceiveDialogRef" v-bind="state.dialogData" />
+			<Dialog ref="sendReceiveDialogRef" v-bind="dialogData" />
 		</div>
 	</div>
 </template>
@@ -19,7 +19,7 @@
 <script setup lang="ts" name="partnoSendReceive">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { getMaterialListApi } from '/@/api/partno/sendReceive.ts';
+import { getMaterialListApi } from '/@/api/partno/sendReceive';
 import { useI18n } from 'vue-i18n';
 
 // 引入表格组件
@@ -52,6 +52,7 @@ const state = reactive<TableDemoState>({
 			isSelection: true, // 是否显示表格多选
 			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
+			isEditBtn: false,
 		},
 
 		btnConfig: [{ type: 'sendReceive', name: '收货', color: '#D3C333', isSure: false }],
@@ -67,31 +68,31 @@ const state = reactive<TableDemoState>({
 			pageSize: 10,
 		},
 	},
-	dialogData: {
-		// 点击料号弹窗表格数据
-		headerData: [
-			{ key: 'simpleNo', colWidth: '', title: '送样单号', type: 'text', isCheck: true },
-			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
-			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'sampleQty', colWidth: '', title: '送样数量', type: 'text', isCheck: true },
-			{ key: 'sampleTime', colWidth: '', title: '送样时间', type: 'text', isCheck: true },
-			{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-			{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-		],
-		// 点击送料表格数据
-		otherHeaderData: [
-			{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'input', isCheck: true },
-			{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'input', isCheck: true },
-			{ key: 'sampleQty', colWidth: '', title: '送样数量', type: 'input', isCheck: true },
-			{ key: 'sampleTime', colWidth: '', title: '送样时间', type: 'time', isCheck: true },
-			{ key: 'needsQty', colWidth: '', title: '需求送样数量', type: 'input', isCheck: true },
-		],
-		// 单元格样式
-		cellStyle: null,
-	},
+});
+// 单元格样式
+const cellStyle = ref();
+const dialogData = reactive({
+	// 点击料号弹窗表格数据
+	headerData: [
+		{ key: 'simpleNo', colWidth: '', title: '送样单号', type: 'text', isCheck: true },
+		{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
+		{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+		{ key: 'sampleQty', colWidth: '', title: '送样数量', type: 'text', isCheck: true },
+		{ key: 'sampleTime', colWidth: '', title: '送样时间', type: 'text', isCheck: true },
+		{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
+		{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+	],
+	// 点击送料表格数据
+	otherHeaderData: [
+		{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'input', isCheck: true },
+		{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'input', isCheck: true },
+		{ key: 'sampleQty', colWidth: '', title: '送样数量', type: 'input', isCheck: true },
+		{ key: 'sampleTime', colWidth: '', title: '送样时间', type: 'time', isCheck: true },
+		{ key: 'needsQty', colWidth: '', title: '需求送样数量', type: 'input', isCheck: true },
+	],
 });
 const changeToStyle = (data: any[], keyList: string[], indList: number[]) => {
-	return ({ row, column, rowIndex, columnIndex }) => {
+	return ({ row, column, rowIndex, columnIndex }: any) => {
 		for (let j = 0; j < keyList.length; j++) {
 			let i = keyList[j];
 			let ind = indList[j];
@@ -101,7 +102,7 @@ const changeToStyle = (data: any[], keyList: string[], indList: number[]) => {
 		}
 	};
 };
-state.tableData.cellStyle = changeToStyle(state.tableData.data, ['matNo'], [2]);
+cellStyle.value = changeToStyle(state.tableData.data, ['matNo'], [2]);
 // 初始化列表数据
 const getTableData = async () => {
 	state.tableData.config.loading = true;
@@ -136,7 +137,7 @@ const openSampleDialog = (scope: Object) => {
 	sendReceiveDialogRef.value.openDialog(scope, 1, '收货');
 };
 // 点击料号 2
-const matnoClick = async (row, column) => {
+const matnoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
 	// const res = await getGetSampleApi(row.matNo);
 	// if (column.property === 'matNo') {
 	// 	sendReceiveDialogRef.value.openDialog(row, 2, res.data);

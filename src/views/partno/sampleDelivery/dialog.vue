@@ -114,7 +114,7 @@
 import { defineAsyncComponent, reactive, onMounted, ref, nextTick, computed, onUpdated } from 'vue';
 import { i18n } from '/@/i18n/index';
 import { ElMessage } from 'element-plus';
-import { getTakeSampleApi } from '/@/api/partno/sampleDelivery.ts';
+import { getTakeSampleApi } from '/@/api/partno/sampleDelivery';
 const emit = defineEmits([]);
 // 定义父组件传过来的值
 const props = defineProps({
@@ -132,10 +132,10 @@ const props = defineProps({
 	},
 });
 // 定义变量内容
-const tableSampleRef = ref<FormInstance>();
+const tableSampleRef = ref();
 const tableRef = ref();
-let marNoData = ref([]);
-const state = reactive({
+let marNoData = ref<EmptyObjectType>([]);
+const state = reactive<dialogFormState>({
 	formData: {},
 	vendors: [],
 	dialog: {
@@ -144,14 +144,14 @@ const state = reactive({
 		title: '',
 		submitTxt: '',
 		isdisable: false,
-		num: null,
+		num: 0,
 	},
 });
 // /**合并表格的第一列，处理表格数据 */
-const flitterData = (arr, columnI) => {
-	let spanOneArr = [];
+const flitterData = (arr: EmptyObjectType, columnI: number) => {
+	let spanOneArr: EmptyArrayType = [];
 	let concatOne = 0;
-	arr.forEach((item, index) => {
+	arr.forEach((item: EmptyObjectType, index: number) => {
 		if (index === 0) {
 			spanOneArr.push(1);
 		} else {
@@ -170,7 +170,7 @@ const flitterData = (arr, columnI) => {
 		one: spanOneArr,
 	};
 };
-const objectSpanMethod = ({ row, column, rowIndex, columnIndex }: SpanMethodProps) => {
+const objectSpanMethod = ({ row, column, rowIndex, columnIndex }: any) => {
 	if (columnIndex === 0 && column.property === 'simpleNo') {
 		const _row = flitterData(marNoData.value, columnIndex).one[rowIndex];
 		const _col = _row > 0 ? 1 : 0;
@@ -194,11 +194,11 @@ const onAddRow = () => {
 	tableRef.value.doLayout();
 };
 // 删除行
-const onDelRow = (i) => {
+const onDelRow = (i: number) => {
 	state.vendors.splice(i, 1);
 };
 // 打开弹窗
-const openDialog = (scope: Object, n: number, tit: string, data: Array) => {
+const openDialog = (scope: EmptyObjectType, n: number, tit: string, data: EmptyArrayType) => {
 	state.dialog.num = n;
 	state.dialog.title = tit;
 	if (n === 1) {
@@ -226,16 +226,16 @@ const onCancel = () => {
 	closeDialog();
 };
 // 提交
-const onSubmit = async (formEl: FormInstance | undefined) => {
+const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
-	await formEl.validate((valid, fields) => {
+	await formEl.validate((valid: boolean) => {
 		if (!valid) return ElMessage.warning('表格项必填未填');
-		let sampleData = {};
+		let sampleData: EmptyObjectType = {};
 		props.dialogForm.forEach((item) => {
 			sampleData[item.prop] = state.formData[item.prop];
 		});
 		sampleData['vendors'] = state.vendors;
-		const res = getTakeSampleApi(sampleData);
+		const res: any = getTakeSampleApi(sampleData);
 		if (res.status) {
 			closeDialog();
 			ElMessage.success('送样成功');

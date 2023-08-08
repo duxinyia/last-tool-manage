@@ -21,10 +21,7 @@
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
-import { getSearchBaseMachine, getBaseMachineAddApi, getBaseMachineUpdateApi, getBaseMachineDeleteApi } from '/@/api/basics/code.ts';
-// 引入导出Excel表格依赖
-import * as FileSaver from 'file-saver';
-import * as XLSX from 'xlsx';
+import { getSearchBaseMachine, getBaseMachineAddApi, getBaseMachineUpdateApi, getBaseMachineDeleteApi } from '/@/api/basics/code';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
@@ -121,7 +118,7 @@ const openDialog = (type: string, row: Object) => {
 };
 
 // 新增数据  修改数据
-const addData = async (ruleForm, type) => {
+const addData = async (ruleForm: object, type: string) => {
 	const res = type === 'add' ? await getBaseMachineAddApi(ruleForm) : await getBaseMachineUpdateApi(ruleForm);
 	if (res.status) {
 		type === 'add' ? ElMessage.success(`新增成功`) : ElMessage.success(`修改成功`);
@@ -130,7 +127,7 @@ const addData = async (ruleForm, type) => {
 	}
 };
 // 删除当前项回调
-const onTableDelRow = async (row: EmptyObjectType, type) => {
+const onTableDelRow = async (row: EmptyObjectType, type: string) => {
 	let rows = [];
 	if (type === 'bulkDel') {
 		Object.keys(row).forEach((key) => {

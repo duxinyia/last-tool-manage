@@ -27,11 +27,8 @@
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 
-import { getMaterialListApi, getAddMaterialApi, getModifyMaterialApi, getInvalidMaterialApi } from '/@/api/partno/noSearch.ts';
+import { getMaterialListApi, getAddMaterialApi, getModifyMaterialApi, getInvalidMaterialApi } from '/@/api/partno/noSearch';
 import { useI18n } from 'vue-i18n';
-// 引入导出Excel表格依赖
-import * as FileSaver from 'file-saver';
-import * as XLSX from 'xlsx';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
@@ -63,6 +60,7 @@ const state = reactive<TableDemoState>({
 			isSelection: true, // 是否显示表格多选
 			isOperate: true, // 是否显示表格操作栏
 			isButton: true, //是否显示表格上面的新增删除按钮
+			isEditBtn: true,
 		},
 		btnConfig: [
 			{ type: 'edit', name: 'message.allButton.editBtn', color: '#39D339', isSure: false },
@@ -143,7 +141,7 @@ const openDialog = (type: string, row: Object) => {
 	noSearchDialogRef.value.openDialog(type, row);
 };
 // 新增数据  修改数据
-const addData = async (ruleForm, type) => {
+const addData = async (ruleForm: EmptyObjectType, type: string) => {
 	if (ruleForm.drawPath.includes('/')) {
 		const res = type === 'add' ? await getAddMaterialApi(ruleForm) : await getModifyMaterialApi(ruleForm);
 		if (res.status) {
@@ -157,7 +155,7 @@ const addData = async (ruleForm, type) => {
 };
 
 // 删除当前项回调
-const onTableDelRow = async (row: EmptyObjectType, type) => {
+const onTableDelRow = async (row: EmptyObjectType, type: string) => {
 	let rows = [];
 	if (type === 'bulkDel') {
 		Object.keys(row).forEach((key) => {
@@ -186,52 +184,51 @@ const onSortHeader = (data: TableHeaderType[]) => {
 };
 // 导出
 const onExportTableData = async (row: EmptyObjectType) => {
-	let rows = [];
-	Object.keys(row).forEach((key) => {
-		rows.push(row[key].runid);
-	});
-	const res = await getBaseDownloadApi(rows);
-	let blob = new Blob([res], {
-		// 这里一定要和后端对应，不然可能出现乱码或者打不开文件
-		type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-	});
-
-	if (window.navigator.msSaveOrOpenBlob) {
-		navigator.msSaveBlob(blob, fileName);
-	} else {
-		const link = document.createElement('a');
-		link.href = window.URL.createObjectURL(blob);
-		link.download = `${t('message.router.basicsBasic')} ${new Date().toLocaleString()}.xlsx`; // 在前端也可以设置文件名字
-		link.click();
-		//释放内存
-		window.URL.revokeObjectURL(link.href);
-	}
+	// let rows: EmptyArrayType = [];
+	// Object.keys(row).forEach((key) => {
+	// 	rows.push(row[key].runid);
+	// });
+	// const res = await getBaseDownloadApi(rows);
+	// let blob = new Blob([res], {
+	// 	// 这里一定要和后端对应，不然可能出现乱码或者打不开文件
+	// 	type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+	// });
+	// if (window.navigator.msSaveOrOpenBlob) {
+	// 	navigator.msSaveBlob(blob, fileName);
+	// } else {
+	// 	const link = document.createElement('a');
+	// 	link.href = window.URL.createObjectURL(blob);
+	// 	link.download = `${t('message.router.basicsBasic')} ${new Date().toLocaleString()}.xlsx`; // 在前端也可以设置文件名字
+	// 	link.click();
+	// 	//释放内存
+	// 	window.URL.revokeObjectURL(link.href);
+	// }
 };
 // 下载模版
 const ondownloadTemp = async () => {
-	const res = await getDownloadTemplateApi();
-	let blob = new Blob([res], {
-		// 这里一定要和后端对应，不然可能出现乱码或者打不开文件
-		type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-	});
-	if (window.navigator.msSaveOrOpenBlob) {
-		navigator.msSaveBlob(blob, fileName);
-	} else {
-		const link = document.createElement('a');
-		link.href = window.URL.createObjectURL(blob);
-		link.download = `${t('message.router.basicsBasic')} ${new Date().toLocaleString()}${t('message.pages.template')}.xlsx`; // 在前端也可以设置文件名字
-		link.click();
-		//释放内存
-		window.URL.revokeObjectURL(link.href);
-	}
+	// const res = await getDownloadTemplateApi();
+	// let blob = new Blob([res], {
+	// 	// 这里一定要和后端对应，不然可能出现乱码或者打不开文件
+	// 	type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+	// });
+	// if (window.navigator.msSaveOrOpenBlob) {
+	// 	navigator.msSaveBlob(blob, fileName);
+	// } else {
+	// 	const link = document.createElement('a');
+	// 	link.href = window.URL.createObjectURL(blob);
+	// 	link.download = `${t('message.router.basicsBasic')} ${new Date().toLocaleString()}${t('message.pages.template')}.xlsx`; // 在前端也可以设置文件名字
+	// 	link.click();
+	// 	//释放内存
+	// 	window.URL.revokeObjectURL(link.href);
+	// }
 };
 
 // 导入表格
-const onImportTable = async (raw) => {
-	console.log(raw);
-	const res = await getImportDataApi(raw.raw);
-	res.status && ElMessage.success('导入数据成功！');
-	getTableData();
+const onImportTable = async (raw: EmptyObjectType) => {
+	// console.log(raw);
+	// const res = await getImportDataApi(raw.raw);
+	// res.status && ElMessage.success('导入数据成功！');
+	// getTableData();
 };
 
 // 页面加载时

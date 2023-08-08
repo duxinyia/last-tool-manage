@@ -63,13 +63,13 @@ import { initBackEndControlRoutes } from '/@/router/backEnd';
 import { Session } from '/@/utils/storage';
 import { formatAxis } from '/@/utils/formatTime';
 import { NextLoading } from '/@/utils/loading';
-import { useLoginApi, useLogin } from '/@/api/login/index.ts';
+import { useLoginApi, useLogin } from '/@/api/login/index';
 import { encryptData, decryptData } from '/@/utils/aes';
 import JSEncrypt from 'jsencrypt'; //引入模块
 // 定义变量内容
 const { t } = useI18n();
 const storesThemeConfig = useThemeConfig();
-const ruleFormRef = ref<FormInstance>();
+const ruleFormRef = ref();
 const { themeConfig } = storeToRefs(storesThemeConfig);
 const route = useRoute();
 const router = useRouter();
@@ -93,7 +93,7 @@ const forgetPwd = () => {
 	window.open('http://10.151.128.172:8089/Login/Repassword');
 };
 // 登录
-const onSignIn = (formEl: FormInstance | undefined) => {
+const onSignIn = (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
 	const { ruleForm } = state;
 	formEl.validate(async (valid: boolean) => {
@@ -158,7 +158,7 @@ const signInSuccess = (isNoPower: boolean | undefined) => {
 	state.loading.signIn = false;
 };
 // 按enter键实现登录
-const enterdown = (e) => {
+const enterdown = (e: EmptyObjectType) => {
 	if (e.keyCode == 13) {
 		onSignIn(ruleFormRef.value);
 	}

@@ -322,7 +322,14 @@ declare type DialogConfigType = {
 	placeholder: string;
 	required:boolean;
 	type: string;
-	value:  string;
+	// value:  string;
+	options?:SelectOptionType[];
+	editDisable?:boolean;
+	xs?: number;
+	sm?: number;
+	md?: number;
+	lg?: number;
+	xl?: number;
 };
 declare type TableDemoState = {
 	tableData: {
@@ -336,12 +343,25 @@ declare type TableDemoState = {
 			isSerialNo: boolean;
 			isOperate: boolean;
 			isButton:boolean;
+			isEditBtn:boolean;
 		};
 		search: TableSearchType[];
 		btnConfig:TableButtonType[];
 		page: EmptyObjectType;
-		printName: string;
+		printName?: string;
 		form:EmptyObjectType;
-		dialogConfig: DialogConfigType[];
+		dialogConfig?: DialogConfigType[];
 	};
+};
+declare type dialogFormState = {
+	formData: EmptyObjectType,
+	vendors?:EmptyArrayType,
+	dialog: {
+		isShowDialog: boolean,
+		type: string,
+		title: string,
+		submitTxt: string,
+		isdisable: boolean,
+		num?: number,
+	},
 };

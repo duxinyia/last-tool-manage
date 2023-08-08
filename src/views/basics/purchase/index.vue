@@ -20,12 +20,14 @@
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 // 接口
-import { getGroupListApi, getAddGroupMemberApi, getRemoveGroupMemberApi } from '/@/api/basics/group.ts';
+import { getGroupListApi, getAddGroupMemberApi, getRemoveGroupMemberApi } from '/@/api/basics/group';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
 // 引入组件
 const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 // 定义变量内容
 const purchaseDialogRef = ref();
 const tableRef = ref<RefType>();
@@ -53,6 +55,7 @@ const state = reactive<TableDemoState>({
 			isSelection: true, // 是否显示表格多选
 			isOperate: true, // 是否显示表格操作栏
 			isButton: true, //是否显示表格上面的新增删除按钮
+			isEditBtn: false,
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
@@ -72,7 +75,7 @@ const state = reactive<TableDemoState>({
 		// 打印标题
 		printName: '表格打印演示',
 		// 弹窗表单
-		dialogConfig: [{ label: '工号', prop: 'UserId', placeholder: '请输入工号', required: true, type: 'input', value: '' }],
+		dialogConfig: [{ label: '工号', prop: 'UserId', placeholder: '请输入工号', required: true, type: 'input' }],
 	},
 });
 
@@ -86,7 +89,7 @@ const getTableData = async () => {
 		page: state.tableData.page,
 	};
 	const res = await getGroupListApi(data);
-	res.data.data.forEach((item) => {
+	res.data.data.forEach((item: EmptyObjectType) => {
 		item.grouptype = '采购';
 	});
 	state.tableData.data = res.data.data;
@@ -106,7 +109,7 @@ const openDialog = (type: string, row: Object) => {
 	purchaseDialogRef.value.openDialog(type, row);
 };
 // 新增数据  修改数据
-const addData = async (ruleForm) => {
+const addData = async (ruleForm: EmptyObjectType) => {
 	ruleForm['GroupType'] = 1;
 	const res = await getAddGroupMemberApi(ruleForm);
 	if (res.status) {
@@ -116,7 +119,7 @@ const addData = async (ruleForm) => {
 	}
 };
 // 删除当前项回调
-const onTableDelRow = async (row: EmptyObjectType, type) => {
+const onTableDelRow = async (row: EmptyObjectType, type: string) => {
 	let rows = [];
 	if (type === 'bulkDel') {
 		Object.keys(row).forEach((key) => {

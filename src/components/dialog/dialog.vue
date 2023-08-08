@@ -1,7 +1,7 @@
 <template>
 	<div class="system-menu-dialog-container">
 		<el-dialog :title="state.dialog.title" v-model="state.dialog.isShowDialog" width="769px">
-			<el-form v-if="state.dialog.type !== 'imp'" ref="dialogFormRef" :model="state.ruleForm" size="default" label-width="80px">
+			<el-form v-if="state.dialog.type !== 'imp'" ref="dialogFormRef" :model="state.formData" size="default" label-width="80px">
 				<el-row :gutter="35">
 					<el-col
 						:xs="item.xs || 24"
@@ -24,9 +24,9 @@
 								},
 							]"
 						>
-							<el-input v-if="item.type === 'input'" v-model="state.ruleForm[item.prop]" :placeholder="$t(item.placeholder)" clearable></el-input>
+							<el-input v-if="item.type === 'input'" v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)" clearable></el-input>
 
-							<el-input disabled v-if="item.type === 'inputFile'" v-model="state.ruleForm[item.prop]" :placeholder="$t(item.placeholder)" clearable>
+							<el-input disabled v-if="item.type === 'inputFile'" v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)" clearable>
 								<template #prepend
 									><el-upload
 										v-model:file-list="inputfileList"
@@ -43,14 +43,14 @@
 										<el-button type="primary" class="ml1">浏览文件</el-button>
 									</el-upload></template
 								>
-								<template #append v-if="state.ruleForm[item.prop]"
+								<template #append v-if="state.formData[item.prop]"
 									><el-button @click="inputsubmitUpload" type="primary" class="ml1">上传文件</el-button>
-									<el-button v-if="state.ruleForm['drawPath'].includes('/')" class="look-file" @click="lookUpload">查看文件</el-button>
+									<el-button v-if="state.formData['drawPath'].includes('/')" class="look-file" @click="lookUpload">查看文件</el-button>
 								</template>
 							</el-input>
 
 							<el-select
-								v-model="state.ruleForm[item.prop]"
+								v-model="state.formData[item.prop]"
 								:placeholder="$t(item.placeholder)"
 								v-if="item.type === 'select'"
 								:disabled="state.dialog.isdisable"
@@ -59,7 +59,7 @@
 							</el-select>
 							<el-switch
 								v-if="item.type === 'switch'"
-								v-model="state.ruleForm[item.prop]"
+								v-model="state.formData[item.prop]"
 								inline-prompt
 								:active-text="$t('message.allButton.startup')"
 								:inactive-text="$t('message.allButton.disable')"
@@ -67,7 +67,7 @@
 							<el-input
 								:width="224"
 								v-if="item.type === 'textarea'"
-								v-model="state.ruleForm[item.prop]"
+								v-model="state.formData[item.prop]"
 								type="textarea"
 								:placeholder="$t(item.placeholder)"
 								maxlength="150"
@@ -123,10 +123,10 @@ import { defineAsyncComponent, reactive, onMounted, ref, nextTick } from 'vue';
 import { storeToRefs } from 'pinia';
 
 import { i18n } from '/@/i18n/index';
-import { ElMessage, genFileId } from 'element-plus';
+import { ElMessage, genFileId, UploadRawFile } from 'element-plus';
 import type { UploadInstance, UploadProps, UploadUserFile } from 'element-plus';
 import { UploadFilled } from '@element-plus/icons-vue';
-import { getUploadFileApi } from '/@/api/global/index.ts';
+import { getUploadFileApi } from '/@/api/global/index';
 
 // 引入组件
 const IconSelector = defineAsyncComponent(() => import('/@/components/iconSelector/index.vue'));
@@ -150,11 +150,11 @@ const fileList = ref<UploadUserFile[]>([]);
 const inputfileList = ref<UploadUserFile[]>([]);
 const fileListName = ref();
 // 定义变量内容
-const dialogFormRef = ref<FormInstance>();
+const dialogFormRef = ref();
 const uploadForm = ref();
 const inputuploadForm = ref();
-const state = reactive({
-	ruleForm: {},
+const state = reactive<dialogFormState>({
+	formData: {},
 	dialog: {
 		isShowDialog: false,
 		type: '',
@@ -185,7 +185,7 @@ const openDialog = (type: string, row?: any) => {
 		state.dialog.submitTxt = '修 改';
 		// 解决表单重置不成功的问题
 		nextTick(() => {
-			state.ruleForm = JSON.parse(JSON.stringify(row));
+			state.formData = JSON.parse(JSON.stringify(row));
 		});
 		props.dialogConfig.forEach((v) => {
 			if (v.editDisable) {
@@ -210,11 +210,11 @@ const onCancel = () => {
 	closeDialog();
 };
 // 提交
-const onSubmit = (formEl: FormInstance | undefined) => {
+const onSubmit = (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
 	formEl.validate((valid: boolean) => {
 		if (valid) {
-			emit('addData', state.ruleForm, state.dialog.type);
+			emit('addData', state.formData, state.dialog.type);
 		} else {
 		}
 	});
@@ -222,13 +222,13 @@ const onSubmit = (formEl: FormInstance | undefined) => {
 // 初始化 form 字段，取自父组件 prop
 const initFormField = () => {
 	if (props.dialogConfig.length <= 0) return false;
-	props.dialogConfig.forEach((v) => (state.ruleForm[v.prop] = ''));
+	props.dialogConfig.forEach((v) => (state.formData[v.prop] = ''));
 };
 // input框里面的数据
 const inputHandleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
 	props.dialogConfig.forEach((v) => {
 		if (v.type === 'inputFile') {
-			state.ruleForm[v.prop] = uploadFile.name;
+			state.formData[v.prop] = uploadFile.name;
 		}
 	});
 	inputuploadForm.value = uploadFile;
@@ -245,12 +245,12 @@ const inputHandleExceed: UploadProps['onExceed'] = (files) => {
 // 上传文件
 const inputsubmitUpload = async () => {
 	const res = await getUploadFileApi(0, inputuploadForm.value.raw);
-	state.ruleForm['drawPath'] = res.data;
+	state.formData['drawPath'] = res.data;
 	res.status && ElMessage.success(`上传成功`);
 };
 // 查看上传的文件
 const lookUpload = () => {
-	window.open(`${import.meta.env.VITE_API_URL}${state.ruleForm['drawPath']}`, '_blank');
+	window.open(`${import.meta.env.VITE_API_URL}${state.formData['drawPath']}`, '_blank');
 };
 // // 上传错误提示
 // const handleError = () => {
