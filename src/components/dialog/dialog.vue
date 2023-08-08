@@ -122,7 +122,6 @@
 import { defineAsyncComponent, reactive, onMounted, ref, nextTick } from 'vue';
 import { storeToRefs } from 'pinia';
 
-import { i18n } from '/@/i18n/index';
 import { ElMessage, genFileId, UploadRawFile } from 'element-plus';
 import type { UploadInstance, UploadProps, UploadUserFile } from 'element-plus';
 import { UploadFilled } from '@element-plus/icons-vue';
@@ -155,6 +154,7 @@ const uploadForm = ref();
 const inputuploadForm = ref();
 const state = reactive<dialogFormState>({
 	formData: {},
+	vendors: [],
 	dialog: {
 		isShowDialog: false,
 		type: '',

@@ -355,7 +355,7 @@ declare type TableDemoState = {
 };
 declare type dialogFormState = {
 	formData: EmptyObjectType,
-	vendors?:EmptyArrayType,
+	vendors:EmptyArrayType,
 	dialog: {
 		isShowDialog: boolean,
 		type: string,
@@ -364,4 +364,8 @@ declare type dialogFormState = {
 		isdisable: boolean,
 		num?: number,
 	},
+};
+declare type searchState = {
+	form: EmptyObjectType,
+	isToggle: boolean,
 };

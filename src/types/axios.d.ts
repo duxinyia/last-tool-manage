@@ -8,6 +8,7 @@ declare module 'axios' {
 		data: T;
 		message: string;
 		type?: string;
+		status:boolean
 		[key: string]: T;
 	}
 }

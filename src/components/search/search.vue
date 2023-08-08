@@ -76,7 +76,7 @@ const emit = defineEmits(['search']);
 // 定义变量内容
 const { t } = useI18n();
 const tableSearchRef = ref<FormInstance>();
-const state = reactive({
+const state = reactive<searchState>({
 	form: {},
 	isToggle: true,
 });
@@ -102,7 +102,7 @@ const onReset = (formEl: FormInstance | undefined) => {
 const initFormField = () => {
 	if (props.search.length <= 0) return false;
 	props.search.forEach((v) => {
-		if (v.type === 'select' && v.options?.length > 0) {
+		if (v.type === 'select' && v.options && v.options?.length > 0) {
 			v.options?.forEach((item) => {
 				if (item.selected) {
 					state.form[v.prop] = item.value;

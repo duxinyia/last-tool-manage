@@ -195,7 +195,6 @@ const singleAddTagsView = (path: string, to?: RouteToFrom) => {
 const addTagsView = (path: string, to?: RouteToFrom) => {
 	// 防止拿取不到路由信息
 	nextTick(async () => {
-		// 修复：https://gitee.com/lyt-top/vue-next-admin/issues/I3YX6G
 		let item: RouteItem;
 		// 是否是动态路由
 		if (to?.meta?.isDynamic) {
@@ -308,7 +307,6 @@ const openCurrenFullscreen = async (path: string) => {
 };
 // 当前项右键菜单点击，拿 `当前点击的路由路径` 对比 `tagsView 路由数组`，取当前点击项的详细路由信息
 // 防止 tagsView 非当前页演示时，操作异常
-// https://gitee.com/lyt-top/vue-next-admin/issues/I61VS9
 const getCurrentRouteItem = (item: RouteItem): any => {
 	let resItem: RouteToFrom = {};
 	state.tagsViewList.forEach((v: RouteItem) => {
@@ -377,8 +375,6 @@ const onTagsClick = (v: RouteItem, k: number) => {
 	}
 };
 // 处理 url，地址栏链接有参数时，tagsview 右键菜单刷新功能失效问题
-// https://gitee.com/lyt-top/vue-next-admin/issues/I5K3YO
-// https://gitee.com/lyt-top/vue-next-admin/issues/I61VS9
 const transUrlParams = (v: RouteItem) => {
 	let params = v.query && Object.keys(v.query).length > 0 ? v.query : v.params;
 	if (!params) return '';
@@ -686,7 +682,7 @@ watch(
 			color: var(--el-color-primary) !important;
 		}
 	}
-	// 风格5
+	// 风格5(目前用不到)
 	.tags-style-five {
 		align-items: flex-end;
 		.tags-style-five-svg {

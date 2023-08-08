@@ -97,7 +97,6 @@ const onColumnsAsideMenuClick = async (v: RouteItem) => {
 	}
 
 	// 一个路由设置自动收起菜单
-	// https://gitee.com/lyt-top/vue-next-admin/issues/I6HW7H
 	if (!v.children) themeConfig.value.isCollapse = true;
 	else if (v.children.length > 1) themeConfig.value.isCollapse = false;
 };
