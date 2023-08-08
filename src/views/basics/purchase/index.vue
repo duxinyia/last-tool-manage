@@ -120,18 +120,17 @@ const addData = async (ruleForm: EmptyObjectType) => {
 };
 // 删除当前项回调
 const onTableDelRow = async (row: EmptyObjectType, type: string) => {
-	let rows = [];
+	// let rows = [];
 	if (type === 'bulkDel') {
-		Object.keys(row).forEach((key) => {
-			rows.push(row[key].runid);
-		});
+		// Object.keys(row).forEach((key) => {
+		// 	rows.push(row[key].runid);
+		// });
 	} else {
-		rows.push(row.runid);
-	}
-	const res = await getRemoveGroupMemberApi(rows);
-	if (res.status) {
-		ElMessage.success(`${t('message.allButton.deleteBtn')}${row.dataname}${t('message.hint.success')}`);
-		getTableData();
+		const res = await getRemoveGroupMemberApi(1, row.userid);
+		if (res.status) {
+			ElMessage.success(`${t('message.allButton.deleteBtn')}${row.userid}${t('message.hint.success')}`);
+			getTableData();
+		}
 	}
 };
 // 分页改变时回调
