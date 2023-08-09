@@ -76,8 +76,8 @@ const router = useRouter();
 const state = reactive({
 	isShowPassword: false,
 	ruleForm: {
-		userName: 'G1657622',
-		password: 'password',
+		userName: 'G1656790',
+		password: 'MISAdmin',
 	},
 	loading: {
 		signIn: false,
@@ -110,19 +110,20 @@ const onSignIn = (formEl: EmptyObjectType | undefined) => {
 				Session.set('token', res.data.token);
 				Cookies.set('userName', res.data.userName);
 				Cookies.set('userId', res.data.userId);
+				Session.set('datas', res.data.datas);
+				if (!themeConfig.value.isRequestRoutes) {
+					// 前端控制路由，2、请注意执行顺序（目前走的这个）
+					const isNoPower = await initFrontEndControlRoutes();
+				} else {
+					// 模拟后端控制路由，isRequestRoutes 为 true，则开启后端控制路由
+					// 添加完动态路由，再进行 router 跳转，否则可能报错 No match found for location with path "/"
+					const isNoPower = await initBackEndControlRoutes();
+
+					// 执行完 initBackEndControlRoutes，再执行 signInSuccess
+					signInSuccess(isNoPower);
+				}
 			}
 
-			if (!themeConfig.value.isRequestRoutes) {
-				// 前端控制路由，2、请注意执行顺序（目前走的这个）
-				const isNoPower = await initFrontEndControlRoutes();
-				signInSuccess(isNoPower);
-			} else {
-				// 模拟后端控制路由，isRequestRoutes 为 true，则开启后端控制路由
-				// 添加完动态路由，再进行 router 跳转，否则可能报错 No match found for location with path "/"
-				const isNoPower = await initBackEndControlRoutes();
-				// 执行完 initBackEndControlRoutes，再执行 signInSuccess
-				signInSuccess(isNoPower);
-			}
 			// } catch (err: any) {
 			// 	state.loading.signIn = false;
 			// 	console.log(err);

@@ -27,8 +27,7 @@ const props = defineProps({
 		type: String,
 	},
 });
-
-const linesString = ['https', 'http', '/src', '/assets', 'data:image', import.meta.env.VITE_PUBLIC_PATH];
+const linesString = ['https', 'http', '/src', '/src/assets/', 'data:image', import.meta.env.VITE_PUBLIC_PATH];
 
 // 获取 icon 图标名称
 const getIconName = computed(() => {
@@ -55,6 +54,6 @@ const setIconSvgInsStyle = computed(() => {
 	const filterStyle: string[] = [];
 	const compatibles: string[] = ['-webkit', '-ms', '-o', '-moz'];
 	compatibles.forEach((j) => filterStyle.push(`${j}-filter: drop-shadow(${props.color} 30px 0);`));
-	return `width: ${props.size}px;height: ${props.size}px;position: relative;left: -${props.size}px;${filterStyle.join('')}`;
+	return `width: ${props.size}px;height: ${props.size}px;position: relative;top: -37px;left: -31px;;${filterStyle.join('')}`;
 });
 </script>

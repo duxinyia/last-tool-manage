@@ -55,9 +55,10 @@ const isShowBreadcrumb = computed(() => {
 });
 // 面包屑点击时
 const onBreadcrumbClick = (v: RouteItem) => {
-	const { redirect, path } = v;
-	if (redirect) router.push(redirect);
-	else router.push(path);
+	if (v.path === '/') return;
+	const { redirect, path, children } = v;
+	// // if (redirect) router.push(redirect);
+	router.push(children[0].path);
 };
 // 展开/收起左侧菜单点击
 const onThemeConfigChange = () => {
@@ -89,6 +90,7 @@ const getBreadcrumbList = (arr: RouteItems) => {
 const initRouteSplit = (path: string) => {
 	if (!themeConfig.value.isBreadcrumb) return false;
 	state.breadcrumbList = [routesList.value[0]];
+
 	state.routeSplit = path.split('/');
 	state.routeSplit.shift();
 	state.routeSplitFirst = `/${state.routeSplit[0]}`;

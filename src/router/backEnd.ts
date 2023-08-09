@@ -41,13 +41,13 @@ export async function initBackEndControlRoutes() {
 	// 触发初始化用户信息 pinia
 	await useUserInfo().setUserInfos();
 	// 获取路由菜单数据
-	const res = await getBackEndControlRoutes();
+	const res = Session.get('datas');
 	// 无登录权限时，添加判断
-	if (res.data.length <= 0) return Promise.resolve(true);
+	if (res.length <= 0) return Promise.resolve(true);
 	// 存储接口原始路由（未处理component），根据需求选择使用
-	useRequestOldRoutes().setRequestOldRoutes(JSON.parse(JSON.stringify(res.data)));
+	useRequestOldRoutes().setRequestOldRoutes(JSON.parse(JSON.stringify(res)));
 	// 处理路由（component），替换 dynamicRoutes（/@/router/route）第一个顶级 children 的路由
-	dynamicRoutes[0].children = await backEndComponent(res.data);
+	dynamicRoutes[0].children = await backEndComponent(res);
 	// 添加动态路由
 	await setAddRoute();
 	// 设置路由到 pinia routesList 中（已处理成多级嵌套路由）及缓存多级嵌套数组处理后的一维数组
@@ -150,11 +150,13 @@ export function dynamicImport(dynamicViewsModules: Record<string, Function>, com
 		const k = key.replace(/..\/views|../, '');
 		return k.startsWith(`${component}`) || k.startsWith(`/${component}`);
 	});
-	if (matchKeys?.length === 1) {
-		const matchKey = matchKeys[0];
+	if (matchKeys?.length >= 1) {
+		// 拿到菜单路径
+		let matchKeysIndex = (matchKeys || []).findIndex((item) => item.includes('index'));
+		const matchKey = matchKeys[matchKeysIndex];
 		return dynamicViewsModules[matchKey];
 	}
-	if (matchKeys?.length > 1) {
+	if (matchKeys?.length < 1) {
 		return false;
 	}
 }

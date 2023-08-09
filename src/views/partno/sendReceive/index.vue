@@ -27,7 +27,7 @@ const Table = defineAsyncComponent(() => import('/@/components/table/index.vue')
 // 引入上面的表单组件
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
 // 引入收货弹窗组件
-const Dialog = defineAsyncComponent(() => import('../sampleDelivery/dialog.vue'));
+const Dialog = defineAsyncComponent(() => import('../sampleDelivery/component/dialog.vue'));
 // 定义变量内容
 const { t } = useI18n();
 const sendReceiveDialogRef = ref();

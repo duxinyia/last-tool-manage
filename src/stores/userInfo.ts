@@ -30,7 +30,7 @@ export const useUserInfo = defineStore('userInfo', {
 			return new Promise((resolve) => {
 				setTimeout(() => {
 					const userName = Cookies.get('userName');
-					const userId = Cookies.get('userId');		
+					const userId = Cookies.get('userId');	
 					let defaultRoles: Array<string> = [];
 					let defaultAuthBtnList: Array<string> = [];
 					// admin 页面权限标识，对应路由 meta.roles，用于控制路由的显示/隐藏

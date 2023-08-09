@@ -129,6 +129,12 @@ const getTagsViewRoutes = async () => {
 	state.routeActive = await setTagsViewHighlight(route);
 	state.routePath = (await route.meta.isDynamic) ? route.meta.isDynamicPath : route.path;
 	state.tagsViewList = [];
+	// 给一个固定页面isAffix：true
+	tagsViewRoutes.value.forEach((item) => {
+		if (item.path === '/basics/purchase') {
+			item.meta['isAffix'] = true;
+		}
+	});
 	state.tagsViewRoutesList = tagsViewRoutes.value;
 	initTagsView();
 };
@@ -531,10 +537,10 @@ onBeforeMount(() => {
 	mittBus.on('openOrCloseSortable', () => {
 		initSortable();
 	});
-	// 监听布局配置开启 TagsView 共用，为了演示还原默认值
+	// 监听布局配置开启 TagsView 共用
 	mittBus.on('openShareTagsView', () => {
 		if (getThemeConfig.value.isShareTagsView) {
-			router.push('/system/menu');
+			// router.push('/system/menu');
 			state.tagsViewList = [];
 			state.tagsViewRoutesList.map((v: RouteItem) => {
 				if (v.meta?.isAffix && !v.meta.isHide) {
@@ -549,6 +555,7 @@ onBeforeMount(() => {
 onMounted(() => {
 	// 初始化 pinia 中的 tagsViewRoutes 列表
 	getTagsViewRoutes();
+	// 拖拽
 	initSortable();
 });
 // 页面卸载时
