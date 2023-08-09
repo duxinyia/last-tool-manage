@@ -20,13 +20,14 @@
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 // 接口
-import { getGroupListApi, getAddGroupMemberApi, getRemoveGroupMemberApi } from '/@/api/basics/group';
+import { getGroupListApi, getAddGroupMemberApi, getRemoveGroupMemberApi, getRemoveGroupMemberBatchApi } from '/@/api/basics/group';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
 // 引入组件
 const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 import { useI18n } from 'vue-i18n';
+import { log } from 'console';
 const { t } = useI18n();
 // 定义变量内容
 const purchaseDialogRef = ref();
@@ -120,11 +121,16 @@ const addData = async (ruleForm: EmptyObjectType) => {
 };
 // 删除当前项回调
 const onTableDelRow = async (row: EmptyObjectType, type: string) => {
-	// let rows = [];
+	let rows: string[] = [];
 	if (type === 'bulkDel') {
-		// Object.keys(row).forEach((key) => {
-		// 	rows.push(row[key].runid);
-		// });
+		Object.keys(row).forEach((key) => {
+			rows.push(row[key].userid);
+		});
+		const res = await getRemoveGroupMemberBatchApi(1, rows);
+		if (res.status) {
+			ElMessage.success(`${t('message.allButton.bulkDeletionBtn')}${t('message.hint.success')}`);
+			getTableData();
+		}
 	} else {
 		const res = await getRemoveGroupMemberApi(1, row.userid);
 		if (res.status) {

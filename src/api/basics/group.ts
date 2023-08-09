@@ -16,13 +16,23 @@ export function getAddGroupMemberApi(data:Object) {
     params:data
   });
 }
-// 删除 批量删除
-export function getRemoveGroupMemberApi(runid:Array<string>) {
+// 单条删除
+export function getRemoveGroupMemberApi(GroupType:number,UserId:string) {
   return request({
-    url: '/api/Group/RemoveGroupMember',
+    url: `/api/Group/RemoveGroupMember`,
     method: 'DELETE',
-    data: {
-      runid,
-    },
+    params:{
+      GroupType,UserId
+    }
+  });
+}
+// 批量删除
+export function getRemoveGroupMemberBatchApi(groupType:number,userIds:Array<string>) {
+  return request({
+    url: `/api/Group/RemoveGroupMemberBatch`,
+    method: 'DELETE',
+    data:{
+      groupType,userIds
+    }
   });
 }
