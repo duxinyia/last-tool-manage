@@ -10,19 +10,19 @@
 		<template v-for="val in menuLists">
 			<el-sub-menu :index="val.path" v-if="val.children && val.children.length > 0" :key="val.path">
 				<template #title>
-					<SvgIcon :name="`/src/assets/${val.meta.icon}.svg`" :size="20" color="#fff" />
-					<span>{{ $t(val.meta.title) }}</span>
+					<SvgIcon :name="`icon-${val.meta.icon}`" color="#fff" />
+					<span>{{ val.meta.titleEn ? $t(val.meta.titleEn) : val.meta.title }}</span>
 				</template>
 				<SubItem :chil="val.children" />
 			</el-sub-menu>
 			<template v-else>
 				<el-menu-item :index="val.path" :key="val.path">
-					<SvgIcon :name="`/src/assets/${val.meta.icon}.svg`" :size="20" color="#fff" />
+					<SvgIcon :name="`icon-${val.meta.icon}`" color="#fff" />
 					<template #title v-if="!val.meta.isLink || (val.meta.isLink && val.meta.isIframe)">
-						<span>{{ $t(val.meta.title) }}</span>
+						<span>{{ val.meta.titleEn ? $t(val.meta.titleEn) : val.meta.title }}</span>
 					</template>
 					<template #title v-else>
-						<a class="w100" @click.prevent="onALinkClick(val)">{{ $t(val.meta.title) }}</a>
+						<a class="w100" @click.prevent="onALinkClick(val)">{{ val.meta.titleEn ? $t(val.meta.titleEn) : val.meta.title }}</a>
 					</template>
 				</el-menu-item>
 			</template>
@@ -36,8 +36,6 @@ import { useRoute, onBeforeRouteUpdate, RouteRecordRaw } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useThemeConfig } from '/@/stores/themeConfig';
 import other from '/@/utils/other';
-import logoMini from '/@/assets/images/new_logo.png';
-import { write } from 'fs';
 
 // 引入组件
 const SubItem = defineAsyncComponent(() => import('/@/layout/navMenu/subItem.vue'));

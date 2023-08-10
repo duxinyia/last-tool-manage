@@ -139,7 +139,6 @@ onBeforeMount(() => {
 		initMenuFixed(res.clientWidth);
 		closeLayoutAsideMobileMode();
 	});
-	console.log(3, state.menuList);
 });
 // 监听 themeConfig 配置文件的变化，更新菜单 el-scrollbar 的高度
 watch(

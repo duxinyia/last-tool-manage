@@ -1,9 +1,12 @@
 import vue from '@vitejs/plugin-vue';
 import { resolve } from 'path';
+import path from 'path'
 import { defineConfig, loadEnv, ConfigEnv } from 'vite';
 import vueSetupExtend from 'vite-plugin-vue-setup-extend-plus';
 import viteCompression from 'vite-plugin-compression';
 import { buildConfig } from './src/utils/build';
+// 引入svg-icons
+import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 
 const pathResolve = (dir: string) => {
 	return resolve(__dirname, '.', dir);
@@ -17,7 +20,14 @@ const alias: Record<string, string> = {
 const viteConfig = defineConfig((mode: ConfigEnv) => {
 	const env = loadEnv(mode.mode, process.cwd());
 	return {
-		plugins: [vue(), vueSetupExtend(), viteCompression(), JSON.parse(env.VITE_OPEN_CDN) ? buildConfig.cdn() : null],
+		plugins: [vue(), vueSetupExtend(), viteCompression(), JSON.parse(env.VITE_OPEN_CDN) ? buildConfig.cdn() : null,
+			createSvgIconsPlugin({
+				// svg icon位置
+				iconDirs: [path.resolve(process.cwd(), 'src/assets')],
+        // 指定symbolId格式
+        symbolId: 'icon-[dir]-[name]',
+			})],
+      
 		root: process.cwd(),
 		resolve: { alias },
 		base: mode.command === 'serve' ? './' : env.VITE_PUBLIC_PATH,

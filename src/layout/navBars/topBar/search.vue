@@ -17,7 +17,7 @@
 					</template>
 					<template #default="{ item }">
 						<div>
-							<SvgIcon :name="item.meta.icon" class="mr5" />
+							<SvgIcon :name="`icon-${item.meta.icon}`" color="#1890ff" />
 							{{ $t(item.meta.title) }}
 						</div>
 					</template>
@@ -85,9 +85,9 @@ const initTageView = () => {
 };
 // 当前菜单选中时
 const onHandleSelect = (item: RouteItem) => {
-	let { path, redirect } = item;
+	let { path, redirect, children } = item;
 	if (item.meta?.isLink && !item.meta?.isIframe) window.open(item.meta?.isLink);
-	else if (redirect) router.push(redirect);
+	else if (redirect) router.push(children[0].path);
 	else router.push(path);
 	closeSearch();
 };
