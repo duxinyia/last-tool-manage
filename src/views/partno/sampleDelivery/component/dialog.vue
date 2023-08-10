@@ -21,7 +21,13 @@
 					</div>
 				</el-col>
 			</el-row>
-			<el-button v-if="state.dialog.num === 1" size="default" class="buttonBorder mb12" @click="onAddRow" type="primary" plain
+			<el-button
+				v-if="state.dialog.num === 1 && state.dialog.title != '收货'"
+				size="default"
+				class="buttonBorder mb12"
+				@click="onAddRow"
+				type="primary"
+				plain
 				><el-icon><ele-Plus /></el-icon>{{ $t('message.allButton.addBtn') }}</el-button
 			>
 			<el-form ref="tableSampleRef" :model="state" size="default">
@@ -41,7 +47,7 @@
 				>
 					<el-table-column
 						align="center"
-						v-for="(item, index) in state.dialog.num === 1 ? otherHeaderData : headerData"
+						v-for="item in state.dialog.num === 1 ? otherHeaderData : headerData"
 						:key="item.key"
 						show-overflow-tooltip
 						:prop="item.key"
@@ -63,7 +69,7 @@
 									v-if="item.type === 'input'"
 									style="height: 30px"
 									v-model="state.vendors[scope.$index][item.key]"
-									placeholder="请输入"
+									placeholder="请输入111"
 									clearable
 								></el-input>
 
@@ -75,7 +81,7 @@
 									placeholder="请选择时间"
 									style="height: 30px; max-width: 167px"
 								/>
-								<div v-else style="text-align: center; width: 100%">
+								<div v-if="item.type != 'input' && item.type != 'time'" style="text-align: center; width: 100%">
 									<span>{{ scope.row[item.key] }}</span>
 								</div>
 							</el-form-item>
@@ -129,6 +135,10 @@ const props = defineProps({
 	dialogForm: {
 		type: Array<EmptyObjectType>,
 		default: () => [],
+	},
+	operation: {
+		type: String,
+		default: '',
 	},
 });
 // 定义变量内容
@@ -206,13 +216,20 @@ const openDialog = (scope: EmptyObjectType, n: number, tit: string, data: EmptyA
 			state.formData[item.prop] = scope.row[item.prop];
 		});
 		// 打开弹窗时还原数据
+
 		nextTick(() => {
-			state.vendors = [{ vendorCode: '', vendorName: '', sampleQty: '', sampleTime: '', needsQty: '' }];
+			//如果打开的是送样弹窗
+			if (props.operation == '送样') {
+				state.vendors = [{ vendorCode: '', vendorName: '', sampleQty: '', sampleTime: '', needsQty: '' }];
+			}
+			//如果打开的是收货弹窗
+			else {
+				state.vendors = data;
+			}
 		});
 	} else {
 		state.dialog.title = scope.matNo;
 		marNoData.value = data;
-		console.log(data);
 	}
 	state.dialog.isShowDialog = true;
 };
@@ -235,10 +252,19 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 			sampleData[item.prop] = state.formData[item.prop];
 		});
 		sampleData['vendors'] = state.vendors;
-		const res: any = getTakeSampleApi(sampleData);
-		if (res.status) {
-			closeDialog();
-			ElMessage.success('送样成功');
+		if (props.operation == '送样') {
+			const res: any = getTakeSampleApi(sampleData);
+			if (res.status) {
+				closeDialog();
+				ElMessage.success('送样成功');
+			}
+		} else {
+			console.log('收货', sampleData);
+			// const res: any = getTakeSampleApi(sampleData);
+			// if (res.status) {
+			// 	closeDialog();
+			// 	ElMessage.success('收货成功');
+			// }
 		}
 	});
 };

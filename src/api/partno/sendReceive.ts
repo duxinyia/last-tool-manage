@@ -1,11 +1,18 @@
 import request from '/@/utils/request';
 
-// 查询
-export function getMaterialListApi(data:Object) {
+// 查询（不分页，暂时无参数）
+export function GetRecieveTaskApi() {
   return request({
-    url: '/api/Material/QueryPage',
-    method: 'POST',
-  	data:data
+    url: '/api/Material/GetRecieveTask',
+    method: 'get',
+  });
+}
+// 点击送样获取送样弹窗表格详情
+export function GetSampleDetailApi(sampleNo:string) {
+  return request({
+    url: '/api/Material/GetSampleDetail',
+    method: 'get',
+    params:{sampleNo}
   });
 }
 

@@ -41,7 +41,7 @@ const state = reactive<TableDemoState>({
 		header: [
 			{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
-			{ key: 'nameEn', colWidth: '', title: 'NameEn', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
 			{ key: 'drawNo', colWidth: '', title: 'message.pages.drawNo', type: 'text', isCheck: true },
 			{ key: 'specs', colWidth: '', title: 'message.pages.specs', type: 'text', isCheck: true },
 		],
@@ -101,6 +101,8 @@ const dialogData = reactive({
 		{ type: 'text', lable: '品名-英文', prop: 'nameEn', value: '' },
 		{ type: 'input', lable: '工程验收人', prop: 'engineerName', placeholder: '请输入工程验收人', value: '' },
 	],
+	//进行送样操作还是收货操作
+	operation: '送样',
 });
 const changeToStyle = (data: any[], keyList: string[], indList: number[]) => {
 	return ({ row, column, rowIndex, columnIndex }: any) => {

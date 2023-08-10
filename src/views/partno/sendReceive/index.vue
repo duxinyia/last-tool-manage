@@ -8,7 +8,6 @@
 				class="table-demo"
 				@pageChange="onTablePageChange"
 				@onOpenOtherDialog="openSampleDialog"
-				@cellclick="matnoClick"
 				:cellStyle="cellStyle"
 			/>
 			<Dialog ref="sendReceiveDialogRef" v-bind="dialogData" />
@@ -19,8 +18,9 @@
 <script setup lang="ts" name="partnoSendReceive">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { getMaterialListApi } from '/@/api/partno/sendReceive';
+import { GetRecieveTaskApi, GetSampleDetailApi } from '/@/api/partno/sendReceive';
 import { useI18n } from 'vue-i18n';
+import { log } from 'console';
 
 // 引入表格组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -39,9 +39,13 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'simpleNo', colWidth: '', title: '送样单号', type: 'text', isCheck: true },
-			{ key: 'creator', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
-			{ key: 'createtime', title: 'message.pages.creationTime', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'text', isCheck: true },
+			{ key: 'sampleNo', colWidth: '', title: 'message.pages.sampleNo', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
+			{ key: 'engineer', colWidth: '', title: 'message.pages.engineer', type: 'text', isCheck: true },
+			{ key: 'engineerName', colWidth: '', title: 'message.pages.engineerName', type: 'text', isCheck: true },
+			{ key: 'runStatus', colWidth: '', title: 'message.pages.state', type: 'text', isCheck: true },
 		],
 		// 表格配置项（必传）
 		config: {
@@ -73,36 +77,46 @@ const state = reactive<TableDemoState>({
 const cellStyle = ref();
 const dialogData = reactive({
 	// 点击料号弹窗表格数据
-	headerData: [
-		{ key: 'simpleNo', colWidth: '', title: '送样单号', type: 'text', isCheck: true },
-		{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
-		{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-		{ key: 'sampleQty', colWidth: '', title: '送样数量', type: 'text', isCheck: true },
-		{ key: 'sampleTime', colWidth: '', title: '送样时间', type: 'text', isCheck: true },
-		{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-		{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-	],
-	// 点击送料表格数据
+	// headerData: [
+	// 	{ key: 'simpleNo', colWidth: '', title: '送样单号', type: 'text', isCheck: true },
+	// 	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
+	// 	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+	// 	{ key: 'sampleQty', colWidth: '', title: '送样数量', type: 'text', isCheck: true },
+	// 	{ key: 'sampleTime', colWidth: '', title: '送样时间', type: 'text', isCheck: true },
+	// 	{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
+	// 	{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+	// ],
+	// 点击收货表格数据
 	otherHeaderData: [
-		{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'input', isCheck: true },
-		{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'input', isCheck: true },
-		{ key: 'sampleQty', colWidth: '', title: '送样数量', type: 'input', isCheck: true },
-		{ key: 'sampleTime', colWidth: '', title: '送样时间', type: 'time', isCheck: true },
-		{ key: 'needsQty', colWidth: '', title: '需求送样数量', type: 'input', isCheck: true },
+		{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true, isRequired: true },
+		{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true, isRequired: true },
+		{ key: 'sampleTime', colWidth: '', title: '送样时间', type: 'text', isCheck: true },
+		{ key: 'sampleQty', colWidth: '', title: '送样数量', type: 'input', isCheck: true, isRequired: true },
+		//{ key: 'needsQty', colWidth: '', title: '需求送样数量', type: 'input', isCheck: true },
 	],
+	// 收货弹窗数据
+	dialogForm: [
+		{ type: 'text', lable: '料号', prop: 'matNo', value: '' },
+		{ type: 'text', lable: '送样单号', prop: 'sampleNo', value: '', xs: 10, sm: 11, md: 11, lg: 11, xl: 11 },
+		{ type: 'text', lable: '品名-中文', prop: 'nameCh', value: '' },
+		{ type: 'text', lable: '品名-英文', prop: 'nameEn', value: '' },
+		{ type: 'text', lable: '工程验收人', prop: 'engineerName', value: '' },
+	],
+	//进行送样操作还是收货操作
+	operation: '收货',
 });
-const changeToStyle = (data: any[], keyList: string[], indList: number[]) => {
-	return ({ row, column, rowIndex, columnIndex }: any) => {
-		for (let j = 0; j < keyList.length; j++) {
-			let i = keyList[j];
-			let ind = indList[j];
-			if (columnIndex === ind) {
-				return { color: 'var(--el-color-primary)', cursor: 'pointer' };
-			}
-		}
-	};
-};
-cellStyle.value = changeToStyle(state.tableData.data, ['matNo'], [2]);
+// const changeToStyle = (data: any[], keyList: string[], indList: number[]) => {
+// 	return ({ row, column, rowIndex, columnIndex }: any) => {
+// 		for (let j = 0; j < keyList.length; j++) {
+// 			let i = keyList[j];
+// 			let ind = indList[j];
+// 			if (columnIndex === ind) {
+// 				return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+// 			}
+// 		}
+// 	};
+// };
+// cellStyle.value = changeToStyle(state.tableData.data, ['matNo'], [2]);
 // 初始化列表数据
 const getTableData = async () => {
 	state.tableData.config.loading = true;
@@ -111,9 +125,9 @@ const getTableData = async () => {
 		matNo: form.matNo,
 		page: state.tableData.page,
 	};
-	const res = await getMaterialListApi(data);
-	state.tableData.data = res.data.data;
-	state.tableData.config.total = res.data.total;
+	const res = await GetRecieveTaskApi();
+	state.tableData.data = res.data;
+	// state.tableData.config.total = res.data.total;
 	if (res.status) {
 		state.tableData.config.loading = false;
 	}
@@ -133,16 +147,17 @@ const onTablePageChange = (page: TableDemoPageType) => {
 };
 
 // 打开收货弹窗 1
-const openSampleDialog = (scope: Object) => {
-	sendReceiveDialogRef.value.openDialog(scope, 1, '收货');
+const openSampleDialog = async (scope: any) => {
+	const res = await GetSampleDetailApi(scope.row.sampleNo);
+	sendReceiveDialogRef.value.openDialog(scope, 1, '收货', res.data.vendorDetails);
 };
 // 点击料号 2
-const matnoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
-	// const res = await getGetSampleApi(row.matNo);
-	// if (column.property === 'matNo') {
-	// 	sendReceiveDialogRef.value.openDialog(row, 2, res.data);
-	// }
-};
+// const matnoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
+// const res = await getGetSampleApi(row.matNo);
+// if (column.property === 'matNo') {
+// 	sendReceiveDialogRef.value.openDialog(row, 2, res.data);
+// }
+// };
 
 // 页面加载时
 onMounted(() => {
