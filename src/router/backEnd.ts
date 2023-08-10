@@ -3,13 +3,14 @@ import { storeToRefs } from 'pinia';
 import pinia from '/@/stores/index';
 import { useUserInfo } from '/@/stores/userInfo';
 import { useRequestOldRoutes } from '/@/stores/requestOldRoutes';
-import { Session } from '/@/utils/storage';
+import { Session,Local } from '/@/utils/storage';
 import { NextLoading } from '/@/utils/loading';
 import { dynamicRoutes, notFoundAndNoPower } from '/@/router/route';
 import { formatTwoStageRoutes, formatFlatteningRoutes, router } from '/@/router/index';
 import { useRoutesList } from '/@/stores/routesList';
 import { useTagsViewRoutes } from '/@/stores/tagsViewRoutes';
 import { useMenuApi } from '/@/api/menu/index';
+import Cookies from 'js-cookie';
 
 // 后端控制路由
 
@@ -41,7 +42,8 @@ export async function initBackEndControlRoutes() {
 	// 触发初始化用户信息 pinia
 	await useUserInfo().setUserInfos();
 	// 获取路由菜单数据
-	const res = Session.get('datas');
+	let res =Local.get('datas') ;
+
 	// 无登录权限时，添加判断
 	if (res.length <= 0) return Promise.resolve(true);
 	// 存储接口原始路由（未处理component），根据需求选择使用

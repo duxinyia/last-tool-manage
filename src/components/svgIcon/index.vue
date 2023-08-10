@@ -5,6 +5,9 @@
 	<div v-else-if="isShowIconImg" :style="setIconImgOutStyle">
 		<img :src="getIconName" :style="setIconSvgInsStyle" />
 	</div>
+	<svg v-else-if="isShowLocalIconSvg" aria-hidden="true" :style="svgiconStyle" :width="width" :height="height">
+		<use :xlink:href="`#${name}`" :fill="color" />
+	</svg>
 	<i v-else :class="getIconName" :style="setIconSvgStyle" />
 </template>
 
@@ -26,6 +29,18 @@ const props = defineProps({
 	color: {
 		type: String,
 	},
+	// 位置
+	top: {
+		type: Number,
+	},
+	width: {
+		type: String,
+		default: '16px',
+	},
+	height: {
+		type: String,
+		default: '16px',
+	},
 });
 const linesString = ['https', 'http', '/src', '/src/assets/', 'data:image', import.meta.env.VITE_PUBLIC_PATH];
 
@@ -41,6 +56,9 @@ const isShowIconSvg = computed(() => {
 const isShowIconImg = computed(() => {
 	return linesString.find((str) => props.name?.startsWith(str));
 });
+const isShowLocalIconSvg = computed(() => {
+	return props?.name?.startsWith('icon-');
+});
 // 设置图标样式
 const setIconSvgStyle = computed(() => {
 	return `font-size: ${props.size}px;color: ${props.color};`;
@@ -49,11 +67,15 @@ const setIconSvgStyle = computed(() => {
 const setIconImgOutStyle = computed(() => {
 	return `width: ${props.size}px;height: ${props.size}px;display: inline-block;overflow: hidden;`;
 });
+// svg图标样式
+const svgiconStyle = computed(() => {
+	return `margin-right:10px`;
+});
 // 设置图片样式
 const setIconSvgInsStyle = computed(() => {
 	const filterStyle: string[] = [];
 	const compatibles: string[] = ['-webkit', '-ms', '-o', '-moz'];
 	compatibles.forEach((j) => filterStyle.push(`${j}-filter: drop-shadow(${props.color} 30px 0);`));
-	return `width: ${props.size}px;height: ${props.size}px;position: relative;top: -37px;left: -31px;;${filterStyle.join('')}`;
+	return `width: ${props.size}px;height: ${props.size}px;position: relative;left: -${props.size}px;${filterStyle.join('')}`;
 });
 </script>

@@ -3,8 +3,8 @@
 		<el-sub-menu :index="val.path" :key="val.path" v-if="val.children && val.children.length > 0">
 			<template #title>
 				<!-- <SvgIcon :name="val.meta.icon" /> -->
-				<SvgIcon :name="`/src/assets/${val.meta.icon}.svg`" :size="20" color="#fff" />
-				<span>{{ $t(val.meta.title) }}</span>
+				<!-- <SvgIcon :name="`icon-${val.meta.icon}`" color="#fff" /> -->
+				<span>{{ val.meta.titleEn ? $t(val.meta.titleEn) : val.meta.title }}</span>
 			</template>
 			<!-- 嵌套菜单 自己调用自己-->
 			<sub-item :chil="val.children" />
@@ -14,13 +14,13 @@
 			<el-menu-item :index="val.path" :key="val.path">
 				<template v-if="!val.meta.isLink || (val.meta.isLink && val.meta.isIframe)">
 					<!-- <SvgIcon :name="val.meta.icon" /> -->
-					<SvgIcon :name="`/src/assets/${val.meta.icon}.svg`" :size="20" color="#fff" />
-					<span>{{ $t(val.meta.title) }}</span>
+					<!-- <SvgIcon :name="`icon-${val.meta.icon}`" color="#fff" /> -->
+					<span>{{ val.meta.titleEn ? $t(val.meta.titleEn) : val.meta.title }}</span>
 				</template>
 				<template v-else>
 					<a class="w100" @click.prevent="onALinkClick(val)">
 						<!-- <SvgIcon :name="val.meta.icon" /> -->
-						{{ $t(val.meta.title) }}
+						{{ val.meta.titleEn ? $t(val.meta.titleEn) : val.meta.title }}
 					</a>
 				</template>
 			</el-menu-item>

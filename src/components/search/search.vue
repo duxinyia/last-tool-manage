@@ -28,7 +28,7 @@
 								style="width: 100%"
 							/>
 							<el-select v-model="state.form[val.prop]" :placeholder="$t(val.placeholder)" v-else-if="val.type === 'select'" style="width: 100%">
-								<el-option v-for="item in val.options" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+								<el-option v-for="item in val.options" :key="item.label" :label="item.value" :value="item.label"> </el-option>
 							</el-select>
 						</el-form-item>
 					</template>

@@ -60,7 +60,7 @@ import { storeToRefs } from 'pinia';
 import { useThemeConfig } from '/@/stores/themeConfig';
 import { initFrontEndControlRoutes } from '/@/router/frontEnd';
 import { initBackEndControlRoutes } from '/@/router/backEnd';
-import { Session } from '/@/utils/storage';
+import { Session, Local } from '/@/utils/storage';
 import { formatAxis } from '/@/utils/formatTime';
 import { NextLoading } from '/@/utils/loading';
 import { useLoginApi, useLogin } from '/@/api/login/index';
@@ -110,13 +110,13 @@ const onSignIn = (formEl: EmptyObjectType | undefined) => {
 				Session.set('token', res.data.token);
 				Cookies.set('userName', res.data.userName);
 				Cookies.set('userId', res.data.userId);
-				Session.set('datas', res.data.datas);
+				Local.set('datas', res.data.datas);
 				if (!themeConfig.value.isRequestRoutes) {
-					// 前端控制路由，2、请注意执行顺序（目前走的这个）
+					// 前端控制路由，2、请注意执行顺序
 					const isNoPower = await initFrontEndControlRoutes();
 				} else {
 					// 模拟后端控制路由，isRequestRoutes 为 true，则开启后端控制路由
-					// 添加完动态路由，再进行 router 跳转，否则可能报错 No match found for location with path "/"
+					// 添加完动态路由，再进行 router 跳转，否则可能报错 No match found for location with path "/"（目前走的这个）
 					const isNoPower = await initBackEndControlRoutes();
 
 					// 执行完 initBackEndControlRoutes，再执行 signInSuccess
@@ -142,13 +142,13 @@ const signInSuccess = (isNoPower: boolean | undefined) => {
 		let currentTimeInfo = currentTime.value;
 		// 登录成功，跳到转首页
 		// 如果是复制粘贴的路径，非首页/登录页，那么登录成功后重定向到对应的路径中
-		if (route.query?.redirect) {
+		if (route.query.params != '{}' && route.query?.redirect) {
 			router.push({
 				path: <string>route.query?.redirect,
 				query: Object.keys(<string>route.query?.params).length > 0 ? JSON.parse(<string>route.query?.params) : '',
 			});
 		} else {
-			router.push('/');
+			router.push('/basics/purchase');
 		}
 		// 登录成功提示
 		const signInText = t('message.signInText');
