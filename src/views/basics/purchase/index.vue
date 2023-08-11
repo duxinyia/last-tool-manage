@@ -72,6 +72,7 @@ const state = reactive<TableDemoState>({
 		// 给后端的数据
 		form: {
 			userid: '',
+			username: '',
 		},
 		// 打印标题
 		printName: '表格打印演示',
@@ -87,6 +88,7 @@ const getTableData = async () => {
 	let data = {
 		groupType: 1,
 		userId: form.userid,
+		userName: form.username,
 		page: state.tableData.page,
 	};
 	const res = await getGroupListApi(data);
