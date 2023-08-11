@@ -60,7 +60,7 @@ const onBreadcrumbClick = (v: RouteItem) => {
 	if (v.path === '/') return;
 	const { redirect, path, children } = v;
 	// // if (redirect) router.push(redirect);
-	router.push(children[0].path);
+	v.path === '/home' ? router.push(v.path) : router.push(children[0].path);
 };
 // 展开/收起左侧菜单点击
 const onThemeConfigChange = () => {
@@ -74,16 +74,17 @@ const setLocalThemeConfig = () => {
 };
 // 处理面包屑数据
 const getBreadcrumbList = (arr: RouteItems) => {
+	state.breadcrumbList.unshift({ path: '/', meta: { title: 'message.router.mainHead' } });
 	arr.forEach((item: RouteItem) => {
 		state.routeSplit.forEach((v: string, k: number, arrs: string[]) => {
-			if (state.routeSplitFirst === item.path) {
+			if (state.routeSplitFirst === item.path && item.path != '/home') {
+				state.breadcrumbList.shift();
 				state.routeSplitFirst += `/${arrs[state.routeSplitIndex]}`;
 				state.breadcrumbList.push(item);
 				state.routeSplitIndex++;
 				if (item.children) getBreadcrumbList(item.children);
-			} else if (item.path == '/basics') {
-				state.breadcrumbList.shift();
-				state.breadcrumbList.unshift({ path: '/', meta: { title: 'message.router.mainHead' } });
+			} else if (item.path == '/home') {
+				// state.breadcrumbList.shift();
 			}
 		});
 	});
@@ -92,7 +93,6 @@ const getBreadcrumbList = (arr: RouteItems) => {
 const initRouteSplit = (path: string) => {
 	if (!themeConfig.value.isBreadcrumb) return false;
 	state.breadcrumbList = [routesList.value[0]];
-
 	state.routeSplit = path.split('/');
 	state.routeSplit.shift();
 	state.routeSplitFirst = `/${state.routeSplit[0]}`;

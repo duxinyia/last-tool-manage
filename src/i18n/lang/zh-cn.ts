@@ -1,6 +1,7 @@
 // 定义内容
 export default {
 	router: {
+		home:'首页',
 		mainHead:'治工具系统',
 		basics: '基本资料维护',
 		basicsPurchase: '采购群组维护',

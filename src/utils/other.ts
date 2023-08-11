@@ -66,7 +66,7 @@ export function setTagsViewNameI18n(item: any) {
 		}
 	} else {
 		// 非自定义 tagsView 名称
-		tagsViewName = i18n.global.t(meta.titleEn);
+		tagsViewName = i18n.global.t(meta.titleEn||meta.title);
 	}
 	return tagsViewName;
 }

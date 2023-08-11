@@ -28,7 +28,7 @@ const router = useRouter();
 
 // 返回首页
 const onGoHome = () => {
-	router.push('/basics/purchase');
+	router.push('/home');
 };
 </script>
 

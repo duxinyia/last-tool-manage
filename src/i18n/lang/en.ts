@@ -1,6 +1,7 @@
 // 定义内容
 export default {
 	router: {
+		home:'home page',
 		mainHead:'tool system',
 		basics: 'basic information',
 		basicsPurchase: 'purchasing group',

@@ -106,11 +106,22 @@ const onSignIn = (formEl: EmptyObjectType | undefined) => {
 			let datapw = paw;
 			const res = await useLoginApi(ruleForm.userName.trim(), datapw);
 			// 存储 token 到浏览器缓存
-			if (res) {
+
+			if (res.status) {
 				Session.set('token', res.data.token);
 				Cookies.set('userName', res.data.userName);
 				Cookies.set('userId', res.data.userId);
+				// Local.set('datas', res.data.datas);
+				// let home: string[] = [];
+				res.data.datas.unshift({
+					path: '/home',
+					name: 'home',
+					component: 'home',
+					meta: { title: '首页', titleEn: 'message.router.home', isAffix: true, icon: 'home' },
+				});
+
 				Local.set('datas', res.data.datas);
+				router.push('/home');
 				if (!themeConfig.value.isRequestRoutes) {
 					// 前端控制路由，2、请注意执行顺序
 					const isNoPower = await initFrontEndControlRoutes();
@@ -122,11 +133,12 @@ const onSignIn = (formEl: EmptyObjectType | undefined) => {
 					// 执行完 initBackEndControlRoutes，再执行 signInSuccess
 					signInSuccess(isNoPower);
 				}
+			} else {
+				state.loading.signIn = false;
 			}
 
 			// } catch (err: any) {
 			// 	state.loading.signIn = false;
-			// 	console.log(err);
 			// }
 		} else {
 		}
@@ -135,8 +147,8 @@ const onSignIn = (formEl: EmptyObjectType | undefined) => {
 // 登录成功后的跳转
 const signInSuccess = (isNoPower: boolean | undefined) => {
 	if (isNoPower) {
-		ElMessage.warning('抱歉，您没有登录权限');
-		Session.clear();
+		// ElMessage.warning('抱歉，您没有登录权限');
+		// Session.clear();
 	} else {
 		// 初始化登录成功时间问候语
 		let currentTimeInfo = currentTime.value;
@@ -148,7 +160,7 @@ const signInSuccess = (isNoPower: boolean | undefined) => {
 				query: Object.keys(<string>route.query?.params).length > 0 ? JSON.parse(<string>route.query?.params) : '',
 			});
 		} else {
-			router.push('/basics/purchase');
+			router.push('/home');
 		}
 		// 登录成功提示
 		const signInText = t('message.signInText');

@@ -130,11 +130,11 @@ const getTagsViewRoutes = async () => {
 	state.routePath = (await route.meta.isDynamic) ? route.meta.isDynamicPath : route.path;
 	state.tagsViewList = [];
 	// 给一个固定页面isAffix：true
-	tagsViewRoutes.value.forEach((item) => {
-		if (item.path === '/basics/purchase') {
-			item.meta['isAffix'] = true;
-		}
-	});
+	// tagsViewRoutes.value.forEach((item) => {
+	// 	if (item.path === '/basics/purchase') {
+	// 		item.meta['isAffix'] = true;
+	// 	}
+	// });
 	state.tagsViewRoutesList = tagsViewRoutes.value;
 	initTagsView();
 };
