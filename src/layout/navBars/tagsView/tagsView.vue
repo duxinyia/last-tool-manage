@@ -396,7 +396,7 @@ const transUrlParams = (v: RouteItem) => {
 		 * isFnClick 用于判断是通过方法调用，还是直接右键菜单点击（此处只针对动态路由）
 		 * 原因：
 		 * 1、右键菜单点击时，路由的 path 还是原始定义的路由格式，如：/params/dynamic/details/:t/:id/:tagsViewName
-		 * 2、通过事件调用时，路由的 path 不是原始定义的路由格式，如：/params/dynamic/details/vue-next-admin/111/我是动态路由测试tagsViewName(非国际化)
+		 * 2、通过事件调用时，路由的 path 不是原始定义的路由格式，如：/params/dynamic/details/111/我是动态路由测试tagsViewName(非国际化)
 		 *
 		 * 所以右侧菜单点击时，需要处理路径拼接 v.path.split(':')[0]，得到路径 + 参数的完整路径
 		 */
