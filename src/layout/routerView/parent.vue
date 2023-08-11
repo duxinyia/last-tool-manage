@@ -1,6 +1,7 @@
 <template>
 	<div class="layout-parent">
 		<router-view v-slot="{ Component }">
+			<!-- <transition> 是一个内置组件，这意味着它在任意别的组件中都可以被使用，无需注册。它可以将进入和离开动画应用到通过默认插槽传递给它的元素或组件上。name:指定动画class名称--class 将会是 slide-right-enter-active 而不是 v-enter-active mode:我们可能想要先执行离开动画，然后在其完成之后再执行元素的进入动画---out-in。 -->
 			<transition :name="setTransitionName" mode="out-in">
 				<keep-alive :include="getKeepAliveNames">
 					<component :is="Component" :key="state.refreshRouterViewKey" class="w100" v-show="!isIframePage" />
@@ -47,7 +48,7 @@ const setTransitionName = computed(() => {
 const getKeepAliveNames = computed(() => {
 	return themeConfig.value.isTagsview ? cachedViews.value : state.keepAliveNameList;
 });
-// 设置 iframe 显示/隐藏
+// 设置 iframe 内嵌窗口 显示/隐藏
 const isIframePage = computed(() => {
 	return route.meta.isIframe;
 });
@@ -78,9 +79,6 @@ onBeforeMount(() => {
 // 页面加载时
 onMounted(() => {
 	getIframeListRoutes();
-	// https://gitee.com/lyt-top/vue-next-admin/issues/I58U75
-	// https://gitee.com/lyt-top/vue-next-admin/issues/I59RXK
-	// https://gitee.com/lyt-top/vue-next-admin/pulls/40
 	nextTick(() => {
 		setTimeout(() => {
 			if (themeConfig.value.isCacheTagsView) {
@@ -95,7 +93,6 @@ onUnmounted(() => {
 	mittBus.off('onTagsViewRefreshRouterView', () => {});
 });
 // 监听路由变化，防止 tagsView 多标签时，切换动画消失
-// https://toscode.gitee.com/lyt-top/vue-next-admin/pulls/38/files
 watch(
 	() => route.fullPath,
 	() => {

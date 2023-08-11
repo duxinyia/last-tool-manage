@@ -27,7 +27,7 @@
 	</div>
 </template>
 
-<script setup lang="ts" name="basicsBasic">
+<script setup lang="ts" name="/basics/basic">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import {
