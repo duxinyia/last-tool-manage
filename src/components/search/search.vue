@@ -19,7 +19,13 @@
 							:prop="val.prop"
 							:rules="[{ required: val.required, message: `${val.label}不能为空`, trigger: val.type === 'input' ? 'blur' : 'change' }]"
 						>
-							<el-input v-model="state.form[val.prop]" :placeholder="$t(val.placeholder)" clearable v-if="val.type === 'input'" style="width: 100%" />
+							<el-input
+								v-model="state.form[val.prop]"
+								:placeholder="`请输入${val.label}`"
+								clearable
+								v-if="val.type === 'input'"
+								style="width: 100%"
+							/>
 							<el-date-picker
 								v-model="state.form[val.prop]"
 								type="date"
@@ -27,7 +33,7 @@
 								v-else-if="val.type === 'date'"
 								style="width: 100%"
 							/>
-							<el-select v-model="state.form[val.prop]" :placeholder="$t(val.placeholder)" v-else-if="val.type === 'select'" style="width: 100%">
+							<el-select v-model="state.form[val.prop]" :placeholder="`请选择${val.label}`" v-else-if="val.type === 'select'" style="width: 100%">
 								<el-option v-for="item in val.options" :key="item.label" :label="item.value" :value="item.label"> </el-option>
 							</el-select>
 						</el-form-item>
@@ -42,7 +48,7 @@
 							</div>
 						</template>
 						<div>
-							<el-button size="default" type="primary" @click="onSearch(tableSearchRef)"
+							<el-button v-if="searchConfig.isSearchBtn" size="default" type="primary" @click="onSearch(tableSearchRef)"
 								><el-icon> <ele-Search /> </el-icon>{{ $t('message.allButton.searchBtn') }}
 							</el-button>
 							<!-- <el-button size="default" type="info" class="ml10" @click="onReset(tableSearchRef)"
@@ -67,6 +73,11 @@ const props = defineProps({
 	search: {
 		type: Array<TableSearchType>,
 		default: () => [],
+	},
+	// 表单配置
+	searchConfig: {
+		type: Object,
+		default: () => {},
 	},
 });
 

@@ -12,13 +12,16 @@ export default {
 		menu1: '菜单1',
 		menu2: '菜单2',
 		requisition: '请购管理',
+		presentation:'治工具需求提报',
+		arrivejob:'到货作业',
 		toolsReturn: '治工具退库',
 		report: '报表管理',
 		matNo:'料号',
 		matSearch:'料号查询',
 		matSample:'料号送样',
 		sampleReceive:'送样收货',
-		sampleAcceptance:'样品验收'
+		sampleAcceptance:'样品验收',
+
 	},
 	staticRoutes: {
 		signIn: '登录',

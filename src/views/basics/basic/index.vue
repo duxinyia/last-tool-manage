@@ -5,6 +5,7 @@
 				v-if="state.tableData.search[0].options && state.tableData.search[0].options.length > 0"
 				:search="state.tableData.search"
 				@search="onSearch"
+				:searchConfig="state.tableData.searchConfig"
 			/>
 			<Table
 				ref="tableRef"
@@ -91,6 +92,9 @@ const state = reactive<TableDemoState>({
 			{ label: 'message.pages.name1', prop: 'dataName', placeholder: 'message.pages.placeName1', required: false, type: 'input' },
 			{ label: 'message.pages.code', prop: 'dataCode', placeholder: 'message.pages.placeCode', required: false, type: 'input' },
 		],
+		searchConfig: {
+			isSearchBtn: true,
+		},
 		// 给后端的数据
 		form: {
 			parentid: '',

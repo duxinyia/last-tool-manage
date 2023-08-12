@@ -1,7 +1,7 @@
 <template>
 	<div class="table-demo-container layout-padding">
 		<div class="table-demo-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="state.tableData.search" @search="onSearch" />
+			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
@@ -23,7 +23,7 @@
 	</div>
 </template>
 
-<script setup lang="ts" name="partnoNoSearch">
+<script setup lang="ts" name="/partno/noSearch">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 
@@ -68,6 +68,9 @@ const state = reactive<TableDemoState>({
 		],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [{ label: '料号', prop: 'matNo', placeholder: '请输入料号', required: false, type: 'input' }],
+		searchConfig: {
+			isSearchBtn: true,
+		},
 		// 给后端的数据
 		form: {
 			matNo: '',
@@ -102,7 +105,7 @@ const state = reactive<TableDemoState>({
 				label: 'message.pages.describe',
 				prop: 'describe',
 				placeholder: 'message.pages.placeDescribe',
-				required: true,
+				required: false,
 				type: 'textarea',
 				xs: 24,
 				sm: 24,
