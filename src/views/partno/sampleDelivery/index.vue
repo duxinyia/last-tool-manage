@@ -54,7 +54,9 @@ const state = reactive<TableDemoState>({
 			isSelection: true, // 是否显示表格多选
 			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
-			isEditBtn: false,
+			isInlineEditing: false, //是否是行内编辑
+			isTopTool: false, //是否有表格右上角工具
+			isPage: true, //是否有分页
 		},
 
 		btnConfig: [{ type: 'sample', name: '送样', color: '#D3C333', isSure: false }],

@@ -344,7 +344,6 @@ declare type TableDemoState = {
 			isSerialNo: boolean;
 			isOperate: boolean;
 			isButton:boolean;
-			isEditBtn:boolean;
 			[key: string]: T;
 		};
 		searchConfig?:{

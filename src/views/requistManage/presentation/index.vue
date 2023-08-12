@@ -1,8 +1,23 @@
 <template>
 	<div class="table-demo-container layout-padding">
 		<div class="table-demo-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="state.tableData.search" :searchConfig="state.tableData.searchConfig" />
-			<div class="table-top">
+			<div class="title">需求提报单</div>
+			<el-form ref="tableSearchRef" size="default" label-width="auto" class="table-form">
+				<el-row>
+					<el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4" class="mb20 mr20" v-for="(val, key) in state.tableData.search" :key="key">
+						<el-form-item :label="$t(val.label)" :prop="val.prop">
+							<el-input
+								v-model="state.tableData.form[val.prop]"
+								:placeholder="`请输入${$t(val.label)}`"
+								clearable
+								v-if="val.type === 'input'"
+								style="width: 100%"
+							/>
+						</el-form-item>
+					</el-col>
+				</el-row>
+			</el-form>
+			<!-- <div class="table-top">
 				<el-button size="default" class="buttonBorder mb12" @click="onAddRow" type="primary" plain
 					><el-icon><ele-Plus /></el-icon>{{ $t('message.allButton.addBtn') }}</el-button
 				>
@@ -46,6 +61,7 @@
 									v-model="state.tableData.data[scope.$index][item.key]"
 									placeholder="请输入"
 									clearable
+									@input="inputMatNo(item.key)"
 								></el-input>
 
 								<el-date-picker
@@ -83,10 +99,16 @@
 					<span>描述说明：</span>
 					<el-input class="input-textarea" show-word-limit v-model="describe" type="textarea" placeholder="请输入" maxlength="150"></el-input>
 				</div>
+			</el-form> -->
+			<el-form ref="tableFormRef" :model="state.tableData" size="default">
+				<Table ref="tableRef" v-bind="state.tableData" class="table-demo" @delRow="onDelRow" @addrow="onAddRow" />
 			</el-form>
-
+			<div class="describe">
+				<span>描述说明：</span>
+				<el-input class="input-textarea" show-word-limit v-model="describe" type="textarea" placeholder="请输入" maxlength="150"></el-input>
+			</div>
 			<span class="table-bottom">
-				<el-button type="primary" @click="onSubmit(tableRequistRef)" size="default">提交</el-button>
+				<el-button type="primary" @click="onSubmit(tableFormRef)" size="default">提交</el-button>
 			</span>
 		</div>
 	</div>
@@ -100,11 +122,13 @@ import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
+
+import { debounce } from '/@/utils/debounceAndThrottle';
 // 定义变量内容
 const { t } = useI18n();
 const tableRef = ref<RefType>();
 const describe = ref();
-const tableRequistRef = ref();
+const tableFormRef = ref();
 const state = reactive<EmptyObjectType>({
 	tableData: {
 		// 列表数据（必传）
@@ -120,6 +144,18 @@ const state = reactive<EmptyObjectType>({
 				pr: '',
 			},
 		],
+		config: {
+			total: 0, // 列表总数
+			loading: false, // loading 加载
+			isBorder: false, // 是否显示表格边框
+			isSerialNo: false, // 是否显示表格序号
+			isSelection: false, // 是否显示表格多选
+			isOperate: true, // 是否显示表格操作栏
+			isButton: false, //是否显示表格上面的新增删除按钮
+			isInlineEditing: true, //是否是行内编辑
+			isTopTool: false, //是否有表格右上角工具
+			isPage: false, //是否有分页
+		},
 		// 表头内容（必传，注意格式）
 		header: [
 			{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'input', isCheck: true, isRequired: true },
@@ -137,15 +173,23 @@ const state = reactive<EmptyObjectType>({
 			isSearchBtn: false, //搜索框
 		},
 		search: [
-			{ label: '申请单号：', prop: 'matNo', placeholder: '请输入料号', required: false, type: 'text' },
-			{ label: 'PR单号', prop: 'matNo', placeholder: '请输入PR单号', required: false, type: 'input' },
+			{ label: '申请单号：', prop: 'matNo', placeholder: '请输入料号', type: 'text' },
+			{ label: 'PR单号', prop: 'prNo', placeholder: '请输入PR单号', type: 'input' },
 		],
 		// 给后端的数据
 		form: {
 			matNo: '',
+			prNo: '',
 		},
 	},
 });
+const inputMatNo = (key: string) => {
+	// 搜索接口
+	if (key === 'matNo') {
+		console.log(key);
+	}
+};
+const searchInput = debounce(inputMatNo, 1000);
 // 增加一行数据
 const onAddRow = () => {
 	state.tableData.data.push({
@@ -159,7 +203,7 @@ const onAddRow = () => {
 		pr: '',
 	});
 	// 对 Table 进行重新布局。 当表格可见性变化时，您可能需要调用此方法以获得正确的布局
-	tableRef.value.doLayout();
+	// tableRef.value.doLayout();
 };
 //删除
 const onDelRow = (i: number) => {
@@ -223,6 +267,12 @@ onMounted(() => {
 			overflow: hidden;
 		}
 	}
+}
+.title {
+	font-size: 20px;
+	display: flex;
+	justify-content: center;
+	margin-bottom: 10px;
 }
 .describe {
 	display: flex;

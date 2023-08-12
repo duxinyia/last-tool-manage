@@ -1,6 +1,7 @@
 <template>
 	<div class="table-container">
 		<div class="table-top">
+			<!-- 新增弹窗按钮以及批量删除按钮 -->
 			<div class="allBtn" v-if="config.isButton">
 				<el-button size="default" class="ml10 buttonBorder" @click="onOpenAdd('add')" type="primary" plain
 					><el-icon><ele-Plus /></el-icon>{{ $t('message.allButton.addBtn') }}</el-button
@@ -13,7 +14,12 @@
 					</template>
 				</el-popconfirm>
 			</div>
-			<div class="table-top-tool">
+			<div class="add-row" v-if="config.isInlineEditing">
+				<el-button size="default" class="buttonBorder" @click="onAddRow" type="primary" plain
+					><el-icon><ele-Plus /></el-icon>{{ $t('message.allButton.addBtn') }}</el-button
+				>
+			</div>
+			<div class="table-top-tool" v-if="config.isTopTool">
 				<!-- <SvgIcon name="iconfont icon-dayinji" :size="19" title="打印" @click="onPrintTable" /> -->
 				<!-- <SvgIcon name="iconfont icon-btn-daoru" :size="22" :title="$t('message.tooltip.import')" @click="onImportTable('imp')" />
 				<SvgIcon name="iconfont icon-btn-daochu" :size="22" :title="$t('message.tooltip.export')" @click="onExportTable" /> -->
@@ -58,6 +64,7 @@
 			</div>
 		</div>
 		<el-table
+			:height="!config.isInlineEditing ? 'auto' : 500"
 			id="elTable"
 			class="mt12"
 			:data="data"
@@ -66,7 +73,6 @@
 			row-key="id"
 			stripe
 			style="width: 100%"
-			:row-style="{ height: '10px' }"
 			:header-row-style="{ background: '#dce9fd' }"
 			v-loading="config.loading"
 			@selection-change="onSelectionChange"
@@ -84,19 +90,44 @@
 				:width="item.colWidth"
 				:label="$t(item.title)"
 			>
+				<template v-if="config.isInlineEditing" v-slot:header>
+					<span v-if="item.isRequired" class="color-danger">*</span>
+					<span class="pl5">{{ $t(item.title) }}</span>
+				</template>
 				<template v-slot="scope">
-					<template v-if="item.type === 'image'">
-						<el-image
-							:style="{ width: `${item.width}px`, height: `${item.height}px` }"
-							:src="scope.row[item.key]"
-							:zoom-rate="1.2"
-							:preview-src-list="[scope.row[item.key]]"
-							preview-teleported
-							fit="cover"
+					<el-form-item
+						v-if="config.isInlineEditing"
+						:prop="`data.${scope.$index}.${item.key}`"
+						:rules="[{ required: item.isRequired, message: '不能为空', trigger: item.type === 'input' || item.type === 'time' ? 'blur' : 'change' }]"
+					>
+						<el-input
+							v-if="item.type === 'input'"
+							style="height: 30px"
+							v-model="data[scope.$index][item.key]"
+							placeholder="请输入"
+							clearable
+							@input="inputMatNo(item.key)"
+						></el-input>
+						<el-date-picker
+							v-else-if="item.type === 'time'"
+							value-format="YYYY-MM-DD"
+							v-model="data[scope.$index][item.key]"
+							type="date"
+							placeholder="请选择"
+							style="height: 30px; max-width: 167px"
 						/>
-					</template>
-
-					<template v-if="item.type === 'status'">
+						<template v-else-if="item.type === 'image'">
+							<el-image
+								:style="{ width: `${item.width}px`, height: `${item.height}px` }"
+								:src="scope.row[item.key]"
+								:zoom-rate="1.2"
+								:preview-src-list="[scope.row[item.key]]"
+								preview-teleported
+								fit="cover"
+							/>
+						</template>
+					</el-form-item>
+					<template v-if="item.type === 'status'" style="text-align: center; width: 100%">
 						<el-tag type="success" v-if="scope.row.runstatus === 1">启用</el-tag>
 						<el-tag type="info" v-else>禁用</el-tag>
 						<!-- <el-switch
@@ -106,9 +137,9 @@
 							:inactive-text="$t('message.allButton.disable')"
 						></el-switch> -->
 					</template>
-					<template v-else>
+					<span v-if="item.type === 'text'" style="text-align: center; width: 100%">
 						{{ scope.row[item.key] }}
-					</template>
+					</span>
 				</template>
 			</el-table-column>
 
@@ -137,7 +168,7 @@
 				<el-empty :description="$t('message.hint.nodata')" />
 			</template>
 		</el-table>
-		<div class="footer">
+		<div class="footer" v-if="config.isPage">
 			<el-pagination
 				class="mt15 pages"
 				v-model:current-page="state.page.pageNum"
@@ -219,6 +250,7 @@ const emit = defineEmits([
 	'cellclick',
 	'openAdd',
 	'openImp',
+	'addrow',
 ]);
 // 打开新增弹窗
 const onOpenAdd = (type: string) => {
@@ -378,7 +410,11 @@ const onSetTable = () => {
 		});
 	});
 };
-
+// 行内编辑增加行
+const onAddRow = () => {
+	emit('addrow');
+};
+const inputMatNo = (key: string) => {};
 // 暴露变量
 defineExpose({
 	pageReset,

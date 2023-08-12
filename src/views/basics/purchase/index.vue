@@ -27,7 +27,6 @@ const TableSearch = defineAsyncComponent(() => import('/@/components/search/sear
 // 引入组件
 const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 import { useI18n } from 'vue-i18n';
-import { log } from 'console';
 const { t } = useI18n();
 // 定义变量内容
 const purchaseDialogRef = ref();
@@ -56,7 +55,9 @@ const state = reactive<TableDemoState>({
 			isSelection: true, // 是否显示表格多选
 			isOperate: true, // 是否显示表格操作栏
 			isButton: true, //是否显示表格上面的新增删除按钮
-			isEditBtn: false,
+			isInlineEditing: false, //是否是行内编辑
+			isTopTool: true, //是否有表格右上角工具
+			isPage: true, //是否有分页
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
