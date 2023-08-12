@@ -12,6 +12,8 @@ export default {
 		menu1: '選單1',
 		menu2: '選單2',
 		requisition: '請購管理',
+		presentation:'治工具需求提報',
+		arrivejob:'到貨作業',
 		toolsReturn: '治工具退庫',
 		report: '報表管理',
 		matNo:'料號',

@@ -1,9 +1,11 @@
 {
   "name": "tool-manage",
-  "version": "2.4.33",
-  "description": "vue3 vite next admin template",
-  "author": "lyt_20201208",
-  "license": "MIT",
+  "version": "1.0.0",
+  "description": "vue3 vite tool manage",
+  "author": { 
+    "name" : "duxinyi",
+    "email" : "2580191658@qq.com"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -73,7 +75,6 @@
     "not dead"
   ],
   "bugs": {
-    "url": "https://gitee.com/lyt-top/vue-next-admin/issues"
   },
   "engines": {
     "node": ">=16.0.0",
@@ -82,14 +83,13 @@
   "keywords": [
     "vue",
     "vue3",
-    "vuejs/vue-next",
+    "vuejs",
     "element-ui",
     "element-plus",
-    "tool-manage",
-    "next-admin"
+    "tool-manage"
   ],
   "repository": {
     "type": "git",
-    "url": "https://gitee.com/lyt-top/vue-next-admin.git"
+    "url": "https://github.com/duxinyia/tool-manage2.git"
   }
 }

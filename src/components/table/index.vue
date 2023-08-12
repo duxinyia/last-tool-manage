@@ -1,6 +1,6 @@
 <template>
 	<div class="table-container">
-		<div class="table-footer">
+		<div class="table-top">
 			<div class="allBtn" v-if="config.isButton">
 				<el-button size="default" class="ml10 buttonBorder" @click="onOpenAdd('add')" type="primary" plain
 					><el-icon><ele-Plus /></el-icon>{{ $t('message.allButton.addBtn') }}</el-button
@@ -13,7 +13,7 @@
 					</template>
 				</el-popconfirm>
 			</div>
-			<div class="table-footer-tool">
+			<div class="table-top-tool">
 				<!-- <SvgIcon name="iconfont icon-dayinji" :size="19" title="打印" @click="onPrintTable" /> -->
 				<!-- <SvgIcon name="iconfont icon-btn-daoru" :size="22" :title="$t('message.tooltip.import')" @click="onImportTable('imp')" />
 				<SvgIcon name="iconfont icon-btn-daochu" :size="22" :title="$t('message.tooltip.export')" @click="onExportTable" /> -->
@@ -392,9 +392,9 @@ defineExpose({
 	.el-table {
 		flex: 1;
 	}
-	.table-footer {
+	.table-top {
 		display: flex;
-		.table-footer-tool {
+		.table-top-tool {
 			flex: 1;
 			display: flex;
 			align-items: center;

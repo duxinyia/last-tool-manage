@@ -12,6 +12,8 @@ export default {
 		menu1: 'menu1',
 		menu2: 'menu2',
 		requisition: 'requisition',
+		presentation:'tool requist presentation',
+		arrivejob:'arrival operation',
 		toolsReturn: 'return the tools',
 		report: 'report',
 		matNo:'material number',

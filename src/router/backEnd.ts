@@ -13,8 +13,6 @@ import { useTagsViewRoutes } from '/@/stores/tagsViewRoutes';
 
 // 后端控制路由
 
-
-
 /**
  * 获取目录下的 .vue、.tsx 全部文件
  * @method import.meta.glob
@@ -41,7 +39,6 @@ export async function initBackEndControlRoutes() {
 	await useUserInfo().setUserInfos();
 	// 获取路由菜单数据
 	let res =Local.get('datas') ;
-
 	// 无登录权限时，添加判断
 	// if (res.length <= 0) return Promise.resolve(true);
 	// 存储接口原始路由（未处理component），根据需求选择使用

@@ -6,9 +6,11 @@
 			wrap-class="layout-main-scroll"
 			view-class="layout-main-scroll"
 		>
+			<!-- 路由切换部分，相当于表格部分 -->
 			<LayoutParentView />
 			<LayoutFooter v-if="isFooter" />
 		</el-scrollbar>
+		<!-- 回到顶部 target触发滚动的对象 -->
 		<el-backtop :target="setBacktopClass" />
 	</el-main>
 </template>

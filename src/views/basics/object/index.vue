@@ -1,7 +1,7 @@
 <template>
 	<div class="table-demo-container layout-padding">
 		<div class="table-demo-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="state.tableData.search" @search="onSearch" />
+			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
@@ -16,7 +16,7 @@
 	</div>
 </template>
 
-<script setup lang="ts" name="basicsPurchase">
+<script setup lang="ts" name="/basics/object">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 // 接口
@@ -63,6 +63,9 @@ const state = reactive<TableDemoState>({
 			{ label: 'message.pages.workno', prop: 'userid', placeholder: 'message.account.accountPlaceholder1', required: false, type: 'input' },
 			{ label: 'message.pages.name', prop: 'username', placeholder: 'message.pages.placename', required: false, type: 'input' },
 		],
+		searchConfig: {
+			isSearchBtn: true,
+		},
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -72,6 +75,7 @@ const state = reactive<TableDemoState>({
 		// 给后端的数据
 		form: {
 			userid: '',
+			username: '',
 		},
 		// 打印标题
 		printName: '表格打印演示',
@@ -87,6 +91,7 @@ const getTableData = async () => {
 	let data = {
 		groupType: 2,
 		userId: form.userid,
+		userName: form.username,
 		page: state.tableData.page,
 	};
 	const res = await getGroupListApi(data);

@@ -1,7 +1,7 @@
 <template>
 	<div class="table-demo-container layout-padding">
 		<div class="table-demo-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="state.tableData.search" @search="onSearch" />
+			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
@@ -61,7 +61,10 @@ const state = reactive<TableDemoState>({
 
 		btnConfig: [{ type: 'acceptance', name: '验收', color: '#D3C333', isSure: false }],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-		search: [{ label: '验收单号', prop: 'simpleNo', placeholder: '请输入送样单号', required: false, type: 'input' }],
+		search: [{ label: '收货单号', prop: 'simpleNo', placeholder: '请输入送样单号', required: false, type: 'input' }],
+		searchConfig: {
+			isSearchBtn: true,
+		},
 		// 给后端的数据
 		form: {
 			matNo: '',

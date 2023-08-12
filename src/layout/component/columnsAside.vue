@@ -127,10 +127,8 @@ const onColumnsAsideDown = (k: number) => {
 	});
 };
 // 设置只有一个路由时设置自动收起菜单
-// https://gitee.com/lyt-top/vue-next-admin/issues/I6UW2I
 const setMenuAutoCollaps = (path: string) => {
 	const resData: MittMenu = setSendChildren(path);
-	// https://gitee.com/lyt-top/vue-next-admin/issues/I6HW7H
 	resData.children.length <= 1 ? (themeConfig.value.isCollapse = true) : (themeConfig.value.isCollapse = false);
 	return resData;
 };

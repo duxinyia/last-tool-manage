@@ -1,7 +1,7 @@
 <template>
 	<div class="table-demo-container layout-padding">
 		<div class="table-demo-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="state.tableData.search" @search="onSearch" />
+			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
@@ -17,7 +17,7 @@
 	</div>
 </template>
 
-<script setup lang="ts" name="basicsCode">
+<script setup lang="ts" name="/basics/code">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
@@ -69,6 +69,9 @@ const state = reactive<TableDemoState>({
 				type: 'input',
 			},
 		],
+		searchConfig: {
+			isSearchBtn: true,
+		},
 		// 给后端的数据
 		form: {
 			projectcode: '',

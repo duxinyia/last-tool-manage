@@ -119,8 +119,9 @@ const onSignIn = (formEl: EmptyObjectType | undefined) => {
 					component: 'home',
 					meta: { title: '首页', titleEn: 'message.router.home', isAffix: true, icon: 'home' },
 				});
-
-				Local.set('datas', res.data.datas);
+				// 添加是否缓存组件状态
+				const menudatas = addIsKeepAlive(res.data.datas);
+				Local.set('datas', menudatas);
 				router.push('/home');
 				if (!themeConfig.value.isRequestRoutes) {
 					// 前端控制路由，2、请注意执行顺序
@@ -143,6 +144,18 @@ const onSignIn = (formEl: EmptyObjectType | undefined) => {
 		} else {
 		}
 	});
+};
+// 在路由里面所有的meta里面加上isKeepAlive字段
+const addIsKeepAlive = (datas: EmptyArrayType) => {
+	datas.forEach((item) => {
+		item.meta['isKeepAlive'] = true;
+		// 菜单是否隐藏
+		item.meta['isHide'] = Boolean(item.hidden);
+		if (item.children) {
+			addIsKeepAlive(item.children);
+		}
+	});
+	return datas;
 };
 // 登录成功后的跳转
 const signInSuccess = (isNoPower: boolean | undefined) => {

@@ -300,6 +300,7 @@ declare type TableHeaderType = {
 	width?: string | number;
 	height?: string | number;
 	isCheck: boolean;
+	[key: string]: T;
 };
 
 declare type TableSearchType = {
@@ -344,13 +345,18 @@ declare type TableDemoState = {
 			isOperate: boolean;
 			isButton:boolean;
 			isEditBtn:boolean;
+			[key: string]: T;
 		};
+		searchConfig?:{
+			isSearchBtn: boolean;
+		},
 		search: TableSearchType[];
-		btnConfig:TableButtonType[];
+		btnConfig?:TableButtonType[];
 		page: EmptyObjectType;
 		printName?: string;
 		form:EmptyObjectType;
 		dialogConfig?: DialogConfigType[];
+		searchConfig?:EmptyObjectType
 	};
 };
 declare type dialogFormState = {
