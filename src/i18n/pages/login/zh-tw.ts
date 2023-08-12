@@ -52,6 +52,7 @@ export default {
 		placeCode:'請輸入代碼',
 		matNo:'料號',
 		sampleNo:'送樣單號',
+		receiveNo:'驗收單號',
 		nameEn:'英文',
 		nameCh:'中文',
 		drawNo:'圖紙編號',

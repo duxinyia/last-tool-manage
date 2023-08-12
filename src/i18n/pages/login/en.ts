@@ -58,6 +58,7 @@ export default {
 		placeCode:'please enter the code',
 		matNo:'material number',
 		sampleNo:'sample number',
+		receiveNo:'receive number',
 		nameEn:'english',
 		nameCh:'chinese',
 		drawNo:'drawing number',

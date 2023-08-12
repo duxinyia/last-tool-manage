@@ -7,7 +7,7 @@
 				v-bind="state.tableData"
 				class="table-demo"
 				@pageChange="onTablePageChange"
-				@onOpenOtherDialog="openSampleDialog"
+				@onOpenOtherDialog="openReceiveDialog"
 				:cellStyle="cellStyle"
 			/>
 			<Dialog ref="sendReceiveDialogRef" v-bind="dialogData" />
@@ -15,12 +15,11 @@
 	</div>
 </template>
 
-<script setup lang="ts" name="partnoSendReceive">
+<script setup lang="ts" name="/partno/sendReceive">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { GetRecieveTaskApi, GetSampleDetailApi } from '/@/api/partno/sendReceive';
 import { useI18n } from 'vue-i18n';
-import { log } from 'console';
 
 // 引入表格组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -76,23 +75,14 @@ const state = reactive<TableDemoState>({
 // 单元格样式
 const cellStyle = ref();
 const dialogData = reactive({
-	// 点击料号弹窗表格数据
-	// headerData: [
-	// 	{ key: 'simpleNo', colWidth: '', title: '送样单号', type: 'text', isCheck: true },
-	// 	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
-	// 	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-	// 	{ key: 'sampleQty', colWidth: '', title: '送样数量', type: 'text', isCheck: true },
-	// 	{ key: 'sampleTime', colWidth: '', title: '送样时间', type: 'text', isCheck: true },
-	// 	{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-	// 	{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-	// ],
 	// 点击收货表格数据
 	otherHeaderData: [
-		{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true, isRequired: true },
-		{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true, isRequired: true },
+		{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
+		{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 		{ key: 'sampleTime', colWidth: '', title: '送样时间', type: 'text', isCheck: true },
-		{ key: 'sampleQty', colWidth: '', title: '送样数量', type: 'input', isCheck: true, isRequired: true },
-		//{ key: 'needsQty', colWidth: '', title: '需求送样数量', type: 'input', isCheck: true },
+		{ key: 'sampleQty', colWidth: '', title: '送样数量', type: 'text', isCheck: true },
+		{ key: 'receiveTime', colWidth: '', title: '验收时间', type: 'time', isCheck: true, isRequired: true },
+		{ key: 'receiveQty', colWidth: '', title: '验收数量', type: 'input', isCheck: true, isRequired: true },
 	],
 	// 收货弹窗数据
 	dialogForm: [
@@ -100,9 +90,9 @@ const dialogData = reactive({
 		{ type: 'text', lable: '送样单号', prop: 'sampleNo', value: '', xs: 10, sm: 11, md: 11, lg: 11, xl: 11 },
 		{ type: 'text', lable: '品名-中文', prop: 'nameCh', value: '' },
 		{ type: 'text', lable: '品名-英文', prop: 'nameEn', value: '' },
-		{ type: 'text', lable: '工程验收人', prop: 'engineerName', value: '' },
+		{ type: 'input', lable: '工程验收人', prop: 'engineer', value: '' },
 	],
-	//进行送样操作还是收货操作
+	//进行送样、收货还是验收操作
 	operation: '收货',
 });
 // const changeToStyle = (data: any[], keyList: string[], indList: number[]) => {
@@ -147,7 +137,7 @@ const onTablePageChange = (page: TableDemoPageType) => {
 };
 
 // 打开收货弹窗 1
-const openSampleDialog = async (scope: any) => {
+const openReceiveDialog = async (scope: any) => {
 	const res = await GetSampleDetailApi(scope.row.sampleNo);
 	sendReceiveDialogRef.value.openDialog(scope, 1, '收货', res.data.vendorDetails);
 };

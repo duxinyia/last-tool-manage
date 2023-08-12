@@ -69,7 +69,7 @@
 									v-if="item.type === 'input'"
 									style="height: 30px"
 									v-model="state.vendors[scope.$index][item.key]"
-									placeholder="请输入111"
+									placeholder="请输入"
 									clearable
 								></el-input>
 
@@ -258,8 +258,22 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 				closeDialog();
 				ElMessage.success('送样成功');
 			}
-		} else {
-			console.log('收货', sampleData);
+		} else if (props.operation == '收货') {
+			let receiveData: EmptyObjectType = {};
+			props.dialogForm.forEach((item) => {
+				if (item.prop == 'engineer' || item.prop == 'sampleNo') {
+					receiveData[item.prop] = state.formData[item.prop];
+				}
+			});
+			receiveData['vendors'] = state.vendors.map((item) => {
+				let obj = {
+					sampleTime: item.receiveTime,
+					sampleQty: item.receiveQty,
+					vendorCode: item.vendorCode,
+				};
+				return obj;
+			});
+			console.log('收货', receiveData);
 			// const res: any = getTakeSampleApi(sampleData);
 			// if (res.status) {
 			// 	closeDialog();

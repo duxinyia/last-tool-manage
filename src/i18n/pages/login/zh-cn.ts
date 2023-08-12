@@ -58,6 +58,7 @@ export default {
 		placeCode:'请输入代码',
 		matNo:'料号',
 		sampleNo:'送样单号',
+		receiveNo:'验收单号',
 		nameEn:'英文',
 		nameCh:'中文',
 		drawNo:'图纸编号',
