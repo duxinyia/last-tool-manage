@@ -21,7 +21,7 @@
 						>
 							<el-input
 								v-model="state.form[val.prop]"
-								:placeholder="`请输入${val.label}`"
+								:placeholder="`请输入${$t(val.label)}`"
 								clearable
 								v-if="val.type === 'input'"
 								style="width: 100%"
