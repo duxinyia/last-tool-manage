@@ -1,6 +1,6 @@
 <template>
-	<div class="table-demo-container layout-padding">
-		<div class="table-demo-padding layout-padding-view layout-padding-auto">
+	<div class="table-container layout-padding">
+		<div class="table-padding layout-padding-view layout-padding-auto">
 			<div class="title">需求提报单</div>
 			<el-form ref="tableSearchRef" size="default" label-width="auto" class="table-form">
 				<el-row>
@@ -17,95 +17,28 @@
 					</el-col>
 				</el-row>
 			</el-form>
-			<!-- <div class="table-top">
-				<el-button size="default" class="buttonBorder mb12" @click="onAddRow" type="primary" plain
-					><el-icon><ele-Plus /></el-icon>{{ $t('message.allButton.addBtn') }}</el-button
-				>
-			</div>
-			<el-form ref="tableRequistRef" :model="state.tableData" size="default">
-				<el-table
-					ref="tableRef"
-					class="tableData"
-					height="500"
-					id="elTable"
-					:data="state.tableData.data"
-					v-bind="$attrs"
-					row-key="id"
-					style="width: 100%"
-					:row-style="{ height: '10px' }"
-					:header-row-style="{ background: '#dce9fd' }"
-				>
-					<el-table-column
-						align="center"
-						v-for="item in state.tableData.header"
-						:key="item.key"
-						show-overflow-tooltip
-						:prop="item.key"
-						:width="item.colWidth"
-						:label="$t(item.title)"
-					>
-						<template v-slot:header>
-							<span v-if="item.isRequired" class="color-danger">*</span>
-							<span class="pl5">{{ $t(item.title) }}</span>
-						</template>
-						<template v-slot="scope">
-							<el-form-item
-								:prop="`data.${scope.$index}.${item.key}`"
-								:rules="[
-									{ required: item.isRequired, message: '不能为空', trigger: item.type === 'input' || item.type === 'time' ? 'blur' : 'change' },
-								]"
-							>
-								<el-input
-									v-if="item.type === 'input'"
-									style="height: 30px"
-									v-model="state.tableData.data[scope.$index][item.key]"
-									placeholder="请输入"
-									clearable
-									@input="inputMatNo(item.key)"
-								></el-input>
-
-								<el-date-picker
-									v-if="item.type === 'time'"
-									value-format="YYYY-MM-DD"
-									v-model="state.tableData.data[scope.$index][item.key]"
-									type="date"
-									placeholder="请选择"
-									style="height: 30px; max-width: 167px"
-								/>
-								<div v-if="item.type != 'input' && item.type != 'time'" style="text-align: center; width: 100%">
-									<span>{{ scope.row[item.key] }}</span>
-								</div>
-							</el-form-item>
-						</template>
-					</el-table-column>
-					<el-table-column align="center" :label="$t('message.pages.operation')" :width="130">
-						<template v-slot="scope">
-							<el-button
-								:disabled="state.tableData.data.length <= 1"
-								size="default"
-								class="button buttonBorder"
-								color="#D33939"
-								@click="onDelRow(scope.$index)"
-								plain
-								><el-icon><ele-Delete /></el-icon> 删除
-							</el-button>
-						</template>
-					</el-table-column>
-					<template #empty>
-						<el-empty :description="$t('message.hint.nodata')" />
-					</template>
-				</el-table>
-				<div class="describe">
-					<span>描述说明：</span>
-					<el-input class="input-textarea" show-word-limit v-model="describe" type="textarea" placeholder="请输入" maxlength="150"></el-input>
-				</div>
-			</el-form> -->
 			<el-form ref="tableFormRef" :model="state.tableData" size="default">
-				<Table ref="tableRef" v-bind="state.tableData" class="table-demo" @delRow="onDelRow" @addrow="onAddRow" />
+				<Table
+					ref="tableRef"
+					v-bind="state.tableData"
+					class="table"
+					@delRow="onDelRow"
+					@addrow="onAddRow"
+					@querysearchasync="querySearchAsync"
+					@handleselect="handleSelect"
+					@handlechange="handleChange"
+				/>
 			</el-form>
 			<div class="describe">
 				<span>描述说明：</span>
-				<el-input class="input-textarea" show-word-limit v-model="describe" type="textarea" placeholder="请输入" maxlength="150"></el-input>
+				<el-input
+					class="input-textarea"
+					show-word-limit
+					v-model="state.tableData.form['describe']"
+					type="textarea"
+					placeholder="请输入"
+					maxlength="150"
+				></el-input>
 			</div>
 			<span class="table-bottom">
 				<el-button type="primary" @click="onSubmit(tableFormRef)" size="default">提交</el-button>
@@ -121,13 +54,11 @@ import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
-const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
-
-import { debounce } from '/@/utils/debounceAndThrottle';
+// 接口
+import { getQueryNoPageApi, getToolApplyHeadInsertApi } from '/@/api/requistManage/presentation';
 // 定义变量内容
 const { t } = useI18n();
 const tableRef = ref<RefType>();
-const describe = ref();
 const tableFormRef = ref();
 const state = reactive<EmptyObjectType>({
 	tableData: {
@@ -158,7 +89,7 @@ const state = reactive<EmptyObjectType>({
 		},
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'input', isCheck: true, isRequired: true },
+			{ key: 'matNo', colWidth: '250', title: 'message.pages.matNo', type: 'autocomplete', isCheck: true, isRequired: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true, isRequired: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true, isRequired: true },
 			{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'input', isCheck: true, isRequired: true },
@@ -178,18 +109,34 @@ const state = reactive<EmptyObjectType>({
 		],
 		// 给后端的数据
 		form: {
-			matNo: '',
+			describe: '',
 			prNo: '',
 		},
 	},
 });
-const inputMatNo = (key: string) => {
-	// 搜索接口
-	if (key === 'matNo') {
-		console.log(key);
-	}
+let links = ref([]);
+// 获取输入建议的方法， 仅当你的输入建议数据 resolve 时，通过调用 callback(data:[])  来返回它
+const querySearchAsync = async (queryString: string, cb: (arg: any) => void) => {
+	let res = await getQueryNoPageApi(queryString);
+	res.data.forEach((item: any) => {
+		item['value'] = item.matNo;
+	});
+	links.value = res.data;
+	const results = links.value;
+	cb(results);
 };
-const searchInput = debounce(inputMatNo, 1000);
+// 	点击选中建议项时触发 清空数据
+const handleChange = (i: number) => {
+	let data = state.tableData.data[i];
+	data.nameCh = '';
+	data.nameEn = '';
+};
+// 	在 Input 值改变时触发
+const handleSelect = async (i: number, item: any) => {
+	let data = state.tableData.data[i];
+	data.nameCh = item.nameCh;
+	data.nameEn = item.nameEn;
+};
 // 增加一行数据
 const onAddRow = () => {
 	state.tableData.data.push({
@@ -206,14 +153,17 @@ const onAddRow = () => {
 	// tableRef.value.doLayout();
 };
 //删除
-const onDelRow = (i: number) => {
+const onDelRow = (row: EmptyObjectType, i: number) => {
 	state.tableData.data.splice(i, 1);
 };
 const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
-	await formEl.validate((valid: boolean) => {
+	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning('表格项必填未填');
-		let sampleData: EmptyObjectType = {};
+		let allData: EmptyObjectType = {};
+		allData = { ...[state.tableData.data], ...state.tableData.form };
+
+		let res = await getToolApplyHeadInsertApi(allData);
 	});
 };
 // 初始化列表数据
@@ -233,25 +183,6 @@ const getTableData = async () => {
 	// }
 };
 
-// 删除当前项回调
-const onTableDelRow = async (row: EmptyObjectType, type: string) => {
-	// let rows = [];
-	// if (type === 'bulkDel') {
-	// 	Object.keys(row).forEach((key) => {
-	// 		rows.push(row[key].matNo);
-	// 	});
-	// } else {
-	// 	rows.push(row.matNo);
-	// }
-	// const res = await getInvalidMaterialApi(rows);
-	// if (res.status) {
-	// 	type === 'bulkDel'
-	// 		? ElMessage.success(`删除成功`)
-	// 		: ElMessage.success(`${t('message.allButton.deleteBtn')}${row.matNo}${t('message.hint.success')}`);
-	// 	getTableData();
-	// }
-};
-
 // 页面加载时
 onMounted(() => {
 	getTableData();
@@ -259,10 +190,10 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.table-demo-container {
-	.table-demo-padding {
+.table-container {
+	.table-padding {
 		padding: 15px;
-		.table-demo {
+		.table {
 			flex: 1;
 			overflow: hidden;
 		}

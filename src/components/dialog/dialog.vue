@@ -126,8 +126,6 @@ import { ElMessage, genFileId, UploadRawFile } from 'element-plus';
 import type { UploadInstance, UploadProps, UploadUserFile } from 'element-plus';
 import { UploadFilled } from '@element-plus/icons-vue';
 import { getUploadFileApi } from '/@/api/global/index';
-import { log } from 'console';
-
 // 引入组件
 const IconSelector = defineAsyncComponent(() => import('/@/components/iconSelector/index.vue'));
 const emit = defineEmits(['downloadTemp', 'importTableData', 'addData']);

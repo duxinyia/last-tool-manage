@@ -21,7 +21,7 @@ export default {
 		matSample:'料号送样',
 		sampleReceive:'送样收货',
 		sampleAcceptance:'样品验收',
-
+		presentationSearch:'治工具提报查询'
 	},
 	staticRoutes: {
 		signIn: '登录',

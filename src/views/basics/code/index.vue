@@ -1,11 +1,11 @@
 <template>
-	<div class="table-demo-container layout-padding">
-		<div class="table-demo-padding layout-padding-view layout-padding-auto">
+	<div class="table-container layout-padding">
+		<div class="table-padding layout-padding-view layout-padding-auto">
 			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
-				class="table-demo"
+				class="table"
 				@delRow="onTableDelRow"
 				@pageChange="onTablePageChange"
 				@sortHeader="onSortHeader"
@@ -183,10 +183,10 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-.table-demo-container {
-	.table-demo-padding {
+.table-container {
+	.table-padding {
 		padding: 15px;
-		.table-demo {
+		.table {
 			flex: 1;
 			overflow: hidden;
 		}

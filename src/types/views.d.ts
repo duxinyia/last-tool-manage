@@ -306,7 +306,7 @@ declare type TableHeaderType = {
 declare type TableSearchType = {
 	label: string;
 	prop: string;
-	placeholder: string;
+	placeholder?: string;
 	required: boolean;
 	type: string;
 	options?: SelectOptionType[];
