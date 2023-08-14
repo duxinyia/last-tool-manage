@@ -42,13 +42,9 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'text', isCheck: true },
-			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
-			{ key: 'nameEn', colWidth: '', title: 'NameEn', type: 'text', isCheck: true },
-			{ key: 'drawNo', colWidth: '', title: 'message.pages.drawNo', type: 'text', isCheck: true },
-			{ key: 'specs', colWidth: '', title: 'message.pages.specs', type: 'text', isCheck: true },
-			{ key: 'creator', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
-			{ key: 'createtime', title: 'message.pages.creationTime', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '', title: '申请单号', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '', title: 'PR单号', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '', title: '提报人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -68,7 +64,10 @@ const state = reactive<TableDemoState>({
 			{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true },
 		],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-		search: [{ label: '料号', prop: 'matNo', placeholder: '请输入料号', required: false, type: 'input' }],
+		search: [
+			{ label: '申请单号', prop: 'matNo', required: false, type: 'input' },
+			{ label: 'PR单号', prop: 'matNo1', required: false, type: 'input' },
+		],
 		searchConfig: {
 			isSearchBtn: true,
 		},

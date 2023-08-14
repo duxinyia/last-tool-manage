@@ -108,6 +108,17 @@
 							clearable
 							@input="inputMatNo(item.key)"
 						></el-input>
+						<!-- 自动补全输入框 -->
+						<el-autocomplete
+							:debounce="1500"
+							style="width: 100%"
+							v-else-if="item.type === 'autocomplete'"
+							v-model="data[scope.$index][item.key]"
+							:fetch-suggestions="querySearchAsync"
+							placeholder="请输入"
+							@change="changeData(scope.$index)"
+							@select="(item:any) => handleSelect(scope.$index, item)"
+						/>
 						<el-date-picker
 							v-else-if="item.type === 'time'"
 							value-format="YYYY-MM-DD"
@@ -154,7 +165,7 @@
 							class="button buttonBorder"
 							><el-icon><ele-Edit /></el-icon>{{ $t(btn.name) }}</el-button
 						>
-						<el-popconfirm v-if="btn.isSure" :title="$t('message.hint.suredel')" @confirm="onDelRow(scope.row)">
+						<el-popconfirm v-if="btn.isSure" :title="$t('message.hint.suredel')" @confirm="onDelRow(scope.row, scope.$index)">
 							<template #reference>
 								<el-button class="button buttonBorder" :color="btn.color" plain
 									><el-icon><ele-Delete /></el-icon>{{ $t(btn.name) }}</el-button
@@ -187,7 +198,7 @@
 </template>
 
 <script setup lang="ts" name="netxTable">
-import { reactive, computed, nextTick, ref, defineAsyncComponent } from 'vue';
+import { reactive, computed, nextTick, ref, defineAsyncComponent, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import printJs from 'print-js';
 import Sortable from 'sortablejs';
@@ -251,7 +262,21 @@ const emit = defineEmits([
 	'openAdd',
 	'openImp',
 	'addrow',
+	'querysearchasync',
+	'handleselect',
+	'handlechange',
 ]);
+
+const querySearchAsync = (queryString: string, cb: (arg: any) => void) => {
+	emit('querysearchasync', queryString, cb);
+};
+const changeData = (index: number) => {
+	emit('handlechange', index);
+};
+const handleSelect = (index: number, item: Object) => {
+	emit('handleselect', index, item);
+};
+onMounted(() => {});
 // 打开新增弹窗
 const onOpenAdd = (type: string) => {
 	emit('openAdd', type);
@@ -319,8 +344,8 @@ const cellClick = (row: Object, column: Object) => {
 };
 
 // 删除当前项
-const onDelRow = (row: EmptyObjectType) => {
-	emit('delRow', row, 'delRow');
+const onDelRow = (row: EmptyObjectType, index?: number) => {
+	emit('delRow', row, index, 'delRow');
 };
 // 批量删除
 const onBulkDeletion = () => {

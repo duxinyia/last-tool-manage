@@ -20,7 +20,8 @@ export default {
 		matSearch:'material number search',
 		matSample:'send samples with material',
 		sampleReceive:'send samples and receive',
-		sampleAcceptance:'acceptance samples'
+		sampleAcceptance:'acceptance samples',
+		presentationSearch:'tool reporting inquiry'
 	},
 	staticRoutes: {
 		signIn: 'signIn',

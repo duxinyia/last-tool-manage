@@ -20,7 +20,8 @@ export default {
 		matSearch:'料號查詢',
 		matSample:'料號送樣',
 		sampleReceive:'送樣收貨',
-		sampleAcceptance:'樣品驗收'
+		sampleAcceptance:'樣品驗收',
+		presentationSearch:'治工具提報查詢'
 	},
 	staticRoutes: {
 		signIn: '登入',
