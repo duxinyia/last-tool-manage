@@ -121,6 +121,7 @@ import { defineAsyncComponent, reactive, onMounted, ref, nextTick, computed, onU
 import { i18n } from '/@/i18n/index';
 import { ElMessage } from 'element-plus';
 import { getTakeSampleApi } from '/@/api/partno/sampleDelivery';
+import { SampleRecieveApi } from '/@/api/partno/sendReceive';
 const emit = defineEmits([]);
 // 定义父组件传过来的值
 const props = defineProps({
@@ -245,7 +246,7 @@ const onCancel = () => {
 // 提交
 const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
-	await formEl.validate((valid: boolean) => {
+	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning('表格项必填未填');
 		let sampleData: EmptyObjectType = {};
 		props.dialogForm.forEach((item) => {
@@ -253,7 +254,7 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 		});
 		sampleData['vendors'] = state.vendors;
 		if (props.operation == '送样') {
-			const res: any = getTakeSampleApi(sampleData);
+			const res: any = await getTakeSampleApi(sampleData);
 			if (res.status) {
 				closeDialog();
 				ElMessage.success('送样成功');
@@ -265,7 +266,7 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 					receiveData[item.prop] = state.formData[item.prop];
 				}
 			});
-			receiveData['vendors'] = state.vendors.map((item) => {
+			receiveData['recieveDetails'] = state.vendors.map((item) => {
 				let obj = {
 					sampleTime: item.receiveTime,
 					sampleQty: item.receiveQty,
@@ -273,12 +274,11 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 				};
 				return obj;
 			});
-			console.log('收货', receiveData);
-			// const res: any = getTakeSampleApi(sampleData);
-			// if (res.status) {
-			// 	closeDialog();
-			// 	ElMessage.success('收货成功');
-			// }
+			const res: any = await SampleRecieveApi(receiveData);
+			if (res.status) {
+				closeDialog();
+				ElMessage.success('收货成功');
+			}
 		}
 	});
 };
