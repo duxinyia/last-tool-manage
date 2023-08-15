@@ -1,16 +1,12 @@
 <template>
-	<div class="layout-logo" v-if="onThemeConfigChange" @click="onThemeConfigChange">
+	<div class="layout-logo" v-if="!themeConfig.isCollapse" @click="onThemeConfigChange">
 		<img :src="logoMini" class="layout-logo-medium-img" />
 
 		<!-- <span>{{ themeConfig.globalTitle }}</span> -->
 	</div>
-	<div class="layout-logo" v-else @click="onThemeConfigChange">
-		<img :src="logoBall" class="layout-logo-medium-img" />
+	<div class="layout-logo-size" v-else @click="onThemeConfigChange">
+		<img :src="logoBall" class="layout-logo-size-img" />
 	</div>
-
-	<!-- <div class="layout-logo-size" v-else @click="onThemeConfigChange">
-		<img :src="logoMini" class="layout-logo-size-img" />
-	</div> -->
 </template>
 
 <script setup lang="ts" name="layoutLogo">
@@ -38,7 +34,7 @@ const onThemeConfigChange = () => {
 
 <style scoped lang="scss">
 .layout-logo {
-	margin: 15px 0;
+	margin: 15px 0px;
 	width: 220px;
 	height: 50px;
 	display: flex;
@@ -64,8 +60,9 @@ const onThemeConfigChange = () => {
 	}
 }
 .layout-logo-size {
-	width: 100%;
-	height: 50px;
+	width: 40px;
+	height: 40px;
+	margin: 15px 15px;
 	display: flex;
 	cursor: pointer;
 	animation: logoAnimation 0.3s ease-in-out;
