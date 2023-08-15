@@ -14,7 +14,7 @@
 					</template>
 				</el-popconfirm>
 			</div>
-			<div class="add-row" v-if="config.isInlineEditing">
+			<div class="add-row" v-if="config.isInlineEditing && config.isAddRowBtn">
 				<el-button size="default" class="buttonBorder" @click="onAddRow" type="primary" plain
 					><el-icon><ele-Plus /></el-icon>{{ $t('message.allButton.addBtn') }}</el-button
 				>
