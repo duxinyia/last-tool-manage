@@ -9,9 +9,9 @@ export function getQueryNoPageApi(matNo:string) {
   });
 }
 // 提交
-export function getToolApplyHeadInsertApi(data:Object) {
+export function getToolApplyInsertApi(data:Object) {
   return request({
-    url: '/api/ToolApply/ToolApplyHeadInsert',
+    url: '/api/ToolReceive/ToolApplyInsert',
     method: 'POST',
   	data:data
   });

@@ -2,7 +2,7 @@
 	<div class="table-container">
 		<div class="table-top">
 			<!-- 新增弹窗按钮以及批量删除按钮 -->
-			<div class="allBtn" v-if="config.isButton">
+			<div class="allBtn mt20" v-if="config.isButton">
 				<el-button size="default" class="ml10 buttonBorder" @click="onOpenAdd('add')" type="primary" plain
 					><el-icon><ele-Plus /></el-icon>{{ $t('message.allButton.addBtn') }}</el-button
 				>
@@ -110,7 +110,8 @@
 						></el-input>
 						<!-- 自动补全输入框 -->
 						<el-autocomplete
-							:debounce="1500"
+							:debounce="500"
+							clearable
 							style="width: 100%"
 							v-else-if="item.type === 'autocomplete'"
 							v-model="data[scope.$index][item.key]"
@@ -119,6 +120,25 @@
 							@change="changeData(scope.$index)"
 							@select="(item:any) => handleSelect(scope.$index, item)"
 						/>
+						<el-select
+							v-else-if="item.type === 'select'"
+							v-model="data[scope.$index][item.key]"
+							:filterable="item.isfilterable"
+							placeholder="请选择"
+							@change="(item:any) => changeSelect(scope.$index, item)"
+						>
+							<el-option v-for="i in item.option" :key="i.value" :label="i.value" :value="i.value" />
+						</el-select>
+
+						<el-switch
+							v-else-if="item.type === 'status1'"
+							style="text-align: center; width: 100%; display: flex; justify-content: center"
+							v-model="data[scope.$index][item.key]"
+							inline-prompt
+							:active-text="$t('message.allButton.startup')"
+							:inactive-text="$t('message.allButton.disable')"
+						></el-switch>
+
 						<el-date-picker
 							v-else-if="item.type === 'time'"
 							value-format="YYYY-MM-DD"
@@ -137,18 +157,18 @@
 								fit="cover"
 							/>
 						</template>
+
+						<span v-else-if="item.type === 'text'" style="text-align: center; width: 100%">
+							{{ scope.row[item.key] }}
+						</span>
 					</el-form-item>
+					<!-- 不能行内编辑 -->
 					<template v-if="item.type === 'status'" style="text-align: center; width: 100%">
 						<el-tag type="success" v-if="scope.row.runstatus === 1">启用</el-tag>
 						<el-tag type="info" v-else>禁用</el-tag>
-						<!-- <el-switch
-							v-model="scope.row[item.key]"
-							inline-prompt
-							:active-text="$t('message.allButton.startup')"
-							:inactive-text="$t('message.allButton.disable')"
-						></el-switch> -->
 					</template>
-					<span v-if="item.type === 'text'" style="text-align: center; width: 100%">
+
+					<span v-if="!config.isInlineEditing && item.type === 'text'" style="text-align: center; width: 100%">
 						{{ scope.row[item.key] }}
 					</span>
 				</template>
@@ -265,6 +285,7 @@ const emit = defineEmits([
 	'querysearchasync',
 	'handleselect',
 	'handlechange',
+	'changeselect',
 ]);
 
 const querySearchAsync = (queryString: string, cb: (arg: any) => void) => {
@@ -276,6 +297,10 @@ const changeData = (index: number) => {
 const handleSelect = (index: number, item: Object) => {
 	emit('handleselect', index, item);
 };
+const changeSelect = (index: number, item: Object) => {
+	emit('changeselect', index, item);
+};
+
 onMounted(() => {});
 // 打开新增弹窗
 const onOpenAdd = (type: string) => {
@@ -458,7 +483,7 @@ defineExpose({
 		.table-top-tool {
 			flex: 1;
 			display: flex;
-			align-items: center;
+			align-items: end;
 			justify-content: flex-end;
 			i {
 				margin-right: 10px;
