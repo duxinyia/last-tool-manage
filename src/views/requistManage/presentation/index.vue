@@ -80,13 +80,15 @@ const state = reactive<EmptyObjectType>({
 			total: 0, // 列表总数
 			loading: false, // loading 加载
 			isBorder: false, // 是否显示表格边框
-			isSerialNo: false, // 是否显示表格序号
+			isSerialNo: true, // 是否显示表格序号
 			isSelection: false, // 是否显示表格多选
 			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: true, //是否是行内编辑
 			isTopTool: false, //是否有表格右上角工具
 			isPage: false, //是否有分页
+			height: 500,
+			isAddRowBtn: true, //是否有添加行按钮
 		},
 		// 表头内容（必传，注意格式）
 		header: [
@@ -102,9 +104,9 @@ const state = reactive<EmptyObjectType>({
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true, isRequired: true },
 			{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'input', isCheck: true, isRequired: true },
 			{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'input', isCheck: true, isRequired: true },
-			{ key: 'sampleQty', colWidth: '', title: '需求数量', type: 'status1', isCheck: true, isRequired: true },
+			{ key: 'sampleQty', colWidth: '', title: '需求数量', type: 'input', isCheck: true, isRequired: true },
 			{ key: 'sampleTime', colWidth: '150', title: '需求时间', type: 'time', isCheck: true, isRequired: true },
-			{ key: 'pr', colWidth: '', title: 'PR项次', type: 'input', isCheck: true, isRequired: true },
+			{ key: 'pr', colWidth: '', title: 'PR项次', type: 'status1', isCheck: true, isRequired: true },
 		],
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
@@ -177,30 +179,18 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 		let allData: EmptyObjectType = {};
 		allData = { ...state.tableData.form };
 		allData['details'] = state.tableData.data;
-		await getToolApplyInsertApi(allData);
+		const res = await getToolApplyInsertApi(allData);
+		if (res.status) {
+			ElMessage.success(t('提交成功'));
+			// 清空
+			const tableData = state.tableData;
+			tableData.form = {};
+			tableData.data = [];
+		}
 	});
 };
-// 初始化列表数据
-const getTableData = async () => {
-	// state.tableData.config.loading = true;
-	// const form = state.tableData.form;
-	// let data = {
-	// 	matNo: form.matNo,
-	// 	page: state.tableData.page,
-	// 	queryType: 1,
-	// };
-	// const res = await getMaterialListApi(data);
-	// state.tableData.data = res.data.data;
-	// state.tableData.config.total = res.data.total;
-	// if (res.status) {
-	// 	state.tableData.config.loading = false;
-	// }
-};
-
 // 页面加载时
-onMounted(() => {
-	// getOption();
-});
+onMounted(() => {});
 </script>
 
 <style scoped lang="scss">

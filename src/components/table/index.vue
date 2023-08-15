@@ -134,6 +134,8 @@
 							v-else-if="item.type === 'status1'"
 							style="text-align: center; width: 100%; display: flex; justify-content: center"
 							v-model="data[scope.$index][item.key]"
+							:active-value="1"
+							:inactive-value="0"
 							inline-prompt
 							:active-text="$t('message.allButton.startup')"
 							:inactive-text="$t('message.allButton.disable')"

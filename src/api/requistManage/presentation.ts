@@ -11,7 +11,7 @@ export function getQueryNoPageApi(matNo:string) {
 // 提交
 export function getToolApplyInsertApi(data:Object) {
   return request({
-    url: '/api/ToolReceive/ToolApplyInsert',
+    url: '/api/ToolApply/ToolApplyInsert',
     method: 'POST',
   	data:data
   });
