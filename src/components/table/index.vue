@@ -1,6 +1,6 @@
 <template>
 	<div class="table-container">
-		<div class="table-top">
+		<div class="table-top" v-if="config.isButton || config.isInlineEditing || config.isTopTool">
 			<!-- 新增弹窗按钮以及批量删除按钮 -->
 			<div class="allBtn mt20" v-if="config.isButton">
 				<el-button size="default" class="ml10 buttonBorder" @click="onOpenAdd('add')" type="primary" plain
@@ -64,9 +64,9 @@
 			</div>
 		</div>
 		<el-table
-			:height="!config.isInlineEditing ? 'auto' : 500"
+			:height="config.height"
 			id="elTable"
-			class="mt12"
+			:class="!config.isDialogTab ? 'mt12' : ''"
 			:data="data"
 			:border="setBorder"
 			v-bind="$attrs"
@@ -287,7 +287,7 @@ const emit = defineEmits([
 	'handlechange',
 	'changeselect',
 ]);
-
+// 自动补全输入框
 const querySearchAsync = (queryString: string, cb: (arg: any) => void) => {
 	emit('querysearchasync', queryString, cb);
 };

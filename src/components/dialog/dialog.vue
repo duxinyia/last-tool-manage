@@ -107,7 +107,6 @@
 					>
 				</div>
 			</el-form>
-
 			<template #footer v-if="state.dialog.type !== 'imp'">
 				<span class="dialog-footer">
 					<el-button @click="onCancel" size="default">取 消</el-button>
@@ -166,7 +165,7 @@ const ondownloadTemp = () => {
 	emit('downloadTemp');
 };
 // 打开弹窗
-const openDialog = (type: string, row?: any) => {
+const openDialog = (type: string, row?: any, title?: string) => {
 	if (type === 'add') {
 		state.dialog.isdisable = false;
 		state.dialog.title = '新增';
@@ -195,6 +194,8 @@ const openDialog = (type: string, row?: any) => {
 		fileListName.value = '';
 		state.dialog.title = '上传文件';
 		state.dialog.submitTxt = '开始上传';
+	} else {
+		state.dialog.title = title;
 	}
 	state.dialog.type = type;
 	state.dialog.isShowDialog = true;
