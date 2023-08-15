@@ -51,9 +51,7 @@
 		</div>
 		<el-dropdown :show-timeout="70" :hide-timeout="50" @command="onHandleCommandClick">
 			<span class="layout-navbars-breadcrumb-user-link">
-				<!-- <img :src="userInfos.photo" class="layout-navbars-breadcrumb-user-link-photo mr5" /> -->
-
-				{{ userInfos.userName === '' ? 'admin' : userInfos.userId + userInfos.userName }}
+				{{ userInfos.userName === '' ? 'admin' : userInfos.userId + ' ' + userInfos.userName }}
 				<i class="iconfont icon-user-s userH"></i>
 				<!-- <el-icon class="el-icon--right">
 					<i class="iconfont icon-user-s userH"></i>
