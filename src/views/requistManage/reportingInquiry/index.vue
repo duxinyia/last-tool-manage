@@ -2,23 +2,8 @@
 	<div class="table-container layout-padding">
 		<div class="table-padding layout-padding-view layout-padding-auto">
 			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
-			<Table
-				ref="tableRef"
-				v-bind="state.tableData"
-				class="table"
-				@delRow="onTableDelRow"
-				@pageChange="onTablePageChange"
-				@sortHeader="onSortHeader"
-				@importTable="onExportTableData"
-				@openAdd="openDialog"
-			/>
-			<Dialog
-				ref="noSearchDialogRef"
-				:dialogConfig="state.tableData.dialogConfig"
-				@addData="addData"
-				@downloadTemp="ondownloadTemp"
-				@importTableData="onImportTable"
-			/>
+			<Table ref="tableRef" v-bind="state.tableData" class="table" @pageChange="onTablePageChange" @sortHeader="onSortHeader" @openAdd="openDialog" />
+			<Dialog ref="noSearchDialogRef" :dialogConfig="state.tableData.dialogConfig" />
 		</div>
 	</div>
 </template>
@@ -26,7 +11,7 @@
 <script setup lang="ts" name="/partno/noSearch">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { getMaterialListApi, getAddMaterialApi, getModifyMaterialApi, getInvalidMaterialApi } from '/@/api/partno/noSearch';
+import { getToolApplyHeadPageApi } from '/@/api/requistManage/reportingInquiry';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -42,9 +27,9 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'matNo', colWidth: '', title: '申请单号', type: 'text', isCheck: true },
+			{ key: 'reqNo', colWidth: '', title: '申请单号', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: 'PR单号', type: 'text', isCheck: true },
-			{ key: 'nameEn', colWidth: '', title: '提报人', type: 'text', isCheck: true },
+			{ key: 'companyId', colWidth: '', title: '提报人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -52,20 +37,16 @@ const state = reactive<TableDemoState>({
 			loading: true, // loading 加载
 			isBorder: false, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
-			isSelection: true, // 是否显示表格多选
-			isOperate: true, // 是否显示表格操作栏
-			isButton: true, //是否显示表格上面的新增删除按钮
+			isSelection: false, // 是否显示表格多选
+			isOperate: false, // 是否显示表格操作栏
+			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
 		},
-		btnConfig: [
-			{ type: 'edit', name: 'message.allButton.editBtn', color: '#39D339', isSure: false },
-			{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true },
-		],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '申请单号', prop: 'matNo', required: false, type: 'input' },
+			{ label: '申请单号', prop: 'reqNo', required: false, type: 'input' },
 			{ label: 'PR单号', prop: 'matNo1', required: false, type: 'input' },
 		],
 		searchConfig: {
@@ -73,7 +54,7 @@ const state = reactive<TableDemoState>({
 		},
 		// 给后端的数据
 		form: {
-			matNo: '',
+			reqNo: '',
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -122,11 +103,10 @@ const getTableData = async () => {
 	state.tableData.config.loading = true;
 	const form = state.tableData.form;
 	let data = {
-		matNo: form.matNo,
+		reqNo: form.reqNo,
 		page: state.tableData.page,
-		queryType: 1,
 	};
-	const res = await getMaterialListApi(data);
+	const res = await getToolApplyHeadPageApi(data);
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
 	if (res.status) {
@@ -143,38 +123,7 @@ const onSearch = (data: EmptyObjectType) => {
 const openDialog = (type: string, row: Object) => {
 	noSearchDialogRef.value.openDialog(type, row);
 };
-// 新增数据  修改数据
-const addData = async (ruleForm: EmptyObjectType, type: string) => {
-	if (ruleForm.drawPath.includes('/')) {
-		const res = type === 'add' ? await getAddMaterialApi(ruleForm) : await getModifyMaterialApi(ruleForm);
-		if (res.status) {
-			type === 'add' ? ElMessage.success(`新增成功`) : ElMessage.success(`修改成功`);
-			noSearchDialogRef.value.closeDialog();
-			getTableData();
-		}
-	} else {
-		ElMessage.error(`新增失败,请点击上传文件按钮进行上传`);
-	}
-};
 
-// 删除当前项回调
-const onTableDelRow = async (row: EmptyObjectType, type: string) => {
-	let rows = [];
-	if (type === 'bulkDel') {
-		Object.keys(row).forEach((key) => {
-			rows.push(row[key].matNo);
-		});
-	} else {
-		rows.push(row.matNo);
-	}
-	const res = await getInvalidMaterialApi(rows);
-	if (res.status) {
-		type === 'bulkDel'
-			? ElMessage.success(`删除成功`)
-			: ElMessage.success(`${t('message.allButton.deleteBtn')}${row.matNo}${t('message.hint.success')}`);
-		getTableData();
-	}
-};
 // 分页改变时回调
 const onTablePageChange = (page: TableDemoPageType) => {
 	state.tableData.page.pageNum = page.pageNum;
@@ -184,54 +133,6 @@ const onTablePageChange = (page: TableDemoPageType) => {
 // 拖动显示列排序回调
 const onSortHeader = (data: TableHeaderType[]) => {
 	state.tableData.header = data;
-};
-// 导出
-const onExportTableData = async (row: EmptyObjectType) => {
-	// let rows: EmptyArrayType = [];
-	// Object.keys(row).forEach((key) => {
-	// 	rows.push(row[key].runid);
-	// });
-	// const res = await getBaseDownloadApi(rows);
-	// let blob = new Blob([res], {
-	// 	// 这里一定要和后端对应，不然可能出现乱码或者打不开文件
-	// 	type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-	// });
-	// if (window.navigator.msSaveOrOpenBlob) {
-	// 	navigator.msSaveBlob(blob, fileName);
-	// } else {
-	// 	const link = document.createElement('a');
-	// 	link.href = window.URL.createObjectURL(blob);
-	// 	link.download = `${t('message.router.basicsBasic')} ${new Date().toLocaleString()}.xlsx`; // 在前端也可以设置文件名字
-	// 	link.click();
-	// 	//释放内存
-	// 	window.URL.revokeObjectURL(link.href);
-	// }
-};
-// 下载模版
-const ondownloadTemp = async () => {
-	// const res = await getDownloadTemplateApi();
-	// let blob = new Blob([res], {
-	// 	// 这里一定要和后端对应，不然可能出现乱码或者打不开文件
-	// 	type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-	// });
-	// if (window.navigator.msSaveOrOpenBlob) {
-	// 	navigator.msSaveBlob(blob, fileName);
-	// } else {
-	// 	const link = document.createElement('a');
-	// 	link.href = window.URL.createObjectURL(blob);
-	// 	link.download = `${t('message.router.basicsBasic')} ${new Date().toLocaleString()}${t('message.pages.template')}.xlsx`; // 在前端也可以设置文件名字
-	// 	link.click();
-	// 	//释放内存
-	// 	window.URL.revokeObjectURL(link.href);
-	// }
-};
-
-// 导入表格
-const onImportTable = async (raw: EmptyObjectType) => {
-	// console.log(raw);
-	// const res = await getImportDataApi(raw.raw);
-	// res.status && ElMessage.success('导入数据成功！');
-	// getTableData();
 };
 
 // 页面加载时

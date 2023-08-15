@@ -17,6 +17,7 @@
 					</el-col>
 				</el-row>
 			</el-form>
+			<!-- 表格 -->
 			<el-form ref="tableFormRef" :model="state.tableData" size="default">
 				<Table
 					ref="tableRef"
@@ -40,6 +41,7 @@
 					maxlength="150"
 				></el-input>
 			</div>
+			<!-- 提交按钮 -->
 			<span class="table-bottom">
 				<el-button type="primary" @click="onSubmit(tableFormRef)" size="default">提交</el-button>
 			</span>
@@ -50,12 +52,11 @@
 <script setup lang="ts" name="/requistManage/presentation">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 // 接口
-import { getQueryNoPageApi, getToolApplyHeadInsertApi } from '/@/api/requistManage/presentation';
+import { getQueryNoPageApi, getToolApplyInsertApi } from '/@/api/requistManage/presentation';
 // 定义变量内容
 const { t } = useI18n();
 const tableRef = ref<RefType>();
@@ -89,12 +90,19 @@ const state = reactive<EmptyObjectType>({
 		},
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'matNo', colWidth: '250', title: 'message.pages.matNo', type: 'autocomplete', isCheck: true, isRequired: true },
+			{
+				key: 'matNo',
+				colWidth: '250',
+				title: 'message.pages.matNo',
+				type: 'autocomplete',
+				isCheck: true,
+				isRequired: true,
+			},
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true, isRequired: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true, isRequired: true },
 			{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'input', isCheck: true, isRequired: true },
 			{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'input', isCheck: true, isRequired: true },
-			{ key: 'sampleQty', colWidth: '', title: '需求数量', type: 'input', isCheck: true, isRequired: true },
+			{ key: 'sampleQty', colWidth: '', title: '需求数量', type: 'status1', isCheck: true, isRequired: true },
 			{ key: 'sampleTime', colWidth: '150', title: '需求时间', type: 'time', isCheck: true, isRequired: true },
 			{ key: 'pr', colWidth: '', title: 'PR项次', type: 'input', isCheck: true, isRequired: true },
 		],
@@ -117,13 +125,18 @@ const state = reactive<EmptyObjectType>({
 let links = ref([]);
 // 获取输入建议的方法， 仅当你的输入建议数据 resolve 时，通过调用 callback(data:[])  来返回它
 const querySearchAsync = async (queryString: string, cb: (arg: any) => void) => {
-	let res = await getQueryNoPageApi(queryString);
-	res.data.forEach((item: any) => {
-		item['value'] = item.matNo;
-	});
-	links.value = res.data;
-	const results = links.value;
-	cb(results);
+	if (queryString) {
+		let res = await getQueryNoPageApi(queryString);
+		res.data.forEach((item: any) => {
+			item['value'] = item.matNo;
+		});
+		links.value = res.data;
+		const results = links.value;
+		cb(results);
+	} else {
+		links.value = [];
+		cb(links.value);
+	}
 };
 // 	点击选中建议项时触发 清空数据
 const handleChange = (i: number) => {
@@ -156,14 +169,15 @@ const onAddRow = () => {
 const onDelRow = (row: EmptyObjectType, i: number) => {
 	state.tableData.data.splice(i, 1);
 };
+// 提交
 const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
-		if (!valid) return ElMessage.warning('表格项必填未填');
+		if (!valid) return ElMessage.warning(t('表格项必填未填'));
 		let allData: EmptyObjectType = {};
-		allData = { ...[state.tableData.data], ...state.tableData.form };
-
-		let res = await getToolApplyHeadInsertApi(allData);
+		allData = { ...state.tableData.form };
+		allData['details'] = state.tableData.data;
+		await getToolApplyInsertApi(allData);
 	});
 };
 // 初始化列表数据
@@ -185,7 +199,7 @@ const getTableData = async () => {
 
 // 页面加载时
 onMounted(() => {
-	getTableData();
+	// getOption();
 });
 </script>
 
