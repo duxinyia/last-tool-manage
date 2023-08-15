@@ -364,7 +364,7 @@ declare type dialogFormState = {
 	dialog: {
 		isShowDialog: boolean,
 		type: string,
-		title: string,
+		title?: string,
 		submitTxt: string,
 		isdisable: boolean,
 		num?: number,

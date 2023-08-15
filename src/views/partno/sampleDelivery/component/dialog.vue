@@ -69,7 +69,7 @@
 									v-if="item.type === 'input'"
 									style="height: 30px"
 									v-model="state.vendors[scope.$index][item.key]"
-									placeholder="请输入111"
+									placeholder="请输入"
 									clearable
 								></el-input>
 
