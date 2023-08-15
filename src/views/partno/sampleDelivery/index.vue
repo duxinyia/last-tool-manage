@@ -55,7 +55,7 @@ const state = reactive<TableDemoState>({
 			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
-			isTopTool: false, //是否有表格右上角工具
+			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
 		},
 

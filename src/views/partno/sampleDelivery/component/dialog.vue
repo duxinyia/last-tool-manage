@@ -1,6 +1,6 @@
 <template>
 	<div class="system-menu-dialog-container">
-		<el-dialog :title="state.dialog.title" v-model="state.dialog.isShowDialog" width="1200px">
+		<el-dialog :title="state.dialog.title" v-model="state.dialog.isShowDialog" width="1400px">
 			<el-row :gutter="10" v-if="state.dialog.num === 1">
 				<el-col
 					v-for="item in dialogForm"
@@ -22,7 +22,7 @@
 				</el-col>
 			</el-row>
 			<el-button
-				v-if="state.dialog.num === 1 && state.dialog.title != '收货'"
+				v-if="state.dialog.num === 1 && state.dialog.title == '送样'"
 				size="default"
 				class="buttonBorder mb12"
 				@click="onAddRow"

@@ -135,8 +135,8 @@
 							style="text-align: center; width: 100%; display: flex; justify-content: center"
 							v-model="data[scope.$index][item.key]"
 							inline-prompt
-							:active-text="$t('message.allButton.startup')"
-							:inactive-text="$t('message.allButton.disable')"
+							:active-text="$t('message.allButton.statusY')"
+							:inactive-text="$t('message.allButton.statusN')"
 						></el-switch>
 
 						<el-date-picker

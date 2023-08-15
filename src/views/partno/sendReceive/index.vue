@@ -56,7 +56,7 @@ const state = reactive<TableDemoState>({
 			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
-			isTopTool: false, //是否有表格右上角工具
+			isTopTool: true, //是否有表格右上角工具
 			isPage: false, //是否有分页
 		},
 
@@ -100,18 +100,7 @@ const dialogData = reactive({
 	//进行送样、收货还是验收操作
 	operation: '收货',
 });
-// const changeToStyle = (data: any[], keyList: string[], indList: number[]) => {
-// 	return ({ row, column, rowIndex, columnIndex }: any) => {
-// 		for (let j = 0; j < keyList.length; j++) {
-// 			let i = keyList[j];
-// 			let ind = indList[j];
-// 			if (columnIndex === ind) {
-// 				return { color: 'var(--el-color-primary)', cursor: 'pointer' };
-// 			}
-// 		}
-// 	};
-// };
-// cellStyle.value = changeToStyle(state.tableData.data, ['matNo'], [2]);
+
 // 初始化列表数据
 const getTableData = async () => {
 	state.tableData.config.loading = true;

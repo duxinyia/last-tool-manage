@@ -27,7 +27,9 @@ export default {
 		searchBtn:'查询',
 		resetBtn:'重置',
 		startup:'启',
-		disable:'禁'
+		disable:'禁',
+		statusY:'是',
+		statusN:'否',
 	},
 	tooltip:{
 		export:'导出',

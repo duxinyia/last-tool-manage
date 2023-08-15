@@ -27,6 +27,8 @@ export default {
 		searchBtn:'search',
 		resetBtn:'reset',
 		startup:'start',
+		statusY:'Y',
+		statusN:'N',
 		disable:'disable'
 	},
 	tooltip:{
