@@ -55,7 +55,7 @@ const state = reactive<TableDemoState>({
 			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
-			isTopTool: false, //是否有表格右上角工具
+			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
 		},
 
@@ -106,7 +106,7 @@ const dialogData = reactive({
 		{ type: 'text', lable: '品名-英文', prop: 'nameEn', value: '' },
 		{ type: 'input', lable: '工程验收人', prop: 'engineerName', placeholder: '请输入工程验收人', value: '' },
 	],
-	//进行送样操作还是收货操作
+	//进行送样、收货还是验收操作
 	operation: '送样',
 });
 const changeToStyle = (data: any[], keyList: string[], indList: number[]) => {

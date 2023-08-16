@@ -27,7 +27,9 @@ export default {
 		searchBtn:'查詢',
 		resetBtn:'重置',
 		startup:'啟',
-		disable:'禁'
+		disable:'禁',
+		statusY:'是',
+		statusN:'否',
 	},
 	pages:{
 		dragsort:'拖動進行排序',
@@ -52,6 +54,7 @@ export default {
 		placeCode:'請輸入代碼',
 		matNo:'料號',
 		sampleNo:'送樣單號',
+		receiveNo:'驗收單號',
 		nameEn:'英文',
 		nameCh:'中文',
 		drawNo:'圖紙編號',

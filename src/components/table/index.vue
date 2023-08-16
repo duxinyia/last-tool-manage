@@ -137,8 +137,8 @@
 							:active-value="1"
 							:inactive-value="0"
 							inline-prompt
-							:active-text="$t('message.allButton.startup')"
-							:inactive-text="$t('message.allButton.disable')"
+							:active-text="$t('message.allButton.statusY')"
+							:inactive-text="$t('message.allButton.statusN')"
 						></el-switch>
 
 						<el-date-picker

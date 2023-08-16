@@ -15,4 +15,12 @@ export function GetSampleDetailApi(sampleNo:string) {
     params:{sampleNo}
   });
 }
+// 确认收货
+export function SampleRecieveApi(data:Object) {
+  return request({
+    url: '/api/Material/SampleRecieve',
+    method: 'POST',
+    data:data
+  });
+}
 

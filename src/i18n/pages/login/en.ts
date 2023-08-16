@@ -27,6 +27,8 @@ export default {
 		searchBtn:'search',
 		resetBtn:'reset',
 		startup:'start',
+		statusY:'Y',
+		statusN:'N',
 		disable:'disable'
 	},
 	tooltip:{
@@ -58,6 +60,7 @@ export default {
 		placeCode:'please enter the code',
 		matNo:'material number',
 		sampleNo:'sample number',
+		receiveNo:'receive number',
 		nameEn:'english',
 		nameCh:'chinese',
 		drawNo:'drawing number',

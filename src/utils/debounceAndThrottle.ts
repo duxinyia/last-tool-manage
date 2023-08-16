@@ -9,8 +9,7 @@ export function debounce(fn:Function,delay=200){//fn是需要防抖的函数，d
           fn.apply(fn,arguments);
           timer = null;
       },delay)
-      console.log(timer,"timer");
-      
+      console.log(timer,"timer");     
   }
 }
 // 节流

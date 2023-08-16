@@ -27,7 +27,9 @@ export default {
 		searchBtn:'查询',
 		resetBtn:'重置',
 		startup:'启',
-		disable:'禁'
+		disable:'禁',
+		statusY:'是',
+		statusN:'否',
 	},
 	tooltip:{
 		export:'导出',
@@ -58,6 +60,7 @@ export default {
 		placeCode:'请输入代码',
 		matNo:'料号',
 		sampleNo:'送样单号',
+		receiveNo:'验收单号',
 		nameEn:'英文',
 		nameCh:'中文',
 		drawNo:'图纸编号',
