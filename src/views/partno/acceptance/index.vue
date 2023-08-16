@@ -78,10 +78,9 @@
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { getUploadFileApi } from '/@/api/global/index';
 import { ElMessage, genFileId, UploadRawFile } from 'element-plus';
-import { GetCheckTaskApi } from '/@/api/partno/acceptance';
+import { GetCheckTaskApi, SampleCheckApi } from '/@/api/partno/acceptance';
 import { useI18n } from 'vue-i18n';
 import type { UploadInstance, UploadProps, UploadUserFile } from 'element-plus';
-import { log } from 'console';
 
 // 引入表格组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -194,7 +193,7 @@ const dialogState = reactive<TableDemoState>({
 });
 // 单元格样式
 const cellStyle = ref();
-const dialogData = reactive({
+const dialogData = reactive<EmptyObjectType>({
 	// 点击收货弹窗表格数据
 	otherHeaderData: [
 		{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
@@ -238,23 +237,7 @@ const getTableData = async () => {
 		matNo: form.matNo,
 		page: state.tableData.page,
 	};
-	// const res = await GetCheckTaskApi();
-	let res = {
-		status: true,
-		code: 0,
-		message: 'string',
-		data: [
-			{
-				matNo: '料号',
-				sampleNo: '单号',
-				nameEn: '中文',
-				nameCh: '英文',
-				engineer: '工号',
-				engineerName: '名字',
-				runStatus: '状态',
-			},
-		],
-	};
+	const res = await GetCheckTaskApi();
 	state.tableData.data = res.data;
 	if (res.status) {
 		state.tableData.config.loading = false;
@@ -306,7 +289,6 @@ const openAcceptanceDialog = async (scope: any) => {
 	};
 	dialogState.tableData.data = res.data.vendorDetails;
 	// const res = await GetSampleDetailApi(scope.row.sampleNo);
-	// sendReceiveDialogRef.value.openDialog(scope, 1, '验收');
 };
 //删除表格某一行數據
 const onDelRow = (row: EmptyObjectType, i: number) => {
@@ -319,10 +301,11 @@ const inputHandleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => 
 };
 //可以在选中时自动替换上一个文件
 const inputHandleExceed: UploadProps['onExceed'] = (files) => {
-	inputuploadRefs.value[0]!.clearFiles();
+	let upload_list: any = inputuploadRefs.value;
+	upload_list[0]!.clearFiles();
 	const file = files[0] as UploadRawFile;
 	file.uid = genFileId();
-	inputuploadRefs.value[0]!.handleStart(file);
+	upload_list[0]!.handleStart(file);
 };
 // 上传文件
 const inputsubmitUpload = async () => {
@@ -339,12 +322,30 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
-		console.log('表格數據', dialogState);
-
+		// console.log('表格數據', dialogState);
+		let checkDetails = dialogState.tableData.data.filter((item) => {
+			delete item.needsQty;
+			delete item.needsTime;
+			delete item.sampleQty;
+			delete item.sampleTime;
+			return item;
+		});
+		let submitparams = {
+			sampleNo: dialogData.formData.sampleNo,
+			matNo: dialogData.formData.matNo,
+			describe: dialogData.describe,
+			accepReportUrl: dialogData.fileInfo.drawPath,
+			checkDetails: checkDetails,
+		};
+		// console.log('提交的信息', submitparams);
 		// let allData: EmptyObjectType = {};
 		// allData = { ...state.tableData.form };
 		// allData['details'] = state.tableData.data;
-		// await getToolApplyInsertApi(allData);
+		let res = await SampleCheckApi(submitparams);
+		if (res.status) {
+			dialogData.dialogVisible = false;
+			ElMessage.success('验收成功');
+		}
 	});
 };
 // 页面加载时
