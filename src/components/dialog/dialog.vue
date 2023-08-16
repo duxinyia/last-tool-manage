@@ -236,10 +236,11 @@ const inputHandleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => 
 
 //可以在选中时自动替换上一个文件
 const inputHandleExceed: UploadProps['onExceed'] = (files) => {
-	inputuploadRefs.value[0]!.clearFiles();
+	let upload_list: any = inputuploadRefs.value;
+	upload_list[0]!.clearFiles();
 	const file = files[0] as UploadRawFile;
 	file.uid = genFileId();
-	inputuploadRefs.value[0]!.handleStart(file);
+	upload_list[0]!.handleStart(file);
 };
 
 // 上传文件

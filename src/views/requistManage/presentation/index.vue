@@ -106,7 +106,7 @@ const state = reactive<EmptyObjectType>({
 			{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'input', isCheck: true, isRequired: true },
 			{ key: 'sampleQty', colWidth: '', title: '需求数量', type: 'input', isCheck: true, isRequired: true },
 			{ key: 'sampleTime', colWidth: '150', title: '需求时间', type: 'time', isCheck: true, isRequired: true },
-			{ key: 'pr', colWidth: '', title: 'PR项次', type: 'status1', isCheck: true, isRequired: true },
+			{ key: 'pr', colWidth: '', title: 'PR项次', type: 'input', isCheck: true, isRequired: true },
 		],
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）

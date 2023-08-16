@@ -58,7 +58,7 @@ const state = reactive<TableDemoState>({
 			isPage: true, //是否有分页
 		},
 		btnConfig: [
-			{ type: 'edit', name: 'message.allButton.editBtn', color: '#39D339', isSure: false },
+			{ type: 'edit', name: 'message.allButton.editBtn', color: '#39D339', isSure: false, icon: 'ele-Edit' },
 			{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true },
 		],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）

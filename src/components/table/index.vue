@@ -185,12 +185,14 @@
 							:color="btn.color"
 							plain
 							class="button buttonBorder"
-							><el-icon><ele-Edit /></el-icon>{{ $t(btn.name) }}</el-button
+						>
+							<SvgIcon class="mr5" :name="btn.icon" />
+							{{ $t(btn.name) }}</el-button
 						>
 						<el-popconfirm v-if="btn.isSure" :title="$t('message.hint.suredel')" @confirm="onDelRow(scope.row, scope.$index)">
 							<template #reference>
 								<el-button class="button buttonBorder" :color="btn.color" plain
-									><el-icon><ele-Delete /></el-icon>{{ $t(btn.name) }}</el-button
+									><el-icon class="mr5"><ele-Delete /></el-icon>{{ $t(btn.name) }}</el-button
 								>
 							</template>
 						</el-popconfirm>
