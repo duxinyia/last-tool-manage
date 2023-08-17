@@ -58,6 +58,7 @@ const state = reactive<TableDemoState>({
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
 			isPage: false, //是否有分页
+			height: 750,
 		},
 
 		btnConfig: [{ type: 'sendReceive', name: '收货', color: '#D3C333', isSure: false }],

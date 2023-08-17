@@ -123,7 +123,6 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 							icon: 'iconfont icon-shuxingtu',
 						},
 					},
-					
 				],
 			},
 			{
@@ -155,8 +154,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 							isIframe: false,
 							roles: ['admin', 'common'],
 							icon: 'iconfont icon-caidan',
-						}
-					
+						},
 					},
 					{
 						path: '/taskList/menu2',
@@ -205,7 +203,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 							roles: ['admin', 'common'],
 							icon: 'iconfont icon-shuxingtu',
 						},
-					},		
+					},
 				],
 			},
 			{
@@ -239,7 +237,6 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 							icon: 'iconfont icon-shuxingtu',
 						},
 					},
-		
 				],
 			},
 			{
@@ -258,7 +255,6 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					icon: 'iconfont icon-baobiao',
 				},
 				children: [
-		
 					{
 						path: '/report/tableDemo',
 						name: 'makeTableDemo',
