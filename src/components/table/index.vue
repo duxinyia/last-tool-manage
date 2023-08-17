@@ -191,7 +191,7 @@
 						>
 						<el-popconfirm v-if="btn.isSure" :title="$t('message.hint.suredel')" @confirm="onDelRow(scope.row, scope.$index)">
 							<template #reference>
-								<el-button class="button buttonBorder" :color="btn.color" plain
+								<el-button :disabled="btn.disabled" class="button buttonBorder" :color="btn.color" plain
 									><el-icon class="mr5"><ele-Delete /></el-icon>{{ $t(btn.name) }}</el-button
 								>
 							</template>
@@ -315,7 +315,7 @@ const onOpenEdit = (type: string, row: Object) => {
 	emit('openAdd', type, row);
 };
 // 打开送样(其他)弹窗
-const onOpenOther = (scope: Object) => {
+const onOpenOther = (scope: EmptyObjectType) => {
 	emit('onOpenOtherDialog', scope);
 };
 // 打开导入弹窗

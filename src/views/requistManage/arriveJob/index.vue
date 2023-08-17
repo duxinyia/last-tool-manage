@@ -12,35 +12,44 @@
 				:cellStyle="cellStyle"
 				@onOpenOtherDialog="openArriveJobDialog"
 			/>
-			<el-dialog ref="arriveJobDialogRef" v-model="arriveJobDialogVisible" :title="dilogTitle" width="80%">
-				<el-form ref="tableSearchRef" size="default" label-width="auto" class="table-form" v-if="dilogTitle == '收货'">
-					<el-row>
-						<el-col :xs="24" :sm="12" :md="8" :lg="11" :xl="4" class="mb10" v-for="(val, key) in dialogState.tableData.search" :key="key">
-							<el-form-item :label="$t(val.label)" :prop="val.prop">
-								<!-- <el-input
-									v-model="dialogState.tableData.form[val.prop]"
-									:placeholder="`请输入${$t(val.label)}`"
-									clearable
-									v-if="val.type === 'input'"
-									style="width: 100%"
-								/> -->
-								<el-date-picker
-									v-if="val.type === 'time'"
-									value-format="YYYY-MM-DD"
-									v-model="dialogState.tableData.form[val.prop]"
-									type="date"
-									placeholder="请选择"
-									style="height: 30px; max-width: 167px"
-								/>
-							</el-form-item>
-						</el-col>
-					</el-row>
+			<el-dialog ref="arriveJobDialogRef" v-model="arriveJobDialogVisible" :title="dilogTitle" width="85%">
+				<el-row v-if="dilogTitle == '收货'">
+					<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb10" v-for="(val, key) in dialogState.tableData.search" :key="key">
+						<div v-if="val.type === 'text'">
+							{{ val.label }}：<span style="color: red" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
+						</div>
+						<div v-if="val.type === 'time'">
+							<span v-if="val.isRequired" class="color-danger mr5">*</span>
+							<span style="width: 96px" class="mr10">{{ val.label }}</span>
+							<el-date-picker
+								value-format="YYYY-MM-DD"
+								v-model="dialogState.tableData.form[val.prop]"
+								type="date"
+								placeholder="请选择"
+								style="height: 30px; max-width: 167px"
+							/>
+						</div>
+					</el-col>
+				</el-row>
+
+				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
+					<Table v-bind="dialogState.tableData" class="table" @delRow="onDelRow" />
 				</el-form>
-				<Table v-bind="dialogState.tableData" class="table" />
+				<div class="describe" v-if="dilogTitle == '收货'">
+					<span>描述说明：</span>
+					<el-input
+						class="input-textarea"
+						show-word-limit
+						v-model="dialogState.tableData.form['describe']"
+						type="textarea"
+						placeholder="请输入"
+						maxlength="150"
+					></el-input>
+				</div>
 				<template #footer v-if="dilogTitle == '收货'">
 					<span class="dialog-footer">
-						<el-button size="default" @click="arriveJobDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" @click="arriveJobDialogVisible = false"> 收货 </el-button>
+						<el-button size="default" auto-insert-space @click="arriveJobDialogVisible = false">取消</el-button>
+						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)"> 确定 </el-button>
 					</span>
 				</template>
 			</el-dialog>
@@ -49,10 +58,12 @@
 </template>
 
 <script setup lang="ts" name="/requistManage/arriveJob">
-import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
+import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
 import { ElMessage } from 'element-plus';
 const arriveJobDialogVisible = ref(false);
-import { getToolApplyHeadPageApi, getreqNoApi } from '/@/api/requistManage/reportingInquiry';
+// 引入接口
+import { getreqNoApi } from '/@/api/requistManage/reportingInquiry';
+import { getGetWaitRecievePageListApi, getAddReceiveApi } from '/@/api/requistManage/arriveJob';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -60,6 +71,7 @@ const TableSearch = defineAsyncComponent(() => import('/@/components/search/sear
 
 // 定义变量内容
 const { t } = useI18n();
+const tableFormRef = ref();
 const tableRef = ref<RefType>();
 const arriveJobDialogRef = ref();
 // 单元格样式
@@ -69,10 +81,31 @@ const cellStyle = ref();
 const dilogTitle = ref();
 const header = ref([
 	{ key: 'matNo', colWidth: '250', title: 'message.pages.matNo', type: 'text', isCheck: true },
+	{ key: 'ji', colWidth: '', title: '机种', type: 'text', isCheck: true },
 	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 	{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 	{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
+	{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
+	{ key: 'reqDate', colWidth: '', title: '需求时间', type: 'text', isCheck: true },
+	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'input', isCheck: true, isRequired: true },
+	{ key: 'receiptDate', colWidth: '150', title: '收货时间', type: 'time', isCheck: true, isRequired: true },
+]);
+const header1 = ref([
+	{
+		key: 'matNo',
+		colWidth: '250',
+		title: 'message.pages.matNo',
+		type: 'text',
+		isCheck: true,
+	},
+	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
+	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+	{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
+	{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+	{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
+	{ key: 'reqDate', colWidth: '150', title: '需求时间', type: 'text', isCheck: true },
 	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
 ]);
 const state = reactive<TableDemoState>({
@@ -126,22 +159,7 @@ const dialogState = reactive<TableDemoState>({
 		// 列表数据（必传）
 		data: [],
 		// 表头内容（必传，注意格式）
-		header: [
-			{
-				key: 'matNo',
-				colWidth: '250',
-				title: 'message.pages.matNo',
-				type: 'text',
-				isCheck: true,
-			},
-			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
-			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-			{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-			{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
-			{ key: 'reqDate', colWidth: '150', title: '需求时间', type: 'text', isCheck: true },
-			{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
-		],
+		header: [],
 		// 配置项（必传）
 		config: {
 			total: 0, // 列表总数
@@ -164,8 +182,9 @@ const dialogState = reactive<TableDemoState>({
 			{ label: '收货单号', prop: 'sendNo', required: false, type: 'text' },
 			{ label: '申请单号', prop: 'reqNo', required: false, type: 'text' },
 			{ label: 'PR单号', prop: 'prNo', required: false, type: 'text' },
-			{ label: '收货时间', prop: 'times', required: false, type: 'time' },
+			{ label: '收货时间', prop: 'sendTime', required: false, type: 'time', isRequired: true },
 		],
+		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: true }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
 			pageNum: 1,
@@ -193,34 +212,67 @@ const getTableData = async () => {
 		prNo: form.prNo,
 		page: state.tableData.page,
 	};
-	const res = await getToolApplyHeadPageApi(data);
+	const res = await getGetWaitRecievePageListApi(data);
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
 	if (res.status) {
 		state.tableData.config.loading = false;
 	}
 };
+//删除
+const onDelRow = (row: EmptyObjectType, i: number) => {
+	dialogState.tableData.data.splice(i, 1);
+};
 // 点击收货弹窗
-const openArriveJobDialog = () => {
+const openArriveJobDialog = (scope: EmptyObjectType) => {
+	let data = { reqNo: scope.row.reqNo };
+	dialogState.tableData.form = scope.row;
+	getDetailData(data);
 	dilogTitle.value = '收货';
-	let tableData = dialogState.tableData;
-	tableData.data = [];
-	tableData.header = header.value;
-	tableData.config.loading = false;
-	arriveJobDialogVisible.value = true;
+	changeStatus(header.value, 300, true);
 };
 // 点击申请单号
-const reqNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
+const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'reqNo') {
 		dilogTitle.value = '单号:' + row.reqNo;
+		changeStatus(header1.value, 500, false);
 		let data = { reqNo: row.reqNo };
-		const res = await getreqNoApi(data);
-		dialogState.tableData.data = res.data.applyDetails;
-		arriveJobDialogVisible.value = true;
-		if (res.status) {
-			dialogState.tableData.config.loading = false;
-		}
+		getDetailData(data);
 	}
+};
+// 详情接口
+const getDetailData = async (data: Object) => {
+	const res = await getreqNoApi(data);
+	dialogState.tableData.data = res.data.applyDetails;
+	arriveJobDialogVisible.value = true;
+	if (res.status) {
+		dialogState.tableData.config.loading = false;
+	}
+};
+// 根据弹出窗不一样展现的配置不一样
+const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) => {
+	let tableData = dialogState.tableData;
+	let config = tableData.config;
+	tableData.header = header;
+	config.height = height;
+	config.isOperate = isShow;
+	config.isInlineEditing = isShow;
+};
+// 提交
+const onSubmit = async (formEl: EmptyObjectType | undefined) => {
+	if (!formEl) return;
+	await formEl.validate(async (valid: boolean) => {
+		if (!valid) return ElMessage.warning(t('表格项必填未填'));
+		if (!dialogState.tableData.form['sendTime']) return ElMessage.warning(t('请填写收货时间'));
+		let allData: EmptyObjectType = {};
+		allData = { ...dialogState.tableData.form };
+		allData['details'] = dialogState.tableData.data;
+		const res = await getAddReceiveApi(allData);
+		if (res.status) {
+			ElMessage.success(t('收货成功'));
+			arriveJobDialogVisible.value = false;
+		}
+	});
 };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
@@ -238,7 +290,10 @@ const onTablePageChange = (page: TableDemoPageType) => {
 const onSortHeader = (data: TableHeaderType[]) => {
 	state.tableData.header = data;
 };
-
+if (dialogState.tableData.btnConfig)
+	dialogState.tableData.btnConfig[0].disabled = computed(() => {
+		return dialogState.tableData.data.length <= 1 ? true : false;
+	});
 // 页面加载时
 onMounted(() => {
 	getTableData();
@@ -253,6 +308,13 @@ onMounted(() => {
 			flex: 1;
 			overflow: hidden;
 		}
+	}
+}
+.describe {
+	display: flex;
+	margin-top: 10px;
+	span {
+		width: 90px;
 	}
 }
 </style>

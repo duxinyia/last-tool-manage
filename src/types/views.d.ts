@@ -26,6 +26,7 @@ declare type TableSearchType = {
 	required: boolean;
 	type: string;
 	options?: SelectOptionType[];
+	[key: string]: T;
 };
 declare type TableButtonType = {
 	type: string;
