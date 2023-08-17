@@ -69,7 +69,7 @@ export function formatTwoStageRoutes(arr: any) {
 	const newArr: any = [];
 	const cacheList: Array<string> = [];
 	arr.forEach((v: any) => {
-		if (v.path === '/') {
+		if (v.path === '/') {		
 			newArr.push({ component: v.component, name: v.name, path: v.path, redirect: v.redirect, meta: v.meta, children: [] });
 		} else {
 			// 判断是否是动态路由（xx/:id/:name），用于 tagsView 等中使用
@@ -110,9 +110,7 @@ router.beforeEach(async (to, from, next) => {
 			NProgress.done();
 		} else {
 			const storesRoutesList = useRoutesList(pinia);
-			const { routesList } = storeToRefs(storesRoutesList);
-			console.log(routesList);
-			
+			const { routesList } = storeToRefs(storesRoutesList);		
 			if (routesList.value.length === 0) {
 				if (isRequestRoutes) {		
 					// 后端控制路由：路由数据初始化，防止刷新时丢失

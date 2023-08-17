@@ -176,7 +176,7 @@
 				</template>
 			</el-table-column>
 
-			<el-table-column align="center" :label="$t('message.pages.operation')" :width="btnConfig.length >= 3 ? 320 : 240" v-if="config.isOperate">
+			<el-table-column align="center" :label="$t('message.pages.operation')" :width="config.operateWidth || 120" v-if="config.isOperate">
 				<template v-slot="scope">
 					<template v-for="btn in btnConfig" :key="btn.type">
 						<el-button
@@ -506,9 +506,7 @@ defineExpose({
 	.buttonBorder {
 		border: 0px !important;
 	}
-	:deep(.el-table__cell) {
-		// padding: 8px 0px !important;
-	}
+
 	.footer {
 		display: flex;
 	}
