@@ -377,16 +377,16 @@ export const notFoundAndNoPower = [
 			isHide: true,
 		},
 	},
-	// {
-	// 	path: '/home',
-	// 	name: 'home',
-	// 	component: () => import('/@/views/home/index.vue'),
-	// 	meta: {
-	// 		// title: 'message.router.home',
-	// 		title: '首页',
-	// 		isHide: false,
-	// 	},
-	// },
+	{
+		path: '/home',
+		name: 'home',
+		component: () => import('/@/views/home/index.vue'),
+		meta: {
+			// title: 'message.router.home',
+			title: '首页',
+			isHide: false,
+		},
+	},
 ];
 
 /**

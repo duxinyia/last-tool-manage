@@ -35,11 +35,13 @@ export function useTitle() {
 	nextTick(() => {
 		let webTitle = '';
 		let globalTitle: string = i18n.global.t(themeConfig.value.globalTitle);
+		console.log(22,router);
+		
 		const { path, meta } = router.currentRoute.value;
 		if (path === '/login') {
 			webTitle = <string>meta.title;
 		} else {
-			webTitle = setTagsViewNameI18n(router.currentRoute.value);
+			webTitle = setTagsViewNameI18n(router.currentRoute.value);		
 		}
 		document.title = `${webTitle} - ${globalTitle}` || globalTitle;
 	});
@@ -65,6 +67,8 @@ export function setTagsViewNameI18n(item: any) {
 			tagsViewName = query?.tagsViewName || params?.tagsViewName;
 		}
 	} else {
+		console.log(meta);
+		
 		// 非自定义 tagsView 名称
 		tagsViewName = i18n.global.t(meta.titleEn||meta.title);
 	}
@@ -193,7 +197,7 @@ const other = {
 	useTitle: () => {
 		useTitle();
 	},
-	setTagsViewNameI18n(route: RouteToFrom) {
+	setTagsViewNameI18n(route: RouteToFrom) {	
 		return setTagsViewNameI18n(route);
 	},
 	lazyImg: (el: string, arr: EmptyArrayType) => {

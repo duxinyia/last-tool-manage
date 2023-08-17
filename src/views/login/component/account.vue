@@ -114,9 +114,11 @@ const onSignIn = (formEl: EmptyObjectType | undefined) => {
 				// Local.set('datas', res.data.datas);
 				// let home: string[] = [];
 				res.data.datas.unshift({
+					alwaysShow: 'true',
 					path: '/home',
 					name: 'home',
 					component: 'home',
+					redirect: 'noRedirect',
 					meta: { title: '首页', titleEn: 'message.router.home', isAffix: true, icon: 'home' },
 				});
 				// 添加是否缓存组件状态
@@ -145,10 +147,10 @@ const onSignIn = (formEl: EmptyObjectType | undefined) => {
 		}
 	});
 };
-// 在路由里面所有的meta里面加上isKeepAlive字段
+// 在路由里面所有的meta里面加上isKeepAlive字段(是否缓存组件状态)
 const addIsKeepAlive = (datas: EmptyArrayType) => {
 	datas.forEach((item) => {
-		item.meta['isKeepAlive'] = true;
+		item.meta['isKeepAlive'] = false;
 		// 菜单是否隐藏
 		item.meta['isHide'] = Boolean(item.hidden);
 		if (item.children) {

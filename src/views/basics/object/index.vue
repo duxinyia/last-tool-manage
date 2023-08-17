@@ -27,7 +27,6 @@ const TableSearch = defineAsyncComponent(() => import('/@/components/search/sear
 // 引入组件
 const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 import { useI18n } from 'vue-i18n';
-import { log } from 'console';
 const { t } = useI18n();
 // 定义变量内容
 const purchaseDialogRef = ref();
