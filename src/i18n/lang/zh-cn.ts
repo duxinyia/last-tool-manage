@@ -1,8 +1,8 @@
 // 定义内容
 export default {
 	router: {
-		home:'首页',
-		mainHead:'治工具系统',
+		home: '首页',
+		mainHead: '治工具系统',
 		basics: '基本资料维护',
 		basicsPurchase: '采购群组维护',
 		basicsObject: '工程群组维护',
@@ -12,16 +12,20 @@ export default {
 		menu1: '菜单1',
 		menu2: '菜单2',
 		requisition: '请购管理',
-		presentation:'治工具需求提报',
-		arrivejob:'到货作业',
+		presentation: '治工具需求提报',
+		arrivejob: '到货作业',
 		toolsReturn: '治工具退库',
 		report: '报表管理',
-		matNo:'料号',
-		matSearch:'料号查询',
-		matSample:'料号送样',
-		sampleReceive:'送样收货',
-		sampleAcceptance:'样品验收',
-		presentationSearch:'治工具提报查询'
+		matNo: '料号',
+		matSearch: '料号查询',
+		matSample: '料号送样',
+		sampleReceive: '送样收货',
+		sampleAcceptance: '样品验收',
+		presentationSearch: '治工具提报查询',
+		maintenanceManage: '维修管理',
+		maintenanceInquiry: '维修单查询',
+		maintenancePresent: '维修单提报',
+		maintenanceDelivery: '维修单收货',
 	},
 	staticRoutes: {
 		signIn: '登录',
@@ -129,5 +133,4 @@ export default {
 		copyTextSuccess: '复制成功！',
 		copyTextError: '复制失败！',
 	},
-
 };

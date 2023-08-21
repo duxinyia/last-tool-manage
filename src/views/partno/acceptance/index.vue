@@ -11,7 +11,7 @@
 				:cellStyle="cellStyle"
 			/>
 			<!-- <Dialog ref="sendReceiveDialogRef" v-bind="dialogData" /> -->
-			<el-dialog v-model="dialogData.dialogVisible" title="验收" width="1550px">
+			<el-dialog v-model="dialogData.dialogVisible" title="验收" width="80%">
 				<el-row :gutter="10">
 					<el-col
 						v-for="item in dialogData.dialogForm"

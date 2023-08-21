@@ -1,8 +1,8 @@
 // 定义内容
 export default {
 	router: {
-		home:'home page',
-		mainHead:'tool system',
+		home: 'home page',
+		mainHead: 'tool system',
 		basics: 'basic information',
 		basicsPurchase: 'purchasing group',
 		basicsObject: 'project group',
@@ -12,16 +12,20 @@ export default {
 		menu1: 'menu1',
 		menu2: 'menu2',
 		requisition: 'requisition',
-		presentation:'tool requist presentation',
-		arrivejob:'arrival operation',
+		presentation: 'tool requist presentation',
+		arrivejob: 'arrival operation',
 		toolsReturn: 'return the tools',
 		report: 'report',
-		matNo:'material number',
-		matSearch:'material number search',
-		matSample:'send samples with material',
-		sampleReceive:'send samples and receive',
-		sampleAcceptance:'acceptance samples',
-		presentationSearch:'tool reporting inquiry'
+		matNo: 'material number',
+		matSearch: 'material number search',
+		matSample: 'send samples with material',
+		sampleReceive: 'send samples and receive',
+		sampleAcceptance: 'acceptance samples',
+		presentationSearch: 'tool reporting inquiry',
+		maintenanceManage: 'maintenance manage',
+		maintenanceInquiry: 'repair order query',
+		maintenancePresent: 'repair order submission',
+		maintenanceDelivery: 'repair order receipt',
 	},
 	staticRoutes: {
 		signIn: 'signIn',
@@ -129,5 +133,4 @@ export default {
 		copyTextSuccess: 'Copy succeeded!',
 		copyTextError: 'Copy failed!',
 	},
-
 };
