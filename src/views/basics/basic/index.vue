@@ -1,6 +1,7 @@
 <template>
 	<div class="table-container layout-padding">
 		<div class="table-padding layout-padding-view layout-padding-auto">
+			<!--  -->
 			<TableSearch
 				v-if="state.tableData.search[0].options && state.tableData.search[0].options.length > 0"
 				:search="state.tableData.search"
@@ -58,8 +59,6 @@ const state = reactive<TableDemoState>({
 		// 表头内容（必传，注意格式）
 		header: [
 			{ key: 'dataname', colWidth: '', title: 'message.pages.name1', type: 'text', isCheck: true },
-			{ key: 'datacode', colWidth: '', title: 'message.pages.code', type: 'text', isCheck: true },
-			{ key: 'type', colWidth: '', title: 'message.pages.groupType', type: 'text', isCheck: true },
 			{ key: 'runstatus', colWidth: '', title: 'message.pages.state', type: 'status', isCheck: true },
 			{ key: 'creator', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
 			{ key: 'createtime', colWidth: '', title: 'message.pages.creationTime', type: 'text', isCheck: true },
@@ -76,6 +75,7 @@ const state = reactive<TableDemoState>({
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
+			operateWidth: 230,
 		},
 		btnConfig: [
 			{ type: 'edit', name: 'message.allButton.editBtn', color: '#39D339', isSure: false, icon: 'ele-Edit' },
@@ -92,7 +92,6 @@ const state = reactive<TableDemoState>({
 				options: [],
 			},
 			{ label: 'message.pages.name1', prop: 'dataName', placeholder: 'message.pages.placeName1', required: false, type: 'input' },
-			{ label: 'message.pages.code', prop: 'dataCode', placeholder: 'message.pages.placeCode', required: false, type: 'input' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -121,7 +120,13 @@ const state = reactive<TableDemoState>({
 				options: [],
 				editDisable: true,
 			},
-			{ label: '名称', prop: 'dataname', placeholder: '请输入名称', required: true, type: 'input' },
+			{
+				label: '名称',
+				prop: 'dataname',
+				placeholder: '请输入名称',
+				required: true,
+				type: 'input',
+			},
 		],
 	},
 });
@@ -146,9 +151,9 @@ const getTableData = async () => {
 // 下拉框数据
 const getSelect = async () => {
 	const res = await getParentIdListApi();
-	state.tableData.search[0].options = res.data.pars;
+	state.tableData.search[0].options = res.data;
 	if (state.tableData.dialogConfig) {
-		state.tableData.dialogConfig[0].options = res.data.pars;
+		state.tableData.dialogConfig[0].options = res.data;
 	}
 };
 // 搜索点击时表单回调
