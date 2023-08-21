@@ -13,17 +13,7 @@
 						v-for="item in dialogConfig"
 						:key="item.prop"
 					>
-						<el-form-item
-							:label="$t(item.label)"
-							:prop="item.prop"
-							:rules="[
-								{
-									required: item.required,
-									message: `${$t(item.label)}不能为空`,
-									trigger: item.type === 'input' || item.type === 'inputFile' || item.type === 'textarea' ? 'blur' : 'change',
-								},
-							]"
-						>
+						<el-form-item :label="$t(item.label)" :prop="item.prop" :rules="allRules(item)">
 							<el-input v-if="item.type === 'input'" v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)" clearable></el-input>
 
 							<el-input disabled v-if="item.type === 'inputFile'" v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)" clearable>
@@ -55,7 +45,7 @@
 								v-if="item.type === 'select'"
 								:disabled="state.dialog.isdisable"
 							>
-								<el-option v-for="val in item.options" :key="val.value" :label="val.label" :value="val.value"> </el-option>
+								<el-option v-for="val in item.options" :key="val.label" :label="val.text" :value="val.value"> </el-option>
 							</el-select>
 							<el-switch
 								v-if="item.type === 'switch'"
@@ -121,10 +111,12 @@
 import { defineAsyncComponent, reactive, onMounted, ref, nextTick } from 'vue';
 import { storeToRefs } from 'pinia';
 
-import { ElMessage, genFileId, UploadRawFile } from 'element-plus';
+import { ElMessage, genFileId, UploadRawFile, FormRules, FormInstance } from 'element-plus';
 import type { UploadInstance, UploadProps, UploadUserFile } from 'element-plus';
 import { UploadFilled } from '@element-plus/icons-vue';
 import { getUploadFileApi } from '/@/api/global/index';
+import { verifyPhone, verifyEmail } from '/@/utils/toolsValidate';
+import { useI18n } from 'vue-i18n';
 // 引入组件
 const IconSelector = defineAsyncComponent(() => import('/@/components/iconSelector/index.vue'));
 const emit = defineEmits(['downloadTemp', 'importTableData', 'addData']);
@@ -140,7 +132,7 @@ const props = defineProps({
 		default: () => '',
 	},
 });
-
+const { t } = useI18n();
 const uploadRefs = ref<UploadInstance>();
 const inputuploadRefs = ref<UploadInstance>();
 const fileList = ref<UploadUserFile[]>([]);
@@ -150,6 +142,8 @@ const fileListName = ref();
 const dialogFormRef = ref();
 const uploadForm = ref();
 const inputuploadForm = ref();
+
+let rules = reactive<EmptyObjectType>({});
 const state = reactive<dialogFormState>({
 	formData: {},
 	vendors: [],
@@ -164,6 +158,29 @@ const state = reactive<dialogFormState>({
 const ondownloadTemp = () => {
 	emit('downloadTemp');
 };
+// 校验表单
+const validatePass = (rule: any, value: any, callback: any, item: EmptyObjectType) => {
+	const validateForm = item.validateForm;
+	if (value === '') {
+		callback(new Error(`${t(item.label)}不能为空`));
+	} else if ((validateForm && validateForm === 'phone' && !verifyPhone(value)) || (validateForm === 'email' && !verifyEmail(value))) {
+		callback(new Error(item.message));
+	}
+};
+const allRules = (item: EmptyObjectType) => {
+	rules = {
+		default: [
+			{
+				required: item.required,
+				message: `${t(item.label)}不能为空`,
+				trigger: item.type === 'input' || item.type === 'inputFile' || item.type === 'textarea' ? 'blur' : 'change',
+			},
+		],
+		other: [{ validator: (rule: any, value: any, callback: any) => validatePass(rule, value, callback, item), trigger: 'blur' }],
+	};
+	return item.validateForm ? rules['other'] : rules['default'];
+};
+
 // 打开弹窗
 const openDialog = (type: string, row?: any, title?: string) => {
 	if (type === 'add') {

@@ -100,14 +100,26 @@
 						:prop="`data.${scope.$index}.${item.key}`"
 						:rules="[{ required: item.isRequired, message: '不能为空', trigger: item.type === 'input' || item.type === 'time' ? 'blur' : 'change' }]"
 					>
+						<!-- 输入框 -->
 						<el-input
 							v-if="item.type === 'input'"
 							style="height: 30px"
 							v-model="data[scope.$index][item.key]"
 							placeholder="请输入"
 							clearable
-							@input="inputMatNo(item.key)"
+							@change="changedata(scope.$index, item.key)"
+							@input="inputdata"
 						></el-input>
+						<!-- 数字输入框 -->
+						<el-input-number
+							v-else-if="item.type === 'number'"
+							v-model="data[scope.$index][item.key]"
+							:min="item.min"
+							:max="item.max"
+							size="small"
+							@change="(value:number)=>handleNumberInputChange(value,scope.$index)"
+							@blur="handleNumberInputBlur"
+						/>
 						<!-- 自动补全输入框 -->
 						<el-autocomplete
 							:debounce="500"
@@ -120,6 +132,7 @@
 							@change="changeData(scope.$index)"
 							@select="(item:any) => handleSelect(scope.$index, item)"
 						/>
+						<!-- 下拉框 -->
 						<el-select
 							v-else-if="item.type === 'select'"
 							v-model="data[scope.$index][item.key]"
@@ -127,9 +140,9 @@
 							placeholder="请选择"
 							@change="(item:any) => changeSelect(scope.$index, item)"
 						>
-							<el-option v-for="i in item.option" :key="i.value" :label="i.value" :value="i.value" />
+							<el-option v-for="i in item.option" :key="i.label" :label="i.text" :value="i.value" />
 						</el-select>
-
+						<!-- 状态 -->
 						<el-switch
 							v-else-if="item.type === 'status1'"
 							style="text-align: center; width: 100%; display: flex; justify-content: center"
@@ -140,7 +153,7 @@
 							:active-text="$t('message.allButton.statusY')"
 							:inactive-text="$t('message.allButton.statusN')"
 						></el-switch>
-
+						<!-- 日期框 -->
 						<el-date-picker
 							v-else-if="item.type === 'time'"
 							value-format="YYYY-MM-DD"
@@ -222,7 +235,7 @@
 </template>
 
 <script setup lang="ts" name="netxTable">
-import { reactive, computed, nextTick, ref, defineAsyncComponent, onMounted } from 'vue';
+import { reactive, computed, nextTick, ref, defineAsyncComponent, onMounted, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import printJs from 'print-js';
 import Sortable from 'sortablejs';
@@ -290,10 +303,20 @@ const emit = defineEmits([
 	'handleselect',
 	'handlechange',
 	'changeselect',
+	'inputData',
+	'changeData',
+	'handleNumberInputChange',
+	'handleNumberInputBlur',
 ]);
 // 自动补全输入框
 const querySearchAsync = (queryString: string, cb: (arg: any) => void) => {
 	emit('querysearchasync', queryString, cb);
+};
+const handleNumberInputChange = (value: number, index: number) => {
+	emit('handleNumberInputChange', value, index);
+};
+const handleNumberInputBlur = (value: number, index: number) => {
+	emit('handleNumberInputBlur', value);
 };
 const changeData = (index: number) => {
 	emit('handlechange', index);
@@ -468,7 +491,13 @@ const onSetTable = () => {
 const onAddRow = () => {
 	emit('addrow');
 };
-const inputMatNo = (key: string) => {};
+
+const changedata = (index: number, key: string) => {
+	emit('changeData', index, key);
+};
+const inputdata = (val: string) => {
+	emit('inputData', val);
+};
 // 暴露变量
 defineExpose({
 	pageReset,

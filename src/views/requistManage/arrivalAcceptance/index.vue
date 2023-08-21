@@ -21,31 +21,61 @@
 						<div v-if="val.type === 'time'">
 							<span v-if="val.isRequired" class="color-danger mr5">*</span>
 							<span style="width: 96px" class="mr10">{{ val.label }}</span>
-							<el-date-picker
+							<!-- <el-date-picker
 								value-format="YYYY-MM-DD"
 								v-model="dialogState.tableData.form[val.prop]"
 								type="date"
 								placeholder="请选择"
 								style="height: 30px; max-width: 167px"
-							/>
+							/> -->
 						</div>
 					</el-col>
 				</el-row>
 
 				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
-					<Table v-bind="dialogState.tableData" class="table" @delRow="onDelRow" />
+					<Table v-bind="dialogState.tableData" class="table" @delRow="onDelRow" @handleNumberInputChange="changeInput" />
 				</el-form>
-				<div class="describe" v-if="dilogTitle == '验收'">
-					<span>描述说明：</span>
-					<el-input
-						class="input-textarea"
-						show-word-limit
-						v-model="dialogState.tableData.form['describe']"
-						type="textarea"
-						placeholder="请输入"
-						maxlength="150"
-					></el-input>
-				</div>
+				<template v-if="dilogTitle == '验收'">
+					<div class="describe up-file">
+						<span>收货报告url：</span>
+						<el-input disabled v-model="dialogState.tableData.form['accepreporturl']" clearable>
+							<template #prepend
+								><el-upload
+									v-model:file-list="inputfileList"
+									:auto-upload="false"
+									ref="inputuploadRefs"
+									action=""
+									class="upload"
+									drag
+									:limit="1"
+									:show-file-list="false"
+									:on-exceed="inputHandleExceed"
+									:on-change="inputHandleChange"
+								>
+									<el-button type="primary" class="btn ml1">浏览文件</el-button>
+								</el-upload></template
+							>
+							<template #append v-if="dialogState.tableData.form['accepreporturl']"
+								><el-button @click="inputsubmitUpload" type="primary" class="ml1">上传文件</el-button>
+								<el-button v-if="dialogState.tableData.form['accepreporturl'].includes('/')" class="look-file" @click="lookUpload"
+									>查看文件</el-button
+								>
+							</template>
+						</el-input>
+					</div>
+					<div class="describe">
+						<span>描述说明：</span>
+						<el-input
+							class="input-textarea"
+							show-word-limit
+							v-model="dialogState.tableData.form['describe']"
+							type="textarea"
+							placeholder="请输入"
+							maxlength="150"
+						></el-input>
+					</div>
+				</template>
+
 				<template #footer v-if="dilogTitle == '验收'">
 					<span class="dialog-footer">
 						<el-button size="default" auto-insert-space @click="arriveJobDialogVisible = false">取消</el-button>
@@ -58,12 +88,12 @@
 </template>
 
 <script setup lang="ts" name="/requistManage/arrivalAcceptance">
-import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
-import { ElMessage } from 'element-plus';
+import { defineAsyncComponent, reactive, ref, onMounted, computed, watch } from 'vue';
+import { ElMessage, UploadInstance, UploadProps, UploadUserFile, genFileId, UploadRawFile } from 'element-plus';
 const arriveJobDialogVisible = ref(false);
 // 引入接口
-import { getreqNoApi } from '/@/api/requistManage/reportingInquiry';
-import { getGetWaitRecievePageListApi, getAddReceiveApi } from '/@/api/requistManage/arriveJob';
+import { getIToolReceivePageListApi, getCheckdetailApi, getTInsertCheckApi } from '/@/api/requistManage/arrivalAcceptance';
+import { getUploadFileApi } from '/@/api/global/index';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -74,23 +104,26 @@ const { t } = useI18n();
 const tableFormRef = ref();
 const tableRef = ref<RefType>();
 const arriveJobDialogRef = ref();
+const inputfileList = ref<UploadUserFile[]>([]);
+const inputuploadRefs = ref<UploadInstance>();
+const inputuploadForm = ref();
 // 单元格样式
 const cellStyle = ref();
 
 // 弹窗标题
 const dilogTitle = ref();
-const header = ref([
+const header = ref<EmptyArrayType>([
 	{ key: 'matNo', colWidth: '250', title: 'message.pages.matNo', type: 'text', isCheck: true },
-	{ key: 'ji', colWidth: '', title: '机种', type: 'text', isCheck: true },
+	{ key: 'machinetype', colWidth: '', title: '机种', type: 'text', isCheck: true },
 	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 	{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-	{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
-	{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
-	{ key: 'reqDate', colWidth: '', title: '需求时间', type: 'text', isCheck: true },
-	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'input', isCheck: true, isRequired: true },
-	{ key: 'receiptDate', colWidth: '150', title: '收货时间', type: 'time', isCheck: true, isRequired: true },
+	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'text', isCheck: true },
+	{ key: 'receiptDate', colWidth: '', title: '收货时间', type: 'text', isCheck: true },
+	{ key: 'checkqty', colWidth: '100', title: '验收数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
+	{ key: 'passqty', colWidth: '100', title: '合格数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
+	{ key: 'failqty', colWidth: '', title: '不合格数量', type: 'text', isCheck: true, isRequired: true },
+	{ key: 'checkqtyDate', colWidth: '150', title: '验收时间', type: 'time', isCheck: true, isRequired: true },
 ]);
 const header1 = ref([
 	{
@@ -106,7 +139,6 @@ const header1 = ref([
 	{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 	{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
 	{ key: 'reqDate', colWidth: '150', title: '需求时间', type: 'text', isCheck: true },
-	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
 ]);
 const state = reactive<TableDemoState>({
 	tableData: {
@@ -114,9 +146,17 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'reqNo', colWidth: '', title: '申请单号', type: 'text', isCheck: true },
-			{ key: 'prNo', colWidth: '', title: 'PR单号', type: 'text', isCheck: true },
-			{ key: 'creator', colWidth: '', title: '提报人', type: 'text', isCheck: true },
+			{ key: 'receiptno', colWidth: '', title: '收货单号', type: 'text', isCheck: true },
+			{ key: 'reqno', colWidth: '', title: '申请单号', type: 'text', isCheck: true },
+			{ key: 'creator', colWidth: '', title: '收货人', type: 'text', isCheck: true },
+			{ key: 'receipttime', colWidth: '', title: '收货时间', type: 'text', isCheck: true },
+			{ key: 'runstatus', colWidth: '', title: '状态', type: 'status', isCheck: true },
+			{ key: 'companyid', colWidth: '', title: '法人', type: 'text', isCheck: true },
+			{ key: 'bucode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
+			{ key: 'costcode', colWidth: '', title: '费用代码', type: 'text', isCheck: true },
+			{ key: 'createtime', colWidth: '', title: '创建时间', type: 'text', isCheck: true },
+			{ key: 'modifier', colWidth: '', title: '修改人', type: 'text', isCheck: true },
+			{ key: 'modifytime', colWidth: '', title: '修改时间', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -133,8 +173,8 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
+			{ label: '收货单号', prop: 'receiptNo', required: false, type: 'input' },
 			{ label: '申请单号', prop: 'reqNo', required: false, type: 'input' },
-			{ label: 'PR单号', prop: 'prNo', required: false, type: 'input' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -179,10 +219,8 @@ const dialogState = reactive<TableDemoState>({
 		form: {},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '收货单号', prop: 'sendNo', required: false, type: 'text' },
-			{ label: '申请单号', prop: 'reqNo', required: false, type: 'text' },
-			{ label: 'PR单号', prop: 'prNo', required: false, type: 'text' },
-			{ label: '收货时间', prop: 'sendTime', required: false, type: 'time', isRequired: true },
+			{ label: '验收单号', prop: 'checkno', required: false, type: 'text' },
+			{ label: '收货单号', prop: 'receiptno', required: false, type: 'text' },
 		],
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: true }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
@@ -192,6 +230,21 @@ const dialogState = reactive<TableDemoState>({
 		},
 	},
 });
+
+const changeInput = (val: number, i: number) => {
+	const data = dialogState.tableData.data[i];
+	header.value[8].max = data.checkqty;
+	data.failqty = data.checkqty - data.passqty || 0;
+	if (data.checkqty && data.passqty) {
+		if (data.checkqty < data.passqty) {
+			data.passqty = data.checkqty;
+			data.failqty = data.checkqty - data.passqty;
+		}
+	} else if (!data.checkqty) {
+		data.passqty = 0;
+		data.failqty = 0;
+	}
+};
 // 单元格字体颜色
 const changeToStyle = (indList: number[]) => {
 	return ({ columnIndex }: any) => {
@@ -209,42 +262,65 @@ const getTableData = async () => {
 	const form = state.tableData.form;
 	let data = {
 		reqNo: form.reqNo,
-		prNo: form.prNo,
+		receiptNo: form.receiptNo,
 		page: state.tableData.page,
 	};
-	const res = await getGetWaitRecievePageListApi(data);
+	const res = await getIToolReceivePageListApi(data);
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
 	if (res.status) {
 		state.tableData.config.loading = false;
 	}
 };
+// input框里面的数据
+const inputHandleChange: UploadProps['onChange'] = (uploadFile) => {
+	dialogState.tableData.form['accepreporturl'] = uploadFile.name;
+	inputuploadForm.value = uploadFile;
+};
+//可以在选中时自动替换上一个文件
+const inputHandleExceed: UploadProps['onExceed'] = (files) => {
+	inputuploadRefs.value!.clearFiles();
+	const file = files[0] as UploadRawFile;
+	file.uid = genFileId();
+	inputuploadRefs.value!.handleStart(file);
+};
+// 上传文件
+const inputsubmitUpload = async () => {
+	const res = await getUploadFileApi(0, inputuploadForm.value.raw);
+	dialogState.tableData.form['accepreporturl'] = res.data;
+	res.status && ElMessage.success(`上传成功`);
+};
+// 查看上传的文件
+const lookUpload = () => {
+	window.open(`${import.meta.env.VITE_API_URL}${dialogState.tableData.form['accepreporturl']}`, '_blank');
+};
 //删除
 const onDelRow = (row: EmptyObjectType, i: number) => {
 	dialogState.tableData.data.splice(i, 1);
 };
-// 点击收货弹窗
+// 点击验收按钮
 const openArriveJobDialog = (scope: EmptyObjectType) => {
-	let data = { reqNo: scope.row.reqNo };
+	let data = { Receiptno: scope.row.receiptno };
 	dialogState.tableData.form = scope.row;
 	getDetailData(data);
 	dilogTitle.value = '验收';
 	changeStatus(header.value, 300, true);
 };
-// 点击申请单号
+// 点击收货单号
 const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
-	if (column.property === 'reqNo') {
-		dilogTitle.value = '单号:' + row.reqNo;
+	if (column.property === 'receiptno') {
+		dilogTitle.value = '收货单号:' + row.receiptno;
 		changeStatus(header1.value, 500, false);
-		let data = { reqNo: row.reqNo };
+		let data = { Receiptno: row.receiptno };
 		getDetailData(data);
 	}
 };
 // 详情接口
 const getDetailData = async (data: Object) => {
-	const res = await getreqNoApi(data);
-	dialogState.tableData.data = res.data.applyDetails;
 	arriveJobDialogVisible.value = true;
+	const res = await getCheckdetailApi(data);
+	dialogState.tableData.form['checkno'] = res.data.checkno;
+	dialogState.tableData.data = res.data.receiveDetails;
 	if (res.status) {
 		dialogState.tableData.config.loading = false;
 	}
@@ -263,11 +339,12 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
-		if (!dialogState.tableData.form['sendTime']) return ElMessage.warning(t('请填写收货时间'));
 		let allData: EmptyObjectType = {};
 		allData = { ...dialogState.tableData.form };
-		allData['details'] = dialogState.tableData.data;
-		const res = await getAddReceiveApi(allData);
+		console.log(dialogState.tableData.form);
+
+		allData['checkdetial'] = dialogState.tableData.data;
+		const res = await getTInsertCheckApi(allData);
 		if (res.status) {
 			ElMessage.success(t('收货成功'));
 			arriveJobDialogVisible.value = false;
@@ -314,7 +391,26 @@ onMounted(() => {
 	display: flex;
 	margin-top: 10px;
 	span {
-		width: 90px;
+		width: 100px;
 	}
+}
+.up-file {
+	height: 40px;
+	span {
+		align-items: center;
+		line-height: 40px;
+	}
+}
+:deep(.el-upload-dragger) {
+	border: 0;
+	padding: 0;
+	background-color: transparent;
+	border-radius: unset;
+}
+:deep(.el-input-group__prepend) {
+	padding: 0;
+}
+.look-file {
+	color: var(--el-color-primary) !important;
 }
 </style>

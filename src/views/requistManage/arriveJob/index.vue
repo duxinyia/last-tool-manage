@@ -81,7 +81,7 @@ const cellStyle = ref();
 const dilogTitle = ref();
 const header = ref([
 	{ key: 'matNo', colWidth: '250', title: 'message.pages.matNo', type: 'text', isCheck: true },
-	{ key: 'ji', colWidth: '', title: '机种', type: 'text', isCheck: true },
+	{ key: 'machinetype', colWidth: '', title: '机种', type: 'text', isCheck: true },
 	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 	{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
@@ -182,7 +182,7 @@ const dialogState = reactive<TableDemoState>({
 			{ label: '收货单号', prop: 'sendNo', required: false, type: 'text' },
 			{ label: '申请单号', prop: 'reqNo', required: false, type: 'text' },
 			{ label: 'PR单号', prop: 'prNo', required: false, type: 'text' },
-			{ label: '收货时间', prop: 'sendTime', required: false, type: 'time', isRequired: true },
+			// { label: '收货时间', prop: 'sendTime', required: false, type: 'time', isRequired: true },
 		],
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: true }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
@@ -263,7 +263,7 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
-		if (!dialogState.tableData.form['sendTime']) return ElMessage.warning(t('请填写收货时间'));
+		// if (!dialogState.tableData.form['sendTime']) return ElMessage.warning(t('请填写收货时间'));
 		let allData: EmptyObjectType = {};
 		allData = { ...dialogState.tableData.form };
 		allData['details'] = dialogState.tableData.data;

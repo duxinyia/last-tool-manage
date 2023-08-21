@@ -24,7 +24,7 @@
 								style="width: 100%"
 							/>
 							<el-select v-model="state.form[val.prop]" :placeholder="`请选择${val.label}`" v-else-if="val.type === 'select'" style="width: 100%">
-								<el-option v-for="item in val.options" :key="item.label" :label="item.value" :value="item.label"> </el-option>
+								<el-option v-for="item in val.options" :key="item.label" :label="item.text" :value="item.value"> </el-option>
 							</el-select>
 						</el-form-item>
 					</template>
@@ -106,7 +106,7 @@ const initFormField = () => {
 		if (v.type === 'select' && v.options && v.options?.length > 0) {
 			v.options?.forEach((item) => {
 				if (item.selected) {
-					state.form[v.prop] = item.value;
+					state.form[v.prop] = item.text;
 				}
 			});
 			emit('search', state.form);

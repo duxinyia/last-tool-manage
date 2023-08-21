@@ -49,6 +49,7 @@ declare type DialogConfigType = {
 	md?: number;
 	lg?: number;
 	xl?: number;
+	[key: string]: T;
 };
 declare type TableDemoState = {
 	tableData: {
