@@ -59,6 +59,10 @@ const state = reactive<TableDemoState>({
 			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
 		},
+		topBtnConfig: [
+			{ type: 'add', name: '新增', defaultColor: 'primary', isSure: true, disabled: true },
+			{ type: 'bulkDel', name: '批量删除', color: '#D33939', isSure: true, disabled: true },
+		],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: 'message.pages.workno', prop: 'userid', placeholder: 'message.account.accountPlaceholder1', required: false, type: 'input' },

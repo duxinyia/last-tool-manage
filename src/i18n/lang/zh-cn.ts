@@ -26,6 +26,7 @@ export default {
 		maintenanceInquiry: '维修单查询',
 		maintenancePresent: '维修单提报',
 		maintenanceDelivery: '维修单收货',
+		arrivalAcceptance:'到货验收'
 	},
 	staticRoutes: {
 		signIn: '登录',

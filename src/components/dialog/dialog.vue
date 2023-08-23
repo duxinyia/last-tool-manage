@@ -213,6 +213,7 @@ const openDialog = (type: string, row?: any, title?: string) => {
 		state.dialog.submitTxt = '开始上传';
 	} else {
 		state.dialog.title = title;
+		state.dialog.submitTxt = '确 定';
 	}
 	state.dialog.type = type;
 	state.dialog.isShowDialog = true;

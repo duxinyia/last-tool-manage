@@ -64,6 +64,10 @@ const state = reactive<TableDemoState>({
 			isPage: true, //是否有分页
 			operateWidth: 220, //操作栏宽度，如果操作栏有几个按钮就自己定宽度
 		},
+		topBtnConfig: [
+			{ type: 'add', name: '新增', defaultColor: 'primary', isSure: true, disabled: true },
+			{ type: 'bulkDel', name: '批量删除', color: '#D33939', isSure: true, disabled: true },
+		],
 		btnConfig: [
 			{ type: 'edit', name: 'message.allButton.editBtn', color: '#39D339', isSure: false, icon: 'ele-Edit' },
 			{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true },

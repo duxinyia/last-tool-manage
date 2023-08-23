@@ -59,7 +59,7 @@
 
 <script setup lang="ts" name="/requistManage/arriveJob">
 import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
-import { ElMessage } from 'element-plus';
+import { ElMessage, FormInstance } from 'element-plus';
 const arriveJobDialogVisible = ref(false);
 // 引入接口
 import { getreqNoApi } from '/@/api/requistManage/reportingInquiry';
@@ -259,7 +259,7 @@ const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) =
 	config.isInlineEditing = isShow;
 };
 // 提交
-const onSubmit = async (formEl: EmptyObjectType | undefined) => {
+const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));

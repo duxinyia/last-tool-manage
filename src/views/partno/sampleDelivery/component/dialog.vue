@@ -1,6 +1,6 @@
 <template>
 	<div class="system-menu-dialog-container">
-		<el-dialog :title="state.dialog.title" v-model="state.dialog.isShowDialog" width="1400px">
+		<el-dialog :title="state.dialog.title" v-model="state.dialog.isShowDialog" width="85%">
 			<el-row :gutter="10" v-if="state.dialog.num === 1">
 				<el-col
 					v-for="item in dialogForm"
