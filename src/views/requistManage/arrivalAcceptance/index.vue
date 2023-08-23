@@ -89,7 +89,7 @@
 
 <script setup lang="ts" name="/requistManage/arrivalAcceptance">
 import { defineAsyncComponent, reactive, ref, onMounted, computed, watch } from 'vue';
-import { ElMessage, UploadInstance, UploadProps, UploadUserFile, genFileId, UploadRawFile } from 'element-plus';
+import { ElMessage, UploadInstance, UploadProps, UploadUserFile, genFileId, UploadRawFile, FormInstance } from 'element-plus';
 const arriveJobDialogVisible = ref(false);
 // 引入接口
 import { getIToolReceivePageListApi, getCheckdetailApi, getTInsertCheckApi } from '/@/api/requistManage/arrivalAcceptance';
@@ -137,8 +137,8 @@ const header1 = ref([
 	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 	{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 	{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-	{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
-	{ key: 'reqDate', colWidth: '150', title: '需求时间', type: 'text', isCheck: true },
+	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'text', isCheck: true },
+	{ key: 'receiptDate', colWidth: '150', title: '收货时间', type: 'text', isCheck: true },
 ]);
 const state = reactive<TableDemoState>({
 	tableData: {
@@ -335,7 +335,7 @@ const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) =
 	config.isInlineEditing = isShow;
 };
 // 提交
-const onSubmit = async (formEl: EmptyObjectType | undefined) => {
+const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));

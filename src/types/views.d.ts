@@ -31,7 +31,7 @@ declare type TableSearchType = {
 declare type TableButtonType = {
 	type: string;
 	name: string;
-	color: string;
+	color?: string;
 	isSure: boolean;
 	[key: string]: T;
 };
@@ -69,6 +69,7 @@ declare type TableDemoState = {
 			isSearchBtn: boolean;
 		},
 		search: TableSearchType[];
+		topBtnConfig?:TableButtonType[];
 		btnConfig?:TableButtonType[];
 		page: EmptyObjectType;
 		printName?: string;

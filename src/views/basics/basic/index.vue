@@ -81,6 +81,10 @@ const state = reactive<TableDemoState>({
 			{ type: 'edit', name: 'message.allButton.editBtn', color: '#39D339', isSure: false, icon: 'ele-Edit' },
 			{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true },
 		],
+		topBtnConfig: [
+			{ type: 'add', name: '新增', defaultColor: 'primary', isSure: true, disabled: true },
+			{ type: 'bulkDel', name: '批量删除', color: '#D33939', isSure: true, disabled: true },
+		],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{

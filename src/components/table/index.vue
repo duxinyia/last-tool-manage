@@ -2,17 +2,35 @@
 	<div class="table-container">
 		<div class="table-top" v-if="config.isButton || config.isInlineEditing || config.isTopTool">
 			<!-- 新增弹窗按钮以及批量删除按钮 -->
-			<div class="allBtn mt20" v-if="config.isButton">
-				<el-button size="default" class="ml10 buttonBorder" @click="onOpenAdd('add')" type="primary" plain
+			<div class="allBtn mt20" v-for="topbtn in topBtnConfig" key="topbtn.name">
+				<el-button
+					v-if="topbtn.type === 'add'"
+					size="default"
+					class="ml10 buttonBorder"
+					@click="onOpenAdd('add')"
+					:color="topbtn.color"
+					:type="topbtn.defaultColor"
+					plain
 					><el-icon><ele-Plus /></el-icon>{{ $t('message.allButton.addBtn') }}</el-button
 				>
-				<el-popconfirm :title="$t('确定删除选中项吗？')" @confirm="onBulkDeletion">
+				<el-popconfirm v-else-if="topbtn.type === 'bulkDel'" :title="$t('确定删除选中项吗？')" @confirm="onBulkDeletion">
 					<template #reference>
 						<el-button size="default" :disabled="state.selectlist.length <= 0" class="ml10 buttonBorder" color="#D33939" plain
 							><el-icon><ele-Delete /></el-icon>{{ $t('message.allButton.bulkDeletionBtn') }}</el-button
 						>
 					</template>
 				</el-popconfirm>
+				<el-button
+					@click="onOpentopBtnOther"
+					v-else
+					size="default"
+					class="ml10 buttonBorder"
+					:color="topbtn.color"
+					plain
+					:type="topbtn.defaultColor"
+					:disabled="topbtn.isNoSelcetDisabled ? state.selectlist.length <= 0 : false"
+					><SvgIcon class="mr5" :name="topbtn.icon" /> {{ $t(topbtn.name) }}</el-button
+				>
 			</div>
 			<div class="add-row" v-if="config.isInlineEditing && config.isAddRowBtn">
 				<el-button size="default" class="buttonBorder" @click="onAddRow" type="primary" plain
@@ -64,6 +82,7 @@
 			</div>
 		</div>
 		<el-table
+			ref="tableRef"
 			:height="config.height"
 			id="elTable"
 			:class="!config.isDialogTab ? 'mt12' : ''"
@@ -102,6 +121,7 @@
 					>
 						<!-- 输入框 -->
 						<el-input
+							:disabled="route.path == '/basics/warehouseManage' ? (data[scope.$index].disabled === false ? false : true) : false"
 							v-if="item.type === 'input'"
 							style="height: 30px"
 							v-model="data[scope.$index][item.key]"
@@ -109,6 +129,7 @@
 							clearable
 							@change="changedata(scope.$index, item.key)"
 							@input="inputdata"
+							@blur="inputBlur(scope.$index)"
 						></el-input>
 						<!-- 数字输入框 -->
 						<el-input-number
@@ -197,6 +218,7 @@
 							@click="btn.type === 'edit' ? onOpenEdit(btn.type, scope.row) : onOpenOther(scope)"
 							:color="btn.color"
 							plain
+							size="default"
 							class="button buttonBorder"
 						>
 							<SvgIcon class="mr5" :name="btn.icon" />
@@ -204,7 +226,7 @@
 						>
 						<el-popconfirm v-if="btn.isSure" :title="$t('message.hint.suredel')" @confirm="onDelRow(scope.row, scope.$index)">
 							<template #reference>
-								<el-button :disabled="btn.disabled" class="button buttonBorder" :color="btn.color" plain
+								<el-button :disabled="btn.disabled" class="button buttonBorder" :color="btn.color" plain size="default"
 									><el-icon class="mr5"><ele-Delete /></el-icon>{{ $t(btn.name) }}</el-button
 								>
 							</template>
@@ -236,13 +258,16 @@
 
 <script setup lang="ts" name="netxTable">
 import { reactive, computed, nextTick, ref, defineAsyncComponent, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import printJs from 'print-js';
 import Sortable from 'sortablejs';
 import { storeToRefs } from 'pinia';
 import { useThemeConfig } from '/@/stores/themeConfig';
+const route = useRoute();
 import '/@/theme/tableTool.scss';
 import { useI18n } from 'vue-i18n';
+const tableRef = ref<RefType>();
 // 引入组件
 // const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 
@@ -278,6 +303,10 @@ const props = defineProps({
 		type: Array<EmptyObjectType>,
 		default: () => [],
 	},
+	topBtnConfig: {
+		type: Array<EmptyObjectType>,
+		default: () => [],
+	},
 	// 单元格样式
 	cellStyle: {
 		type: Function,
@@ -304,9 +333,11 @@ const emit = defineEmits([
 	'handlechange',
 	'changeselect',
 	'inputData',
+	'inputBlur',
 	'changeData',
 	'handleNumberInputChange',
 	'handleNumberInputBlur',
+	'onOpentopBtnOther',
 ]);
 // 自动补全输入框
 const querySearchAsync = (queryString: string, cb: (arg: any) => void) => {
@@ -332,6 +363,10 @@ onMounted(() => {});
 // 打开新增弹窗
 const onOpenAdd = (type: string) => {
 	emit('openAdd', type);
+};
+// 打开其他弹窗
+const onOpentopBtnOther = () => {
+	emit('onOpentopBtnOther', state.selectlist);
 };
 // 打开修改弹窗
 const onOpenEdit = (type: string, row: Object) => {
@@ -419,6 +454,10 @@ const pageReset = () => {
 	state.page.pageSize = 10;
 	emit('pageChange', state.page);
 };
+// 清空用户选择的表格行
+const clearSelection = () => {
+	tableRef.value.clearSelection();
+};
 // 打印
 const onPrintTable = () => {
 	// https://printjs.crabbly.com/#documentation
@@ -498,9 +537,13 @@ const changedata = (index: number, key: string) => {
 const inputdata = (val: string) => {
 	emit('inputData', val);
 };
+const inputBlur = (index: number) => {
+	emit('inputBlur', index);
+};
 // 暴露变量
 defineExpose({
 	pageReset,
+	clearSelection,
 });
 </script>
 
@@ -529,7 +572,7 @@ defineExpose({
 		}
 	}
 	.button {
-		width: 80px;
+		// width: 80px;
 		height: 32px;
 	}
 	.buttonBorder {

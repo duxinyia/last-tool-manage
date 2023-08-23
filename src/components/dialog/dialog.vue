@@ -62,6 +62,9 @@
 								:placeholder="$t(item.placeholder)"
 								maxlength="150"
 							></el-input>
+							<span v-if="item.type === 'text'" style="text-align: center; width: 100%">
+								{{ state.formData[item.prop] }}
+							</span>
 						</el-form-item>
 					</el-col>
 				</el-row>
@@ -97,7 +100,7 @@
 					>
 				</div>
 			</el-form>
-			<template #footer v-if="state.dialog.type !== 'imp'">
+			<template #footer v-if="isFootBtn">
 				<span class="dialog-footer">
 					<el-button @click="onCancel" size="default">取 消</el-button>
 					<el-button type="primary" @click="onSubmit(dialogFormRef)" size="default">{{ state.dialog.submitTxt }}</el-button>
@@ -130,6 +133,10 @@ const props = defineProps({
 	dialogType: {
 		type: String,
 		default: () => '',
+	},
+	isFootBtn: {
+		type: Boolean,
+		default: () => true,
 	},
 });
 const { t } = useI18n();
@@ -213,6 +220,10 @@ const openDialog = (type: string, row?: any, title?: string) => {
 		state.dialog.submitTxt = '开始上传';
 	} else {
 		state.dialog.title = title;
+		state.dialog.submitTxt = '确 定';
+		nextTick(() => {
+			state.formData = JSON.parse(JSON.stringify(row));
+		});
 	}
 	state.dialog.type = type;
 	state.dialog.isShowDialog = true;

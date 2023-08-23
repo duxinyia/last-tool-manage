@@ -26,6 +26,7 @@ export default {
 		maintenanceInquiry: '維修單查詢',
 		maintenancePresent: '維修單提報',
 		maintenanceDelivery: '維修單收貨',
+		arrivalAcceptance:'到貨驗收'
 	},
 	staticRoutes: {
 		signIn: '登入',
