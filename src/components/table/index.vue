@@ -20,7 +20,15 @@
 						>
 					</template>
 				</el-popconfirm>
-				<el-button @click="onOpentopBtnOther" v-else size="default" class="ml10 buttonBorder" :color="topbtn.color" plain :type="topbtn.defaultColor"
+				<el-button
+					@click="onOpentopBtnOther"
+					v-else
+					size="default"
+					class="ml10 buttonBorder"
+					:color="topbtn.color"
+					plain
+					:type="topbtn.defaultColor"
+					:disabled="topbtn.isNoSelcetDisabled ? state.selectlist.length <= 0 : false"
 					><SvgIcon class="mr5" :name="topbtn.icon" /> {{ $t(topbtn.name) }}</el-button
 				>
 			</div>
@@ -74,6 +82,7 @@
 			</div>
 		</div>
 		<el-table
+			ref="tableRef"
 			:height="config.height"
 			id="elTable"
 			:class="!config.isDialogTab ? 'mt12' : ''"
@@ -112,7 +121,7 @@
 					>
 						<!-- 输入框 -->
 						<el-input
-							:disabled="!data[scope.$index].disabled"
+							:disabled="route.path == '/basics/warehouseManage' ? (data[scope.$index].disabled === false ? false : true) : false"
 							v-if="item.type === 'input'"
 							style="height: 30px"
 							v-model="data[scope.$index][item.key]"
@@ -249,13 +258,16 @@
 
 <script setup lang="ts" name="netxTable">
 import { reactive, computed, nextTick, ref, defineAsyncComponent, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import printJs from 'print-js';
 import Sortable from 'sortablejs';
 import { storeToRefs } from 'pinia';
 import { useThemeConfig } from '/@/stores/themeConfig';
+const route = useRoute();
 import '/@/theme/tableTool.scss';
 import { useI18n } from 'vue-i18n';
+const tableRef = ref<RefType>();
 // 引入组件
 // const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 
@@ -442,6 +454,10 @@ const pageReset = () => {
 	state.page.pageSize = 10;
 	emit('pageChange', state.page);
 };
+// 清空用户选择的表格行
+const clearSelection = () => {
+	tableRef.value.clearSelection();
+};
 // 打印
 const onPrintTable = () => {
 	// https://printjs.crabbly.com/#documentation
@@ -527,6 +543,7 @@ const inputBlur = (index: number) => {
 // 暴露变量
 defineExpose({
 	pageReset,
+	clearSelection,
 });
 </script>
 

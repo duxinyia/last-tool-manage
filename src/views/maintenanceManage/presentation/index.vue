@@ -8,40 +8,44 @@
 				class="table"
 				@pageChange="onTablePageChange"
 				@sortHeader="onSortHeader"
-				@cellclick="reqNoClick"
+				@cellclick="matNoClick"
 				:cellStyle="cellStyle"
 				@onOpentopBtnOther="onOpenSendRepair"
-				@onOpenOtherDialog="openArriveJobDialog"
 			/>
 			<el-dialog ref="presentationDialogRef" v-model="presentationDialogVisible" :title="dilogTitle" width="85%">
-				<div class="title">维修单提报</div>
-				<el-form ref="tableSearchRef" size="default" label-width="auto" class="table-form">
-					<el-row>
-						<el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4" class="mb20 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
-							<el-form-item :label="$t(val.label)" :prop="val.prop">
-								<el-input
-									v-model="dialogState.tableData.form[val.prop]"
-									:placeholder="`请输入${$t(val.label)}`"
-									clearable
-									v-if="val.type === 'input'"
-									style="width: 100%"
-								/>
-								<el-date-picker
-									v-if="val.type === 'time'"
-									v-model="dialogState.tableData.form[val.prop]"
-									:placeholder="`请选择时间`"
-									clearable
-									value-format="YYYY-MM-DD"
-									type="date"
-									style="height: 30px; max-width: 167px"
-								/>
-							</el-form-item>
-						</el-col>
-					</el-row>
-				</el-form>
+				<el-row>
+					<el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4" class="mb20 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
+						<div v-if="val.type === 'text'">
+							{{ val.label }}<span style="color: red" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
+						</div>
+						<template v-if="val.type === 'input'">
+							<span class="mr10">{{ val.label }}</span>
+							<el-input
+								size="default"
+								v-model="dialogState.tableData.form[val.prop]"
+								:placeholder="`请输入${$t(val.label)}`"
+								clearable
+								style="width: 100%; max-width: 167px"
+							/>
+						</template>
+						<div v-if="val.type === 'time'">
+							<span v-if="val.isRequired" class="color-danger mr5">*</span>
+							<span style="width: 96px" class="mr10">{{ val.label }}</span>
+							<el-date-picker
+								v-model="dialogState.tableData.form[val.prop]"
+								:placeholder="`请选择时间`"
+								clearable
+								value-format="YYYY-MM-DD"
+								type="date"
+								style="height: 30px; max-width: 167px"
+							/>
+						</div>
+					</el-col>
+				</el-row>
+
 				<!-- 表格 -->
 				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
-					<Table ref="tableRef" v-bind="dialogState.tableData" class="table" @delRow="onDelRow" @addrow="onAddRow" />
+					<Table ref="dialogtableRef" v-bind="dialogState.tableData" class="table" @delRow="onDelRow" />
 				</el-form>
 				<div class="describe">
 					<span>描述说明：</span>
@@ -61,107 +65,53 @@
 						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)"> 确定 </el-button>
 					</span>
 				</template>
-
-				<!-- <el-row v-if="dilogTitle == '收货'">
-					<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb10" v-for="(val, key) in dialogState.tableData.search" :key="key">
-						<div v-if="val.type === 'text'">
-							{{ val.label }}：<span style="color: red" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
-						</div>
-						<div v-if="val.type === 'time'">
-							<span v-if="val.isRequired" class="color-danger mr5">*</span>
-							<span style="width: 96px" class="mr10">{{ val.label }}</span>
-							<el-date-picker
-								value-format="YYYY-MM-DD"
-								v-model="dialogState.tableData.form[val.prop]"
-								type="date"
-								placeholder="请选择"
-								style="height: 30px; max-width: 167px"
-							/>
-						</div>
-					</el-col>
-				</el-row>
-
-				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
-					<Table v-bind="dialogState.tableData" class="table" @delRow="onDelRow" />
-				</el-form>
-				<div class="describe" v-if="dilogTitle == '收货'">
-					<span>描述说明：</span>
-					<el-input
-						class="input-textarea"
-						show-word-limit
-						v-model="dialogState.tableData.form['describe']"
-						type="textarea"
-						placeholder="请输入"
-						maxlength="150"
-					></el-input>
-				</div>
-				<template #footer v-if="dilogTitle == '收货'">
-					<span class="dialog-footer">
-						<el-button size="default" auto-insert-space @click="presentationDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)"> 确定 </el-button>
-					</span>
-				</template> -->
 			</el-dialog>
+			<Dialog ref="matnoDetailDialogRef" :isFootBtn="false" :dialogConfig="dialogMatnoDetail" />
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts" name="presentation">
-import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
+import { defineAsyncComponent, reactive, ref, onMounted, computed, watch } from 'vue';
 import { ElMessage, FormInstance } from 'element-plus';
 const presentationDialogVisible = ref(false);
 // 引入接口
-import { getreqNoApi } from '/@/api/requistManage/reportingInquiry';
-import { getGetWaitRecievePageListApi, getAddReceiveApi } from '/@/api/requistManage/arriveJob';
 import { getQueryNoPageApi, getToolApplyInsertApi, getQueryExitPageApi } from '/@/api/requistManage/presentation';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
+// 引入组件
+const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 
 // 定义变量内容
 const { t } = useI18n();
 const tableFormRef = ref();
+const matnoDetailDialogRef = ref();
 const tableRef = ref<RefType>();
+const dialogtableRef = ref<RefType>();
 const presentationDialogRef = ref();
 // 单元格样式
 const cellStyle = ref();
 
-// 弹窗标题
+// 送修弹窗标题
 const dilogTitle = ref();
 const header = ref([
 	{
-		key: 'matNo',
-		colWidth: '250',
-		title: 'message.pages.matNo',
-		type: 'autocomplete',
-		isCheck: true,
-	},
-	{ key: 'machine', colWidth: '', title: '机种', type: 'text', isCheck: true },
-	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
-	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-	{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'input', isCheck: true },
-	{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'input', isCheck: true },
-	{ key: 'pr', colWidth: '', title: 'PR项次', type: 'input', isCheck: true },
-	{ key: 'sampleQty', colWidth: '', title: '送修数量', type: 'input', isCheck: true },
-	{ key: 'sampleQty1', colWidth: '', title: '送修原因', type: 'input', isCheck: true },
-	{ key: 'pr', colWidth: '', title: 'pr项次', type: 'input', isCheck: true },
-]);
-const header1 = ref([
-	{
-		key: 'matNo',
+		key: 'matno',
 		colWidth: '250',
 		title: 'message.pages.matNo',
 		type: 'text',
 		isCheck: true,
 	},
-	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
-	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+	{ key: 'machine', colWidth: '', title: '机种', type: 'text', isCheck: true },
+	{ key: 'namech', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
+	{ key: 'nameen', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 	{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 	{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-	{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
-	{ key: 'reqDate', colWidth: '150', title: '需求时间', type: 'text', isCheck: true },
-	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
+	{ key: 'exitqty', colWidth: '', title: '維修数量', type: 'text', isCheck: true },
+	{ key: 'exitreason', colWidth: '', title: '維修原因', type: 'text', isCheck: true },
+	{ key: 'pr', colWidth: '', title: 'pr项次', type: 'input', isCheck: true },
 ]);
 const state = reactive<TableDemoState>({
 	tableData: {
@@ -170,18 +120,18 @@ const state = reactive<TableDemoState>({
 		// 表头内容（必传，注意格式）
 		header: [
 			{
-				key: 'matNo',
+				key: 'matno',
 				colWidth: '250',
 				title: 'message.pages.matNo',
 				type: 'text',
 				isCheck: true,
 			},
-			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
-			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			{ key: 'namech', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
+			{ key: 'nameen', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 			{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-			{ key: 'vendorname1', colWidth: '', title: '退库数量', type: 'text', isCheck: true },
-			{ key: 'vendorname2', colWidth: '', title: '退库原因', type: 'text', isCheck: true },
+			{ key: 'exitqty', colWidth: '', title: '退库数量', type: 'text', isCheck: true },
+			{ key: 'exitreason', colWidth: '', title: '退库原因', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -196,7 +146,9 @@ const state = reactive<TableDemoState>({
 			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
 		},
-		topBtnConfig: [{ type: 'other', name: '送修', defaultColor: 'primary', isSure: true, disabled: true, icon: 'ele-Edit' }],
+		topBtnConfig: [
+			{ type: 'other', name: '送修', defaultColor: 'primary', isSure: true, disabled: true, icon: 'ele-Edit', isNoSelcetDisabled: true },
+		],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: '料号', prop: 'matNo', required: false, type: 'input' },
@@ -230,13 +182,13 @@ const dialogState = reactive<TableDemoState>({
 		// 配置项（必传）
 		config: {
 			total: 0, // 列表总数
-			loading: false, // loading 加载
+			loading: true, // loading 加载
 			isBorder: false, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
 			isSelection: false, // 是否显示表格多选
-			isOperate: false, // 是否显示表格操作栏
+			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
-			isInlineEditing: false, //是否是行内编辑
+			isInlineEditing: true, //是否是行内编辑
 			isTopTool: false, //是否有表格右上角工具
 			isPage: false, //是否有分页
 			isDialogTab: true, //是否是弹窗里面的表格
@@ -244,19 +196,17 @@ const dialogState = reactive<TableDemoState>({
 		},
 		// 给后端的数据
 		form: {},
+		searchConfig: {
+			isSearchBtn: false,
+		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '维修单号：', prop: 'matNo', placeholder: '请输入维修单号', type: 'text', required: false },
-			// { label: '需求单号：', prop: 'matNo', placeholder: '请输入需求单号', type: 'text', required: false },
-			{ label: 'PR单号:', prop: 'prNo', placeholder: '请输入PR单号', type: 'text', required: false },
-			{ label: '收货时间:', prop: 'time', placeholder: '请选择收货时间', type: 'time', required: false },
-
-			// { label: '收货单号', prop: 'sendNo', required: false, type: 'text' },
-			// { label: '申请单号', prop: 'reqNo', required: false, type: 'text' },
-			// { label: 'PR单号', prop: 'prNo', required: false, type: 'text' },
-			// { label: '收货时间', prop: 'sendTime', required: false, type: 'time', isRequired: true },
+			{ label: '维修单号：', prop: 'matNo', placeholder: '请输入维修单号', type: 'text', required: false, isRequired: false },
+			{ label: 'PR单号', prop: 'prNo', placeholder: '请输入PR单号', type: 'input', required: false, isRequired: false },
+			{ label: '收货时间:', prop: 'time', placeholder: '请选择收货时间', type: 'time', required: false, isRequired: true },
 		],
-		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: true }],
+		// 弹窗表单
+		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
 			pageNum: 1,
@@ -264,6 +214,30 @@ const dialogState = reactive<TableDemoState>({
 		},
 	},
 });
+const dialogMatnoDetail = ref([
+	{ label: '料号:', prop: 'matno', type: 'text' },
+	{ label: '品名-中文:', prop: 'namech', type: 'text' },
+	{ label: '品名-英文:', prop: 'nameen', type: 'text' },
+	{ label: '厂商代码:', prop: 'vendorcode', type: 'text' },
+	{ label: '厂商名称:', prop: 'vendorname', type: 'text' },
+	{ label: '退库类型:', prop: 'exittype', type: 'text' },
+	{ label: '退库原因:', prop: 'exitreason', type: 'text' },
+	{ label: '退库数量:', prop: 'exitqty', type: 'text' },
+	{ label: '描述说明:', prop: 'describe', type: 'text' },
+]);
+const exitTypeMap: EmptyObjectType = {
+	1: '維修',
+	2: '閒置',
+	3: '報廢',
+};
+watch(
+	() => presentationDialogVisible.value,
+	(val) => {
+		if (val == false) {
+			tableRef.value.clearSelection();
+		}
+	}
+);
 // 单元格字体颜色
 const changeToStyle = (indList: number[]) => {
 	return ({ columnIndex }: any) => {
@@ -275,14 +249,14 @@ const changeToStyle = (indList: number[]) => {
 		}
 	};
 };
-cellStyle.value = changeToStyle([1]);
+cellStyle.value = changeToStyle([2]);
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;
 	let data = {
 		matName: form.matName,
 		matNo: form.matNo,
-		exitType: 0,
+		exitType: 1,
 		page: state.tableData.page,
 	};
 	const res = await getQueryExitPageApi(data);
@@ -296,68 +270,31 @@ const getTableData = async () => {
 const onDelRow = (row: EmptyObjectType, i: number) => {
 	dialogState.tableData.data.splice(i, 1);
 };
-// 增加一行数据
-const onAddRow = () => {
-	state.tableData.data.push({
-		matNo: '',
-		nameCh: '',
-		nameEn: '',
-		vendorCode: '',
-		vendorName: '',
-		sampleQty: '',
-		sampleTime: '',
-		pr: '',
-	});
-};
 
 // 点击送修按钮
-const onOpenSendRepair = (row: EmptyObjectType) => {
+const onOpenSendRepair = (row: EmptyObjectType[]) => {
 	presentationDialogVisible.value = true;
 	let tableData = dialogState.tableData;
 	tableData.header = header.value;
-	dilogTitle.value = '送修';
+	tableData.data = [];
+	tableData.data = row;
+	tableData.config.loading = false;
+	dilogTitle.value = '维修单提报';
 };
-// 点击收货弹窗
-const openArriveJobDialog = (scope: EmptyObjectType) => {
-	// let data = { reqNo: scope.row.reqNo };
-	// dialogState.tableData.form = scope.row;
-	// getDetailData(data);
-	// dilogTitle.value = '收货';
-	// changeStatus(header.value, 300, true);
-};
-// 点击申请单号
-const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
-	// if (column.property === 'reqNo') {
-	// 	dilogTitle.value = '单号:' + row.reqNo;
-	// 	changeStatus(header1.value, 500, false);
-	// 	let data = { reqNo: row.reqNo };
-	// 	getDetailData(data);
-	// }
-};
-// 详情接口
-const getDetailData = async (data: Object) => {
-	const res = await getreqNoApi(data);
-	dialogState.tableData.data = res.data.applyDetails;
-	presentationDialogVisible.value = true;
-	if (res.status) {
-		dialogState.tableData.config.loading = false;
+
+// 点击料号弹出详情
+const matNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
+	if (column.property === 'matno') {
+		row.exittype = exitTypeMap[row.exittype];
+		matnoDetailDialogRef.value.openDialog('matno', row, '退库详情');
 	}
-};
-// 根据弹出窗不一样展现的配置不一样
-const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) => {
-	let tableData = dialogState.tableData;
-	let config = tableData.config;
-	tableData.header = header;
-	config.height = height;
-	config.isOperate = isShow;
-	config.isInlineEditing = isShow;
 };
 // 提交
 const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
-		// if (!dialogState.tableData.form['sendTime']) return ElMessage.warning(t('请填写收货时间'));
+		if (!dialogState.tableData.form['time']) return ElMessage.warning(t('请填写收货时间'));
 		// let allData: EmptyObjectType = {};
 		// allData = { ...dialogState.tableData.form };
 		// allData['details'] = dialogState.tableData.data;
@@ -384,10 +321,6 @@ const onTablePageChange = (page: TableDemoPageType) => {
 const onSortHeader = (data: TableHeaderType[]) => {
 	state.tableData.header = data;
 };
-if (dialogState.tableData.btnConfig)
-	dialogState.tableData.btnConfig[0].disabled = computed(() => {
-		return dialogState.tableData.data.length <= 1 ? true : false;
-	});
 // 页面加载时
 onMounted(() => {
 	getTableData();
@@ -413,11 +346,5 @@ onMounted(() => {
 }
 .buttonBorder {
 	border: 0px !important;
-}
-.title {
-	font-size: 20px;
-	display: flex;
-	justify-content: center;
-	margin-bottom: 10px;
 }
 </style>

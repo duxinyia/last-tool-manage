@@ -189,7 +189,7 @@ const onAddrow = () => {
 	dialogState.tableData.data.push({
 		userId: '',
 		username: '',
-		disabled: true,
+		disabled: false,
 	});
 };
 // 提交
