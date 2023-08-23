@@ -127,7 +127,7 @@ const state = reactive<EmptyObjectType>({
 			{ label: '维修单号：', prop: 'matNo', placeholder: '请输入维修单号', type: 'text' },
 			{ label: '需求单号：', prop: 'matNo', placeholder: '请输入需求单号', type: 'text' },
 			{ label: 'PR单号:', prop: 'prNo', placeholder: '请输入PR单号', type: 'text' },
-			{ label: '收货时间:', prop: 'prNo', placeholder: '请选择收货时间', type: 'time' },
+			{ label: '时间:', prop: 'prNo', placeholder: '请选择时间', type: 'time' },
 		],
 		// 给后端的数据
 		form: {

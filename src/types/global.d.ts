@@ -7,8 +7,7 @@ declare module '@wangeditor/editor-for-vue';
 declare module 'js-table2excel';
 declare module 'qs';
 declare module 'sortablejs';
-declare module 'jsencrypt/bin/jsencrypt'
-
+declare module 'jsencrypt/bin/jsencrypt';
 
 // 声明一个模块，防止引入文件时报错
 declare module '*.json';
@@ -97,8 +96,8 @@ declare type EmptyObjectType<T = any> = {
 declare type SelectOptionType = {
 	value: string | number;
 	label: string | number;
-	selected:boolean,
-	text:string
+	selected?: boolean;
+	text?: string;
 };
 
 // 鼠标滚轮滚动类型
