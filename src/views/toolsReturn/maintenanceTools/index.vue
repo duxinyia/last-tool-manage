@@ -41,8 +41,12 @@
 								</div>
 								<div v-if="val.type === 'input'" class="dialog-input">
 									<!-- <span v-if="val.isRequired" class="color-danger mr5">*</span> -->
-
 									<el-input v-model="dialogState.tableData.form[val.prop]" placeholder="请输入" clearable style="height: 30px"></el-input>
+								</div>
+								<div v-if="val.type === 'select'" class="dialog-input">
+									<el-select v-model="dialogState.tableData.form[val.prop]" placeholder="请输入" clearable @change="selectChange(val.prop)">
+										<el-option v-for="item in val.options" :key="item.value" :label="item.label" :value="item.value"> </el-option>
+									</el-select>
 								</div>
 							</el-form-item>
 						</el-col>
@@ -80,8 +84,7 @@ import type { FormInstance } from 'element-plus';
 import { ElMessage } from 'element-plus';
 // 引入接口
 import { getQueryNoPageApi } from '/@/api/requistManage/presentation';
-// import { getMaterialDetailApi } from '/@/api/toolsReturn/maintentanceTools';
-import { getGetWaitRecievePageListApi, getAddReceiveApi } from '/@/api/requistManage/arriveJob';
+import { getStockListApi, ExitStoreApi, getExitReasonApi } from '/@/api/toolsReturn/maintentanceTools';
 import { getMaterialListApi, getGetSampleApi } from '/@/api/partno/sampleDelivery';
 
 import { useI18n } from 'vue-i18n';
@@ -101,19 +104,7 @@ const cellStyle = ref();
 
 // 弹窗标题
 const dilogTitle = ref();
-const header = ref([
-	{ key: 'matNo', colWidth: '250', title: 'message.pages.matNo', type: 'text', isCheck: true },
-	{ key: 'ji', colWidth: '', title: '机种1212', type: 'text', isCheck: true },
-	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
-	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-	{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-	{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
-	{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
-	{ key: 'reqDate', colWidth: '', title: '需求时间', type: 'text', isCheck: true },
-	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'input', isCheck: true, isRequired: true },
-	{ key: 'receiptDate', colWidth: '150', title: '收货时间', type: 'time', isCheck: true, isRequired: true },
-]);
+const header = ref([]);
 const header1 = ref([
 	{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'text', isCheck: true },
 	{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
@@ -127,12 +118,14 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'matNo', colWidth: '', title: '料号', type: 'text', isCheck: true },
-			{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-			{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-			{ key: 'total', colWidth: '', title: '库存总量', type: 'text', isCheck: true },
-			{ key: 'total', colWidth: '', title: '有码库存量', type: 'text', isCheck: true },
-			{ key: 'total', colWidth: '', title: '无码库存量', type: 'text', isCheck: true },
+			{ key: 'matno', colWidth: '', title: '料号', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
+			{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
+			{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+			{ key: 'stockqty', colWidth: '', title: '库存总量', type: 'text', isCheck: true },
+			{ key: 'qrstockqty', colWidth: '', title: '有码库存量', type: 'text', isCheck: true },
+			{ key: 'noqrstockqty', colWidth: '', title: '无码库存量', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -150,7 +143,7 @@ const state = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: '料号', prop: 'matNo', required: false, type: 'input' },
-			{ label: '厂商', prop: 'vendor', required: false, type: 'input' },
+			{ label: '品名', prop: 'matName', required: false, type: 'input' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -158,8 +151,8 @@ const state = reactive<TableDemoState>({
 		btnConfig: [{ type: 'sendReceive', name: '退库', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
 		// 给后端的数据
 		form: {
-			reqNo: '',
-			prNo: '',
+			matNo: '',
+			matName: '',
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -195,14 +188,24 @@ const dialogState = reactive<TableDemoState>({
 		form: {},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '料号', prop: 'matNo', required: false, type: 'text' },
+			{ label: '料号', prop: 'matno', required: false, type: 'text' },
 			{ label: '品名-中文', prop: 'nameCh', required: false, type: 'text' },
 			{ label: '品名-英文', prop: 'nameEn', required: false, type: 'text' },
-			{ label: '厂商代码', prop: 'vendorCode', required: false, type: 'text' },
-			{ label: '厂商名称', prop: 'vendorName', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 12, xl: 12 },
-			{ label: '退库类型', prop: 'type', required: true, type: 'input' },
-			{ label: '退库原因', prop: 'reason', required: true, type: 'input' },
-			{ label: '退库数量', prop: 'number', required: true, type: 'input' },
+			{ label: '厂商代码', prop: 'vendorcode', required: false, type: 'text' },
+			{ label: '厂商名称', prop: 'vendorname', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 12, xl: 12 },
+			{
+				label: '退库类型',
+				prop: 'exitType',
+				required: true,
+				type: 'select',
+				options: [
+					{ value: 1, label: '维修' },
+					{ value: 2, label: '闲置' },
+					{ value: 3, label: '报废' },
+				],
+			},
+			{ label: '退库原因', prop: 'reasonId', required: true, type: 'select', options: [] },
+			{ label: '退库数量', prop: 'exitQty', required: true, type: 'input' },
 		],
 		btnConfig: [{ type: 'edit', name: '退库', color: '#D33939', isSure: true, disabled: true }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
@@ -214,28 +217,25 @@ const dialogState = reactive<TableDemoState>({
 });
 // 单元格字体颜色
 const changeToStyle = (indList: number[]) => {
-	return ({ columnIndex }: any) => {
-		for (let j = 0; j < indList.length; j++) {
-			let ind = indList[j];
-			if (columnIndex === ind) {
-				return { color: 'var(--el-color-primary)', cursor: 'pointer' };
-			}
-		}
-	};
+	// return ({ columnIndex }: any) => {
+	// 	for (let j = 0; j < indList.length; j++) {
+	// 		let ind = indList[j];
+	// 		if (columnIndex === ind) {
+	// 			return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+	// 		}
+	// 	}
+	// };
 };
 cellStyle.value = changeToStyle([1]);
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;
 	let data = {
-		reqNo: form.reqNo,
-		prNo: form.prNo,
-		queryType: 2, //测试用的
+		matNo: form.matNo,
+		matName: form.matName,
 		page: state.tableData.page,
 	};
-	// const res = await getGetWaitRecievePageListApi(data);
-	//没有数据，暂时用的料号送样的接口
-	const res = await getMaterialListApi(data);
+	const res = await getStockListApi(data);
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
 	if (res.status) {
@@ -246,25 +246,51 @@ const getTableData = async () => {
 const onDelRow = (row: EmptyObjectType, i: number) => {
 	dialogState.tableData.data.splice(i, 1);
 };
+//退库弹窗里的退库类型和退库原因选择时的操作
+const selectChange = async (name: string) => {
+	if (name == 'exitType') {
+		dialogState.tableData.form.reasonId = '';
+		let res: any = [];
+		if (dialogState.tableData.form.exitType == 1) {
+			res = await getExitReasonApi('RepairReason');
+		} else if (dialogState.tableData.form.exitType == 2) {
+			res = await getExitReasonApi('IdleReason');
+		} else {
+			res = await getExitReasonApi('UselessReason');
+		}
+		dialogState.tableData.search[6].options = res.data.map((item: any) => {
+			return { value: item.runid, label: item.dataname };
+		});
+	}
+	//根据原因id获取原因名称
+	if (name == 'reasonId') {
+		dialogState.tableData.search[6].options?.forEach((item) => {
+			if (item.value == dialogState.tableData.form.reasonId) {
+				dialogState.tableData.form['exitReason'] = item.label;
+			}
+		});
+	}
+};
+
 // 点击退库弹窗
 const openReturnDialog = (scope: EmptyObjectType) => {
 	//先清空数据
-	let data = { reqNo: scope.row.reqNo };
 	arriveJobDialogVisible.value = true;
 	dialogState.tableData.form['describe'] = '';
 	nextTick(() => {
 		tableFormRef.value.resetFields();
 	});
 	dilogTitle.value = '退库';
+	dialogState.tableData.form = scope.row;
 	changeStatus(header.value, 300, true);
 };
-// 点击料号
+// 点击料号,暂时不做
 const matnoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
-	if (column.property === 'matNo') {
-		dilogTitle.value = '料号:' + row.matNo;
-		changeStatus(header1.value, 500, false);
-		getDetailData(row.matNo);
-	}
+	// if (column.property === 'matno') {
+	// 	dilogTitle.value = '料号:' + row.matNo;
+	// 	changeStatus(header1.value, 500, false);
+	// 	getDetailData(row.matNo);
+	// }
 };
 // 获取料号详情接口
 const getDetailData = async (data: string) => {
@@ -290,15 +316,21 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
 		// if (!dialogState.tableData.form['sendTime']) return ElMessage.warning(t('请填写收货时间'));
-		let allData: EmptyObjectType = {};
-		allData = { ...dialogState.tableData.form };
-		// console.log('填写的内容', allData);
-		// allData['details'] = dialogState.tableData.data;
-		// const res = await getAddReceiveApi(allData);
-		// if (res.status) {
-		// 	ElMessage.success(t('收货成功'));
-		// 	arriveJobDialogVisible.value = false;
-		// }
+		let allData = { ...dialogState.tableData.form };
+		let submitData = {
+			stockId: allData.runid,
+			exitType: allData.exitType,
+			reasonId: allData.reasonId,
+			exitReason: allData.exitReason,
+			exitQty: allData.exitQty,
+			describe: allData.describe,
+			codeList: [],
+		};
+		const res = await ExitStoreApi(submitData);
+		if (res.status) {
+			ElMessage.success(t('退库成功'));
+			arriveJobDialogVisible.value = false;
+		}
 	});
 };
 // 搜索点击时表单回调
@@ -348,7 +380,10 @@ onMounted(() => {
 	display: flex;
 	align-items: center;
 	.el-input {
-		width: 50%;
+		width: 90%;
+	}
+	.el-select {
+		width: 90%;
 	}
 }
 </style>
