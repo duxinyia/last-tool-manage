@@ -458,6 +458,10 @@ const pageReset = () => {
 const clearSelection = () => {
 	tableRef.value.clearSelection();
 };
+// 增加表格行到最后一行的时候滚动条随之到末尾
+const setScrollTop = () => {
+	tableRef.value.setScrollTop(500);
+};
 // 打印
 const onPrintTable = () => {
 	// https://printjs.crabbly.com/#documentation
@@ -544,6 +548,7 @@ const inputBlur = (index: number) => {
 defineExpose({
 	pageReset,
 	clearSelection,
+	setScrollTop,
 });
 </script>
 

@@ -17,7 +17,7 @@
 			<!-- 管理员设定弹窗 -->
 			<el-dialog ref="warehouseAdminDialogRef" v-model="warehouseDialogVisible" title="管理员设定" width="70%">
 				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
-					<Table v-bind="dialogState.tableData" class="table" @delRow="onDelRow" @addrow="onAddrow" />
+					<Table ref="dialogTableRef" v-bind="dialogState.tableData" class="table-dialog" @delRow="onDelRow" @addrow="onAddrow" />
 				</el-form>
 				<template #footer>
 					<span class="dialog-footer">
@@ -31,7 +31,7 @@
 </template>
 
 <script setup lang="ts" name="warehouse">
-import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
+import { defineAsyncComponent, reactive, ref, onMounted, computed, watch, nextTick } from 'vue';
 import { ElMessage, FormInstance } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 import {
@@ -52,6 +52,7 @@ const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vu
 const { t } = useI18n();
 const warehouseDialogRef = ref();
 const tableRef = ref<RefType>();
+const dialogTableRef = ref<RefType>();
 const warehouseDialogVisible = ref(false);
 const tableFormRef = ref();
 const state = reactive<TableDemoState>({
@@ -156,6 +157,7 @@ const dialogState = reactive<TableDemoState>({
 		},
 	},
 });
+
 const getAdminData = async (runId: string) => {
 	const res = await getAdminsInfosOfStoreHouseApi(runId);
 	const tableData = dialogState.tableData;
@@ -191,6 +193,18 @@ const onAddrow = () => {
 		username: '',
 		disabled: false,
 	});
+	//超过设置的高度出现滚动条，添加行定位到底部
+	//  1.先拿到设置table的最大高度【滚动条的高度】的元素，获取元素的clientHeight
+	//     2.在拿到table的所有行的高度的元素，获取元素的clientHeight
+	//     3，当他们相减就是滚动条距离底部的间距，在设置scrollTop
+	// const el: any = document.querySelector('.table-dialog .el-scrollbar__wrap');
+	// const el2: any = document.querySelector('.table-dialog .el-table__body tbody');
+	// setTimeout(() => {
+	// 	const height = el2.clientHeight - el.clientHeight;
+	// 	if (height > 0) {
+	// 		el.scrollTop = height;
+	// 	}
+	// }, 200);
 };
 // 提交
 const onSubmit = async (formEl: FormInstance | undefined) => {
@@ -269,6 +283,15 @@ const onTablePageChange = (page: TableDemoPageType) => {
 const onSortHeader = (data: TableHeaderType[]) => {
 	state.tableData.header = data;
 };
+watch(
+	() => dialogState.tableData.data,
+	() => {
+		nextTick(() => {
+			dialogTableRef.value.setScrollTop();
+		});
+	},
+	{ deep: true }
+);
 // 页面加载时
 onMounted(() => {
 	getTableData();

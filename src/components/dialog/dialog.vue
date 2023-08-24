@@ -62,7 +62,7 @@
 								:placeholder="$t(item.placeholder)"
 								maxlength="150"
 							></el-input>
-							<span v-if="item.type === 'text'" style="text-align: center; width: 100%">
+							<span v-if="item.type === 'text'" style="width: 100%; font-weight: 700">
 								{{ state.formData[item.prop] }}
 							</span>
 						</el-form-item>

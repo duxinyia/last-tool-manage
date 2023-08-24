@@ -22,6 +22,7 @@
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { getToolApplyHeadPageApi, getreqNoApi } from '/@/api/requistManage/reportingInquiry';
+import { getQueryRepairOrderApi } from '/@/api/maintenanceManage/inquiry';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -69,7 +70,7 @@ const state = reactive<TableDemoState>({
 		},
 		// 给后端的数据
 		form: {
-			reqNo: '',
+			repairNo: '',
 			prNo: '',
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
@@ -145,11 +146,11 @@ const getTableData = async () => {
 	state.tableData.config.loading = true;
 	const form = state.tableData.form;
 	let data = {
-		reqNo: form.reqNo,
+		repairNo: form.repairNo,
 		prNo: form.prNo,
 		page: state.tableData.page,
 	};
-	const res = await getToolApplyHeadPageApi(data);
+	const res = await getQueryRepairOrderApi(data);
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
 	if (res.status) {

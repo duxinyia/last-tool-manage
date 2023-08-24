@@ -71,12 +71,12 @@
 	</div>
 </template>
 
-<script setup lang="ts" name="presentation">
+<script setup lang="ts" name="maintenanceOrderSub">
 import { defineAsyncComponent, reactive, ref, onMounted, computed, watch } from 'vue';
 import { ElMessage, FormInstance } from 'element-plus';
 const presentationDialogVisible = ref(false);
 // 引入接口
-import { getQueryNoPageApi, getToolApplyInsertApi, getQueryExitPageApi } from '/@/api/requistManage/presentation';
+import { getQueryExitPageApi, getSubmitRepairOrderApi } from '/@/api/maintenanceManage/maintenanceOrderSub';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -111,7 +111,7 @@ const header = ref([
 	{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 	{ key: 'exitqty', colWidth: '', title: '維修数量', type: 'text', isCheck: true },
 	{ key: 'exitreason', colWidth: '', title: '維修原因', type: 'text', isCheck: true },
-	{ key: 'pr', colWidth: '', title: 'pr项次', type: 'input', isCheck: true },
+	{ key: 'prItemNo', colWidth: '', title: 'pr项次', type: 'input', isCheck: true },
 ]);
 const state = reactive<TableDemoState>({
 	tableData: {
@@ -203,7 +203,7 @@ const dialogState = reactive<TableDemoState>({
 		search: [
 			{ label: '维修单号：', prop: 'matNo', placeholder: '请输入维修单号', type: 'text', required: false, isRequired: false },
 			{ label: 'PR单号', prop: 'prNo', placeholder: '请输入PR单号', type: 'input', required: false, isRequired: false },
-			{ label: '收货时间:', prop: 'time', placeholder: '请选择收货时间', type: 'time', required: false, isRequired: true },
+			{ label: '收货时间:', prop: 'sendRepairDate', placeholder: '请选择收货时间', type: 'time', required: false, isRequired: true },
 		],
 		// 弹窗表单
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }],
@@ -294,15 +294,19 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
-		if (!dialogState.tableData.form['time']) return ElMessage.warning(t('请填写收货时间'));
-		// let allData: EmptyObjectType = {};
-		// allData = { ...dialogState.tableData.form };
-		// allData['details'] = dialogState.tableData.data;
-		// const res = await getAddReceiveApi(allData);
-		// if (res.status) {
-		// 	ElMessage.success(t('收货成功'));
-		// 	presentationDialogVisible.value = false;
-		// }
+		if (!dialogState.tableData.form['sendRepairDate']) return ElMessage.warning(t('请填写收货时间'));
+		let allData: EmptyObjectType = {};
+		dialogState.tableData.data.forEach((item) => {
+			item['exitStoreId'] = item.runid;
+		});
+		allData = { ...dialogState.tableData.form };
+		allData['details'] = dialogState.tableData.data;
+		const res = await getSubmitRepairOrderApi(allData);
+		if (res.status) {
+			ElMessage.success(t('送修成功'));
+			presentationDialogVisible.value = false;
+			getTableData();
+		}
 	});
 };
 // 搜索点击时表单回调
