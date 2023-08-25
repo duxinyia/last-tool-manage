@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Session } from '/@/utils/storage';
+import { Session,Local } from '/@/utils/storage';
 import qs from 'qs';
 // 配置新建一个 axios 实例
 const service: AxiosInstance = axios.create({
@@ -60,6 +60,7 @@ service.interceptors.response.use(
 		} 
 		else if(error.response.data.code===401){
 			Session.clear();
+			Local.clear();
 			window.location.href = '/'; // 去登录页
 		ElMessage.error("登录过期，请重新登录")
 		}

@@ -203,7 +203,7 @@ const dialogState = reactive<TableDemoState>({
 		search: [
 			{ label: '维修单号：', prop: 'matNo', placeholder: '请输入维修单号', type: 'text', required: false, isRequired: false },
 			{ label: 'PR单号', prop: 'prNo', placeholder: '请输入PR单号', type: 'input', required: false, isRequired: false },
-			{ label: '收货时间:', prop: 'sendRepairDate', placeholder: '请选择收货时间', type: 'time', required: false, isRequired: true },
+			{ label: '送修时间:', prop: 'sendRepairDate', placeholder: '请选择送修时间', type: 'time', required: false, isRequired: true },
 		],
 		// 弹窗表单
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }],

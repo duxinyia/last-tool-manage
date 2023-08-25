@@ -12,6 +12,13 @@
 				:cellStyle="cellStyle"
 			/>
 			<el-dialog ref="reportInquiryDialogRef" v-model="reportInquiryDialogVisible" :title="dilogTitle" width="80%">
+				<el-row>
+					<el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4" class="mb20 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
+						<div v-if="val.type === 'text'">
+							{{ val.label }}<span style="color: red" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
+						</div>
+					</el-col>
+				</el-row>
 				<Table v-bind="dialogState.tableData" class="table" />
 			</el-dialog>
 		</div>
@@ -21,8 +28,7 @@
 <script setup lang="ts" name="/requistManage/reportingInquiry">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { getToolApplyHeadPageApi, getreqNoApi } from '/@/api/requistManage/reportingInquiry';
-import { getQueryRepairOrderApi } from '/@/api/maintenanceManage/inquiry';
+import { getQueryRepairOrderApi, getRepairDetailsApi } from '/@/api/maintenanceManage/inquiry';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -88,19 +94,14 @@ const dialogState = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{
-				key: 'matNo',
-				colWidth: '250',
-				title: 'message.pages.matNo',
-				type: 'text',
-				isCheck: true,
-			},
+			{ key: 'matNo', colWidth: '250', title: 'message.pages.matNo', type: 'text', isCheck: true },
+			{ key: 'machinetype', colWidth: '', title: '机种', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-			{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-			{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
-			{ key: 'reqDate', colWidth: '150', title: '需求时间', type: 'text', isCheck: true },
+			{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
+			{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+			{ key: 'qty', colWidth: '', title: '维修数量', type: 'text', isCheck: true },
+			{ key: 'reason', colWidth: '150', title: '维修原因', type: 'text', isCheck: true },
 			{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -121,7 +122,11 @@ const dialogState = reactive<TableDemoState>({
 		// 给后端的数据
 		form: {},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-		search: [],
+		search: [
+			{ label: '维修单号：', prop: 'repairNo', type: 'text', required: false },
+			{ label: 'PR单号:', prop: 'prNo', type: 'text', required: false },
+			{ label: '送修时间:', prop: 'sendRepairDate', type: 'text', required: false },
+		],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
 			pageNum: 1,
@@ -159,11 +164,12 @@ const getTableData = async () => {
 };
 // 点击申请单号
 const reqNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
-	if (column.property === 'reqNo') {
-		dilogTitle.value = '单号:' + row.reqNo;
-		let data = { reqNo: row.reqNo };
-		const res = await getreqNoApi(data);
-		dialogState.tableData.data = res.data.applyDetails;
+	if (column.property === 'repairNo') {
+		dilogTitle.value = '详情';
+		const res = await getRepairDetailsApi(row.repairNo);
+		dialogState.tableData.data = res.data.details;
+		dialogState.tableData.form = res.data.head;
+
 		reportInquiryDialogVisible.value = true;
 		if (res.status) {
 			dialogState.tableData.config.loading = false;

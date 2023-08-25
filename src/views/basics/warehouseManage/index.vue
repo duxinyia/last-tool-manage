@@ -287,7 +287,7 @@ watch(
 	() => dialogState.tableData.data,
 	() => {
 		nextTick(() => {
-			dialogTableRef.value.setScrollTop();
+			dialogTableRef.value.setScrollTop(500);
 		});
 	},
 	{ deep: true }

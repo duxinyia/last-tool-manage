@@ -94,8 +94,8 @@ const dialogData = reactive({
 	otherHeaderData: [
 		{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'input', isCheck: true, isRequired: true },
 		{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'input', isCheck: true, isRequired: true },
-		{ key: 'sampleQty', colWidth: '', title: '送样数量', type: 'input', isCheck: true, isRequired: true },
-		{ key: 'sampleTime', colWidth: '', title: '送样时间', type: 'time', isCheck: true, isRequired: true },
+		// { key: 'sampleQty', colWidth: '', title: '送样数量', type: 'input', isCheck: true, isRequired: true },
+		{ key: 'sampleTime', colWidth: '', title: '需求送样时间', type: 'time', isCheck: true, isRequired: true },
 		{ key: 'needsQty', colWidth: '', title: '需求送样数量', type: 'input', isCheck: true, isRequired: true },
 	],
 	// 送样弹窗数据
