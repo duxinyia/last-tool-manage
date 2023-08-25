@@ -72,7 +72,6 @@
 									placeholder="请输入"
 									clearable
 								></el-input>
-
 								<el-date-picker
 									v-if="item.type === 'time'"
 									value-format="YYYY-MM-DD"

@@ -183,6 +183,7 @@
 							placeholder="请选择"
 							style="height: 30px; max-width: 167px"
 						/>
+						<!-- 日期范围框 -->
 						<template v-else-if="item.type === 'image'">
 							<el-image
 								:style="{ width: `${item.width}px`, height: `${item.height}px` }"

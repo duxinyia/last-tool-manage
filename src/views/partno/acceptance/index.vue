@@ -151,13 +151,14 @@ const dialogState = reactive<TableDemoState>({
 		header: [
 			{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 			{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-			{ key: 'needsTime', colWidth: '', title: '需求送样时间', type: 'text', isCheck: true },
-			{ key: 'needsQty', colWidth: '', title: '需求送样数量', type: 'text', isCheck: true },
+			// { key: 'needsTime', colWidth: '', title: '需求送样时间', type: 'text', isCheck: true },
+			// { key: 'needsQty', colWidth: '', title: '需求送样数量', type: 'text', isCheck: true },
 			{ key: 'sampleTime', colWidth: '', title: '实际送样时间', type: 'text', isCheck: true },
 			{ key: 'sampleQty', colWidth: '', title: '实际送样数量', type: 'text', isCheck: true },
 			{ key: 'checkTime', colWidth: '', title: '验收时间', type: 'time', isCheck: true, isRequired: true },
 			{ key: 'checkQty', colWidth: '', title: '验收数量', type: 'input', isCheck: true, isRequired: true },
 			{ key: 'isPass', colWidth: '', title: '是否验收通过', type: 'status1', isCheck: true, isRequired: true },
+			{ key: 'failReason', colWidth: '', title: '验收失败原因', type: 'options', isCheck: true, isRequired: true },
 			{ key: 'isStorage', colWidth: '', title: '是否入库', type: 'status1', isCheck: true, isRequired: true },
 		],
 		// 表格配置项（必传）
