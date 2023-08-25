@@ -78,7 +78,7 @@
 									v-model="state.vendors[scope.$index][item.key]"
 									type="date"
 									placeholder="请选择时间"
-									style="height: 30px; max-width: 167px"
+									style="height: 30px"
 								/>
 								<div v-if="item.type != 'input' && item.type != 'time'" style="text-align: center; width: 100%">
 									<span>{{ scope.row[item.key] }}</span>
@@ -252,8 +252,11 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 			sampleData[item.prop] = state.formData[item.prop];
 		});
 		sampleData['vendors'] = state.vendors;
+		sampleData.vendors.forEach((item: EmptyObjectType) => {
+			delete item.sampleQty;
+		});
 		if (props.operation == '送样') {
-			const res: any = await getTakeSampleApi(sampleData);
+			const res = await getTakeSampleApi(sampleData);
 			if (res.status) {
 				closeDialog();
 				ElMessage.success('送样成功');

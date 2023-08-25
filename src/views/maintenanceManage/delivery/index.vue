@@ -87,8 +87,8 @@ const header = ref([
 	{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 	{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
-	{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
-	{ key: 'reqDate', colWidth: '', title: '需求时间', type: 'text', isCheck: true },
+	{ key: 'qty', colWidth: '', title: '维修数量', type: 'text', isCheck: true },
+	{ key: 'reason', colWidth: '', title: '维修原因', type: 'text', isCheck: true },
 	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'input', isCheck: true, isRequired: true },
 	{ key: 'receiptDate', colWidth: '150', title: '收货时间', type: 'time', isCheck: true, isRequired: true },
 ]);
@@ -104,8 +104,8 @@ const header1 = ref([
 	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 	{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 	{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-	{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
-	{ key: 'reqDate', colWidth: '150', title: '需求时间', type: 'text', isCheck: true },
+	{ key: 'qty', colWidth: '', title: '维修数量', type: 'text', isCheck: true },
+	{ key: 'reason', colWidth: '150', title: '维修原因', type: 'text', isCheck: true },
 	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
 ]);
 const state = reactive<TableDemoState>({
@@ -234,7 +234,7 @@ const openArriveJobDialog = (scope: EmptyObjectType) => {
 // 点击申请单号
 const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'reqNo') {
-		dilogTitle.value = '单号:' + row.reqNo;
+		dilogTitle.value = '维修单号:' + row.reqNo;
 		changeStatus(header1.value, 500, false);
 		let data = { reqNo: row.reqNo };
 		getDetailData(data);

@@ -7,3 +7,10 @@ export function getQueryRepairOrderApi(data:Object) {
   	data:data
   });
 }
+// 点击维修单号得到详情接口
+export function getRepairDetailsApi(repairNo:string) {
+  return request({
+    url: `/api/ToolRepair/GetRepairDetails/${repairNo}`,
+    method: 'GET',
+  });
+}

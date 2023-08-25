@@ -460,8 +460,8 @@ const clearSelection = () => {
 	tableRef.value.clearSelection();
 };
 // 增加表格行到最后一行的时候滚动条随之到末尾
-const setScrollTop = () => {
-	tableRef.value.setScrollTop(500);
+const setScrollTop = (height: string | number) => {
+	tableRef.value.setScrollTop(height);
 };
 // 打印
 const onPrintTable = () => {
