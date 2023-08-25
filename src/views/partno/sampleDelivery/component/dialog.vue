@@ -80,6 +80,7 @@
 									placeholder="请选择时间"
 									style="height: 30px"
 								/>
+
 								<div v-if="item.type != 'input' && item.type != 'time'" style="text-align: center; width: 100%">
 									<span>{{ scope.row[item.key] }}</span>
 								</div>
@@ -216,7 +217,6 @@ const openDialog = (scope: EmptyObjectType, n: number, tit: string, data: EmptyA
 			state.formData[item.prop] = scope.row[item.prop];
 		});
 		// 打开弹窗时还原数据
-
 		nextTick(() => {
 			//如果打开的是送样弹窗
 			if (props.operation == '送样') {

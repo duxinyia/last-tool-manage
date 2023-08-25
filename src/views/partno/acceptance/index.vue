@@ -79,6 +79,8 @@ import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { getUploadFileApi } from '/@/api/global/index';
 import { ElMessage, genFileId, UploadRawFile } from 'element-plus';
 import { GetCheckTaskApi, SampleCheckApi } from '/@/api/partno/acceptance';
+import { getExitReasonApi } from '/@/api/toolsReturn/maintentanceTools';
+import { GetSampleDetailApi } from '/@/api/partno/sendReceive';
 import { useI18n } from 'vue-i18n';
 import type { UploadInstance, UploadProps, UploadUserFile } from 'element-plus';
 
@@ -158,7 +160,7 @@ const dialogState = reactive<TableDemoState>({
 			{ key: 'checkTime', colWidth: '', title: '验收时间', type: 'time', isCheck: true, isRequired: true },
 			{ key: 'checkQty', colWidth: '', title: '验收数量', type: 'input', isCheck: true, isRequired: true },
 			{ key: 'isPass', colWidth: '', title: '是否验收通过', type: 'status1', isCheck: true, isRequired: true },
-			{ key: 'failReason', colWidth: '', title: '验收失败原因', type: 'options', isCheck: true, isRequired: true },
+			{ key: 'failReason', colWidth: '', title: '验收失败原因', type: 'multipleSelect', isCheck: true, options: [] },
 			{ key: 'isStorage', colWidth: '', title: '是否入库', type: 'status1', isCheck: true, isRequired: true },
 		],
 		// 表格配置项（必传）
@@ -268,6 +270,11 @@ const openAcceptanceDialog = async (scope: any) => {
 		name: '',
 		drawPath: '',
 	};
+	//获取验收失败原因
+	let res1 = await getExitReasonApi('CheckFail');
+	dialogState.tableData.header[7].options = res1.data.map((item: any) => {
+		return { value: item.runid, label: item.dataname };
+	});
 	let res = {
 		status: true,
 		code: 0,
@@ -289,8 +296,9 @@ const openAcceptanceDialog = async (scope: any) => {
 			],
 		},
 	};
-	dialogState.tableData.data = res.data.vendorDetails;
+
 	// const res = await GetSampleDetailApi(scope.row.sampleNo);
+	dialogState.tableData.data = res.data.vendorDetails;
 };
 //删除表格某一行數據
 const onDelRow = (row: EmptyObjectType, i: number) => {
@@ -339,15 +347,12 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 			accepReportUrl: dialogData.fileInfo.drawPath,
 			checkDetails: checkDetails,
 		};
-		// console.log('提交的信息', submitparams);
-		// let allData: EmptyObjectType = {};
-		// allData = { ...state.tableData.form };
-		// allData['details'] = state.tableData.data;
-		let res = await SampleCheckApi(submitparams);
-		if (res.status) {
-			dialogData.dialogVisible = false;
-			ElMessage.success('验收成功');
-		}
+		console.log('提交的信息', submitparams);
+		// let res = await SampleCheckApi(submitparams);
+		// if (res.status) {
+		// 	dialogData.dialogVisible = false;
+		// 	ElMessage.success('验收成功');
+		// }
 	});
 };
 // 页面加载时
