@@ -246,18 +246,17 @@ const getTableData = async () => {
 const onDelRow = (row: EmptyObjectType, i: number) => {
 	dialogState.tableData.data.splice(i, 1);
 };
+const exitTypeMap: EmptyObjectType = {
+	1: 'RepairReason',
+	2: 'IdleReason',
+	3: 'UselessReason',
+};
 //退库弹窗里的退库类型和退库原因选择时的操作
 const selectChange = async (name: string) => {
 	if (name == 'exitType') {
 		dialogState.tableData.form.reasonId = '';
 		let res: any = [];
-		if (dialogState.tableData.form.exitType == 1) {
-			res = await getExitReasonApi('RepairReason');
-		} else if (dialogState.tableData.form.exitType == 2) {
-			res = await getExitReasonApi('IdleReason');
-		} else {
-			res = await getExitReasonApi('UselessReason');
-		}
+		res = await getExitReasonApi(exitTypeMap[dialogState.tableData.form.exitType]);
 		dialogState.tableData.search[6].options = res.data.map((item: any) => {
 			return { value: item.runid, label: item.dataname };
 		});
@@ -281,7 +280,7 @@ const openReturnDialog = (scope: EmptyObjectType) => {
 		tableFormRef.value.resetFields();
 	});
 	dilogTitle.value = '退库';
-	dialogState.tableData.form = scope.row;
+	dialogState.tableData.form = { ...scope.row };
 	changeStatus(header.value, 300, true);
 };
 // 点击料号,暂时不做

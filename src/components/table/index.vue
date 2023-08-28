@@ -163,6 +163,17 @@
 						>
 							<el-option v-for="i in item.option" :key="i.label" :label="i.text" :value="i.value" />
 						</el-select>
+						<!-- 多选下拉框 -->
+						<el-select
+							v-if="item.type === 'multipleSelect'"
+							v-model="data[scope.$index][item.key]"
+							multiple
+							collapse-tags
+							collapse-tags-tooltip
+							placeholder="请选择"
+						>
+							<el-option v-for="i in item.options" :key="i.value" :label="i.label" :value="i.value" />
+						</el-select>
 						<!-- 状态 -->
 						<el-switch
 							v-else-if="item.type === 'status1'"
@@ -183,6 +194,7 @@
 							placeholder="请选择"
 							style="height: 30px; max-width: 167px"
 						/>
+						<!-- 日期范围框 -->
 						<template v-else-if="item.type === 'image'">
 							<el-image
 								:style="{ width: `${item.width}px`, height: `${item.height}px` }"

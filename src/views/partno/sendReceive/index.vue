@@ -87,8 +87,8 @@ const dialogData = reactive({
 		{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 		{ key: 'sampleTime', colWidth: '', title: '送样时间', type: 'text', isCheck: true },
 		{ key: 'sampleQty', colWidth: '', title: '送样数量', type: 'text', isCheck: true },
-		{ key: 'receiveTime', colWidth: '', title: '验收时间', type: 'time', isCheck: true, isRequired: true },
-		{ key: 'receiveQty', colWidth: '', title: '验收数量', type: 'input', isCheck: true, isRequired: true },
+		{ key: 'receiveTime', colWidth: '', title: '收货时间', type: 'time', isCheck: true, isRequired: true },
+		{ key: 'receiveQty', colWidth: '', title: '收货数量', type: 'input', isCheck: true, isRequired: true },
 	],
 	// 收货弹窗数据
 	dialogForm: [

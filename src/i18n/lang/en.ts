@@ -26,7 +26,10 @@ export default {
 		maintenanceInquiry: 'repair order query',
 		maintenancePresent: 'repair order submission',
 		maintenanceDelivery: 'repair order receipt',
-		arrivalAcceptance:'arrival acceptance'
+		unusedManage: 'unused manage',
+		unusedInquiry: 'unused order query',
+		unusedOrderSub: 'unused order submission',
+		arrivalAcceptance: 'arrival acceptance',
 	},
 	staticRoutes: {
 		signIn: 'signIn',
