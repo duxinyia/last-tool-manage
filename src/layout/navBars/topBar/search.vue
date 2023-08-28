@@ -87,8 +87,9 @@ const initTageView = () => {
 const onHandleSelect = (item: RouteItem) => {
 	let { path, redirect, children } = item;
 	if (item.meta?.isLink && !item.meta?.isIframe) window.open(item.meta?.isLink);
-	else if (redirect) router.push(children[0].path);
-	else router.push(path);
+	else if (redirect && children) {
+		router.push(children[0].path);
+	} else router.push(path);
 	closeSearch();
 };
 

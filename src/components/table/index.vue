@@ -89,7 +89,7 @@
 			:data="data"
 			:border="setBorder"
 			v-bind="$attrs"
-			row-key="id"
+			:row-key="selRowKey"
 			stripe
 			style="width: 100%"
 			:header-row-style="{ background: '#dce9fd' }"
@@ -98,7 +98,7 @@
 			@cell-click="cellClick"
 			:cell-style="cellStyle"
 		>
-			<el-table-column type="selection" :reserve-selection="false" width="30" v-if="config.isSelection" />
+			<el-table-column type="selection" :reserve-selection="true" width="30" v-if="config.isSelection" />
 			<el-table-column align="center" type="index" :label="$t('message.pages.no')" width="60" v-if="config.isSerialNo" />
 			<el-table-column
 				align="center"
@@ -240,6 +240,7 @@
 		</el-table>
 		<div class="footer" v-if="config.isPage">
 			<el-pagination
+				ref="pagination"
 				class="mt15 pages"
 				v-model:current-page="state.page.pageNum"
 				v-model:page-size="state.page.pageSize"
@@ -268,6 +269,7 @@ const route = useRoute();
 import '/@/theme/tableTool.scss';
 import { useI18n } from 'vue-i18n';
 const tableRef = ref<RefType>();
+const pagination = ref<RefType>();
 // 引入组件
 // const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 
@@ -358,8 +360,19 @@ const handleSelect = (index: number, item: Object) => {
 const changeSelect = (index: number, item: Object) => {
 	emit('changeselect', index, item);
 };
-
-onMounted(() => {});
+// 解决翻页组件开始输入中文时光标不居中问题
+onMounted(() => {
+	if (pagination.value) {
+		pagination.value.$el.querySelector('input[type=number]').oninput = (e: any) => {
+			if (e.data === '' && e.target.value === '') {
+				e.target.value = '0';
+				setTimeout(() => {
+					e.target.value = '';
+				}, 0);
+			}
+		};
+	}
+});
 // 打开新增弹窗
 const onOpenAdd = (type: string) => {
 	emit('openAdd', type);
@@ -420,6 +433,10 @@ const onCheckChange = () => {
 	const headers = props.header.filter((v) => v.isCheck).length;
 	state.checkListAll = headers === props.header.length;
 	state.checkListIndeterminate = headers > 0 && headers < props.header.length;
+};
+//为行设置独有key
+const selRowKey = (row: EmptyObjectType) => {
+	return row.runid;
 };
 // 表格多选改变时，用于导出和删除
 const onSelectionChange = (val: EmptyObjectType[]) => {
