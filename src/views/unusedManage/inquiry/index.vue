@@ -146,18 +146,19 @@ cellStyle.value = changeToStyle([1]);
 // 初始化列表数据
 const getTableData = async () => {
 	state.tableData.config.loading = true;
-	const form = state.tableData.form;
-	let data = {
-		repairNo: form.repairNo,
-		prNo: form.prNo,
-		page: state.tableData.page,
-	};
-	const res = await getQueryRepairOrderApi(data);
-	state.tableData.data = res.data.data;
-	state.tableData.config.total = res.data.total;
-	if (res.status) {
-		state.tableData.config.loading = false;
-	}
+	// const form = state.tableData.form;
+	// let data = {
+	// 	repairNo: form.repairNo,
+	// 	prNo: form.prNo,
+	// 	page: state.tableData.page,
+	// };
+	// 没有接口，这里是维修的接口暂时用一下
+	// const res = await getQueryRepairOrderApi(data);
+	// state.tableData.data = res.data.data;
+	// state.tableData.config.total = res.data.total;
+	// if (res.status) {
+	state.tableData.config.loading = false;
+	// }
 };
 // 点击申请单号
 const reqNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {

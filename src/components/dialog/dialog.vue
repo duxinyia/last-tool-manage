@@ -1,7 +1,7 @@
 <template>
 	<div class="system-menu-dialog-container">
-		<el-dialog :title="state.dialog.title" v-model="state.dialog.isShowDialog" width="769px">
-			<el-form v-if="state.dialog.type !== 'imp'" ref="dialogFormRef" :model="state.formData" size="default" label-width="80px">
+		<el-dialog :title="state.dialog.title" v-model="state.dialog.isShowDialog" :width="dialogWidth">
+			<el-form v-if="state.dialog.type !== 'imp'" ref="dialogFormRef" :model="state.formData" size="default" label-width="85px">
 				<el-row :gutter="35">
 					<el-col
 						:xs="item.xs || 24"
@@ -15,7 +15,13 @@
 					>
 						<el-form-item :label="$t(item.label)" :prop="item.prop" :rules="allRules(item)">
 							<el-input v-if="item.type === 'input'" v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)" clearable></el-input>
+							<!-- @change=" (val:any) => commonInputHandleChange(val,item.prop)" -->
 
+							<!-- <div v-if="item.type === 'tagtextarea'">
+								<el-tag v-for="tag in tags" :key="tag.name" closable :type="tag.type">
+									{{ tag.name }}
+								</el-tag>
+							</div> -->
 							<el-input disabled v-if="item.type === 'inputFile'" v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)" clearable>
 								<template #prepend
 									><el-upload
@@ -118,7 +124,7 @@ import { ElMessage, genFileId, UploadRawFile, FormRules, FormInstance } from 'el
 import type { UploadInstance, UploadProps, UploadUserFile } from 'element-plus';
 import { UploadFilled } from '@element-plus/icons-vue';
 import { getUploadFileApi } from '/@/api/global/index';
-import { verifyPhone, verifyEmail } from '/@/utils/toolsValidate';
+import { verifyPhone, verifyEmail, verifiyNumberInteger } from '/@/utils/toolsValidate';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const IconSelector = defineAsyncComponent(() => import('/@/components/iconSelector/index.vue'));
@@ -137,6 +143,10 @@ const props = defineProps({
 	isFootBtn: {
 		type: Boolean,
 		default: () => true,
+	},
+	dialogWidth: {
+		type: String,
+		default: () => '769px',
 	},
 });
 const { t } = useI18n();
@@ -170,7 +180,11 @@ const validatePass = (rule: any, value: any, callback: any, item: EmptyObjectTyp
 	const validateForm = item.validateForm;
 	if (value === '') {
 		callback(new Error(`${t(item.label)}不能为空`));
-	} else if ((validateForm && validateForm === 'phone' && !verifyPhone(value)) || (validateForm === 'email' && !verifyEmail(value))) {
+	} else if (
+		(validateForm && validateForm === 'phone' && !verifyPhone(value)) ||
+		(validateForm === 'email' && !verifyEmail(value)) ||
+		(validateForm === 'number' && !verifiyNumberInteger(value))
+	) {
 		callback(new Error(item.message));
 	}
 };
@@ -181,9 +195,12 @@ const allRules = (item: EmptyObjectType) => {
 				required: item.required,
 				message: `${t(item.label)}不能为空`,
 				trigger: item.type === 'input' || item.type === 'inputFile' || item.type === 'textarea' ? 'blur' : 'change',
+				// type:'number',
 			},
 		],
-		other: [{ validator: (rule: any, value: any, callback: any) => validatePass(rule, value, callback, item), trigger: 'blur' }],
+		other: [
+			{ validator: (rule: any, value: any, callback: any) => validatePass(rule, value, callback, item), trigger: 'blur', required: item.required },
+		],
 	};
 	return item.validateForm ? rules['other'] : rules['default'];
 };
@@ -223,6 +240,7 @@ const openDialog = (type: string, row?: any, title?: string) => {
 		state.dialog.submitTxt = '确 定';
 		nextTick(() => {
 			state.formData = JSON.parse(JSON.stringify(row));
+			dialogFormRef.value.resetFields();
 		});
 	}
 	state.dialog.type = type;
@@ -252,7 +270,16 @@ const initFormField = () => {
 	if (props.dialogConfig.length <= 0) return false;
 	props.dialogConfig.forEach((v) => (state.formData[v.prop] = ''));
 };
-// input框里面的数据
+const tags = ref<any>([]);
+// 普通输入框的变化
+const commonInputHandleChange = (val: any, prop: string) => {
+	if (prop == 'stockqty') {
+		// state.formData['codeList'] = val;
+		tags.value.push({ name: val, type: 'info' });
+	}
+};
+
+// 文件input框里面的数据
 const inputHandleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
 	props.dialogConfig.forEach((v) => {
 		if (v.type === 'inputFile') {

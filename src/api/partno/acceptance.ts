@@ -8,7 +8,6 @@ export function GetCheckTaskApi() {
 	});
 }
 //驗收
-
 export function SampleCheckApi(data: Object) {
 	return request({
 		url: '/api/Material/SampleCheck',
@@ -16,11 +15,12 @@ export function SampleCheckApi(data: Object) {
 		data: data,
 	});
 }
-// // 点击送样获取送样弹窗表格详情
-// export function GetSampleDetailApi(sampleNo:string) {
-//   return request({
-//     url: '/api/Material/GetSampleDetail',
-//     method: 'get',
-//     params:{sampleNo}
-//   });
-// }
+
+// 点击送样获取送样弹窗表格详情
+export function GetSampleWaitCheckDetailApi(sampleNo: string) {
+	return request({
+		url: '/api/Material/GetSampleWaitCheckDetail',
+		method: 'get',
+		params: { sampleNo },
+	});
+}

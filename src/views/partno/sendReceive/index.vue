@@ -85,8 +85,8 @@ const dialogData = reactive({
 	otherHeaderData: [
 		{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 		{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-		{ key: 'sampleTime', colWidth: '', title: '送样时间', type: 'text', isCheck: true },
-		{ key: 'sampleQty', colWidth: '', title: '送样数量', type: 'text', isCheck: true },
+		{ key: 'needsTime', colWidth: '', title: '需求送样时间', type: 'text', isCheck: true },
+		{ key: 'needsQty', colWidth: '', title: '需求送样数量', type: 'text', isCheck: true },
 		{ key: 'receiveTime', colWidth: '', title: '收货时间', type: 'time', isCheck: true, isRequired: true },
 		{ key: 'receiveQty', colWidth: '', title: '收货数量', type: 'input', isCheck: true, isRequired: true },
 	],
