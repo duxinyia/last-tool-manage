@@ -85,10 +85,10 @@ const dialogData = reactive({
 		{ key: 'sampleNo', colWidth: '', title: '送样单号', isCheck: true },
 		{ key: 'nameCh', colWidth: '', title: '品名-中文', isCheck: true },
 		{ key: 'nameEn', colWidth: '', title: '品名-英文', isCheck: true },
-		{ key: 'sampleQty', colWidth: '', title: '送样数量', isCheck: true },
-		{ key: 'sampleTime', colWidth: '', title: '送样时间', isCheck: true },
 		{ key: 'vendorCode', colWidth: '', title: '厂商代码', isCheck: true },
 		{ key: 'vendorName', colWidth: '', title: '厂商名称', isCheck: true },
+		{ key: 'needsQty', colWidth: '', title: '需求送样数量', isCheck: true },
+		{ key: 'needsTime', colWidth: '', title: '需求送样时间', isCheck: true },
 	],
 	// 点击送料表格数据
 	otherHeaderData: [

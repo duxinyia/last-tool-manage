@@ -159,7 +159,7 @@ const state = reactive<dialogFormState>({
 	},
 });
 // /**合并表格的第一列，处理表格数据 */
-const flitterData = (arr: EmptyObjectType, columnI: number) => {
+const flitterData = (arr: EmptyObjectType, columnI: number, property: string) => {
 	let spanOneArr: EmptyArrayType = [];
 	let concatOne = 0;
 	arr.forEach((item: EmptyObjectType, index: number) => {
@@ -167,8 +167,8 @@ const flitterData = (arr: EmptyObjectType, columnI: number) => {
 			spanOneArr.push(1);
 		} else {
 			// 注意这里的data是表格绑定的字段，根据自己的需求来改
-			if (columnI === 0 && item['simpleNo'] === arr[index - 1]['simpleNo']) {
-				//第一列需合并相同内容的判断条件
+			if (item[property] === arr[index - 1][property] && item['sampleNo'] === arr[index - 1]['sampleNo']) {
+				//列需合并相同内容的判断条件
 				spanOneArr[concatOne] += 1;
 				spanOneArr.push(0);
 			} else {
@@ -182,8 +182,9 @@ const flitterData = (arr: EmptyObjectType, columnI: number) => {
 	};
 };
 const objectSpanMethod = ({ row, column, rowIndex, columnIndex }: any) => {
-	if (columnIndex === 0 && column.property === 'simpleNo') {
-		const _row = flitterData(marNoData.value, columnIndex).one[rowIndex];
+	let arr = ['nameCh', 'nameEn', 'sampleNo'];
+	if (~arr.indexOf(column.property)) {
+		const _row = flitterData(marNoData.value, columnIndex, column.property).one[rowIndex];
 		const _col = _row > 0 ? 1 : 0;
 		return {
 			rowspan: _row,

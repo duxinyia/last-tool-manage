@@ -133,6 +133,7 @@
 						></el-input>
 						<!-- 数字输入框 -->
 						<el-input-number
+							style="text-align: center; width: 100%; display: flex; justify-content: center"
 							v-else-if="item.type === 'number'"
 							v-model="data[scope.$index][item.key]"
 							:min="item.min"

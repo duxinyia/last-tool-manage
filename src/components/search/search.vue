@@ -29,8 +29,8 @@
 								v-model="state.form[val.prop]"
 								type="daterange"
 								range-separator="-"
-								start-placeholder="Start date"
-								end-placeholder="End date"
+								start-placeholder="開始時間"
+								end-placeholder="結束時間"
 							/>
 							<el-select v-model="state.form[val.prop]" :placeholder="`请选择${val.label}`" v-else-if="val.type === 'select'" style="width: 100%">
 								<el-option v-for="item in val.options" :key="item.label" :label="item.text" :value="item.value"> </el-option>
