@@ -64,6 +64,7 @@ const arriveJobDialogVisible = ref(false);
 // 引入接口
 import { getreqNoApi } from '/@/api/requistManage/reportingInquiry';
 import { getGetWaitRecievePageListApi, getAddReceiveApi } from '/@/api/requistManage/arriveJob';
+
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -209,8 +210,7 @@ cellStyle.value = changeToStyle([1]);
 const getTableData = async () => {
 	const form = state.tableData.form;
 	let data = {
-		reqNo: form.reqNo,
-		prNo: form.prNo,
+		putno: form.putno,
 		page: state.tableData.page,
 	};
 	const res = await getGetWaitRecievePageListApi(data);

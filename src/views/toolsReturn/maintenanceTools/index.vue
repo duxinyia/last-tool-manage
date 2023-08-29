@@ -123,11 +123,13 @@ const state = reactive<TableDemoState>({
 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
 			{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 			{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+			{ key: 'storagename', colWidth: '', title: '倉庫名', type: 'text', isCheck: true },
 			{ key: 'stockqty', colWidth: '', title: '库存总量', type: 'text', isCheck: true },
 			{ key: 'qrstockqty', colWidth: '', title: '有码库存量', type: 'text', isCheck: true },
-			{ key: 'noqrstockqty', colWidth: '', title: '无码库存量', type: 'text', isCheck: true },
+			{ key: 'notqrstockqty', colWidth: '', title: '无码库存量', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
+
 		config: {
 			total: 0, // 列表总数
 			loading: true, // loading 加载
@@ -329,6 +331,7 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 		if (res.status) {
 			ElMessage.success(t('退库成功'));
 			arriveJobDialogVisible.value = false;
+			getTableData();
 		}
 	});
 };

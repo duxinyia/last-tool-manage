@@ -78,7 +78,7 @@
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { getUploadFileApi } from '/@/api/global/index';
 import { ElMessage, genFileId, UploadRawFile } from 'element-plus';
-import { GetCheckTaskApi, SampleCheckApi } from '/@/api/partno/acceptance';
+import { GetCheckTaskApi, SampleCheckApi, GetSampleWaitCheckDetailApi } from '/@/api/partno/acceptance';
 import { getExitReasonApi } from '/@/api/toolsReturn/maintentanceTools';
 import { GetSampleDetailApi } from '/@/api/partno/sendReceive';
 import { useI18n } from 'vue-i18n';
@@ -273,31 +273,31 @@ const openAcceptanceDialog = async (scope: any) => {
 	//获取验收失败原因
 	let res1 = await getExitReasonApi('CheckFail');
 	dialogState.tableData.header[7].options = res1.data.map((item: any) => {
-		return { value: item.runid, label: item.dataname };
+		return { value: item.dataname, label: item.dataname };
 	});
-	let res = {
-		status: true,
-		code: 0,
-		message: 'string',
-		data: {
-			matNo: 'string',
-			sampleNo: 'string',
-			nameEn: 'string',
-			nameCh: 'string',
-			vendorDetails: [
-				{
-					sampleQty: 0,
-					sampleTime: '2023-08-15',
-					vendorCode: 'string',
-					vendorName: 'string',
-					needsTime: '2023-08-15',
-					needsQty: 0,
-				},
-			],
-		},
-	};
+	// let res = {
+	// 	status: true,
+	// 	code: 0,
+	// 	message: 'string',
+	// 	data: {
+	// 		matNo: 'string',
+	// 		sampleNo: 'string',
+	// 		nameEn: 'string',
+	// 		nameCh: 'string',
+	// 		vendorDetails: [
+	// 			{
+	// 				sampleQty: 0,
+	// 				sampleTime: '2023-08-15',
+	// 				vendorCode: 'string',
+	// 				vendorName: 'string',
+	// 				needsTime: '2023-08-15',
+	// 				needsQty: 0,
+	// 			},
+	// 		],
+	// 	},
+	// };
 
-	// const res = await GetSampleDetailApi(scope.row.sampleNo);
+	const res = await GetSampleWaitCheckDetailApi(scope.row.sampleNo);
 	dialogState.tableData.data = res.data.vendorDetails;
 };
 //删除表格某一行數據
@@ -331,28 +331,32 @@ const lookUpload = () => {
 const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
-		if (!valid) return ElMessage.warning(t('表格项必填未填'));
-		// console.log('表格數據', dialogState);
-		let checkDetails = dialogState.tableData.data.filter((item) => {
-			delete item.needsQty;
-			delete item.needsTime;
-			delete item.sampleQty;
-			delete item.sampleTime;
-			return item;
-		});
-		let submitparams = {
-			sampleNo: dialogData.formData.sampleNo,
-			matNo: dialogData.formData.matNo,
-			describe: dialogData.describe,
-			accepReportUrl: dialogData.fileInfo.drawPath,
-			checkDetails: checkDetails,
-		};
-		console.log('提交的信息', submitparams);
-		// let res = await SampleCheckApi(submitparams);
-		// if (res.status) {
-		// 	dialogData.dialogVisible = false;
-		// 	ElMessage.success('验收成功');
-		// }
+		if (valid) {
+			let checkDetails = dialogState.tableData.data.filter((item) => {
+				delete item.needsQty;
+				delete item.needsTime;
+				delete item.sampleQty;
+				delete item.sampleTime;
+				return item;
+			});
+			let submitparams = {
+				sampleNo: dialogData.formData.sampleNo,
+				matNo: dialogData.formData.matNo,
+				describe: dialogData.describe,
+				accepReportUrl: dialogData.fileInfo.drawPath,
+				checkDetails: checkDetails,
+			};
+			// console.log('shuju', submitparams);
+
+			let res = await SampleCheckApi(submitparams);
+			if (res.status) {
+				dialogData.dialogVisible = false;
+				ElMessage.success('验收成功');
+				getTableData();
+			}
+		} else {
+			return ElMessage.warning(t('表格项必填未填'));
+		}
 	});
 };
 // 页面加载时
