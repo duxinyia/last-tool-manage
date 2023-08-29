@@ -11,8 +11,11 @@
 								:placeholder="`请输入${$t(val.label)}`"
 								clearable
 								v-if="val.type === 'input'"
-								style="width: 100%"
+								style="width: 150px"
 							/>
+							<span v-else style="text-align: center; width: 100%">
+								{{ state.tableData.form[val.prop] }}
+							</span>
 						</el-form-item>
 					</el-col>
 				</el-row>
@@ -71,9 +74,9 @@ const state = reactive<EmptyObjectType>({
 				nameEn: '',
 				vendorCode: '',
 				vendorName: '',
-				sampleQty: '',
-				sampleTime: '',
-				pr: '',
+				reqQty: null,
+				reqDate: '',
+				prItemNo: '',
 			},
 		],
 		config: {
@@ -100,13 +103,13 @@ const state = reactive<EmptyObjectType>({
 				isCheck: true,
 				isRequired: true,
 			},
-			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true, isRequired: true },
-			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true, isRequired: true },
-			{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'input', isCheck: true, isRequired: true },
-			{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'input', isCheck: true, isRequired: true },
-			{ key: 'sampleQty', colWidth: '', title: '需求数量', type: 'input', isCheck: true, isRequired: true },
-			{ key: 'sampleTime', colWidth: '150', title: '需求时间', type: 'time', isCheck: true, isRequired: true },
-			{ key: 'pr', colWidth: '', title: 'PR项次', type: 'input', isCheck: true, isRequired: true },
+			{ key: 'nameCh', colWidth: '200', title: '品名-中文', type: 'text', isCheck: true, isRequired: true },
+			// { key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true, isRequired: true },
+			{ key: 'vendorCode', colWidth: '250', title: '厂商代码', type: 'input', isCheck: true, isRequired: true },
+			{ key: 'vendorName', colWidth: '300', title: '厂商名称', type: 'input', isCheck: true, isRequired: true },
+			{ key: 'reqQty', colWidth: '150', title: '需求数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
+			{ key: 'reqDate', colWidth: '150', title: '需求时间', type: 'time', isCheck: true, isRequired: true },
+			{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'input', isCheck: true, isRequired: true },
 		],
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
@@ -114,7 +117,7 @@ const state = reactive<EmptyObjectType>({
 			isSearchBtn: false, //搜索框
 		},
 		search: [
-			{ label: '申请单号：', prop: 'matNo', placeholder: '请输入料号', type: 'text' },
+			{ label: '申请单号：', prop: 'reqNo', placeholder: '请输入料号', type: 'text' },
 			{ label: 'PR单号', prop: 'prNo', placeholder: '请输入PR单号', type: 'input' },
 		],
 		// 给后端的数据

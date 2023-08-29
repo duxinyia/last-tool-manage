@@ -42,7 +42,9 @@ service.interceptors.response.use(
 		if (res.code && res.code !== 0) {
 			// `token` 过期或者账号已在别处登录
 			if (res.code === 401 || res.code === 4001) {
+				ElMessage.error("登录过期，请重新登录")
 				Session.clear(); // 清除浏览器全部临时缓存
+				Local.clear();
 			}else if(res.code===500||res.Code===500){
 				ElMessage.error(res.message||res.Message);
 			}
@@ -59,10 +61,10 @@ service.interceptors.response.use(
 			ElMessage.error('网络连接错误');
 		} 
 		else if(error.response.data.code===401){
+		ElMessage.error("登录过期，请重新登录")
 			Session.clear();
 			Local.clear();
 			window.location.href = '/'; // 去登录页
-		ElMessage.error("登录过期，请重新登录")
 		}
 		else {
 			if (error.response.data) ElMessage.error(error.response.statusText)
@@ -92,6 +94,7 @@ const replaceToken=async()=>{
 		Session.set('token', data.data);	
 	}else {
 		Session.clear();
+		Local.clear();
 		window.location.href = '/'; // 去登录页
 		ElMessage.error("登录过期，请重新登录")
 	}

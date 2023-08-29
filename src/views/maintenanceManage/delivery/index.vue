@@ -12,7 +12,7 @@
 				:cellStyle="cellStyle"
 				@onOpenOtherDialog="openArriveJobDialog"
 			/>
-			<el-dialog ref="arriveJobDialogRef" v-model="arriveJobDialogVisible" :title="dilogTitle" width="85%">
+			<el-dialog v-model="deliveryDialogVisible" :title="dilogTitle" width="85%">
 				<el-row v-if="dilogTitle == '收货'">
 					<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb10" v-for="(val, key) in dialogState.tableData.search" :key="key">
 						<div v-if="val.type === 'text'">
@@ -48,7 +48,7 @@
 				</div>
 				<template #footer v-if="dilogTitle == '收货'">
 					<span class="dialog-footer">
-						<el-button size="default" auto-insert-space @click="arriveJobDialogVisible = false">取消</el-button>
+						<el-button size="default" auto-insert-space @click="deliveryDialogVisible = false">取消</el-button>
 						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)"> 确定 </el-button>
 					</span>
 				</template>
@@ -60,10 +60,10 @@
 <script setup lang="ts" name="/requistManage/arriveJob">
 import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
 import { ElMessage, FormInstance } from 'element-plus';
-const arriveJobDialogVisible = ref(false);
+const deliveryDialogVisible = ref(false);
 // 引入接口
-import { getreqNoApi } from '/@/api/requistManage/reportingInquiry';
-import { getGetWaitRecievePageListApi, getAddReceiveApi } from '/@/api/requistManage/arriveJob';
+import { getAddReceiveApi } from '/@/api/requistManage/arriveJob';
+import { getQueryReceivableRepairOrdersApi, getRepariDetailsForReceiveApi } from '/@/api/maintenanceManage/delivery';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -73,26 +73,24 @@ const TableSearch = defineAsyncComponent(() => import('/@/components/search/sear
 const { t } = useI18n();
 const tableFormRef = ref();
 const tableRef = ref<RefType>();
-const arriveJobDialogRef = ref();
 // 单元格样式
 const cellStyle = ref();
-
 // 弹窗标题
 const dilogTitle = ref();
-const header = ref([
+const header = ref<deliveryDialogHeader>([
 	{ key: 'matNo', colWidth: '250', title: 'message.pages.matNo', type: 'text', isCheck: true },
 	{ key: 'machinetype', colWidth: '', title: '机种', type: 'text', isCheck: true },
 	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-	{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-	{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+	{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
+	{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
 	{ key: 'qty', colWidth: '', title: '维修数量', type: 'text', isCheck: true },
 	{ key: 'reason', colWidth: '', title: '维修原因', type: 'text', isCheck: true },
 	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'input', isCheck: true, isRequired: true },
 	{ key: 'receiptDate', colWidth: '150', title: '收货时间', type: 'time', isCheck: true, isRequired: true },
 ]);
-const header1 = ref([
+const header1 = ref<deliveryDialogHeader>([
 	{
 		key: 'matNo',
 		colWidth: '250',
@@ -102,8 +100,8 @@ const header1 = ref([
 	},
 	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-	{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-	{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+	{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
+	{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 	{ key: 'qty', colWidth: '', title: '维修数量', type: 'text', isCheck: true },
 	{ key: 'reason', colWidth: '150', title: '维修原因', type: 'text', isCheck: true },
 	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
@@ -114,7 +112,7 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'reqNo', colWidth: '', title: '维修单号', type: 'text', isCheck: true },
+			{ key: 'repairNo', colWidth: '', title: '维修单号', type: 'text', isCheck: true },
 			{ key: 'prNo', colWidth: '', title: 'PR单号', type: 'text', isCheck: true },
 			{ key: 'creator', colWidth: '', title: '提报人', type: 'text', isCheck: true },
 		],
@@ -133,7 +131,7 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '维修单号', prop: 'reqNo', required: false, type: 'input' },
+			{ label: '维修单号', prop: 'repairNo', required: false, type: 'input' },
 			{ label: 'PR单号', prop: 'prNo', required: false, type: 'input' },
 		],
 		searchConfig: {
@@ -142,7 +140,7 @@ const state = reactive<TableDemoState>({
 		btnConfig: [{ type: 'sendReceive', name: '收货', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
 		// 给后端的数据
 		form: {
-			reqNo: '',
+			repairNo: '',
 			prNo: '',
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
@@ -180,7 +178,7 @@ const dialogState = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: '收货单号', prop: 'sendNo', required: false, type: 'text' },
-			{ label: '维修单号', prop: 'reqNo', required: false, type: 'text' },
+			{ label: '维修单号', prop: 'repairNo', required: false, type: 'text' },
 			{ label: 'PR单号', prop: 'prNo', required: false, type: 'text' },
 			// { label: '收货时间', prop: 'sendTime', required: false, type: 'time', isRequired: true },
 		],
@@ -206,13 +204,14 @@ const changeToStyle = (indList: number[]) => {
 cellStyle.value = changeToStyle([1]);
 // 初始化列表数据
 const getTableData = async () => {
+	state.tableData.config.loading = true;
 	const form = state.tableData.form;
 	let data = {
-		reqNo: form.reqNo,
+		repairNo: form.repairNo,
 		prNo: form.prNo,
 		page: state.tableData.page,
 	};
-	const res = await getGetWaitRecievePageListApi(data);
+	const res = await getQueryReceivableRepairOrdersApi(data);
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
 	if (res.status) {
@@ -225,26 +224,25 @@ const onDelRow = (row: EmptyObjectType, i: number) => {
 };
 // 点击收货弹窗
 const openArriveJobDialog = (scope: EmptyObjectType) => {
-	let data = { reqNo: scope.row.reqNo };
 	dialogState.tableData.form = scope.row;
-	getDetailData(data);
+	getDetailData(scope.row.repairNo);
 	dilogTitle.value = '收货';
 	changeStatus(header.value, 300, true);
 };
 // 点击申请单号
 const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
-	if (column.property === 'reqNo') {
-		dilogTitle.value = '维修单号:' + row.reqNo;
+	if (column.property === 'repairNo') {
+		dilogTitle.value = '维修单号:' + row.repairNo;
 		changeStatus(header1.value, 500, false);
-		let data = { reqNo: row.reqNo };
-		getDetailData(data);
+		// let data = { repairNo: row.repairNo };
+		getDetailData(row.repairNo);
 	}
 };
 // 详情接口
-const getDetailData = async (data: Object) => {
-	const res = await getreqNoApi(data);
-	dialogState.tableData.data = res.data.applyDetails;
-	arriveJobDialogVisible.value = true;
+const getDetailData = async (data: string) => {
+	const res = await getRepariDetailsForReceiveApi(data);
+	dialogState.tableData.data = res.data.details;
+	deliveryDialogVisible.value = true;
 	if (res.status) {
 		dialogState.tableData.config.loading = false;
 	}
@@ -270,7 +268,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 		const res = await getAddReceiveApi(allData);
 		if (res.status) {
 			ElMessage.success(t('收货成功'));
-			arriveJobDialogVisible.value = false;
+			deliveryDialogVisible.value = false;
 		}
 	});
 };

@@ -94,3 +94,6 @@ declare type searchState = {
 	form: EmptyObjectType,
 	isToggle: boolean,
 };
+ 
+// 維修單收貨彈窗header
+declare type deliveryDialogHeader=TableHeaderType[]

@@ -142,11 +142,10 @@ const getTableData = async () => {
 	let data = {
 		parentid: form.parentid,
 		dataName: form.dataName,
-		dataCode: form.dataCode,
 		page: state.tableData.page,
 	};
 	const res = await getBaseDaListApi(data);
-	state.tableData.data = res.data.data;
+	state.tableData.data = res.data.data || [];
 	state.tableData.config.total = res.data.total;
 	if (res.status) {
 		state.tableData.config.loading = false;
