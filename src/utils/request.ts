@@ -93,10 +93,10 @@ const replaceToken=async()=>{
 	if(data.data){
 		Session.set('token', data.data);	
 	}else {
+		ElMessage.error("登录过期，请重新登录")
 		Session.clear();
 		Local.clear();
 		window.location.href = '/'; // 去登录页
-		ElMessage.error("登录过期，请重新登录")
 	}
 }
 // 导出 axios 实例

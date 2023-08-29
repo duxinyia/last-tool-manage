@@ -88,6 +88,7 @@ const header = ref([
 	{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
 	{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
+	{ key: 'receiveQty', colWidth: '', title: '已收货数量', type: 'text', isCheck: true },
 	{ key: 'reqDate', colWidth: '', title: '需求时间', type: 'text', isCheck: true },
 	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
 	{ key: 'receiptDate', colWidth: '150', title: '收货时间', type: 'time', isCheck: true, isRequired: true },
@@ -266,7 +267,11 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 		// if (!dialogState.tableData.form['sendTime']) return ElMessage.warning(t('请填写收货时间'));
 		let allData: EmptyObjectType = {};
 		allData = { ...dialogState.tableData.form };
-		allData['details'] = dialogState.tableData.data;
+		let data = dialogState.tableData.data;
+		data = data.map((item) => {
+			return { reqDetailId: item.runId, matNo: item.matNo, receiptQty: item.receiptQty, receiptDate: item.receiptDate, describe: item.describe };
+		});
+		allData['details'] = data;
 		const res = await getAddReceiveApi(allData);
 		if (res.status) {
 			ElMessage.success(t('收货成功'));

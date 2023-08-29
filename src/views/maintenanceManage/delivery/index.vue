@@ -87,7 +87,7 @@ const header = ref<deliveryDialogHeader>([
 	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
 	{ key: 'qty', colWidth: '', title: '维修数量', type: 'text', isCheck: true },
 	{ key: 'reason', colWidth: '', title: '维修原因', type: 'text', isCheck: true },
-	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'input', isCheck: true, isRequired: true },
+	{ key: 'receiptQty', colWidth: '100', title: '收货数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
 	{ key: 'receiptDate', colWidth: '150', title: '收货时间', type: 'time', isCheck: true, isRequired: true },
 ]);
 const header1 = ref<deliveryDialogHeader>([
