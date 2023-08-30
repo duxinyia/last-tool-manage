@@ -14,3 +14,11 @@ export function getRepariDetailsForReceiveApi(repairNo:string) {
     method: 'GET',
   });
 }
+// 收货接口
+export function getReceiveApi(data:Object) {
+  return request({
+    url: '/api/ToolRepair/Receive',
+    method: 'POST',
+  	data:data
+  });
+}

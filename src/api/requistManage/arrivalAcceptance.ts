@@ -8,9 +8,9 @@ export function getIToolReceivePageListApi(data:Object) {
   });
 }
 // 点击验收得到的数据
-export function getCheckdetailApi(data:object) {
+export function getReceiveApi(data:object) {
   return request({
-    url: '/api/ToolCheck/GetCheckdetail/Receiptno',
+    url: '/api/ToolReceive/GetReceive',
     method: 'GET',
   	params:data
   });

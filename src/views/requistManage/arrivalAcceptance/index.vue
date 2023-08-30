@@ -92,7 +92,7 @@ import { defineAsyncComponent, reactive, ref, onMounted, computed, watch } from 
 import { ElMessage, UploadInstance, UploadProps, UploadUserFile, genFileId, UploadRawFile, FormInstance } from 'element-plus';
 const arriveJobDialogVisible = ref(false);
 // 引入接口
-import { getIToolReceivePageListApi, getCheckdetailApi, getTInsertCheckApi } from '/@/api/requistManage/arrivalAcceptance';
+import { getIToolReceivePageListApi, getReceiveApi, getTInsertCheckApi } from '/@/api/requistManage/arrivalAcceptance';
 import { getUploadFileApi } from '/@/api/global/index';
 import { useI18n } from 'vue-i18n';
 // 引入组件
@@ -113,21 +113,21 @@ const cellStyle = ref();
 // 弹窗标题
 const dilogTitle = ref();
 const header = ref<EmptyArrayType>([
-	{ key: 'matNo', colWidth: '250', title: 'message.pages.matNo', type: 'text', isCheck: true },
-	{ key: 'machinetype', colWidth: '', title: '机种', type: 'text', isCheck: true },
+	{ key: 'matno', colWidth: '250', title: 'message.pages.matNo', type: 'text', isCheck: true },
+	// { key: 'machinetype', colWidth: '', title: '机种', type: 'text', isCheck: true },
 	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
-	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-	{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'text', isCheck: true },
-	{ key: 'receiptDate', colWidth: '', title: '收货时间', type: 'text', isCheck: true },
+	// { key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+	{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
+	{ key: 'receiveqty', colWidth: '', title: '收货数量', type: 'text', isCheck: true },
+	{ key: 'receiptdate', colWidth: '', title: '收货时间', type: 'text', isCheck: true },
 	{ key: 'checkqty', colWidth: '100', title: '验收数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
 	{ key: 'passqty', colWidth: '100', title: '合格数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
 	{ key: 'failqty', colWidth: '', title: '不合格数量', type: 'text', isCheck: true, isRequired: true },
-	{ key: 'checkqtyDate', colWidth: '150', title: '验收时间', type: 'time', isCheck: true, isRequired: true },
+	{ key: 'checkDate', colWidth: '150', title: '验收时间', type: 'time', isCheck: true, isRequired: true },
 ]);
 const header1 = ref([
 	{
-		key: 'matNo',
+		key: 'matno',
 		colWidth: '250',
 		title: 'message.pages.matNo',
 		type: 'text',
@@ -135,10 +135,10 @@ const header1 = ref([
 	},
 	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-	{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-	{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'text', isCheck: true },
-	{ key: 'receiptDate', colWidth: '150', title: '收货时间', type: 'text', isCheck: true },
+	{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
+	{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+	{ key: 'receiveqty', colWidth: '', title: '收货数量', type: 'text', isCheck: true },
+	{ key: 'receiptdate', colWidth: '150', title: '收货时间', type: 'text', isCheck: true },
 ]);
 const state = reactive<TableDemoState>({
 	tableData: {
@@ -150,13 +150,13 @@ const state = reactive<TableDemoState>({
 			{ key: 'reqno', colWidth: '', title: '申请单号', type: 'text', isCheck: true },
 			{ key: 'creator', colWidth: '', title: '收货人', type: 'text', isCheck: true },
 			{ key: 'receipttime', colWidth: '', title: '收货时间', type: 'text', isCheck: true },
-			{ key: 'runstatus', colWidth: '', title: '状态', type: 'status', isCheck: true },
+			// { key: 'runstatus', colWidth: '', title: '状态', type: 'status', isCheck: true },
 			{ key: 'companyid', colWidth: '', title: '法人', type: 'text', isCheck: true },
 			{ key: 'bucode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
-			{ key: 'costcode', colWidth: '', title: '费用代码', type: 'text', isCheck: true },
-			{ key: 'createtime', colWidth: '', title: '创建时间', type: 'text', isCheck: true },
-			{ key: 'modifier', colWidth: '', title: '修改人', type: 'text', isCheck: true },
-			{ key: 'modifytime', colWidth: '', title: '修改时间', type: 'text', isCheck: true },
+			// { key: 'costcode', colWidth: '', title: '费用代码', type: 'text', isCheck: true },
+			// { key: 'createtime', colWidth: '', title: '创建时间', type: 'text', isCheck: true },
+			// { key: 'modifier', colWidth: '', title: '修改人', type: 'text', isCheck: true },
+			// { key: 'modifytime', colWidth: '', title: '修改时间', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -233,7 +233,7 @@ const dialogState = reactive<TableDemoState>({
 
 const changeInput = (val: number, i: number) => {
 	const data = dialogState.tableData.data[i];
-	header.value[8].max = data.checkqty;
+	header.value[6].max = data.checkqty;
 	data.failqty = data.checkqty - data.passqty || 0;
 	if (data.checkqty && data.passqty) {
 		if (data.checkqty < data.passqty) {
@@ -300,7 +300,7 @@ const onDelRow = (row: EmptyObjectType, i: number) => {
 };
 // 点击验收按钮
 const openArriveJobDialog = (scope: EmptyObjectType) => {
-	let data = { Receiptno: scope.row.receiptno };
+	let data = { receiptNo: scope.row.receiptno };
 	dialogState.tableData.form = scope.row;
 	getDetailData(data);
 	dilogTitle.value = '验收';
@@ -311,15 +311,15 @@ const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'receiptno') {
 		dilogTitle.value = '收货单号:' + row.receiptno;
 		changeStatus(header1.value, 500, false);
-		let data = { Receiptno: row.receiptno };
+		let data = { receiptNo: row.receiptno };
 		getDetailData(data);
 	}
 };
 // 详情接口
 const getDetailData = async (data: Object) => {
 	arriveJobDialogVisible.value = true;
-	const res = await getCheckdetailApi(data);
-	dialogState.tableData.form['checkno'] = res.data.checkno;
+	const res = await getReceiveApi(data);
+	dialogState.tableData.form = res.data;
 	dialogState.tableData.data = res.data.receiveDetails;
 	if (res.status) {
 		dialogState.tableData.config.loading = false;
@@ -340,10 +340,13 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
 		let allData: EmptyObjectType = {};
-		allData = { ...dialogState.tableData.form };
-		console.log(dialogState.tableData.form);
-
-		allData['checkdetial'] = dialogState.tableData.data;
+		const form = dialogState.tableData.form;
+		allData = { receiptno: form.receiptno, accepreporturl: form.accepreporturl || '', describe: form.describe || '' };
+		let data = dialogState.tableData.data;
+		data = data.map((item) => {
+			return { receivedetailid: item.runid, checkqty: item.checkqty, failqty: item.failqty, passqty: item.passqty, checkDate: item.checkDate };
+		});
+		allData['checkdetial'] = data;
 		const res = await getTInsertCheckApi(allData);
 		if (res.status) {
 			ElMessage.success(t('收货成功'));
