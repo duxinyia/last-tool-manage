@@ -13,20 +13,10 @@
 						v-for="item in dialogConfig"
 						:key="item.prop"
 					>
-						<el-form-item :label="$t(item.label)" :prop="item.prop" :rules="allRules(item)">
-							<el-input
-								v-if="item.type === 'input'"
-								v-model="state.formData[item.prop]"
-								:placeholder="$t(item.placeholder)"
-								clearable
-								@change=" (val:any) => commonInputHandleChange(val,item.prop)"
-							></el-input>
+						<el-form-item v-if="item.type != 'button'" :label="$t(item.label)" :prop="item.prop" :rules="allRules(item)">
+							<el-input v-if="item.type === 'input'" v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)" clearable></el-input>
 							<!-- @change=" (val:any) => commonInputHandleChange(val,item.prop)" -->
-							<div v-if="item.type === 'tagsarea'">
-								<el-tag v-for="tag in tags" :key="tag.name" closable :type="tag.type" @close="handleTagClose(tag)" class="mr10">
-									{{ tag.name }}
-								</el-tag>
-							</div>
+
 							<!-- <el-input :width="224" v-if="item.type === 'tagtextarea'" v-model="state.formData[item.prop]">
 								<template >
 									<el-tag v-for="tag in tags" :key="tag.name" closable :type="tag.type">
@@ -84,6 +74,10 @@
 								{{ state.formData[item.prop] }}
 							</span>
 						</el-form-item>
+
+						<span v-else>
+							<el-button type="primary" plain v-if="item.type === 'button'" @click="dailogFormButton">{{ item.label }}</el-button>
+						</span>
 					</el-col>
 				</el-row>
 			</el-form>
@@ -118,6 +112,49 @@
 					>
 				</div>
 			</el-form>
+			<template>
+				<el-dialog :title="state.innerdialog.title" v-model="state.innerdialog.isShowInnerDialog" width="40%" append-to-body>
+					<el-form ref="innnerDialogFormRef" :model="state.formData" size="default">
+						<el-row :gutter="35">
+							<el-col
+								:xs="item.xs || 24"
+								:sm="item.sm || 12"
+								:md="item.md || 12"
+								:lg="item.md || 12"
+								:xl="item.xl || 12"
+								class="mb20"
+								v-for="item in innerDialogConfig"
+								:key="item.prop"
+							>
+								<el-form-item v-if="item.type != 'button'" :label="$t(item.label)" :prop="item.prop" :rules="allRules(item)">
+									<el-input
+										v-if="item.type === 'input'"
+										v-model="state.formData[item.prop]"
+										:placeholder="$t(item.placeholder)"
+										clearable
+										@input=" (val:any) => commonInputHandleChange(val,item.prop)"
+									></el-input>
+									<!-- 这里字段写死了入库数量 -->
+									<span v-if="item.type === 'text'" style="width: 100%; font-weight: 700; color: #1890ff">
+										{{ state.formData.stockqty }}
+									</span>
+									<div v-if="item.tag">
+										<el-tag v-for="tag in tags" :key="tag" closable type="info" @close="handleTagClose(tag)" class="mr10">
+											{{ tag }}
+										</el-tag>
+									</div>
+								</el-form-item>
+							</el-col>
+						</el-row>
+					</el-form>
+					<template #footer v-if="isFootBtn">
+						<span class="dialog-footer">
+							<el-button @click="innnerDialogCancel" size="default">清 空</el-button>
+							<el-button type="primary" @click="innnerDialogSubmit(innnerDialogFormRef)" size="default">{{ state.dialog.submitTxt }}</el-button>
+						</span>
+					</template>
+				</el-dialog>
+			</template>
 			<template #footer v-if="isFootBtn">
 				<span class="dialog-footer">
 					<el-button @click="onCancel" size="default">取 消</el-button>
@@ -131,7 +168,7 @@
 <script setup lang="ts" name="systemMenuDialog">
 import { defineAsyncComponent, reactive, onMounted, ref, nextTick } from 'vue';
 import { storeToRefs } from 'pinia';
-
+import { debounce } from '/@/utils/debounceAndThrottle';
 import { ElMessage, genFileId, UploadRawFile, FormRules, FormInstance } from 'element-plus';
 import type { UploadInstance, UploadProps, UploadUserFile } from 'element-plus';
 import { UploadFilled } from '@element-plus/icons-vue';
@@ -140,11 +177,15 @@ import { verifyPhone, verifyEmail, verifiyNumberInteger } from '/@/utils/toolsVa
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const IconSelector = defineAsyncComponent(() => import('/@/components/iconSelector/index.vue'));
-const emit = defineEmits(['downloadTemp', 'importTableData', 'addData']);
+const emit = defineEmits(['downloadTemp', 'importTableData', 'addData', 'dailogFormButton', 'innerDialogData']);
 // 定义父组件传过来的值
 const props = defineProps({
 	// 弹出框内容
 	dialogConfig: {
+		type: Array<EmptyObjectType>,
+		default: () => [],
+	},
+	innerDialogConfig: {
 		type: Array<EmptyObjectType>,
 		default: () => [],
 	},
@@ -169,6 +210,7 @@ const inputfileList = ref<UploadUserFile[]>([]);
 const fileListName = ref();
 // 定义变量内容
 const dialogFormRef = ref();
+const innnerDialogFormRef = ref();
 const uploadForm = ref();
 const inputuploadForm = ref();
 
@@ -183,9 +225,19 @@ const state = reactive<dialogFormState>({
 		submitTxt: '',
 		isdisable: false,
 	},
+	innerdialog: {
+		isShowInnerDialog: false,
+		type: '',
+		title: '',
+		submitTxt: '',
+		isdisable: false,
+	},
 });
 const ondownloadTemp = () => {
 	emit('downloadTemp');
+};
+const dailogFormButton = () => {
+	emit('dailogFormButton');
 };
 // 校验表单
 const validatePass = (rule: any, value: any, callback: any, item: EmptyObjectType) => {
@@ -198,8 +250,8 @@ const validatePass = (rule: any, value: any, callback: any, item: EmptyObjectTyp
 		(validateForm === 'number' && !verifiyNumberInteger(value))
 	) {
 		callback(new Error(item.message));
-	}else{
-		callback()
+	} else {
+		callback();
 	}
 };
 const allRules = (item: EmptyObjectType) => {
@@ -253,6 +305,7 @@ const openDialog = (type: string, row?: any, title?: string) => {
 		state.dialog.title = title;
 		state.dialog.submitTxt = '确 定';
 		nextTick(() => {
+			tags.value = [];
 			state.formData = JSON.parse(JSON.stringify(row));
 			dialogFormRef.value.resetFields();
 		});
@@ -264,13 +317,26 @@ const openDialog = (type: string, row?: any, title?: string) => {
 const closeDialog = () => {
 	state.dialog.isShowDialog = false;
 };
-
+// 打开嵌套弹窗
+const openInnerDialog = (title?: string) => {
+	state.innerdialog.title = title;
+	state.innerdialog.isShowInnerDialog = true;
+	state.formData['stockqty'] = tags.value.length;
+};
+const closeInnerDialog = () => {
+	state.innerdialog.isShowInnerDialog = false;
+};
 // 取消
 const onCancel = () => {
 	closeDialog();
 };
-// 提交
-const onSubmit = (formEl: EmptyObjectType | undefined) => {
+const innnerDialogCancel = () => {
+	tags.value = [];
+	state.formData['stockqty'] = 0;
+	closeInnerDialog();
+};
+//内嵌弹窗提交
+const innnerDialogSubmit = (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
 	formEl.validate((valid: boolean) => {
 		if (valid) {
@@ -279,17 +345,28 @@ const onSubmit = (formEl: EmptyObjectType | undefined) => {
 				state.formData.stockqty = tags.value.length;
 			}
 			//如果存在需要存放扫码枪输入信息的字段
-			let tempObj = { ...state.formData };
-			props.dialogConfig.forEach((item: any) => {
+			props.innerDialogConfig.forEach((item: any) => {
 				if (item.tag) {
-					tempObj[item.prop] = [];
-					tempObj.codeList = tags.value.map((item: any) => {
-						return item.name;
+					state.formData[item.prop] = [];
+					state.formData.codeList = tags.value.map((item: any) => {
+						return item;
 					});
 				}
 			});
+			closeInnerDialog();
+		} else {
+		}
+	});
+};
 
-			emit('addData', tempObj, state.dialog.type);
+// 提交
+const onSubmit = (formEl: EmptyObjectType | undefined) => {
+	if (!formEl) return;
+	formEl.validate((valid: boolean) => {
+		if (valid) {
+			console.log('state.formData', state.formData);
+
+			emit('addData', state.formData, state.dialog.type);
 		} else {
 		}
 	});
@@ -301,13 +378,23 @@ const initFormField = () => {
 };
 const tags = ref<any>([]);
 // 输入框一输入变化（不需要光标移开）
-const commonInputHandleChange = (val: any, prop: string) => {
+const commonInputHandleChange = debounce((val: any, prop: string) => {
+	console.log(tags.value.length, state.formData.checkqty);
+
 	if (prop == 'sacnstockqty') {
-		tags.value.push({ name: val, type: 'info' });
-		state.formData['sacnstockqty'] = '';
-		state.formData['stockqty'] = tags.value.length;
+		if (tags.value.length + 1 > state.formData.checkqty) {
+			ElMessage.error(`扫码数量超过验收数量，请勿继续扫码`);
+			state.formData['sacnstockqty'] = null;
+		} else if (tags.value.includes(val)) {
+			ElMessage.warning(`该条码已存在，请勿重复扫码`);
+			state.formData['sacnstockqty'] = null;
+		} else {
+			tags.value.push(val);
+			state.formData['sacnstockqty'] = null;
+			state.formData['stockqty'] = tags.value.length;
+		}
 	}
-};
+}, 500);
 // 关闭tag标签
 const handleTagClose = (tag: string) => {
 	tags.value.splice(tags.value.indexOf(tag), 1);
@@ -398,6 +485,8 @@ onMounted(() => {
 defineExpose({
 	openDialog,
 	closeDialog,
+	openInnerDialog,
+	closeInnerDialog,
 });
 </script>
 

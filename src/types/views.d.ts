@@ -39,11 +39,11 @@ declare type DialogConfigType = {
 	label: string;
 	prop: string;
 	placeholder: string;
-	required:boolean;
+	required: boolean;
 	type: string;
 	// value:  string;
-	options?:SelectOptionType[];
-	editDisable?:boolean;
+	options?: SelectOptionType[];
+	editDisable?: boolean;
 	xs?: number;
 	sm?: number;
 	md?: number;
@@ -62,38 +62,47 @@ declare type TableDemoState = {
 			isSelection: boolean;
 			isSerialNo: boolean;
 			isOperate: boolean;
-			isButton:boolean;
+			isButton: boolean;
 			[key: string]: T;
 		};
-		searchConfig?:{
+		searchConfig?: {
 			isSearchBtn: boolean;
-		},
+		};
 		search: TableSearchType[];
-		topBtnConfig?:TableButtonType[];
-		btnConfig?:TableButtonType[];
+		topBtnConfig?: TableButtonType[];
+		btnConfig?: TableButtonType[];
 		page: EmptyObjectType;
 		printName?: string;
-		form:EmptyObjectType;
+		form: EmptyObjectType;
 		dialogConfig?: DialogConfigType[];
-		searchConfig?:EmptyObjectType
+		innerDialogConfig?: DialogConfigType[];
+		searchConfig?: EmptyObjectType;
 	};
 };
 declare type dialogFormState = {
-	formData: EmptyObjectType,
-	vendors:EmptyArrayType,
+	formData: EmptyObjectType;
+	vendors: EmptyArrayType;
 	dialog: {
-		isShowDialog: boolean,
-		type: string,
-		title?: string,
-		submitTxt: string,
-		isdisable: boolean,
-		num?: number,
-	},
+		isShowDialog: boolean;
+		type: string;
+		title?: string;
+		submitTxt: string;
+		isdisable: boolean;
+		num?: number;
+	};
+	innerdialog: {
+		isShowInnerDialog: boolean;
+		type: string;
+		title?: string;
+		submitTxt: string;
+		isdisable: boolean;
+		num?: number;
+	};
 };
 declare type searchState = {
-	form: EmptyObjectType,
-	isToggle: boolean,
+	form: EmptyObjectType;
+	isToggle: boolean;
 };
- 
+
 // 維修單收貨彈窗header
-declare type deliveryDialogHeader=TableHeaderType[]
+declare type deliveryDialogHeader = TableHeaderType[];

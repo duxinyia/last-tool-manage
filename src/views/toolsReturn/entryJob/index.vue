@@ -11,14 +11,21 @@
 				@cellclick="reqNoClick"
 				@onOpenOtherDialog="openEntryDialog"
 			/>
-			<Dialog ref="entryJobDialogRef" :dialogConfig="state.tableData.dialogConfig" dialogWidth="50%" @addData="entrySubmit" />
+			<Dialog
+				ref="entryJobDialogRef"
+				:dialogConfig="state.tableData.dialogConfig"
+				:innerDialogConfig="state.tableData.innerDialogConfig"
+				dialogWidth="50%"
+				@addData="entrySubmit"
+				@dailogFormButton="scanCodeEntry"
+			/>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts" name="/toolsReturn/entryJob">
 import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
-import { ElMessage, FormInstance } from 'element-plus';
+import { ElMessage, ElMessageBox, FormInstance } from 'element-plus';
 // 引入接口
 import { GetTStockInputPageListApi, GetUserManagedStoreHouseApi, GetTStockAddApi } from '/@/api/requistManage/entryJob';
 import { useI18n } from 'vue-i18n';
@@ -124,7 +131,7 @@ const state = reactive<TableDemoState>({
 			// 这个字段待定
 			{
 				label: '验收时间:',
-				prop: 'createtime',
+				prop: 'checkdate',
 				placeholder: '请输入验收时间',
 				required: false,
 				type: 'text',
@@ -149,16 +156,16 @@ const state = reactive<TableDemoState>({
 				xl: 8,
 			},
 			{
-				label: '扫码入库数量:',
-				prop: 'sacnstockqty',
-				placeholder: '请将光标放到此处扫码',
+				label: '扫码录入',
+				prop: 'scan',
+				placeholder: '请输入入库数量',
 				required: false,
-				type: 'input',
-				xs: 24,
-				sm: 12,
-				md: 8,
-				lg: 8,
-				xl: 8,
+				type: 'button',
+				xs: 6,
+				sm: 6,
+				md: 6,
+				lg: 6,
+				xl: 6,
 			},
 			{
 				label: '收货仓库:',
@@ -172,6 +179,32 @@ const state = reactive<TableDemoState>({
 				md: 8,
 				lg: 8,
 				xl: 8,
+			},
+		],
+		innerDialogConfig: [
+			{
+				label: '扫码入库:',
+				prop: 'sacnstockqty',
+				placeholder: '请将光标放到此处扫码',
+				required: false,
+				type: 'input',
+				xs: 12,
+				sm: 12,
+				md: 12,
+				lg: 12,
+				xl: 12,
+			},
+			{
+				label: '扫码数量:',
+				prop: 'sacnqty',
+				placeholder: '1',
+				required: false,
+				type: 'text',
+				xs: 12,
+				sm: 12,
+				md: 12,
+				lg: 12,
+				xl: 12,
 			},
 			{
 				label: '扫码信息:',
@@ -226,6 +259,10 @@ const openEntryDialog = async (scope: any) => {
 	}
 	entryJobDialogRef.value.openDialog('entry', scope.row);
 };
+const scanCodeEntry = () => {
+	console.log('点击按钮');
+	entryJobDialogRef.value.openInnerDialog('扫码录入');
+};
 //点击确认入库
 const entrySubmit = async (ruleForm: object, type: string) => {
 	let obj: EmptyObjectType = { ...ruleForm };
@@ -235,6 +272,9 @@ const entrySubmit = async (ruleForm: object, type: string) => {
 				obj.storageName = item.text;
 			}
 		});
+	if (!obj.codeList) {
+		obj.codeList = [];
+	}
 	let submitData = {
 		runId: obj.runid,
 		checkno: obj.checkno,
@@ -251,14 +291,40 @@ const entrySubmit = async (ruleForm: object, type: string) => {
 		storageName: obj.storageName,
 		codeList: obj.codeList,
 	};
-	console.log('填写的信息', submitData);
-
-	// const res = await GetTStockAddApi(submitData);
-	// if (res.status) {
-	// 	ElMessage.success(`入库成功`);
-	// 	entryJobDialogRef.value.closeDialog();
-	// 	getTableData();
-	// }
+	console.log('填写的信息', submitData.codeList);
+	if (submitData.stockqty > submitData.checkqty) {
+		ElMessage.error(`入库数量大于验收数量`);
+	} else if (submitData.codeList && submitData.stockqty < submitData.codeList.length) {
+		ElMessage.error(`入库数量小于扫码数量`);
+	} else if (submitData.stockqty != submitData.checkqty) {
+		ElMessageBox.confirm('入库数量与验收数量不一致，是否继续提交', '提示', {
+			confirmButtonText: '确认',
+			cancelButtonText: '取消',
+			type: 'warning',
+			buttonSize: 'default',
+		})
+			.then(async () => {
+				const res = await GetTStockAddApi(submitData);
+				if (res.status) {
+					ElMessage.success(`入库成功`);
+					entryJobDialogRef.value.closeDialog();
+					getTableData();
+				}
+			})
+			.catch(() => {
+				// ElMessage({
+				// 	type: 'info',
+				// 	message: 'Delete canceled',
+				// });
+			});
+	} else {
+		const res = await GetTStockAddApi(submitData);
+		if (res.status) {
+			ElMessage.success(`入库成功`);
+			entryJobDialogRef.value.closeDialog();
+			getTableData();
+		}
+	}
 };
 // 点击收货单号
 const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
