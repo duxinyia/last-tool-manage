@@ -14,14 +14,26 @@
 						:key="item.prop"
 					>
 						<el-form-item :label="$t(item.label)" :prop="item.prop" :rules="allRules(item)">
-							<el-input v-if="item.type === 'input'" v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)" clearable></el-input>
+							<el-input
+								v-if="item.type === 'input'"
+								v-model="state.formData[item.prop]"
+								:placeholder="$t(item.placeholder)"
+								clearable
+								@change=" (val:any) => commonInputHandleChange(val,item.prop)"
+							></el-input>
 							<!-- @change=" (val:any) => commonInputHandleChange(val,item.prop)" -->
-
-							<!-- <div v-if="item.type === 'tagtextarea'">
-								<el-tag v-for="tag in tags" :key="tag.name" closable :type="tag.type">
+							<div v-if="item.type === 'tagsarea'">
+								<el-tag v-for="tag in tags" :key="tag.name" closable :type="tag.type" @close="handleTagClose(tag)" class="mr10">
 									{{ tag.name }}
 								</el-tag>
-							</div> -->
+							</div>
+							<!-- <el-input :width="224" v-if="item.type === 'tagtextarea'" v-model="state.formData[item.prop]">
+								<template >
+									<el-tag v-for="tag in tags" :key="tag.name" closable :type="tag.type">
+										{{ tag.name }}
+									</el-tag>
+								</template>
+							</el-input> -->
 							<el-input disabled v-if="item.type === 'inputFile'" v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)" clearable>
 								<template #prepend
 									><el-upload
@@ -186,6 +198,8 @@ const validatePass = (rule: any, value: any, callback: any, item: EmptyObjectTyp
 		(validateForm === 'number' && !verifiyNumberInteger(value))
 	) {
 		callback(new Error(item.message));
+	}else{
+		callback()
 	}
 };
 const allRules = (item: EmptyObjectType) => {
@@ -260,7 +274,22 @@ const onSubmit = (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
 	formEl.validate((valid: boolean) => {
 		if (valid) {
-			emit('addData', state.formData, state.dialog.type);
+			// 防止用户用扫码枪扫数据之后又手动修改数量
+			if (tags.value.length != 0) {
+				state.formData.stockqty = tags.value.length;
+			}
+			//如果存在需要存放扫码枪输入信息的字段
+			let tempObj = { ...state.formData };
+			props.dialogConfig.forEach((item: any) => {
+				if (item.tag) {
+					tempObj[item.prop] = [];
+					tempObj.codeList = tags.value.map((item: any) => {
+						return item.name;
+					});
+				}
+			});
+
+			emit('addData', tempObj, state.dialog.type);
 		} else {
 		}
 	});
@@ -271,14 +300,19 @@ const initFormField = () => {
 	props.dialogConfig.forEach((v) => (state.formData[v.prop] = ''));
 };
 const tags = ref<any>([]);
-// 普通输入框的变化
+// 输入框一输入变化（不需要光标移开）
 const commonInputHandleChange = (val: any, prop: string) => {
-	if (prop == 'stockqty') {
-		// state.formData['codeList'] = val;
+	if (prop == 'sacnstockqty') {
 		tags.value.push({ name: val, type: 'info' });
+		state.formData['sacnstockqty'] = '';
+		state.formData['stockqty'] = tags.value.length;
 	}
 };
-
+// 关闭tag标签
+const handleTagClose = (tag: string) => {
+	tags.value.splice(tags.value.indexOf(tag), 1);
+	state.formData['stockqty'] = tags.value.length;
+};
 // 文件input框里面的数据
 const inputHandleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
 	props.dialogConfig.forEach((v) => {

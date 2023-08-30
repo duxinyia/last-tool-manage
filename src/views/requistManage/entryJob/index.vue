@@ -101,10 +101,10 @@ const state = reactive<TableDemoState>({
 		//入库弹窗
 		dialogConfig: [
 			{ label: '入库单号:', prop: 'putno', placeholder: '请输入入库单号', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
-			{ label: '验收单号:', prop: 'checkno', placeholder: '请输入验收单号', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
+			{ label: '验收单号:', prop: 'checkno', placeholder: '请输入验收单号', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 8, xl: 8 },
 			//这个字段待定
 			{ label: '验收人:', prop: 'creator', placeholder: '请输入验收人', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
-			{ label: '料号:', prop: 'matno', placeholder: '请输入料号', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
+			{ label: '料号:', prop: 'matno', placeholder: '请输入料号', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 8, xl: 8 },
 			{ label: '品名-中文:', prop: 'namech', placeholder: '请输入品名-中文', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
 			{ label: '品名-英文:', prop: 'nameen', placeholder: '请输入品名-英文', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
 			{ label: '厂商代码:', prop: 'vendorcode', placeholder: '请输入厂商代码', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
@@ -115,8 +115,8 @@ const state = reactive<TableDemoState>({
 				required: false,
 				type: 'text',
 				xs: 24,
-				sm: 16,
-				md: 16,
+				sm: 8,
+				md: 8,
 				lg: 16,
 				xl: 16,
 			},
@@ -129,8 +129,8 @@ const state = reactive<TableDemoState>({
 				required: false,
 				type: 'text',
 				xs: 24,
-				sm: 16,
-				md: 16,
+				sm: 8,
+				md: 8,
 				lg: 16,
 				xl: 16,
 			},
@@ -140,8 +140,22 @@ const state = reactive<TableDemoState>({
 				placeholder: '请输入入库数量',
 				required: true,
 				type: 'input',
+				validateForm: 'number',
+				message: '请输入正整数',
 				xs: 24,
-				sm: 8,
+				sm: 12,
+				md: 8,
+				lg: 8,
+				xl: 8,
+			},
+			{
+				label: '扫码入库数量:',
+				prop: 'sacnstockqty',
+				placeholder: '请将光标放到此处扫码',
+				required: false,
+				type: 'input',
+				xs: 24,
+				sm: 12,
 				md: 8,
 				lg: 8,
 				xl: 8,
@@ -154,23 +168,24 @@ const state = reactive<TableDemoState>({
 				type: 'select',
 				options: [],
 				xs: 24,
-				sm: 8,
+				sm: 12,
 				md: 8,
 				lg: 8,
 				xl: 8,
 			},
-			// {
-			// 	label: '扫码信息:',
-			// 	prop: 'codeList',
-			// 	placeholder: '请输入扫码信息',
-			// 	required: false,
-			// 	type: 'tagtextarea',
-			// 	xs: 24,
-			// 	sm: 24,
-			// 	md: 24,
-			// 	lg: 24,
-			// 	xl: 24,
-			// },
+			{
+				label: '扫码信息:',
+				prop: 'codeList',
+				placeholder: '请输入扫码信息',
+				required: false,
+				type: 'tagsarea',
+				tag: true,
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
+			},
 		],
 	},
 });
@@ -205,7 +220,7 @@ const getTableData = async () => {
 const openEntryDialog = async (scope: any) => {
 	let res = await GetUserManagedStoreHouseApi();
 	if (state.tableData.dialogConfig) {
-		state.tableData.dialogConfig[11].options = res.data.map((item: any) => {
+		state.tableData.dialogConfig[12].options = res.data.map((item: any) => {
 			return { label: item.storeId, text: item.storeName, value: item.storeId };
 		});
 	}
@@ -215,7 +230,7 @@ const openEntryDialog = async (scope: any) => {
 const entrySubmit = async (ruleForm: object, type: string) => {
 	let obj: EmptyObjectType = { ...ruleForm };
 	state.tableData.dialogConfig &&
-		state.tableData.dialogConfig[11].options?.forEach((item) => {
+		state.tableData.dialogConfig[12].options?.forEach((item) => {
 			if (item.value == obj.storageId) {
 				obj.storageName = item.text;
 			}
@@ -234,16 +249,16 @@ const entrySubmit = async (ruleForm: object, type: string) => {
 		stockcode: obj.stockcode,
 		storageId: obj.storageId,
 		storageName: obj.storageName,
-		codeList: [],
+		codeList: obj.codeList,
 	};
-	// console.log('填写的信息', submitData);
+	console.log('填写的信息', submitData);
 
-	const res = await GetTStockAddApi(submitData);
-	if (res.status) {
-		ElMessage.success(`入库成功`);
-		entryJobDialogRef.value.closeDialog();
-		getTableData();
-	}
+	// const res = await GetTStockAddApi(submitData);
+	// if (res.status) {
+	// 	ElMessage.success(`入库成功`);
+	// 	entryJobDialogRef.value.closeDialog();
+	// 	getTableData();
+	// }
 };
 // 点击收货单号
 const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
