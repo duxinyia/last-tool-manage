@@ -77,9 +77,13 @@
 				:dialogConfig="dialogState.tableData.dialogConfig"
 				:innerDialogConfig="dialogState.tableData.innerDialogConfig"
 				dialogWidth="50%"
-				@addData="entrySubmit"
+				dialogType="nestDialogConfig"
+				@addData="returnSubmit"
 				@dailogFormButton="scanCodeEntry"
 				@selectChange="selectChange"
+				@commonInputHandleChange="change"
+				:tagsData="tags"
+				@innnerDialogCancel="innnerDialogCancel"
 			/>
 		</div>
 	</div>
@@ -89,7 +93,7 @@
 import { defineAsyncComponent, reactive, ref, onMounted, computed, nextTick } from 'vue';
 import type { FormInstance } from 'element-plus';
 
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 // 引入接口
 import { getQueryNoPageApi } from '/@/api/requistManage/presentation';
 import { getStockListApi, ExitStoreApi, getExitReasonApi } from '/@/api/toolsReturn/maintentanceTools';
@@ -107,7 +111,8 @@ const tableFormRef = ref();
 const tableRef = ref<RefType>();
 const repairReturnDialogRef = ref();
 const arriveJobDialogVisible = ref(false);
-
+// tags的数据
+const tags = ref<EmptyArrayType<string>>([]);
 // 单元格样式
 const cellStyle = ref();
 
@@ -272,7 +277,7 @@ const dialogState = reactive<TableDemoState>({
 			},
 			{
 				label: '扫码数量:',
-				prop: 'sacnqty',
+				prop: 'exitQty',
 				placeholder: '1',
 				required: false,
 				type: 'text',
@@ -354,10 +359,27 @@ const selectChange = async (val: string, name: string) => {
 		});
 	}
 };
-const scanCodeEntry = () => {
-	console.log('点击按钮');
-	repairReturnDialogRef.value.openInnerDialog('扫码录入');
+// change
+const change = (val: any, prop: string, formData: any) => {
+	if (prop == 'sacnstockqty') {
+		if (tags.value.length + 1 > formData.checkqty) {
+			ElMessage.error(`扫码数量超过验收数量，请勿继续扫码`);
+			formData['sacnstockqty'] = null;
+		} else if (tags.value.includes(val)) {
+			ElMessage.warning(`该条码已存在，请勿重复扫码`);
+			formData['sacnstockqty'] = null;
+		} else {
+			tags.value.push(val);
+			formData['sacnstockqty'] = null;
+			formData['stockqty'] = tags.value.length;
+		}
+	}
 };
+const innnerDialogCancel = (formData: EmptyObjectType) => {
+	tags.value = [];
+	formData['stockqty'] = 0;
+};
+
 //点击确认入库
 const entrySubmit = async (ruleForm: object, type: string) => {};
 // 点击退库弹窗
@@ -374,6 +396,10 @@ const openReturnDialog = (scope: EmptyObjectType) => {
 	// dialogState.tableData.form = { ...scope.row };
 	// changeStatus(header.value, 300, true);
 };
+const scanCodeEntry = () => {
+	console.log('点击按钮');
+	repairReturnDialogRef.value.openInnerDialog('扫码录入');
+};
 // 点击料号,暂时不做
 const matnoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 	// if (column.property === 'matno') {
@@ -382,15 +408,7 @@ const matnoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 	// 	getDetailData(row.matNo);
 	// }
 };
-// 获取料号详情接口
-const getDetailData = async (data: string) => {
-	const res = await getQueryNoPageApi(data);
-	dialogState.tableData.data = res.data;
-	arriveJobDialogVisible.value = true;
-	if (res.status) {
-		dialogState.tableData.config.loading = false;
-	}
-};
+
 // 根据弹出窗不一样展现的配置不一样
 const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) => {
 	let tableData = dialogState.tableData;
@@ -401,28 +419,56 @@ const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) =
 	config.isInlineEditing = isShow;
 };
 // 提交
-const onSubmit = async (formEl: EmptyObjectType | undefined) => {
-	if (!formEl) return;
-	await formEl.validate(async (valid: boolean) => {
-		if (!valid) return ElMessage.warning(t('表格项必填未填'));
-		// if (!dialogState.tableData.form['sendTime']) return ElMessage.warning(t('请填写收货时间'));
-		let allData = { ...dialogState.tableData.form };
-		let submitData = {
-			stockId: allData.runid,
-			exitType: allData.exitType,
-			reasonId: allData.reasonId,
-			exitReason: allData.exitReason,
-			exitQty: allData.exitQty,
-			describe: allData.describe,
-			codeList: [],
-		};
-		const res = await ExitStoreApi(submitData);
-		if (res.status) {
-			ElMessage.success(t('退库成功'));
-			arriveJobDialogVisible.value = false;
-			getTableData();
-		}
-	});
+const returnSubmit = async (ruleForm: object, type: string) => {
+	// if (!dialogState.tableData.form['sendTime']) return ElMessage.warning(t('请填写收货时间'));
+	let allData: EmptyObjectType = { ...ruleForm };
+	if (!allData.codeList) {
+		allData.codeList = [];
+	}
+	let submitData = {
+		stockId: allData.runid,
+		exitType: allData.exitType,
+		reasonId: allData.reasonId,
+		exitReason: allData.exitReason,
+		exitQty: allData.exitQty,
+		describe: allData.describe,
+		codeList: [],
+	};
+	console.log('填写的信息', submitData);
+	// if (submitData.stockqty > submitData.checkqty) {
+	// 	ElMessage.error(`入库数量大于验收数量`);
+	// } else if (submitData.codeList && submitData.stockqty < submitData.codeList.length) {
+	// 	ElMessage.error(`入库数量小于扫码数量`);
+	// } else if (submitData.stockqty != submitData.checkqty) {
+	// 	ElMessageBox.confirm('入库数量与验收数量不一致，是否继续提交', '提示', {
+	// 		confirmButtonText: '确认',
+	// 		cancelButtonText: '取消',
+	// 		type: 'warning',
+	// 		buttonSize: 'default',
+	// 	})
+	// 		.then(async () => {
+	// 			const res = await ExitStoreApi(submitData);
+	// 			if (res.status) {
+	// 				ElMessage.success(t('退库成功'));
+	// 				arriveJobDialogVisible.value = false;
+	// 				getTableData();
+	// 			}
+	// 		})
+	// 		.catch(() => {
+	// 			// ElMessage({
+	// 			// 	type: 'info',
+	// 			// 	message: 'Delete canceled',
+	// 			// });
+	// 		});
+	// } else
+	// {
+	// const res = await ExitStoreApi(submitData);
+	// if (res.status) {
+	// 	ElMessage.success(t('退库成功'));
+	// 	arriveJobDialogVisible.value = false;
+	// 	getTableData();
+	// }
+	// }
 };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {

@@ -7,3 +7,11 @@ export function getQueryExitPageApi(data:Object) {
   	data:data
   });
 }
+// 报废
+export function getUselessBackStockApi(data:Object) {
+  return request({
+    url: '/api/Idle/UselessBackStock',
+    method: 'POST',
+  	data:data
+  });
+}

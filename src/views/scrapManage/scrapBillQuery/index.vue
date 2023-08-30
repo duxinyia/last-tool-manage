@@ -23,6 +23,7 @@ import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { getToolApplyHeadPageApi, getreqNoApi } from '/@/api/requistManage/reportingInquiry';
 import { getQueryRepairOrderApi } from '/@/api/maintenanceManage/inquiry';
+import { getQueryExitPageApi } from '/@/api/scrapManage/scrapBillQuery';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -43,9 +44,8 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'repairNo', colWidth: '', title: '报废单号', type: 'text', isCheck: true },
-			{ key: 'time', colWidth: '', title: '报废时间', type: 'text', isCheck: true },
-			{ key: 'prNo', colWidth: '', title: '状态', type: 'text', isCheck: true },
+			{ key: 'uselessno', colWidth: '', title: '报废单号', type: 'text', isCheck: true },
+			{ key: 'uselessdate', colWidth: '', title: '报废时间', type: 'text', isCheck: true },
 			{ key: 'creator', colWidth: '', title: '操作人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -55,7 +55,7 @@ const state = reactive<TableDemoState>({
 			isBorder: false, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
 			isSelection: false, // 是否显示表格多选
-			isOperate: true, // 是否显示表格操作栏
+			isOperate: false, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
@@ -63,17 +63,17 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '报废单号', prop: 'repairNo', required: false, type: 'input' },
-			{ label: '报废时间', prop: 'prNo', required: false, type: 'dateRange' },
+			{ label: '报废单号', prop: 'uselessno', required: false, type: 'input' },
+			{ label: '报废时间', prop: 'uselessdate', required: false, type: 'dateRange' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [{ type: 'send', name: '送签', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
+		// btnConfig: [{ type: 'send', name: '送签', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
 		// 给后端的数据
 		form: {
-			repairNo: '',
-			prNo: '',
+			uselessno: '',
+			uselessdate: '',
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -145,31 +145,31 @@ const changeToStyle = (indList: number[]) => {
 cellStyle.value = changeToStyle([1]);
 // 初始化列表数据
 const getTableData = async () => {
-	state.tableData.config.loading = false;
-	// const form = state.tableData.form;
-	// let data = {
-	// 	repairNo: form.repairNo,
-	// 	prNo: form.prNo,
-	// 	page: state.tableData.page,
-	// };
-	// const res = await getQueryRepairOrderApi(data);
-	// state.tableData.data = res.data.data;
-	// state.tableData.config.total = res.data.total;
-	// if (res.status) {
-	// 	state.tableData.config.loading = false;
-	// }
+	state.tableData.config.loading = true;
+	const form = state.tableData.form;
+	let data = {
+		uselessno: form.uselessno,
+		uselessdate: form.uselessdate,
+		page: state.tableData.page,
+	};
+	const res = await getQueryExitPageApi(data);
+	state.tableData.data = res.data.data;
+	state.tableData.config.total = res.data.total;
+	if (res.status) {
+		state.tableData.config.loading = false;
+	}
 };
 // 点击申请单号
 const reqNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
-	if (column.property === 'reqNo') {
-		dilogTitle.value = '单号:' + row.reqNo;
+	if (column.property === 'uselessno') {
+		dilogTitle.value = '報廢单号:' + row.reqNo;
 		let data = { reqNo: row.reqNo };
-		const res = await getreqNoApi(data);
-		dialogState.tableData.data = res.data.applyDetails;
+		// const res = await getreqNoApi(data);
+		// dialogState.tableData.data = res.data.applyDetails;
 		reportInquiryDialogVisible.value = true;
-		if (res.status) {
-			dialogState.tableData.config.loading = false;
-		}
+		// if (res.status) {
+		// 	dialogState.tableData.config.loading = false;
+		// }
 	}
 };
 // 搜索点击时表单回调
