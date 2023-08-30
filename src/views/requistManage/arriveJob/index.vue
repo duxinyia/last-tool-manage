@@ -33,7 +33,7 @@
 				</el-row>
 
 				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
-					<Table v-bind="dialogState.tableData" class="table" @delRow="onDelRow" />
+					<Table v-bind="dialogState.tableData" class="table" @delRow="onDelRow" @handleNumberInputChange="changeInput" :cellStyle="cellStyle" />
 				</el-form>
 				<div class="describe" v-if="dilogTitle == '收货'">
 					<span>描述说明：</span>
@@ -82,16 +82,16 @@ const cellStyle = ref();
 const dilogTitle = ref();
 const header = ref([
 	{ key: 'matNo', colWidth: '250', title: 'message.pages.matNo', type: 'text', isCheck: true },
-	{ key: 'machinetype', colWidth: '', title: '机种', type: 'text', isCheck: true },
+	// { key: 'machinetype', colWidth: '', title: '机种', type: 'text', isCheck: true },
 	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
-	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+	// { key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 	{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 	{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
 	{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
 	{ key: 'receiveQty', colWidth: '', title: '已收货数量', type: 'text', isCheck: true },
 	{ key: 'reqDate', colWidth: '', title: '需求时间', type: 'text', isCheck: true },
-	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
+	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'number', isCheck: true, isRequired: true, min: 0, max: 99 },
 	{ key: 'receiptDate', colWidth: '150', title: '收货时间', type: 'time', isCheck: true, isRequired: true },
 ]);
 const header1 = ref([
@@ -194,18 +194,24 @@ const dialogState = reactive<TableDemoState>({
 		},
 	},
 });
+const changeInput = (val: number, i: number) => {
+	const data = dialogState.tableData.data[i];
+	header.value[8].max = data.reqQty - data.receiveQty;
+};
 // 单元格字体颜色
 const changeToStyle = (indList: number[]) => {
-	return ({ columnIndex }: any) => {
+	return ({ columnIndex, column }: any) => {
 		for (let j = 0; j < indList.length; j++) {
 			let ind = indList[j];
-			if (columnIndex === ind) {
+			if (columnIndex === ind && column.property === 'reqNo') {
 				return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+			} else if (column.property === 'receiveQty') {
+				return { color: 'red' };
 			}
 		}
 	};
 };
-cellStyle.value = changeToStyle([1]);
+cellStyle.value = changeToStyle([1, 7]);
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;

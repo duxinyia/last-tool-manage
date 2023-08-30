@@ -16,7 +16,7 @@
 	</div>
 </template>
 
-<script setup lang="ts" name="/requistManage/entryJob">
+<script setup lang="ts" name="/toolsReturn/entryJob">
 import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
 import { ElMessage, FormInstance } from 'element-plus';
 // 引入接口

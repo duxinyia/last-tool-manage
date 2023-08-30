@@ -33,14 +33,14 @@
 				</el-row>
 
 				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
-					<Table v-bind="dialogState.tableData" class="table" @delRow="onDelRow" />
+					<Table v-bind="dialogState.tableData" class="table" @delRow="onDelRow" @handleNumberInputChange="changeInput" />
 				</el-form>
 				<div class="describe" v-if="dilogTitle == '收货'">
 					<span>描述说明：</span>
 					<el-input
 						class="input-textarea"
 						show-word-limit
-						v-model="dialogState.tableData.form['describe']"
+						v-model="dialogState.tableData.form['headDescribe']"
 						type="textarea"
 						placeholder="请输入"
 						maxlength="150"
@@ -62,8 +62,7 @@ import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
 import { ElMessage, FormInstance } from 'element-plus';
 const deliveryDialogVisible = ref(false);
 // 引入接口
-import { getAddReceiveApi } from '/@/api/requistManage/arriveJob';
-import { getQueryReceivableRepairOrdersApi, getRepariDetailsForReceiveApi } from '/@/api/maintenanceManage/delivery';
+import { getQueryReceivableRepairOrdersApi, getRepariDetailsForReceiveApi, getReceiveApi } from '/@/api/maintenanceManage/delivery';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -79,15 +78,16 @@ const cellStyle = ref();
 const dilogTitle = ref();
 const header = ref<deliveryDialogHeader>([
 	{ key: 'matNo', colWidth: '250', title: 'message.pages.matNo', type: 'text', isCheck: true },
-	{ key: 'machinetype', colWidth: '', title: '机种', type: 'text', isCheck: true },
+	// { key: 'machinetype', colWidth: '', title: '机种', type: 'text', isCheck: true },
 	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
-	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+	// { key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 	{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 	{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
 	{ key: 'qty', colWidth: '', title: '维修数量', type: 'text', isCheck: true },
+	{ key: 'pendingReceiptQty', colWidth: '', title: '可收货数量', type: 'text', isCheck: true },
 	{ key: 'reason', colWidth: '', title: '维修原因', type: 'text', isCheck: true },
-	{ key: 'receiptQty', colWidth: '100', title: '收货数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
+	{ key: 'receiptQty', colWidth: '100', title: '收货数量', type: 'number', isCheck: true, min: 0, isRequired: true },
 	{ key: 'receiptDate', colWidth: '150', title: '收货时间', type: 'time', isCheck: true, isRequired: true },
 ]);
 const header1 = ref<deliveryDialogHeader>([
@@ -190,6 +190,11 @@ const dialogState = reactive<TableDemoState>({
 		},
 	},
 });
+// 控制收货数量<=可收货数量
+const changeInput = (val: number, i: number) => {
+	const data = dialogState.tableData.data[i];
+	header.value[8].max = data.pendingReceiptQty;
+};
 // 单元格字体颜色
 const changeToStyle = (indList: number[]) => {
 	return ({ columnIndex }: any) => {
@@ -241,6 +246,12 @@ const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 // 详情接口
 const getDetailData = async (data: string) => {
 	const res = await getRepariDetailsForReceiveApi(data);
+	// res.data.details.forEach((item: EmptyObjectType) => {
+	// 	if (!item.isReceivable) {
+	// 		item.receiptQty = 0;
+	// 		item.receiptDate = new Date();
+	// 	}
+	// });
 	dialogState.tableData.data = res.data.details;
 	deliveryDialogVisible.value = true;
 	if (res.status) {
@@ -261,11 +272,16 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
-		// if (!dialogState.tableData.form['sendTime']) return ElMessage.warning(t('请填写收货时间'));
 		let allData: EmptyObjectType = {};
 		allData = { ...dialogState.tableData.form };
-		allData['details'] = dialogState.tableData.data;
-		const res = await getAddReceiveApi(allData);
+		let datas: EmptyArrayType = [];
+		dialogState.tableData.data.forEach((item) => {
+			if (item.isReceivable) {
+				datas.push(item);
+			}
+		});
+		allData['details'] = datas;
+		const res = await getReceiveApi(allData);
 		if (res.status) {
 			ElMessage.success(t('收货成功'));
 			deliveryDialogVisible.value = false;

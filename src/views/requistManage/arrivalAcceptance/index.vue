@@ -233,7 +233,7 @@ const dialogState = reactive<TableDemoState>({
 
 const changeInput = (val: number, i: number) => {
 	const data = dialogState.tableData.data[i];
-	header.value[8].max = data.checkqty;
+	header.value[6].max = data.checkqty;
 	data.failqty = data.checkqty - data.passqty || 0;
 	if (data.checkqty && data.passqty) {
 		if (data.checkqty < data.passqty) {
@@ -340,10 +340,11 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
 		let allData: EmptyObjectType = {};
-		allData = { ...dialogState.tableData.form };
+		const form = dialogState.tableData.form;
+		allData = { receiptno: form.receiptno, accepreporturl: form.accepreporturl || '', describe: form.describe || '' };
 		let data = dialogState.tableData.data;
 		data = data.map((item) => {
-			return { reqDetailId: item.runId, checkqty: item.checkqty, failqty: item.failqty, passqty: item.passqty, checkDate: item.checkDate };
+			return { receivedetailid: item.runid, checkqty: item.checkqty, failqty: item.failqty, passqty: item.passqty, checkDate: item.checkDate };
 		});
 		allData['checkdetial'] = data;
 		const res = await getTInsertCheckApi(allData);

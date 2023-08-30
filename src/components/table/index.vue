@@ -86,6 +86,7 @@
 			:height="config.height"
 			id="elTable"
 			:class="!config.isDialogTab ? 'mt12' : ''"
+			:row-class-name="tableRowClassName"
 			:data="data"
 			:border="setBorder"
 			v-bind="$attrs"
@@ -354,6 +355,12 @@ const emit = defineEmits([
 	'handleNumberInputBlur',
 	'onOpentopBtnOther',
 ]);
+// 表格行样式
+const tableRowClassName = (scope: EmptyObjectType) => {
+	// if (scope.row.isReceivable === false) {
+	// 	return 'disabled-row';
+	// }
+};
 // 自动补全输入框
 const querySearchAsync = (queryString: string, cb: (arg: any) => void) => {
 	emit('querysearchasync', queryString, cb);
@@ -627,5 +634,10 @@ defineExpose({
 		background-color: unset;
 		color: var(--el-color-primary);
 	}
+}
+:deep(.disabled-row) {
+	color: #ccc !important;
+	pointer-events: none !important;
+	cursor: not-allowed !important;
 }
 </style>
