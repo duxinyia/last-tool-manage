@@ -12,7 +12,7 @@
 				:cellStyle="cellStyle"
 				@onOpenOtherDialog="openReturnDialog"
 			/>
-			<el-dialog ref="repairReturnDialogRef" v-model="arriveJobDialogVisible" :title="dilogTitle" width="60%">
+			<!-- <el-dialog ref="repairReturnDialogRef" v-model="arriveJobDialogVisible" :title="dilogTitle" width="60%">
 				<el-form ref="tableFormRef" :model="dialogState.tableData.form" size="default">
 					<el-row v-if="dilogTitle == '退库'">
 						<el-col
@@ -40,7 +40,6 @@
 									<span>{{ dialogState.tableData.form[val.prop] }}</span>
 								</div>
 								<div v-if="val.type === 'input'" class="dialog-input">
-									<!-- <span v-if="val.isRequired" class="color-danger mr5">*</span> -->
 									<el-input v-model="dialogState.tableData.form[val.prop]" placeholder="请输入" clearable style="height: 30px"></el-input>
 								</div>
 								<div v-if="val.type === 'select'" class="dialog-input">
@@ -72,7 +71,16 @@
 						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)"> 确定 </el-button>
 					</span>
 				</template>
-			</el-dialog>
+			</el-dialog> -->
+			<Dialog
+				ref="repairReturnDialogRef"
+				:dialogConfig="dialogState.tableData.dialogConfig"
+				:innerDialogConfig="dialogState.tableData.innerDialogConfig"
+				dialogWidth="50%"
+				@addData="entrySubmit"
+				@dailogFormButton="scanCodeEntry"
+				@selectChange="selectChange"
+			/>
 		</div>
 	</div>
 </template>
@@ -91,6 +99,7 @@ import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
+const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 
 // 定义变量内容
 const { t } = useI18n();
@@ -189,32 +198,104 @@ const dialogState = reactive<TableDemoState>({
 		// 给后端的数据
 		form: {},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-		search: [
-			{ label: '料号', prop: 'matno', required: false, type: 'text' },
-			{ label: '品名-中文', prop: 'nameCh', required: false, type: 'text' },
-			{ label: '品名-英文', prop: 'nameEn', required: false, type: 'text' },
-			{ label: '厂商代码', prop: 'vendorcode', required: false, type: 'text' },
-			{ label: '厂商名称', prop: 'vendorname', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 12, xl: 12 },
-			{
-				label: '退库类型',
-				prop: 'exitType',
-				required: true,
-				type: 'select',
-				options: [
-					{ value: 1, label: '维修' },
-					{ value: 2, label: '闲置' },
-					{ value: 3, label: '报废' },
-				],
-			},
-			{ label: '退库原因', prop: 'reasonId', required: true, type: 'select', options: [] },
-			{ label: '退库数量', prop: 'exitQty', required: true, type: 'input' },
-		],
-		btnConfig: [{ type: 'edit', name: '退库', color: '#D33939', isSure: true, disabled: true }],
+		search: [],
+		btnConfig: [],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
 			pageNum: 1,
 			pageSize: 10,
 		},
+		//退库弹窗
+		dialogConfig: [
+			{ label: '料号', prop: 'matno', placeholder: '请输入料号', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
+			{ label: '品名-中文', prop: 'nameCh', placeholder: '请输入料号', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
+			{ label: '品名-英文', prop: 'nameEn', placeholder: '请输入料号', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
+			{ label: '厂商代码', prop: 'vendorcode', placeholder: '请输入料号', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
+			{ label: '厂商名称', prop: 'vendorname', placeholder: '请输入料号', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 12, xl: 12 },
+			{
+				label: '退库类型',
+				prop: 'exitType',
+				placeholder: '请输入料号',
+				required: true,
+				bindOthers: 'reasonId',
+				type: 'select',
+				options: [
+					{ value: 1, label: '维修', text: '维修' },
+					{ value: 2, label: '闲置', text: '闲置' },
+					{ value: 3, label: '报废', text: '报废' },
+				],
+				xs: 24,
+				sm: 8,
+				md: 8,
+				lg: 8,
+				xl: 8,
+			},
+			{
+				label: '退库原因',
+				prop: 'reasonId',
+				placeholder: '请输入料号',
+				required: true,
+				type: 'select',
+				options: [],
+				xs: 24,
+				sm: 16,
+				md: 16,
+				lg: 16,
+				xl: 16,
+			},
+			{ label: '退库数量', prop: 'exitQty', placeholder: '请输入料号', required: true, type: 'input', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
+			{
+				label: '扫码录入',
+				prop: 'scan',
+				placeholder: '请输入入库数量',
+				required: false,
+				type: 'button',
+				xs: 6,
+				sm: 6,
+				md: 6,
+				lg: 6,
+				xl: 6,
+			},
+		],
+		innerDialogConfig: [
+			{
+				label: '扫码退库:',
+				prop: 'sacnstockqty',
+				placeholder: '请将光标放到此处扫码',
+				required: false,
+				type: 'input',
+				xs: 12,
+				sm: 12,
+				md: 12,
+				lg: 12,
+				xl: 12,
+			},
+			{
+				label: '扫码数量:',
+				prop: 'sacnqty',
+				placeholder: '1',
+				required: false,
+				type: 'text',
+				xs: 12,
+				sm: 12,
+				md: 12,
+				lg: 12,
+				xl: 12,
+			},
+			{
+				label: '扫码信息:',
+				prop: 'codeList',
+				placeholder: '请输入扫码信息',
+				required: false,
+				type: 'tagsarea',
+				tag: true,
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
+			},
+		],
 	},
 });
 // 单元格字体颜色
@@ -254,36 +335,44 @@ const exitTypeMap: EmptyObjectType = {
 	3: 'UselessReason',
 };
 //退库弹窗里的退库类型和退库原因选择时的操作
-const selectChange = async (name: string) => {
+const selectChange = async (val: string, name: string) => {
 	if (name == 'exitType') {
 		dialogState.tableData.form.reasonId = '';
 		let res: any = [];
-		res = await getExitReasonApi(exitTypeMap[dialogState.tableData.form.exitType]);
-		dialogState.tableData.search[6].options = res.data.map((item: any) => {
-			return { value: item.runid, label: item.dataname };
-		});
+		res = await getExitReasonApi(exitTypeMap[val]);
+		if (dialogState.tableData.dialogConfig)
+			dialogState.tableData.dialogConfig[6].options = res.data.map((item: any) => {
+				return { value: item.runid, label: item.dataname, text: item.dataname };
+			});
 	}
 	//根据原因id获取原因名称
-	if (name == 'reasonId') {
-		dialogState.tableData.search[6].options?.forEach((item) => {
+	if (name == 'reasonId' && dialogState.tableData.dialogConfig) {
+		dialogState.tableData.dialogConfig[6].options?.forEach((item) => {
 			if (item.value == dialogState.tableData.form.reasonId) {
 				dialogState.tableData.form['exitReason'] = item.label;
 			}
 		});
 	}
 };
-
+const scanCodeEntry = () => {
+	console.log('点击按钮');
+	repairReturnDialogRef.value.openInnerDialog('扫码录入');
+};
+//点击确认入库
+const entrySubmit = async (ruleForm: object, type: string) => {};
 // 点击退库弹窗
 const openReturnDialog = (scope: EmptyObjectType) => {
+	repairReturnDialogRef.value.openDialog('return', scope.row);
+
 	//先清空数据
-	arriveJobDialogVisible.value = true;
-	dialogState.tableData.form['describe'] = '';
-	nextTick(() => {
-		tableFormRef.value.resetFields();
-	});
-	dilogTitle.value = '退库';
-	dialogState.tableData.form = { ...scope.row };
-	changeStatus(header.value, 300, true);
+	// arriveJobDialogVisible.value = true;
+	// dialogState.tableData.form['describe'] = '';
+	// nextTick(() => {
+	// 	// repairReturnDialogRef.value.resetFields();
+	// });
+	// dilogTitle.value = '退库';
+	// dialogState.tableData.form = { ...scope.row };
+	// changeStatus(header.value, 300, true);
 };
 // 点击料号,暂时不做
 const matnoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
@@ -351,10 +440,7 @@ const onTablePageChange = (page: TableDemoPageType) => {
 const onSortHeader = (data: TableHeaderType[]) => {
 	state.tableData.header = data;
 };
-if (dialogState.tableData.btnConfig)
-	dialogState.tableData.btnConfig[0].disabled = computed(() => {
-		return dialogState.tableData.data.length <= 1 ? true : false;
-	});
+
 // 页面加载时
 onMounted(() => {
 	getTableData();

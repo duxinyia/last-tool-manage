@@ -52,6 +52,7 @@
 								:placeholder="$t(item.placeholder)"
 								v-if="item.type === 'select'"
 								:disabled="state.dialog.isdisable"
+								@change="(val:any) => selectHandelChange(val,item.prop,item.bindOthers)"
 							>
 								<el-option v-for="val in item.options" :key="val.label" :label="val.text" :value="val.value"> </el-option>
 							</el-select>
@@ -177,7 +178,7 @@ import { verifyPhone, verifyEmail, verifiyNumberInteger } from '/@/utils/toolsVa
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const IconSelector = defineAsyncComponent(() => import('/@/components/iconSelector/index.vue'));
-const emit = defineEmits(['downloadTemp', 'importTableData', 'addData', 'dailogFormButton', 'innerDialogData']);
+const emit = defineEmits(['downloadTemp', 'importTableData', 'addData', 'dailogFormButton', 'innerDialogData', 'selectChange']);
 // 定义父组件传过来的值
 const props = defineProps({
 	// 弹出框内容
@@ -400,6 +401,13 @@ const handleTagClose = (tag: string) => {
 	tags.value.splice(tags.value.indexOf(tag), 1);
 	state.formData['stockqty'] = tags.value.length;
 };
+// 下拉框数据变化
+const selectHandelChange = (val: string, prop: string, bindOthers: string) => {
+	emit('selectChange', val, prop);
+	// 下拉框变化要清空做绑定的另一个下拉框的值
+	state.formData[bindOthers] = '';
+};
+
 // 文件input框里面的数据
 const inputHandleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
 	props.dialogConfig.forEach((v) => {

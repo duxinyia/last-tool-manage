@@ -260,7 +260,6 @@ const openEntryDialog = async (scope: any) => {
 	entryJobDialogRef.value.openDialog('entry', scope.row);
 };
 const scanCodeEntry = () => {
-	console.log('点击按钮');
 	entryJobDialogRef.value.openInnerDialog('扫码录入');
 };
 //点击确认入库
