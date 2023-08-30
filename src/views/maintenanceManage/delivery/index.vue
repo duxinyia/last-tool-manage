@@ -33,7 +33,7 @@
 				</el-row>
 
 				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
-					<Table v-bind="dialogState.tableData" class="table" @delRow="onDelRow" @handleNumberInputChange="changeInput" />
+					<Table v-bind="dialogState.tableData" class="table" @delRow="onDelRow" @handleNumberInputChange="changeInput" :cellStyle="cellStyle" />
 				</el-form>
 				<div class="describe" v-if="dilogTitle == '收货'">
 					<span>描述说明：</span>
@@ -87,7 +87,7 @@ const header = ref<deliveryDialogHeader>([
 	{ key: 'qty', colWidth: '', title: '维修数量', type: 'text', isCheck: true },
 	{ key: 'pendingReceiptQty', colWidth: '', title: '可收货数量', type: 'text', isCheck: true },
 	{ key: 'reason', colWidth: '', title: '维修原因', type: 'text', isCheck: true },
-	{ key: 'receiptQty', colWidth: '100', title: '收货数量', type: 'number', isCheck: true, min: 0, isRequired: true },
+	{ key: 'receiptQty', colWidth: '100', title: '收货数量', type: 'number', isCheck: true, min: 1, isRequired: true },
 	{ key: 'receiptDate', colWidth: '150', title: '收货时间', type: 'time', isCheck: true, isRequired: true },
 ]);
 const header1 = ref<deliveryDialogHeader>([
@@ -182,7 +182,7 @@ const dialogState = reactive<TableDemoState>({
 			{ label: 'PR单号', prop: 'prNo', required: false, type: 'text' },
 			// { label: '收货时间', prop: 'sendTime', required: false, type: 'time', isRequired: true },
 		],
-		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: true }],
+		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disable: true }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
 			pageNum: 1,
@@ -197,16 +197,23 @@ const changeInput = (val: number, i: number) => {
 };
 // 单元格字体颜色
 const changeToStyle = (indList: number[]) => {
-	return ({ columnIndex }: any) => {
+	return ({ columnIndex, column }: any) => {
 		for (let j = 0; j < indList.length; j++) {
 			let ind = indList[j];
-			if (columnIndex === ind) {
+			if (columnIndex === ind && column.property === 'repairNo') {
 				return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+			} else if (column.property === 'pendingReceiptQty') {
+				return { color: 'red' };
 			}
 		}
 	};
 };
-cellStyle.value = changeToStyle([1]);
+cellStyle.value = changeToStyle([1, 7]);
+// 只有一行数据不允许删除
+if (dialogState.tableData.btnConfig)
+	dialogState.tableData.btnConfig[0].disabled = computed(() => {
+		return dialogState.tableData.data.length <= 1 ? true : false;
+	});
 // 初始化列表数据
 const getTableData = async () => {
 	state.tableData.config.loading = true;
@@ -223,13 +230,14 @@ const getTableData = async () => {
 		state.tableData.config.loading = false;
 	}
 };
-//删除
+//删除一行
 const onDelRow = (row: EmptyObjectType, i: number) => {
 	dialogState.tableData.data.splice(i, 1);
 };
 // 点击收货弹窗
 const openArriveJobDialog = (scope: EmptyObjectType) => {
 	dialogState.tableData.form = scope.row;
+	dialogState.tableData.form['headDescribe'] = '';
 	getDetailData(scope.row.repairNo);
 	dilogTitle.value = '收货';
 	changeStatus(header.value, 300, true);
@@ -246,12 +254,6 @@ const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 // 详情接口
 const getDetailData = async (data: string) => {
 	const res = await getRepariDetailsForReceiveApi(data);
-	// res.data.details.forEach((item: EmptyObjectType) => {
-	// 	if (!item.isReceivable) {
-	// 		item.receiptQty = 0;
-	// 		item.receiptDate = new Date();
-	// 	}
-	// });
 	dialogState.tableData.data = res.data.details;
 	deliveryDialogVisible.value = true;
 	if (res.status) {
@@ -274,13 +276,15 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
 		let allData: EmptyObjectType = {};
 		allData = { ...dialogState.tableData.form };
-		let datas: EmptyArrayType = [];
-		dialogState.tableData.data.forEach((item) => {
-			if (item.isReceivable) {
-				datas.push(item);
-			}
+		let data = dialogState.tableData.data;
+		data = data.map((item) => {
+			return {
+				repairDetailId: item.repairDetailId,
+				receiptQty: item.receiptQty,
+				receiptDate: item.receiptDate,
+			};
 		});
-		allData['details'] = datas;
+		allData['details'] = data;
 		const res = await getReceiveApi(allData);
 		if (res.status) {
 			ElMessage.success(t('收货成功'));
@@ -304,10 +308,7 @@ const onTablePageChange = (page: TableDemoPageType) => {
 const onSortHeader = (data: TableHeaderType[]) => {
 	state.tableData.header = data;
 };
-if (dialogState.tableData.btnConfig)
-	dialogState.tableData.btnConfig[0].disabled = computed(() => {
-		return dialogState.tableData.data.length <= 1 ? true : false;
-	});
+
 // 页面加载时
 onMounted(() => {
 	getTableData();

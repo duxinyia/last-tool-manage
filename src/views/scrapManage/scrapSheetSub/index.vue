@@ -14,7 +14,7 @@
 			/>
 			<el-dialog ref="presentationDialogRef" v-model="presentationDialogVisible" :title="dilogTitle" width="85%">
 				<el-row>
-					<el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4" class="mb20 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
+					<el-col :xs="24" :sm="12" :md="8" :lg="5" :xl="5" class="mb20 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
 						<div v-if="val.type === 'text'">
 							{{ val.label }}<span style="color: red" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
 						</div>
@@ -76,7 +76,7 @@ import { defineAsyncComponent, reactive, ref, onMounted, computed, watch } from 
 import { ElMessage, FormInstance } from 'element-plus';
 const presentationDialogVisible = ref(false);
 // 引入接口
-import { getQueryExitPageApi } from '/@/api/scrapManage/scrapSheetSub';
+import { getQueryExitPageApi, getUselessBackStockApi } from '/@/api/scrapManage/scrapSheetSub';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -111,7 +111,6 @@ const header = ref([
 	{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 	{ key: 'exitqty', colWidth: '', title: '报废数量', type: 'text', isCheck: true },
 	{ key: 'exitreason', colWidth: '', title: '报废原因', type: 'text', isCheck: true },
-	{ key: 'prItemNo', colWidth: '', title: 'pr项次', type: 'input', isCheck: true },
 ]);
 const state = reactive<TableDemoState>({
 	tableData: {
@@ -130,6 +129,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'nameen', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 			{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+			{ key: 'storagename', colWidth: '', title: '倉庫名', type: 'text', isCheck: true },
 			{ key: 'exitqty', colWidth: '', title: '报废数量', type: 'text', isCheck: true },
 			{ key: 'exitreason', colWidth: '', title: '报废原因', type: 'text', isCheck: true },
 		],
@@ -202,8 +202,9 @@ const dialogState = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: '报废单号：', prop: 'matNo', placeholder: '请输入报废单号', type: 'text', required: false, isRequired: false },
-			{ label: 'PR单号', prop: 'prNo', placeholder: '请输入PR单号', type: 'input', required: false, isRequired: false },
-			{ label: '送修时间:', prop: 'sendRepairDate', placeholder: '请选择送修时间', type: 'time', required: false, isRequired: true },
+			{ label: '报废时间', prop: 'uselessdate', type: 'time', required: false, isRequired: true },
+			{ label: '班别', prop: 'classes', type: 'input', required: false, isRequired: false },
+			{ label: '站位', prop: 'state', type: 'input', required: false, isRequired: false },
 		],
 		// 弹窗表单
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }],
@@ -294,19 +295,21 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
-		if (!dialogState.tableData.form['sendRepairDate']) return ElMessage.warning(t('请填写收货时间'));
+		if (!dialogState.tableData.form['uselessdate']) return ElMessage.warning(t('请填写报废时间'));
 		let allData: EmptyObjectType = {};
-		dialogState.tableData.data.forEach((item) => {
-			item['exitStoreId'] = item.runid;
+		let exitstoreid: EmptyArrayType = [];
+		let data = dialogState.tableData.data;
+		data.forEach((item) => {
+			exitstoreid.push(item.runid);
 		});
 		allData = { ...dialogState.tableData.form };
-		allData['details'] = dialogState.tableData.data;
-		// const res = await getSubmitRepairOrderApi(allData);
-		// if (res.status) {
-		// 	ElMessage.success(t('送修成功'));
-		// 	presentationDialogVisible.value = false;
-		// 	getTableData();
-		// }
+		allData['exitStoreIds'] = exitstoreid;
+		const res = await getUselessBackStockApi(allData);
+		if (res.status) {
+			ElMessage.success(t('报废成功'));
+			presentationDialogVisible.value = false;
+			getTableData();
+		}
 	});
 };
 // 搜索点击时表单回调

@@ -16,8 +16,12 @@
 				:dialogConfig="state.tableData.dialogConfig"
 				:innerDialogConfig="state.tableData.innerDialogConfig"
 				dialogWidth="50%"
+				dialogType="nestDialogConfig"
 				@addData="entrySubmit"
 				@dailogFormButton="scanCodeEntry"
+				@commonInputHandleChange="change"
+				:tagsData="tags"
+				@innnerDialogCancel="innnerDialogCancel"
 			/>
 		</div>
 	</div>
@@ -39,6 +43,8 @@ const { t } = useI18n();
 const tableFormRef = ref();
 const tableRef = ref<RefType>();
 const entryJobDialogRef = ref();
+// tags的数据
+const tags = ref<EmptyArrayType<string>>([]);
 // 单元格样式
 const cellStyle = ref();
 // 弹窗标题
@@ -196,7 +202,7 @@ const state = reactive<TableDemoState>({
 			},
 			{
 				label: '扫码数量:',
-				prop: 'sacnqty',
+				prop: 'stockqty',
 				placeholder: '1',
 				required: false,
 				type: 'text',
@@ -248,7 +254,26 @@ const getTableData = async () => {
 		state.tableData.config.loading = false;
 	}
 };
-
+// change
+const change = (val: any, prop: string, formData: any) => {
+	if (prop == 'sacnstockqty') {
+		if (tags.value.length + 1 > formData.checkqty) {
+			ElMessage.error(`扫码数量超过验收数量，请勿继续扫码`);
+			formData['sacnstockqty'] = null;
+		} else if (tags.value.includes(val)) {
+			ElMessage.warning(`该条码已存在，请勿重复扫码`);
+			formData['sacnstockqty'] = null;
+		} else {
+			tags.value.push(val);
+			formData['sacnstockqty'] = null;
+			formData['stockqty'] = tags.value.length;
+		}
+	}
+};
+const innnerDialogCancel = (formData: EmptyObjectType) => {
+	tags.value = [];
+	formData['stockqty'] = 0;
+};
 // 打开入库弹窗
 const openEntryDialog = async (scope: any) => {
 	let res = await GetUserManagedStoreHouseApi();
