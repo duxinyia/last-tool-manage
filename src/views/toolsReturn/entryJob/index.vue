@@ -20,6 +20,7 @@
 				@addData="entrySubmit"
 				@dailogFormButton="scanCodeEntry"
 				@commonInputHandleChange="change"
+				@handleTagClose="TagClose"
 				:tagsData="tags"
 				@innnerDialogCancel="innnerDialogCancel"
 			/>
@@ -269,6 +270,10 @@ const change = (val: any, prop: string, formData: any) => {
 			formData['stockqty'] = tags.value.length;
 		}
 	}
+};
+const TagClose = (tag: string, formData: any) => {
+	tags.value.splice(tags.value.indexOf(tag), 1);
+	formData['stockqty'] = tags.value.length;
 };
 const innnerDialogCancel = (formData: EmptyObjectType) => {
 	tags.value = [];
