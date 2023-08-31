@@ -113,9 +113,10 @@
 					>
 				</div>
 			</el-form>
+			<!-- 嵌套弹窗 -->
 			<template v-if="dialogType == 'nestDialogConfig'">
 				<el-dialog :title="state.innerdialog.title" v-model="state.innerdialog.isShowInnerDialog" width="40%" append-to-body>
-					<el-form ref="innnerDialogFormRef" :model="state.formData" size="default">
+					<el-form ref="innnerDialogFormRef" :model="state.formInnerData" size="default">
 						<el-row :gutter="35">
 							<el-col
 								:xs="item.xs || 24"
@@ -130,19 +131,19 @@
 								<el-form-item v-if="item.type != 'button'" :label="$t(item.label)" :prop="item.prop" :rules="allRules(item)">
 									<el-input
 										v-if="item.type === 'input'"
-										v-model="state.formData[item.prop]"
+										v-model="state.formInnerData[item.prop]"
 										:placeholder="$t(item.placeholder)"
 										clearable
 										@input=" (val:any) => commonInputHandleChange(val,item.prop)"
 									></el-input>
 									<div v-else-if="item.type == 'tagsarea'">
-										<el-tag v-for="tag in tagsData" :key="tag" closable type="info" @close="handleTagClose(tag)" class="mr10">
+										<el-tag v-for="tag in state.formInnerData[item.prop]" :key="tag" closable type="info" @close="handleTagClose(tag)" class="mr10">
 											{{ tag }}
 										</el-tag>
 									</div>
 									<!-- 入库数量 -->
 									<span v-else style="width: 100%; font-weight: 700; color: #1890ff">
-										{{ state.formData[item.prop] }}
+										{{ state.formInnerData[item.prop] }}
 									</span>
 								</el-form-item>
 							</el-col>
@@ -188,6 +189,8 @@ const emit = defineEmits([
 	'handleTagClose',
 	'innnerDialogCancel',
 	'selectChange',
+	'innnerDialogSubmit',
+	'openInnerDialog',
 ]);
 // 定义父组件传过来的值
 const props = defineProps({
@@ -240,6 +243,7 @@ const state = reactive<dialogFormState>({
 		submitTxt: '',
 		isdisable: false,
 	},
+	formInnerData: {},
 	innerdialog: {
 		isShowInnerDialog: false,
 		type: '',
@@ -320,7 +324,6 @@ const openDialog = (type: string, row?: any, title?: string) => {
 		state.dialog.title = title;
 		state.dialog.submitTxt = '确 定';
 		nextTick(() => {
-			// props.tagsData = [];
 			state.formData = JSON.parse(JSON.stringify(row));
 			dialogFormRef.value.resetFields();
 			innnerDialogFormRef.value && innnerDialogFormRef.value.resetFields();
@@ -337,7 +340,7 @@ const closeDialog = () => {
 const openInnerDialog = (title?: string) => {
 	state.innerdialog.title = title;
 	state.innerdialog.isShowInnerDialog = true;
-	state.formData['stockqty'] = props.tagsData.length;
+	emit('openInnerDialog', state);
 };
 const closeInnerDialog = () => {
 	state.innerdialog.isShowInnerDialog = false;
@@ -347,40 +350,25 @@ const onCancel = () => {
 	closeDialog();
 };
 const innnerDialogCancel = () => {
-	emit('innnerDialogCancel', state.formData);
-	closeInnerDialog();
+	emit('innnerDialogCancel', state.formInnerData);
+	// closeInnerDialog();
 };
 //内嵌弹窗提交
 const innnerDialogSubmit = (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
 	formEl.validate((valid: boolean) => {
 		if (valid) {
-			// 防止用户用扫码枪扫数据之后又手动修改数量
-			if (props.tagsData.length != 0) {
-				state.formData.stockqty = props.tagsData.length;
-			}
-			//如果存在需要存放扫码枪输入信息的字段
-			props.innerDialogConfig.forEach((item: any) => {
-				if (item.tag) {
-					state.formData[item.prop] = [];
-					state.formData.codeList = props.tagsData.map((item: any) => {
-						return item;
-					});
-				}
-			});
+			emit('innnerDialogSubmit', state.formInnerData, state.formData);
 			closeInnerDialog();
 		} else {
 		}
 	});
 };
-
 // 提交
 const onSubmit = (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
 	formEl.validate((valid: boolean) => {
 		if (valid) {
-			console.log('state.formData', state.formData);
-
 			emit('addData', state.formData, state.dialog.type);
 		} else {
 		}
@@ -388,33 +376,19 @@ const onSubmit = (formEl: EmptyObjectType | undefined) => {
 };
 // 初始化 form 字段，取自父组件 prop
 const initFormField = () => {
-	if (props.dialogConfig.length <= 0) return false;
+	if (props.dialogConfig.length <= 0 || props.innerDialogConfig.length <= 0) return false;
 	props.dialogConfig.forEach((v) => (state.formData[v.prop] = ''));
+	props.innerDialogConfig.forEach((v) => {
+		(state.formInnerData[v.prop] = ''), (state.formInnerData['codeList'] = []);
+	});
 };
-
 // 输入框一输入变化（不需要光标移开）
 const commonInputHandleChange = debounce((val: any, prop: string) => {
-	emit('commonInputHandleChange', val, prop, state.formData);
-	// console.log(tags.value.length, state.formData.checkqty);
-	// if (prop == 'sacnstockqty') {
-	// 	if (tags.value.length + 1 > state.formData.checkqty) {
-	// 		ElMessage.error(`扫码数量超过验收数量，请勿继续扫码`);
-	// 		state.formData['sacnstockqty'] = null;
-	// 	} else if (tags.value.includes(val)) {
-	// 		ElMessage.warning(`该条码已存在，请勿重复扫码`);
-	// 		state.formData['sacnstockqty'] = null;
-	// 	} else {
-	// 		tags.value.push(val);
-	// 		state.formData['sacnstockqty'] = null;
-	// 		state.formData['stockqty'] = tags.value.length;
-	// 	}
-	// }
+	emit('commonInputHandleChange', val, prop, state);
 }, 500);
 // 关闭tag标签
 const handleTagClose = (tag: any) => {
-	emit('handleTagClose', tag, state.formData);
-	// tags.value.splice(tags.value.indexOf(tag), 1);
-	// state.formData['stockqty'] = tags.value.length;
+	emit('handleTagClose', tag, state);
 };
 // 下拉框数据变化
 const selectHandelChange = (val: string, prop: string, bindOthers: string) => {
