@@ -81,6 +81,7 @@ declare type TableDemoState = {
 };
 declare type dialogFormState = {
 	formData: EmptyObjectType;
+	formInnerData:EmptyObjectType
 	vendors: EmptyArrayType;
 	dialog: {
 		isShowDialog: boolean;

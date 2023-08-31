@@ -1,5 +1,5 @@
 // 防抖
-export function debounce(fn: Function, delay = 200) {
+export function debounce(fn: Function, delay = 500) {
 	//fn是需要防抖的函数，delay是延迟多少毫秒执行fn
 	let timer: NodeJS.Timeout | null = null;
 	return function () {

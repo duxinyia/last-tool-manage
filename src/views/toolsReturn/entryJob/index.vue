@@ -20,9 +20,11 @@
 				@addData="entrySubmit"
 				@dailogFormButton="scanCodeEntry"
 				@commonInputHandleChange="change"
-				@handleTagClose="TagClose"
 				:tagsData="tags"
 				@innnerDialogCancel="innnerDialogCancel"
+				@innnerDialogSubmit="innnerDialogSubmit"
+				@openInnerDialog="openInnerDialog"
+				@handleTagClose="handleTagClose"
 			/>
 		</div>
 	</div>
@@ -256,28 +258,54 @@ const getTableData = async () => {
 	}
 };
 // change
-const change = (val: any, prop: string, formData: any) => {
+const change = (val: any, prop: string, state: any) => {
+	let { formInnerData, formData } = state;
 	if (prop == 'sacnstockqty') {
-		if (tags.value.length + 1 > formData.checkqty) {
+		if (formInnerData.codeList.length + 1 > formData.checkqty) {
 			ElMessage.error(`扫码数量超过验收数量，请勿继续扫码`);
-			formData['sacnstockqty'] = null;
-		} else if (tags.value.includes(val)) {
+			formInnerData['sacnstockqty'] = null;
+		} else if (formInnerData.codeList.includes(val)) {
 			ElMessage.warning(`该条码已存在，请勿重复扫码`);
-			formData['sacnstockqty'] = null;
+			formInnerData['sacnstockqty'] = null;
 		} else {
-			tags.value.push(val);
-			formData['sacnstockqty'] = null;
-			formData['stockqty'] = tags.value.length;
+			formInnerData.codeList.push(val);
+			formInnerData['sacnstockqty'] = null;
+			formInnerData['stockqty'] = formInnerData.codeList.length;
+			formData['stockqty'] = formInnerData.codeList.length;
 		}
 	}
 };
-const TagClose = (tag: string, formData: any) => {
-	tags.value.splice(tags.value.indexOf(tag), 1);
-	formData['stockqty'] = tags.value.length;
+const innnerDialogCancel = (formInnerData: EmptyObjectType) => {
+	formInnerData.codeList = [];
+	formInnerData['stockqty'] = 0;
 };
-const innnerDialogCancel = (formData: EmptyObjectType) => {
-	tags.value = [];
-	formData['stockqty'] = 0;
+// 嵌套弹窗提交
+const innnerDialogSubmit = (formInnerData: any, formData: any) => {
+	// 防止用户用扫码枪扫数据之后又手动修改数量
+	if (formInnerData.codeList.length != 0) {
+		formInnerData.stockqty = formInnerData.codeList.length;
+	}
+	//如果存在需要存放扫码枪输入信息的字段
+	state.tableData.innerDialogConfig &&
+		state.tableData.innerDialogConfig.forEach((item: any) => {
+			if (item.tag) {
+				formInnerData[item.prop] = [];
+				formInnerData.codeList = formInnerData.map((item: any) => {
+					return item;
+				});
+			}
+		});
+};
+// 打开嵌套弹窗
+const openInnerDialog = (state: any) => {
+	let { formInnerData, formData } = state;
+	formInnerData['stockqty'] = formInnerData.codeList.length;
+};
+// 关闭tag标签
+const handleTagClose = (tag: any, state: EmptyObjectType) => {
+	let { formInnerData, formData } = state;
+	formInnerData.codeList.splice(formInnerData.codeList.indexOf(tag), 1);
+	formInnerData['stockqty'] = formInnerData.codeList.length;
 };
 // 打开入库弹窗
 const openEntryDialog = async (scope: any) => {
