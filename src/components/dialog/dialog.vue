@@ -52,7 +52,7 @@
 								:placeholder="$t(item.placeholder)"
 								v-if="item.type === 'select'"
 								:disabled="state.dialog.isdisable"
-								@change="(val:any) => selectHandelChange(val,item.prop,item.bindOthers)"
+								@change="(val:any) => selectHandelChange(val,item.prop)"
 							>
 								<el-option v-for="val in item.options" :key="val.label" :label="val.text" :value="val.value"> </el-option>
 							</el-select>
@@ -350,7 +350,7 @@ const onCancel = () => {
 	closeDialog();
 };
 const innnerDialogCancel = () => {
-	emit('innnerDialogCancel', state.formInnerData);
+	emit('innnerDialogCancel', state.formData, state.formInnerData);
 	// closeInnerDialog();
 };
 //内嵌弹窗提交
@@ -369,7 +369,7 @@ const onSubmit = (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
 	formEl.validate((valid: boolean) => {
 		if (valid) {
-			emit('addData', state.formData, state.dialog.type);
+			emit('addData', state.formData, state.dialog.type, state.formInnerData);
 		} else {
 		}
 	});
@@ -391,10 +391,8 @@ const handleTagClose = (tag: any) => {
 	emit('handleTagClose', tag, state);
 };
 // 下拉框数据变化
-const selectHandelChange = (val: string, prop: string, bindOthers: string) => {
-	emit('selectChange', val, prop);
-	// 下拉框变化要清空做绑定的另一个下拉框的值
-	state.formData[bindOthers] = '';
+const selectHandelChange = (val: string, prop: string) => {
+	emit('selectChange', val, prop, state.formData);
 };
 
 // 文件input框里面的数据
