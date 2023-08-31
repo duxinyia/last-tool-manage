@@ -279,7 +279,7 @@ const allRules = (item: EmptyObjectType) => {
 			{
 				required: item.required,
 				message: `${t(item.label)}不能为空`,
-				trigger: item.type === 'input' || item.type === 'inputFile' || item.type === 'textarea' ? 'blur' : 'change',
+				trigger: item.type === 'select' || item.type === 'input' || item.type === 'inputFile' || item.type === 'textarea' ? 'blur' : 'change',
 				// type:'number',
 			},
 		],
@@ -392,6 +392,7 @@ const handleTagClose = (tag: any) => {
 };
 // 下拉框数据变化
 const selectHandelChange = (val: string, prop: string) => {
+	dialogFormRef.value?.clearValidate();
 	emit('selectChange', val, prop, state.formData);
 };
 
