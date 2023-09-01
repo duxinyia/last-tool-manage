@@ -12,66 +12,6 @@
 				:cellStyle="cellStyle"
 				@onOpenOtherDialog="openReturnDialog"
 			/>
-			<!-- <el-dialog ref="repairReturnDialogRef" v-model="arriveJobDialogVisible" :title="dilogTitle" width="60%">
-				<el-form ref="tableFormRef" :model="dialogState.tableData.form" size="default">
-					<el-row v-if="dilogTitle == '退库'">
-						<el-col
-							:xs="val.xs || 24"
-							:sm="val.sm || 12"
-							:md="val.md || 8"
-							:lg="val.lg || 8"
-							:xl="val.xl || 8"
-							class="mb10"
-							v-for="(val, key) in dialogState.tableData.search"
-							:key="key"
-						>
-							<el-form-item
-								:label="`${$t(val.label)}：`"
-								:prop="val.prop"
-								:rules="[
-									{
-										required: val.required,
-										message: `${$t(val.label)}不能为空`,
-										trigger: 'blur',
-									},
-								]"
-							>
-								<div v-if="val.type === 'text'">
-									<span>{{ dialogState.tableData.form[val.prop] }}</span>
-								</div>
-								<div v-if="val.type === 'input'" class="dialog-input">
-									<el-input v-model="dialogState.tableData.form[val.prop]" placeholder="请输入" clearable style="height: 30px"></el-input>
-								</div>
-								<div v-if="val.type === 'select'" class="dialog-input">
-									<el-select v-model="dialogState.tableData.form[val.prop]" placeholder="请输入" clearable @change="selectChange(val.prop)">
-										<el-option v-for="item in val.options" :key="item.value" :label="item.label" :value="item.value"> </el-option>
-									</el-select>
-								</div>
-							</el-form-item>
-						</el-col>
-					</el-row>
-
-					<Table v-bind="dialogState.tableData" class="table" @delRow="onDelRow" v-if="dilogTitle != '退库'" />
-
-					<div class="describe" v-if="dilogTitle == '退库'">
-						<span>描述说明：</span>
-						<el-input
-							class="input-textarea"
-							show-word-limit
-							v-model="dialogState.tableData.form['describe']"
-							type="textarea"
-							placeholder="请输入"
-							maxlength="150"
-						></el-input>
-					</div>
-				</el-form>
-				<template #footer v-if="dilogTitle == '退库'">
-					<span class="dialog-footer">
-						<el-button size="default" auto-insert-space @click="arriveJobDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)"> 确定 </el-button>
-					</span>
-				</template>
-			</el-dialog> -->
 			<Dialog
 				ref="repairReturnDialogRef"
 				:dialogConfig="dialogState.tableData.dialogConfig"
@@ -80,10 +20,13 @@
 				dialogType="nestDialogConfig"
 				@addData="returnSubmit"
 				@dailogFormButton="scanCodeEntry"
-				@selectChange="selectChange"
 				@commonInputHandleChange="change"
 				:tagsData="tags"
 				@innnerDialogCancel="innnerDialogCancel"
+				@innnerDialogSubmit="innnerDialogSubmit"
+				@openInnerDialog="openInnerDialog"
+				@handleTagClose="handleTagClose"
+				@selectChange="selectChange"
 			/>
 		</div>
 	</div>
@@ -110,7 +53,6 @@ const { t } = useI18n();
 const tableFormRef = ref();
 const tableRef = ref<RefType>();
 const repairReturnDialogRef = ref();
-const arriveJobDialogVisible = ref(false);
 // tags的数据
 const tags = ref<EmptyArrayType<string>>([]);
 // 单元格样式
@@ -212,15 +154,15 @@ const dialogState = reactive<TableDemoState>({
 		},
 		//退库弹窗
 		dialogConfig: [
-			{ label: '料号', prop: 'matno', placeholder: '请输入料号', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
-			{ label: '品名-中文', prop: 'nameCh', placeholder: '请输入料号', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
-			{ label: '品名-英文', prop: 'nameEn', placeholder: '请输入料号', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
-			{ label: '厂商代码', prop: 'vendorcode', placeholder: '请输入料号', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
-			{ label: '厂商名称', prop: 'vendorname', placeholder: '请输入料号', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 12, xl: 12 },
+			{ label: '料号', prop: 'matno', placeholder: '', required: false, type: 'text', xs: 24, sm: 24, md: 12, lg: 8, xl: 8 },
+			{ label: '品名-中文', prop: 'nameCh', placeholder: '', required: false, type: 'text', xs: 24, sm: 8, md: 12, lg: 8, xl: 8 },
+			{ label: '品名-英文', prop: 'nameEn', placeholder: '', required: false, type: 'text', xs: 24, sm: 8, md: 12, lg: 8, xl: 8 },
+			{ label: '厂商代码', prop: 'vendorcode', placeholder: '', required: false, type: 'text', xs: 24, sm: 8, md: 12, lg: 8, xl: 8 },
+			{ label: '厂商名称', prop: 'vendorname', placeholder: '', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 12, xl: 12 },
 			{
 				label: '退库类型',
 				prop: 'exitType',
-				placeholder: '请输入料号',
+				placeholder: '请选择退库类型',
 				required: true,
 				bindOthers: 'reasonId',
 				type: 'select',
@@ -230,42 +172,55 @@ const dialogState = reactive<TableDemoState>({
 					{ value: 3, label: '报废', text: '报废' },
 				],
 				xs: 24,
-				sm: 8,
-				md: 8,
+				sm: 12,
+				md: 12,
 				lg: 8,
 				xl: 8,
 			},
 			{
 				label: '退库原因',
 				prop: 'reasonId',
-				placeholder: '请输入料号',
+				placeholder: '请选择退库原因',
 				required: true,
 				type: 'select',
 				options: [],
 				xs: 24,
 				sm: 16,
-				md: 16,
+				md: 12,
 				lg: 16,
 				xl: 16,
 			},
-			{ label: '退库数量', prop: 'exitQty', placeholder: '请输入料号', required: true, type: 'input', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
+			{
+				label: '退库数量',
+				prop: 'exitQty',
+				placeholder: '请输入退库数量',
+				validateForm: 'number',
+				message: '请输入正整数',
+				required: true,
+				type: 'input',
+				xs: 24,
+				sm: 8,
+				md: 8,
+				lg: 8,
+				xl: 8,
+			},
 			{
 				label: '扫码录入',
 				prop: 'scan',
 				placeholder: '请输入入库数量',
 				required: false,
 				type: 'button',
-				xs: 6,
-				sm: 6,
-				md: 6,
-				lg: 6,
-				xl: 6,
+				xs: 4,
+				sm: 4,
+				md: 4,
+				lg: 4,
+				xl: 4,
 			},
 		],
 		innerDialogConfig: [
 			{
 				label: '扫码退库:',
-				prop: 'sacnstockqty',
+				prop: 'sacnexitqty',
 				placeholder: '请将光标放到此处扫码',
 				required: false,
 				type: 'input',
@@ -340,65 +295,92 @@ const exitTypeMap: EmptyObjectType = {
 	3: 'UselessReason',
 };
 //退库弹窗里的退库类型和退库原因选择时的操作
-const selectChange = async (val: string, name: string) => {
+const selectChange = async (val: string, name: string, formData: EmptyObjectType) => {
+	let exitReasonMap: any = [];
 	if (name == 'exitType') {
-		dialogState.tableData.form.reasonId = '';
-		let res: any = [];
-		res = await getExitReasonApi(exitTypeMap[val]);
-		if (dialogState.tableData.dialogConfig)
-			dialogState.tableData.dialogConfig[6].options = res.data.map((item: any) => {
-				return { value: item.runid, label: item.dataname, text: item.dataname };
-			});
+		formData.reasonId = '';
+		dialogState.tableData.dialogConfig?.forEach(async (item, index) => {
+			if (item.prop == 'reasonId') {
+				let res = await getExitReasonApi(exitTypeMap[val]);
+				item.options = res.data.map((val: EmptyObjectType) => {
+					return { value: val.runid, label: val.dataname, text: val.dataname };
+				});
+			}
+		});
 	}
 	//根据原因id获取原因名称
 	if (name == 'reasonId' && dialogState.tableData.dialogConfig) {
-		dialogState.tableData.dialogConfig[6].options?.forEach((item) => {
-			if (item.value == dialogState.tableData.form.reasonId) {
-				dialogState.tableData.form['exitReason'] = item.label;
+		dialogState.tableData.dialogConfig?.forEach(async (item, index) => {
+			if (item.prop == 'reasonId') {
+				item.options?.forEach((item) => {
+					if (item.value == formData.reasonId) {
+						formData['exitReason'] = item.label;
+					}
+				});
 			}
 		});
 	}
 };
-// change
-const change = (val: any, prop: string, formData: any) => {
-	if (prop == 'sacnstockqty') {
-		if (tags.value.length + 1 > formData.checkqty) {
-			ElMessage.error(`扫码数量超过验收数量，请勿继续扫码`);
-			formData['sacnstockqty'] = null;
-		} else if (tags.value.includes(val)) {
-			ElMessage.warning(`该条码已存在，请勿重复扫码`);
-			formData['sacnstockqty'] = null;
-		} else {
-			tags.value.push(val);
-			formData['sacnstockqty'] = null;
-			formData['stockqty'] = tags.value.length;
-		}
-	}
-};
-const innnerDialogCancel = (formData: EmptyObjectType) => {
-	tags.value = [];
-	formData['stockqty'] = 0;
-};
 
-//点击确认入库
-const entrySubmit = async (ruleForm: object, type: string) => {};
 // 点击退库弹窗
 const openReturnDialog = (scope: EmptyObjectType) => {
 	repairReturnDialogRef.value.openDialog('return', scope.row);
-
-	//先清空数据
-	// arriveJobDialogVisible.value = true;
-	// dialogState.tableData.form['describe'] = '';
-	// nextTick(() => {
-	// 	// repairReturnDialogRef.value.resetFields();
-	// });
-	// dilogTitle.value = '退库';
-	// dialogState.tableData.form = { ...scope.row };
-	// changeStatus(header.value, 300, true);
 };
 const scanCodeEntry = () => {
-	console.log('点击按钮');
 	repairReturnDialogRef.value.openInnerDialog('扫码录入');
+};
+// 嵌套弹窗提交
+const innnerDialogSubmit = (formInnerData: any, formData: any) => {
+	// 防止用户用扫码枪扫数据之后又手动修改数量
+	if (formInnerData.codeList.length != 0) {
+		formInnerData.exitQty = formInnerData.codeList.length;
+	}
+	//如果存在需要存放扫码枪输入信息的字段
+	state.tableData.innerDialogConfig &&
+		state.tableData.innerDialogConfig.forEach((item: any) => {
+			if (item.tag) {
+				// formInnerData[item.prop] = [];
+				formInnerData.codeList = formInnerData.codeList.map((item: any) => {
+					return item;
+				});
+			}
+		});
+};
+// 打开嵌套弹窗
+const openInnerDialog = (state: any) => {
+	let { formInnerData, formData } = state;
+	formInnerData['exitQty'] = formInnerData.codeList.length;
+	formData['exitQty'] = formInnerData.codeList.length;
+};
+// 关闭tag标签
+const handleTagClose = (tag: any, state: EmptyObjectType) => {
+	let { formInnerData, formData } = state;
+	formInnerData.codeList.splice(formInnerData.codeList.indexOf(tag), 1);
+	formInnerData['exitQty'] = formInnerData.codeList.length;
+	formData['exitQty'] = formInnerData.codeList.length;
+};
+// change
+const change = (val: any, prop: string, state: any) => {
+	let { formInnerData, formData } = state;
+	if (prop == 'sacnexitqty') {
+		if (formInnerData.codeList.length + 1 > formData.stockqty) {
+			ElMessage.error(`扫码数量超过库存总量，请勿继续扫码`);
+			formInnerData['sacnexitqty'] = null;
+		} else if (formInnerData.codeList.includes(val)) {
+			ElMessage.warning(`该条码已存在，请勿重复扫码`);
+			formInnerData['sacnexitqty'] = null;
+		} else {
+			formInnerData.codeList.push(val);
+			formInnerData['sacnexitqty'] = null;
+			formInnerData['exitQty'] = formInnerData.codeList.length;
+			formData['exitQty'] = formInnerData.codeList.length;
+		}
+	}
+};
+const innnerDialogCancel = (formData: EmptyObjectType, formInnerData: EmptyObjectType) => {
+	formInnerData.codeList = [];
+	formInnerData['exitQty'] = 0;
+	formData['exitQty'] = 0;
 };
 // 点击料号,暂时不做
 const matnoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
@@ -418,13 +400,11 @@ const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) =
 	config.isOperate = isShow;
 	config.isInlineEditing = isShow;
 };
-// 提交
-const returnSubmit = async (ruleForm: object, type: string) => {
+// 提交 确认退库
+const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerData: EmptyObjectType) => {
 	// if (!dialogState.tableData.form['sendTime']) return ElMessage.warning(t('请填写收货时间'));
 	let allData: EmptyObjectType = { ...ruleForm };
-	if (!allData.codeList) {
-		allData.codeList = [];
-	}
+	allData.codeList = formInnerData.codeList;
 	let submitData = {
 		stockId: allData.runid,
 		exitType: allData.exitType,
@@ -434,13 +414,14 @@ const returnSubmit = async (ruleForm: object, type: string) => {
 		describe: allData.describe,
 		codeList: [],
 	};
-	console.log('填写的信息', submitData);
-	// if (submitData.stockqty > submitData.checkqty) {
-	// 	ElMessage.error(`入库数量大于验收数量`);
-	// } else if (submitData.codeList && submitData.stockqty < submitData.codeList.length) {
-	// 	ElMessage.error(`入库数量小于扫码数量`);
-	// } else if (submitData.stockqty != submitData.checkqty) {
-	// 	ElMessageBox.confirm('入库数量与验收数量不一致，是否继续提交', '提示', {
+
+	if (submitData.exitQty > ruleForm.stockqty) {
+		ElMessage.error(`退库数量大于库存总量`);
+	} else if (submitData.exitQty < submitData.codeList.length) {
+		ElMessage.error(`退库数量小于扫码数量`);
+	}
+	// else if (submitData.exitQty != ruleForm.checkqty) {
+	// 	ElMessageBox.confirm('退库数量与验收数量不一致，是否继续提交', '提示', {
 	// 		confirmButtonText: '确认',
 	// 		cancelButtonText: '取消',
 	// 		type: 'warning',
@@ -450,7 +431,7 @@ const returnSubmit = async (ruleForm: object, type: string) => {
 	// 			const res = await ExitStoreApi(submitData);
 	// 			if (res.status) {
 	// 				ElMessage.success(t('退库成功'));
-	// 				arriveJobDialogVisible.value = false;
+	// 				repairReturnDialogRef.value = false;
 	// 				getTableData();
 	// 			}
 	// 		})
@@ -460,15 +441,15 @@ const returnSubmit = async (ruleForm: object, type: string) => {
 	// 			// 	message: 'Delete canceled',
 	// 			// });
 	// 		});
-	// } else
-	// {
-	// const res = await ExitStoreApi(submitData);
-	// if (res.status) {
-	// 	ElMessage.success(t('退库成功'));
-	// 	arriveJobDialogVisible.value = false;
-	// 	getTableData();
 	// }
-	// }
+	else {
+		const res = await ExitStoreApi(submitData);
+		if (res.status) {
+			ElMessage.success(t('退库成功'));
+			repairReturnDialogRef.value.closeDialog();
+			getTableData();
+		}
+	}
 };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {

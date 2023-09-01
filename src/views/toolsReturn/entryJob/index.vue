@@ -275,9 +275,10 @@ const change = (val: any, prop: string, state: any) => {
 		}
 	}
 };
-const innnerDialogCancel = (formInnerData: EmptyObjectType) => {
+const innnerDialogCancel = (formData: EmptyObjectType, formInnerData: EmptyObjectType) => {
 	formInnerData.codeList = [];
 	formInnerData['stockqty'] = 0;
+	formData['stockqty'] = 0;
 };
 // 嵌套弹窗提交
 const innnerDialogSubmit = (formInnerData: any, formData: any) => {
@@ -289,8 +290,8 @@ const innnerDialogSubmit = (formInnerData: any, formData: any) => {
 	state.tableData.innerDialogConfig &&
 		state.tableData.innerDialogConfig.forEach((item: any) => {
 			if (item.tag) {
-				formInnerData[item.prop] = [];
-				formInnerData.codeList = formInnerData.map((item: any) => {
+				// formInnerData[item.prop] = [];
+				formInnerData.codeList = formInnerData.codeList.map((item: any) => {
 					return item;
 				});
 			}
@@ -300,12 +301,14 @@ const innnerDialogSubmit = (formInnerData: any, formData: any) => {
 const openInnerDialog = (state: any) => {
 	let { formInnerData, formData } = state;
 	formInnerData['stockqty'] = formInnerData.codeList.length;
+	formData['stockqty'] = formInnerData.codeList.length;
 };
 // 关闭tag标签
 const handleTagClose = (tag: any, state: EmptyObjectType) => {
 	let { formInnerData, formData } = state;
 	formInnerData.codeList.splice(formInnerData.codeList.indexOf(tag), 1);
 	formInnerData['stockqty'] = formInnerData.codeList.length;
+	formData['stockqty'] = formInnerData.codeList.length;
 };
 // 打开入库弹窗
 const openEntryDialog = async (scope: any) => {
@@ -321,7 +324,7 @@ const scanCodeEntry = () => {
 	entryJobDialogRef.value.openInnerDialog('扫码录入');
 };
 //点击确认入库
-const entrySubmit = async (ruleForm: object, type: string) => {
+const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyObjectType) => {
 	let obj: EmptyObjectType = { ...ruleForm };
 	state.tableData.dialogConfig &&
 		state.tableData.dialogConfig[12].options?.forEach((item) => {
@@ -329,9 +332,8 @@ const entrySubmit = async (ruleForm: object, type: string) => {
 				obj.storageName = item.text;
 			}
 		});
-	if (!obj.codeList) {
-		obj.codeList = [];
-	}
+	obj.codeList = formInnerData.codeList;
+
 	let submitData = {
 		runId: obj.runid,
 		checkno: obj.checkno,
@@ -348,7 +350,7 @@ const entrySubmit = async (ruleForm: object, type: string) => {
 		storageName: obj.storageName,
 		codeList: obj.codeList,
 	};
-	console.log('填写的信息', submitData.codeList);
+	console.log('填写的信息', submitData);
 	if (submitData.stockqty > submitData.checkqty) {
 		ElMessage.error(`入库数量大于验收数量`);
 	} else if (submitData.codeList && submitData.stockqty < submitData.codeList.length) {
@@ -390,17 +392,6 @@ const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 	// 	changeStatus(header1.value, 500, false);
 	// 	let data = { reqNo: row.reqNo };
 	// 	getDetailData(data);
-	// }
-};
-// 详情接口
-const getDetailData = async (data: Object) => {
-	console.log('data', data);
-
-	// const res = await GetTStockDetailApi(data);
-	// dialogState.tableData.data = res.data.applyDetails;
-	// arriveJobDialogVisible.value = true;
-	// if (res.status) {
-	// 	dialogState.tableData.config.loading = false;
 	// }
 };
 // 根据弹出窗不一样展现的配置不一样

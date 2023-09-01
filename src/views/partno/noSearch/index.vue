@@ -90,7 +90,7 @@ const state = reactive<TableDemoState>({
 		printName: '表格打印演示',
 		// 弹窗表单
 		dialogConfig: [
-			{ label: 'message.pages.matNo', prop: 'matNo', placeholder: 'message.pages.placeMatNo', required: true, type: 'input' },
+			{ label: 'message.pages.matNo', prop: 'matNo', placeholder: 'message.pages.placeMatNo', required: true, colwidth: '', type: 'select' },
 			{ label: 'message.pages.nameCh', prop: 'nameCh', placeholder: 'message.pages.placeNameCh', required: true, type: 'input' },
 			{ label: 'NameEn', prop: 'nameEn', placeholder: 'message.pages.placeNameEn', required: true, type: 'input' },
 			{ label: 'message.pages.drawNo', prop: 'drawNo', placeholder: 'message.pages.placeDrawNo', required: true, type: 'input' },

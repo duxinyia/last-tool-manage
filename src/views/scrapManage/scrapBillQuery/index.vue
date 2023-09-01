@@ -162,7 +162,7 @@ const getTableData = async () => {
 // 点击申请单号
 const reqNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'uselessno') {
-		dilogTitle.value = '報廢单号:' + row.reqNo;
+		dilogTitle.value = '报废单号:' + row.reqNo;
 		let data = { reqNo: row.reqNo };
 		// const res = await getreqNoApi(data);
 		// dialogState.tableData.data = res.data.applyDetails;
