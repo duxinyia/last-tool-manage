@@ -18,6 +18,8 @@
 				@addData="addData"
 				@downloadTemp="ondownloadTemp"
 				@importTableData="onImportTable"
+				@selectChange="selectChange"
+				@editDialog="editDialog"
 			/>
 		</div>
 	</div>
@@ -26,7 +28,14 @@
 <script setup lang="ts" name="/partno/noSearch">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { getMaterialListApi, getAddMaterialApi, getModifyMaterialApi, getInvalidMaterialApi } from '/@/api/partno/noSearch';
+import {
+	getMaterialListApi,
+	getAddMaterialApi,
+	getModifyMaterialApi,
+	getInvalidMaterialApi,
+	getAreaListApi,
+	getSelectListApi,
+} from '/@/api/partno/noSearch';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -47,8 +56,8 @@ const state = reactive<TableDemoState>({
 			{ key: 'nameEn', colWidth: '', title: 'NameEn', type: 'text', isCheck: true },
 			{ key: 'drawNo', colWidth: '', title: 'message.pages.drawNo', type: 'text', isCheck: true },
 			{ key: 'specs', colWidth: '', title: 'message.pages.specs', type: 'text', isCheck: true },
-			{ key: 'creator', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
-			{ key: 'createtime', title: 'message.pages.creationTime', type: 'text', isCheck: true },
+			// { key: 'creator', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
+			// { key: 'createtime', title: 'message.pages.creationTime', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -90,17 +99,34 @@ const state = reactive<TableDemoState>({
 		printName: '表格打印演示',
 		// 弹窗表单
 		dialogConfig: [
-			{ label: 'message.pages.matNo', prop: 'matNo', placeholder: 'message.pages.placeMatNo', required: true, type: 'input' },
+			{ label: 'message.pages.matNo', prop: 'matNo', placeholder: 'message.pages.placeMatNo', required: false, type: 'text' },
 			{ label: 'message.pages.nameCh', prop: 'nameCh', placeholder: 'message.pages.placeNameCh', required: true, type: 'input' },
 			{ label: 'NameEn', prop: 'nameEn', placeholder: 'message.pages.placeNameEn', required: true, type: 'input' },
 			{ label: 'message.pages.drawNo', prop: 'drawNo', placeholder: 'message.pages.placeDrawNo', required: true, type: 'input' },
 			{ label: 'message.pages.specs', prop: 'specs', placeholder: 'message.pages.placeSpecs', required: true, type: 'input' },
+			{ label: '厂区', prop: 'area', placeholder: '请选择厂区', required: false, type: 'select', options: [] },
+			{ label: 'BU', prop: 'bu', placeholder: '请选择BU', required: false, type: 'select', options: [] },
+			{ label: '专案代码', prop: 'projectCode', placeholder: '请选择专案代码', required: false, type: 'select', options: [] },
+			{ label: '阶段', prop: 'stage', placeholder: '请选择阶段', required: false, type: 'select', options: [] },
+			{ label: '机种', prop: 'machineType', placeholder: '请选择机种', required: false, type: 'select', options: [] },
 			{
 				label: 'message.pages.drawPath',
 				prop: 'drawPath',
 				placeholder: 'message.pages.placeDrawPath',
 				required: true,
 				type: 'inputFile',
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
+			},
+			{
+				label: '3D圖紙',
+				prop: '3ddrawPath',
+				placeholder: 'message.pages.placeDrawPath',
+				required: true,
+				type: 'input3dFile',
 				xs: 24,
 				sm: 24,
 				md: 24,
@@ -148,6 +174,16 @@ const onSearch = (data: EmptyObjectType) => {
 // 打开弹窗
 const openDialog = (type: string, row: Object) => {
 	noSearchDialogRef.value.openDialog(type, row);
+	if (type === 'add') {
+		let arr = ['bu', 'projectCode', 'machineType', 'stage'];
+		if (state.tableData.dialogConfig) {
+			state.tableData.dialogConfig.forEach((item) => {
+				if (arr.includes(item.prop)) {
+					item.options = [];
+				}
+			});
+		}
+	}
 };
 // 新增数据  修改数据
 const addData = async (ruleForm: EmptyObjectType, type: string) => {
@@ -162,7 +198,43 @@ const addData = async (ruleForm: EmptyObjectType, type: string) => {
 		ElMessage.error(`新增失败,请点击上传文件按钮进行上传`);
 	}
 };
-
+// 公共数据
+const selcectMAP: EmptyObjectType = {
+	area: { api: 'GetBuList', index: 6, prop: 'area', clearProp: ['bu', 'projectCode', 'stage', 'machineType'] },
+	bu: { api: 'GetProjectList', index: 7, prop: 'bu', clearProp: ['projectCode', 'stage', 'machineType'] },
+	projectCode: { api: 'GetStageList', index: 8, prop: 'project', clearProp: ['stage', 'machineType'] },
+	stage: { api: 'GetmachineTypeList', index: 9, prop: 'stage', clearProp: ['machineType'] },
+};
+// 调下拉框接口
+const getAllSelectApi = async (val: string, prop: string) => {
+	let data: EmptyObjectType = {};
+	// 设置每个api的传参key字段
+	data[selcectMAP[prop].prop] = val;
+	const res = await getSelectListApi(data, selcectMAP[prop].api);
+	if (state.tableData.dialogConfig) {
+		state.tableData.dialogConfig[selcectMAP[prop].index].options = res.data.map((item: any) => {
+			return { value: item, label: item, text: item };
+		});
+	}
+};
+// 下拉框改變
+const selectChange = (val: string, prop: string, formData: EmptyObjectType) => {
+	if (!selcectMAP[prop]) return;
+	selcectMAP[prop].clearProp.forEach((item: string) => {
+		formData[item] = '';
+		if (state.tableData.dialogConfig && selcectMAP[item]) {
+			state.tableData.dialogConfig[selcectMAP[item].index].options = [];
+		}
+	});
+	getAllSelectApi(val, prop);
+};
+// 编辑弹窗，重新给下拉框值
+const editDialog = async (formData: EmptyObjectType) => {
+	const arr = ['area', 'bu', 'projectCode', 'stage'];
+	arr.forEach((item) => {
+		getAllSelectApi(formData[item], item);
+	});
+};
 // 删除当前项回调
 const onTableDelRow = async (row: EmptyObjectType, type: string) => {
 	let rows = [];
@@ -239,10 +311,19 @@ const onImportTable = async (raw: EmptyObjectType) => {
 	// res.status && ElMessage.success('导入数据成功！');
 	// getTableData();
 };
-
+// 下拉框数据
+const getSelect = async () => {
+	const res = await getAreaListApi();
+	if (state.tableData.dialogConfig) {
+		state.tableData.dialogConfig[5].options = res.data.map((item: any) => {
+			return { value: item, label: item, text: item };
+		});
+	}
+};
 // 页面加载时
 onMounted(() => {
 	getTableData();
+	getSelect();
 });
 </script>
 

@@ -44,3 +44,18 @@ export function getInvalidMaterialApi(matNos:Array<string>) {
     },
   });
 }
+// 廠區下拉框接口
+export function getAreaListApi() {
+  return request({
+    url: '/api/BaseMachineProcject/GetAreaList',
+    method: 'GET',
+  });
+}
+// bu下拉框接口
+export function getSelectListApi(data:Object,list:string) {
+  return request({
+    url: `/api/BaseMachineProcject/${list}`,
+    method: 'GET',
+    params:data
+  });
+}

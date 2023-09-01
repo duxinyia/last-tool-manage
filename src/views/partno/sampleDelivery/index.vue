@@ -11,7 +11,7 @@
 				@cellclick="matnoClick"
 				:cellStyle="cellStyle"
 			/>
-			<Dialog ref="sampleDialogRef" v-bind="dialogData" />
+			<Dialog ref="sampleDialogRef" v-bind="dialogData" dialogWidth="50%" />
 		</div>
 	</div>
 </template>
@@ -104,7 +104,7 @@ const dialogData = reactive({
 		{ type: 'text', lable: '料号', prop: 'matNo', value: '', xs: 10, sm: 11, md: 11, lg: 11, xl: 11 },
 		{ type: 'text', lable: '品名-中文', prop: 'nameCh', value: '' },
 		{ type: 'text', lable: '品名-英文', prop: 'nameEn', value: '' },
-		{ type: 'input', lable: '工程验收人', prop: 'engineerName', placeholder: '请输入工程验收人', value: '' },
+		// { type: 'input', lable: '工程验收人', prop: 'engineerName', placeholder: '请输入工程验收人', value: '' },
 	],
 	//进行送样、收货还是验收操作
 	operation: '送样',

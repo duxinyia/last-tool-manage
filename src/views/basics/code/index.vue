@@ -39,10 +39,11 @@ const state = reactive<TableDemoState>({
 		header: [
 			{ key: 'area', colWidth: '', title: '厂区', type: 'text', isCheck: true },
 			{ key: 'bu', colWidth: '', title: 'BU', type: 'text', isCheck: true },
-			{ key: 'machinetype', colWidth: '', title: '机种', type: 'text', isCheck: true },
+			{ key: 'projectcode', colWidth: '', title: '专案代码', type: 'text', isCheck: true },
 			{ key: 'stage', colWidth: '', title: '阶段', type: 'text', isCheck: true },
-			{ key: 'creator', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
-			{ key: 'createtime', title: 'message.pages.creationTime', type: 'text', isCheck: true },
+			{ key: 'machinetype', colWidth: '', title: '机种', type: 'text', isCheck: true },
+			// { key: 'creator', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
+			// { key: 'createtime', title: 'message.pages.creationTime', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -92,11 +93,11 @@ const state = reactive<TableDemoState>({
 		printName: '表格打印演示',
 		// 弹窗表单
 		dialogConfig: [
-			{ label: '专案代码', prop: 'projectcode', placeholder: '请输入专案代码', required: true, type: 'input' },
 			{ label: '厂区', prop: 'area', placeholder: '请输入厂区', required: true, type: 'input' },
 			{ label: 'BU', prop: 'bu', placeholder: '请输入BU', required: true, type: 'input' },
-			{ label: '机种', prop: 'machinetype', placeholder: '请输入机种', required: true, type: 'input' },
+			{ label: '专案代码', prop: 'projectcode', placeholder: '请输入专案代码', required: true, type: 'input' },
 			{ label: '阶段', prop: 'stage', placeholder: '请输入阶段', required: true, type: 'input' },
+			{ label: '机种', prop: 'machinetype', placeholder: '请输入机种', required: true, type: 'input' },
 		],
 	},
 });

@@ -42,8 +42,30 @@
 									</el-upload></template
 								>
 								<template #append v-if="state.formData[item.prop]"
-									><el-button @click="inputsubmitUpload" type="primary" class="ml1">上传文件</el-button>
-									<el-button v-if="state.formData['drawPath'].includes('/')" class="look-file" @click="lookUpload">查看文件</el-button>
+									><el-button @click="inputsubmitUpload(item.prop)" type="primary" class="ml1">上传文件</el-button>
+									<el-button v-if="state.formData['drawPath'].includes('/')" class="look-file" @click="lookUpload(item.prop)">查看文件</el-button>
+								</template>
+							</el-input>
+							<el-input disabled v-if="item.type === 'input3dFile'" v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)" clearable>
+								<template #prepend
+									><el-upload
+										v-model:file-list="input3dfileList"
+										:auto-upload="false"
+										ref="input3duploadRefs"
+										action=""
+										class="upload"
+										drag
+										:limit="1"
+										:show-file-list="false"
+										:on-exceed="input3dHandleExceed"
+										:on-change="input3dHandleChange"
+									>
+										<el-button type="primary" class="ml1">浏览文件</el-button>
+									</el-upload></template
+								>
+								<template #append v-if="state.formData[item.prop]"
+									><el-button @click="inputsubmitUpload(item.prop)" type="primary" class="ml1">上传文件</el-button>
+									<el-button v-if="state.formData['3ddrawPath'].includes('/')" class="look-file" @click="lookUpload(item.prop)">查看文件</el-button>
 								</template>
 							</el-input>
 
@@ -51,6 +73,7 @@
 								v-model="state.formData[item.prop]"
 								:placeholder="$t(item.placeholder)"
 								v-if="item.type === 'select'"
+								style="width: 100%"
 								:disabled="state.dialog.isdisable"
 								@change="(val:any) => selectHandelChange(val,item.prop)"
 							>
@@ -191,6 +214,7 @@ const emit = defineEmits([
 	'selectChange',
 	'innnerDialogSubmit',
 	'openInnerDialog',
+	'editDialog',
 ]);
 // 定义父组件传过来的值
 const props = defineProps({
@@ -223,14 +247,17 @@ const props = defineProps({
 const { t } = useI18n();
 const uploadRefs = ref<UploadInstance>();
 const inputuploadRefs = ref<UploadInstance>();
+const input3duploadRefs = ref<UploadInstance>();
 const fileList = ref<UploadUserFile[]>([]);
 const inputfileList = ref<UploadUserFile[]>([]);
+const input3dfileList = ref<UploadUserFile[]>([]);
 const fileListName = ref();
 // 定义变量内容
 const dialogFormRef = ref();
 const innnerDialogFormRef = ref();
 const uploadForm = ref();
 const inputuploadForm = ref();
+const input3duploadForm = ref();
 
 let rules = reactive<EmptyObjectType>({});
 const state = reactive<dialogFormState>({
@@ -279,7 +306,7 @@ const allRules = (item: EmptyObjectType) => {
 			{
 				required: item.required,
 				message: `${t(item.label)}不能为空`,
-				trigger: item.type === 'select' || item.type === 'input' || item.type === 'inputFile' || item.type === 'textarea' ? 'blur' : 'change',
+				trigger: item.type === 'input' || item.type === 'inputFile' || item.type === 'textarea' ? 'blur' : 'change',
 				// type:'number',
 			},
 		],
@@ -310,6 +337,7 @@ const openDialog = (type: string, row?: any, title?: string) => {
 		// 解决表单重置不成功的问题
 		nextTick(() => {
 			state.formData = JSON.parse(JSON.stringify(row));
+			emit('editDialog', state.formData);
 		});
 		props.dialogConfig.forEach((v) => {
 			if (v.editDisable) {
@@ -392,10 +420,26 @@ const handleTagClose = (tag: any) => {
 };
 // 下拉框数据变化
 const selectHandelChange = (val: string, prop: string) => {
-	dialogFormRef.value?.clearValidate();
 	emit('selectChange', val, prop, state.formData);
 };
+// 文件input框里面的数据
+const input3dHandleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
+	props.dialogConfig.forEach((v) => {
+		if (v.type === 'input3dFile') {
+			state.formData[v.prop] = uploadFile.name;
+		}
+	});
+	input3duploadForm.value = uploadFile;
+};
 
+//可以在选中时自动替换上一个文件
+const input3dHandleExceed: UploadProps['onExceed'] = (files) => {
+	let upload_list: any = input3duploadRefs.value;
+	upload_list[0]!.clearFiles();
+	const file = files[0] as UploadRawFile;
+	file.uid = genFileId();
+	upload_list[0]!.handleStart(file);
+};
 // 文件input框里面的数据
 const inputHandleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
 	props.dialogConfig.forEach((v) => {
@@ -416,14 +460,15 @@ const inputHandleExceed: UploadProps['onExceed'] = (files) => {
 };
 
 // 上传文件
-const inputsubmitUpload = async () => {
-	const res = await getUploadFileApi(0, inputuploadForm.value.raw);
-	state.formData['drawPath'] = res.data;
+const inputsubmitUpload = async (prop: string) => {
+	let value = prop == 'drawPath' ? inputuploadForm.value.raw : input3duploadForm.value.raw;
+	const res = await getUploadFileApi(0, value);
+	state.formData[prop] = res.data;
 	res.status && ElMessage.success(`上传成功`);
 };
 // 查看上传的文件
-const lookUpload = () => {
-	window.open(`${import.meta.env.VITE_API_URL}${state.formData['drawPath']}`, '_blank');
+const lookUpload = (prop: string) => {
+	window.open(`${import.meta.env.VITE_API_URL}${state.formData[prop]}`, '_blank');
 };
 // // 上传错误提示
 // const handleError = () => {

@@ -1,6 +1,6 @@
 <template>
 	<div class="system-menu-dialog-container">
-		<el-dialog :title="state.dialog.title" v-model="state.dialog.isShowDialog" width="85%">
+		<el-dialog :title="state.dialog.title" v-model="state.dialog.isShowDialog" :width="dialogWidth">
 			<el-row :gutter="10" v-if="state.dialog.num === 1">
 				<el-col
 					v-for="item in dialogForm"
@@ -137,6 +137,10 @@ const props = defineProps({
 		type: Array<EmptyObjectType>,
 		default: () => [],
 	},
+	dialogWidth: {
+		type: String,
+		default: () => '85%',
+	},
 	operation: {
 		type: String,
 		default: '',
@@ -148,9 +152,18 @@ const tableRef = ref();
 let marNoData = ref<EmptyObjectType>([]);
 const state = reactive<dialogFormState>({
 	formData: {},
+	formInnerData: {},
 	vendors: [],
 	dialog: {
 		isShowDialog: false,
+		type: '',
+		title: '',
+		submitTxt: '',
+		isdisable: false,
+		num: 0,
+	},
+	innerdialog: {
+		isShowInnerDialog: false,
 		type: '',
 		title: '',
 		submitTxt: '',

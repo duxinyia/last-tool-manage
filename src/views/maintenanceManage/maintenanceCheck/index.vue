@@ -92,7 +92,7 @@ import { defineAsyncComponent, reactive, ref, onMounted, computed, watch } from 
 import { ElMessage, UploadInstance, UploadProps, UploadUserFile, genFileId, UploadRawFile, FormInstance } from 'element-plus';
 const maintenanceCheckDialogVisible = ref(false);
 // 引入接口
-import { getIToolReceivePageListApi, getReceiveApi, getTInsertCheckApi } from '/@/api/requistManage/arrivalAcceptance';
+import { getQueryCheckableRepairReceiveHeadApi, getRepariReceiveDetailsForCheckApi, getCheckApi } from '/@/api/maintenanceManage/maintenanceCheck';
 import { getUploadFileApi } from '/@/api/global/index';
 import { useI18n } from 'vue-i18n';
 // 引入组件
@@ -112,13 +112,13 @@ const cellStyle = ref();
 // 弹窗标题
 const dilogTitle = ref();
 const header = ref<EmptyArrayType>([
-	{ key: 'matno', colWidth: '250', title: 'message.pages.matNo', type: 'text', isCheck: true },
+	{ key: 'matNo', colWidth: '250', title: 'message.pages.matNo', type: 'text', isCheck: true },
 	// { key: 'machinetype', colWidth: '', title: '机种', type: 'text', isCheck: true },
 	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	// { key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 	{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-	{ key: 'receiveqty', colWidth: '', title: '收货数量', type: 'text', isCheck: true },
-	{ key: 'receiptdate', colWidth: '', title: '收货时间', type: 'text', isCheck: true },
+	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'text', isCheck: true },
+	{ key: 'receiptDate', colWidth: '', title: '收货时间', type: 'text', isCheck: true },
 	{ key: 'checkqty', colWidth: '100', title: '验收数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
 	{ key: 'passqty', colWidth: '100', title: '合格数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
 	{ key: 'failqty', colWidth: '', title: '不合格数量', type: 'text', isCheck: true, isRequired: true },
@@ -126,7 +126,7 @@ const header = ref<EmptyArrayType>([
 ]);
 const header1 = ref([
 	{
-		key: 'matno',
+		key: 'matNo',
 		colWidth: '250',
 		title: 'message.pages.matNo',
 		type: 'text',
@@ -136,8 +136,8 @@ const header1 = ref([
 	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 	{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 	{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-	{ key: 'receiveqty', colWidth: '', title: '收货数量', type: 'text', isCheck: true },
-	{ key: 'receiptdate', colWidth: '150', title: '收货时间', type: 'text', isCheck: true },
+	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'text', isCheck: true },
+	{ key: 'receiptDate', colWidth: '150', title: '收货时间', type: 'text', isCheck: true },
 ]);
 const state = reactive<TableDemoState>({
 	tableData: {
@@ -145,13 +145,13 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'receiptno', colWidth: '', title: '收货单号', type: 'text', isCheck: true },
-			{ key: 'reqno', colWidth: '', title: '申请单号', type: 'text', isCheck: true },
+			{ key: 'repairReceiveNo', colWidth: '', title: '收货单号', type: 'text', isCheck: true },
+			{ key: 'repairNo', colWidth: '', title: '维修单号', type: 'text', isCheck: true },
 			{ key: 'creator', colWidth: '', title: '收货人', type: 'text', isCheck: true },
-			{ key: 'receipttime', colWidth: '', title: '收货时间', type: 'text', isCheck: true },
+			{ key: 'receiptTime', colWidth: '', title: '收货时间', type: 'text', isCheck: true },
 			// { key: 'runstatus', colWidth: '', title: '状态', type: 'status', isCheck: true },
-			{ key: 'companyid', colWidth: '', title: '法人', type: 'text', isCheck: true },
-			{ key: 'bucode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
+			{ key: 'companyId', colWidth: '', title: '法人', type: 'text', isCheck: true },
+			{ key: 'buCode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
 			// { key: 'costcode', colWidth: '', title: '费用代码', type: 'text', isCheck: true },
 			// { key: 'createtime', colWidth: '', title: '创建时间', type: 'text', isCheck: true },
 			// { key: 'modifier', colWidth: '', title: '修改人', type: 'text', isCheck: true },
@@ -172,8 +172,8 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '收货单号', prop: 'receiptNo', required: false, type: 'input' },
-			{ label: '申请单号', prop: 'reqNo', required: false, type: 'input' },
+			{ label: '收货单号', prop: 'repairReceiveNo', required: false, type: 'input' },
+			{ label: '维修单号', prop: 'repairNo', required: false, type: 'input' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -181,8 +181,8 @@ const state = reactive<TableDemoState>({
 		btnConfig: [{ type: 'sendReceive', name: '验收', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
 		// 给后端的数据
 		form: {
-			reqNo: '',
-			prNo: '',
+			repairReceiveNo: '',
+			repairNo: '',
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -219,9 +219,9 @@ const dialogState = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: '验收单号', prop: 'checkno', required: false, type: 'text' },
-			{ label: '收货单号', prop: 'receiptno', required: false, type: 'text' },
+			{ label: '收货单号', prop: 'repairReceiveNo', required: false, type: 'text' },
 		],
-		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: true }],
+		// btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: true }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
 			pageNum: 1,
@@ -260,11 +260,11 @@ cellStyle.value = changeToStyle([1]);
 const getTableData = async () => {
 	const form = state.tableData.form;
 	let data = {
-		reqNo: form.reqNo,
-		receiptNo: form.receiptNo,
+		repairReceiveNo: form.repairReceiveNo,
+		repairNo: form.repairNo,
 		page: state.tableData.page,
 	};
-	const res = await getIToolReceivePageListApi(data);
+	const res = await getQueryCheckableRepairReceiveHeadApi(data);
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
 	if (res.status) {
@@ -299,27 +299,25 @@ const onDelRow = (row: EmptyObjectType, i: number) => {
 };
 // 点击验收按钮
 const openArriveJobDialog = (scope: EmptyObjectType) => {
-	let data = { receiptNo: scope.row.receiptno };
 	dialogState.tableData.form = scope.row;
-	getDetailData(data);
+	getDetailData(scope.row.repairReceiveNo);
 	dilogTitle.value = '验收';
 	changeStatus(header.value, 300, true);
 };
 // 点击收货单号
 const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
-	if (column.property === 'receiptno') {
-		dilogTitle.value = '收货单号:' + row.receiptno;
+	if (column.property === 'repairReceiveNo') {
+		dilogTitle.value = '收货单号:' + row.repairReceiveNo;
 		changeStatus(header1.value, 500, false);
-		let data = { receiptNo: row.receiptno };
-		getDetailData(data);
+		getDetailData(row.repairReceiveNo);
 	}
 };
 // 详情接口
-const getDetailData = async (data: Object) => {
+const getDetailData = async (data: string) => {
 	maintenanceCheckDialogVisible.value = true;
-	const res = await getReceiveApi(data);
-	dialogState.tableData.form = res.data;
-	dialogState.tableData.data = res.data.receiveDetails;
+	const res = await getRepariReceiveDetailsForCheckApi(data);
+	dialogState.tableData.form = res.data.head;
+	dialogState.tableData.data = res.data.details;
 	if (res.status) {
 		dialogState.tableData.config.loading = false;
 	}
@@ -330,7 +328,7 @@ const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) =
 	let config = tableData.config;
 	tableData.header = header;
 	config.height = height;
-	config.isOperate = isShow;
+	// config.isOperate = isShow;
 	config.isInlineEditing = isShow;
 };
 // 提交
@@ -346,7 +344,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 			return { receivedetailid: item.runid, checkqty: item.checkqty, failqty: item.failqty, passqty: item.passqty, checkDate: item.checkDate };
 		});
 		allData['checkdetial'] = data;
-		const res = await getTInsertCheckApi(allData);
+		const res = await getCheckApi(allData);
 		if (res.status) {
 			ElMessage.success(t('收货成功'));
 			maintenanceCheckDialogVisible.value = false;
