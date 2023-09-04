@@ -120,8 +120,8 @@ const header = ref<EmptyArrayType>([
 	{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 	{ key: 'receiveqty', colWidth: '', title: '收货数量', type: 'text', isCheck: true },
 	{ key: 'receiptdate', colWidth: '', title: '收货时间', type: 'text', isCheck: true },
-	{ key: 'checkqty', colWidth: '100', title: '验收数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
-	{ key: 'passqty', colWidth: '100', title: '合格数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
+	{ key: 'checkqty', colWidth: '100', title: '验收数量', type: 'number', isCheck: true, isRequired: true },
+	{ key: 'passqty', colWidth: '100', title: '合格数量', type: 'number', isCheck: true, isRequired: true },
 	{ key: 'failqty', colWidth: '', title: '不合格数量', type: 'text', isCheck: true, isRequired: true },
 	{ key: 'checkDate', colWidth: '150', title: '验收时间', type: 'time', isCheck: true, isRequired: true },
 ]);
@@ -234,13 +234,12 @@ const dialogState = reactive<TableDemoState>({
 
 const changeInput = (val: number, i: number) => {
 	const data = dialogState.tableData.data[i];
-	header.value[6].max = data.checkqty;
+	data.passqtymin = 0;
 	data.failqty = data.checkqty - data.passqty || 0;
-	if (data.checkqty && data.passqty) {
-		if (data.checkqty < data.passqty) {
-			data.passqty = data.checkqty;
-			data.failqty = data.checkqty - data.passqty;
-		}
+	data.passqtymax = data.checkqty;
+	if (data.checkqty && data.passqty && data.checkqty < data.passqty) {
+		data.passqty = data.checkqty;
+		data.failqty = data.checkqty - data.passqty;
 	} else if (!data.checkqty) {
 		data.passqty = 0;
 		data.failqty = 0;

@@ -14,7 +14,7 @@ export default {
 		requisition: 'requisition',
 		presentation: 'tool requist presentation',
 		arrivejob: 'arrival operation',
-		entryjob: 'entry operation',
+		entryjob: 'please purchase for storage',
 		toolsReturn: 'return the tools',
 		report: 'report',
 		matNo: 'material number',

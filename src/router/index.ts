@@ -11,6 +11,7 @@ import { Session,Local } from '/@/utils/storage';
 import { staticRoutes, notFoundAndNoPower } from '/@/router/route';
 import { initFrontEndControlRoutes } from '/@/router/frontEnd';
 import { initBackEndControlRoutes } from '/@/router/backEnd';
+import { log } from 'console';
 
 /**
  * 1、前端控制路由时：isRequestRoutes 为 false，需要写 roles，需要走 setFilterRoute 方法。
@@ -100,16 +101,21 @@ router.beforeEach(async (to, from, next) => {
 		next();
 		//start进度条开始， done进度条加载结束
 		NProgress.done();
-	} else {
+	} else if(!token&&to.path.includes('/link')||token&&to.path.includes('/link')){
+		next();	
+		NProgress.done();
+	}
+	else {	
 		if (!token) {
 			next(`/login?redirect=${to.path}&params=${JSON.stringify(to.query ? to.query : to.params)}`);
 			Session.clear();
 			Local.clear()
 			NProgress.done();
-		} else if (token && to.path === '/login') {
+		} else if (token &&( to.path === '/login'||to.path === '/')) {
 			next('/home');	
 			NProgress.done();
-		} else {
+		} 
+		else {
 			const storesRoutesList = useRoutesList(pinia);
 			const { routesList } = storeToRefs(storesRoutesList);		
 			if (routesList.value.length === 0) {

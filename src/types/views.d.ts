@@ -107,3 +107,15 @@ declare type searchState = {
 
 // 維修單收貨彈窗header
 declare type deliveryDialogHeader = TableHeaderType[];
+// 外链noSearchLink类型
+declare type LinkSearchType = {
+	label: string;
+	prop: string;
+	type: string;
+	[key: string]: T;
+};
+declare type LinkState = {
+		search: LinkSearchType[];
+		searchConfig:boolean;
+		form: EmptyObjectType;
+};

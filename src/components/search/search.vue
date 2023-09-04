@@ -35,6 +35,9 @@
 							<el-select v-model="state.form[val.prop]" :placeholder="`请选择${val.label}`" v-else-if="val.type === 'select'" style="width: 100%">
 								<el-option v-for="item in val.options" :key="item.label" :label="item.text" :value="item.value"> </el-option>
 							</el-select>
+							<span v-else style="width: 100%; font-weight: 700; color: #1890ff">
+								{{ state.form[val.prop] }}
+							</span>
 						</el-form-item>
 					</template>
 				</el-col>

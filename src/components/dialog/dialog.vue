@@ -7,7 +7,7 @@
 						:xs="item.xs || 24"
 						:sm="item.sm || 12"
 						:md="item.md || 12"
-						:lg="item.md || 12"
+						:lg="item.lg || 12"
 						:xl="item.xl || 12"
 						class="mb20"
 						v-for="item in dialogConfig"
@@ -65,7 +65,7 @@
 								>
 								<template #append v-if="state.formData[item.prop]"
 									><el-button @click="inputsubmitUpload(item.prop)" type="primary" class="ml1">上传文件</el-button>
-									<el-button v-if="state.formData['3ddrawPath'].includes('/')" class="look-file" @click="lookUpload(item.prop)">查看文件</el-button>
+									<el-button v-if="state.formData['draw3dPath'].includes('/')" class="look-file" @click="lookUpload(item.prop)">查看文件</el-button>
 								</template>
 							</el-input>
 

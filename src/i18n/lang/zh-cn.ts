@@ -14,7 +14,7 @@ export default {
 		requisition: '请购管理',
 		presentation: '治工具需求提报',
 		arrivejob: '到货作业',
-		entryjob: '入库作业',
+		entryjob: '请购入库',
 		toolsReturn: '治工具退库',
 		report: '报表管理',
 		matNo: '料号',
