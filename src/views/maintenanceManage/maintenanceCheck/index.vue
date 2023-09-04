@@ -346,7 +346,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 		allData['details'] = data;
 		const res = await getCheckApi(allData);
 		if (res.status) {
-			ElMessage.success(t('收货成功'));
+			ElMessage.success(t('验收成功'));
 			maintenanceCheckDialogVisible.value = false;
 			getTableData();
 		}

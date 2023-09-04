@@ -10,7 +10,7 @@
 				@onOpenOtherDialog="openReceiveDialog"
 				:cellStyle="cellStyle"
 			/>
-			<Dialog ref="sendReceiveDialogRef" v-bind="dialogData" />
+			<Dialog ref="sendReceiveDialogRef" v-bind="dialogData" @sampleSuccess="getTableData" />
 		</div>
 	</div>
 </template>

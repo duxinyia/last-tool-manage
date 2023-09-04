@@ -9,7 +9,7 @@
 				:md="val.md || 10"
 				:lg="val.lg || 8"
 				:xl="val.xl || 6"
-				class="mb20"
+				class="mb10"
 				v-for="(val, key) in state.search"
 				:key="key"
 			>

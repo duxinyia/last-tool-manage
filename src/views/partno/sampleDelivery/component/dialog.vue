@@ -122,7 +122,7 @@ import { i18n } from '/@/i18n/index';
 import { ElMessage } from 'element-plus';
 import { getTakeSampleApi } from '/@/api/partno/sampleDelivery';
 import { SampleRecieveApi } from '/@/api/partno/sendReceive';
-const emit = defineEmits([]);
+const emit = defineEmits(['sampleSuccess']);
 // 定义父组件传过来的值
 const props = defineProps({
 	otherHeaderData: {
@@ -274,6 +274,7 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 			if (res.status) {
 				closeDialog();
 				ElMessage.success('送样成功');
+				emit('sampleSuccess');
 			}
 		} else if (props.operation == '收货') {
 			let receiveData: EmptyObjectType = {};
@@ -294,6 +295,7 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 			if (res.status) {
 				closeDialog();
 				ElMessage.success('收货成功');
+				emit('sampleSuccess');
 			}
 		}
 	});

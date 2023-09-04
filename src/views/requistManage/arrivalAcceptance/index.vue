@@ -351,6 +351,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 		if (res.status) {
 			ElMessage.success(t('收货成功'));
 			arriveJobDialogVisible.value = false;
+			getTableData();
 		}
 	});
 };

@@ -11,7 +11,7 @@
 				@cellclick="matnoClick"
 				:cellStyle="cellStyle"
 			/>
-			<Dialog ref="sampleDialogRef" v-bind="dialogData" dialogWidth="50%" />
+			<Dialog ref="sampleDialogRef" v-bind="dialogData" dialogWidth="50%" @sampleSuccess="getTableData" />
 		</div>
 	</div>
 </template>
