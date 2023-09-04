@@ -34,8 +34,8 @@
 import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
 import { ElMessage, ElMessageBox, FormInstance } from 'element-plus';
 // 引入接口
-import { GetQueryStorableRepairCheckDetailsApi } from '/@/api/toolsReturn/maintainEntry';
-import { GetTStockInputPageListApi, GetUserManagedStoreHouseApi, GetTStockAddApi } from '/@/api/requistManage/entryJob';
+import { GetQueryStorableRepairCheckDetailsApi, GetPutStorageApi } from '/@/api/toolsReturn/maintainEntry';
+import { GetUserManagedStoreHouseApi } from '/@/api/requistManage/entryJob';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -116,7 +116,7 @@ const state = reactive<TableDemoState>({
 		printName: '表格打印演示',
 		//入库弹窗
 		dialogConfig: [
-			{ label: '入库单号:', prop: 'putno', placeholder: '请输入入库单号', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
+			// { label: '入库单号:', prop: 'putno', placeholder: '请输入入库单号', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
 			{
 				label: '验收单号:',
 				prop: 'repairCheckNo',
@@ -171,9 +171,9 @@ const state = reactive<TableDemoState>({
 				message: '请输入正整数',
 				xs: 24,
 				sm: 12,
-				md: 8,
-				lg: 8,
-				xl: 8,
+				md: 9,
+				lg: 9,
+				xl: 9,
 			},
 			{
 				label: '扫码录入',
@@ -325,7 +325,7 @@ const handleTagClose = (tag: any, state: EmptyObjectType) => {
 const openEntryDialog = async (scope: any) => {
 	let res = await GetUserManagedStoreHouseApi();
 	if (state.tableData.dialogConfig) {
-		state.tableData.dialogConfig[12].options = res.data.map((item: any) => {
+		state.tableData.dialogConfig[11].options = res.data.map((item: any) => {
 			return { label: item.storeId, text: item.storeName, value: item.storeId };
 		});
 	}
@@ -338,14 +338,16 @@ const scanCodeEntry = () => {
 const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyObjectType) => {
 	let obj: EmptyObjectType = { ...ruleForm };
 	state.tableData.dialogConfig &&
-		state.tableData.dialogConfig[12].options?.forEach((item) => {
+		state.tableData.dialogConfig[11].options?.forEach((item) => {
 			if (item.value == obj.storageId) {
 				obj.storageName = item.text;
 			}
 		});
+
 	obj.codeList = formInnerData.codeList;
 
 	let submitData = {
+		repairCheckDetailId: obj.repairCheckDetailId,
 		runId: obj.runid,
 		checkno: obj.checkno,
 		creator: obj.creator,
@@ -355,18 +357,17 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 		vendorcode: obj.vendorcode,
 		vendorname: obj.vendorname,
 		checkqty: obj.checkqty,
-		stockqty: obj.stockqty,
+		putQty: obj.stockqty,
 		stockcode: obj.stockcode,
 		storageId: obj.storageId,
 		storageName: obj.storageName,
-		codeList: obj.codeList,
+		Codes: obj.codeList,
 	};
-	console.log('填写的信息', submitData);
-	if (submitData.stockqty > submitData.checkqty) {
+	if (submitData.putQty > submitData.checkqty) {
 		ElMessage.error(`入库数量大于验收数量`);
-	} else if (submitData.codeList && submitData.stockqty < submitData.codeList.length) {
+	} else if (submitData.Codes && submitData.putQty < submitData.Codes.length) {
 		ElMessage.error(`入库数量小于扫码数量`);
-	} else if (submitData.stockqty != submitData.checkqty) {
+	} else if (submitData.putQty != submitData.checkqty) {
 		ElMessageBox.confirm('入库数量与验收数量不一致，是否继续提交', '提示', {
 			confirmButtonText: '确认',
 			cancelButtonText: '取消',
@@ -374,7 +375,7 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 			buttonSize: 'default',
 		})
 			.then(async () => {
-				const res = await GetTStockAddApi(submitData);
+				const res = await GetPutStorageApi(submitData);
 				if (res.status) {
 					ElMessage.success(`入库成功`);
 					entryJobDialogRef.value.closeDialog();
@@ -388,7 +389,7 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 				// });
 			});
 	} else {
-		const res = await GetTStockAddApi(submitData);
+		const res = await GetPutStorageApi(submitData);
 		if (res.status) {
 			ElMessage.success(`入库成功`);
 			entryJobDialogRef.value.closeDialog();

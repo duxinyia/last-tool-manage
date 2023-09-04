@@ -11,6 +11,8 @@
 				@sortHeader="onSortHeader"
 				@importTable="onExportTableData"
 				@openAdd="openDialog"
+				:cellStyle="cellStyle"
+				@cellclick="matNoClick"
 			/>
 			<Dialog
 				ref="noSearchDialogRef"
@@ -21,6 +23,9 @@
 				@selectChange="selectChange"
 				@editDialog="editDialog"
 			/>
+			<el-dialog v-model="matNoDetaildialogVisible" title="料号详情" width="50%">
+				<matNoDetailDialog :isDialog="true" :matNoRef="matNoRef"
+			/></el-dialog>
 		</div>
 	</div>
 </template>
@@ -41,10 +46,15 @@ import { useI18n } from 'vue-i18n';
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
 const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
+const matNoDetailDialog = defineAsyncComponent(() => import('/@/views/link/noSearchLink/index.vue'));
 // 定义变量内容
 const { t } = useI18n();
 const tableRef = ref<RefType>();
 const noSearchDialogRef = ref();
+const matNoRef = ref();
+const matNoDetaildialogVisible = ref(false);
+// 单元格样式
+const cellStyle = ref();
 const state = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
@@ -148,7 +158,27 @@ const state = reactive<TableDemoState>({
 		],
 	},
 });
-
+// 单元格字体颜色
+const changeToStyle = (indList: number[]) => {
+	return ({ columnIndex }: any) => {
+		for (let j = 0; j < indList.length; j++) {
+			let ind = indList[j];
+			if (columnIndex === ind) {
+				return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+			}
+		}
+	};
+};
+cellStyle.value = changeToStyle([2]);
+// 点击料号弹出详情
+const matNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
+	if (column.property === 'matNo') {
+		matNoRef.value = row.matNo;
+		setTimeout(() => {
+			matNoDetaildialogVisible.value = true;
+		}, 100);
+	}
+};
 // 初始化列表数据
 const getTableData = async () => {
 	state.tableData.config.loading = true;
