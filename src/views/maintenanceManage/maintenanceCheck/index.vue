@@ -38,7 +38,7 @@
 				<template v-if="dilogTitle == '验收'">
 					<div class="describe up-file">
 						<span>收货报告url：</span>
-						<el-input disabled v-model="dialogState.tableData.form['accepreporturl']" clearable>
+						<el-input disabled v-model="dialogState.tableData.form['accepReportUrl']" clearable>
 							<template #prepend
 								><el-upload
 									v-model:file-list="inputfileList"
@@ -55,9 +55,9 @@
 									<el-button type="primary" class="btn ml1">浏览文件</el-button>
 								</el-upload></template
 							>
-							<template #append v-if="dialogState.tableData.form['accepreporturl']"
+							<template #append v-if="dialogState.tableData.form['accepReportUrl']"
 								><el-button @click="inputsubmitUpload" type="primary" class="ml1">上传文件</el-button>
-								<el-button v-if="dialogState.tableData.form['accepreporturl'].includes('/')" class="look-file" @click="lookUpload"
+								<el-button v-if="dialogState.tableData.form['accepReportUrl'].includes('/')" class="look-file" @click="lookUpload"
 									>查看文件</el-button
 								>
 							</template>
@@ -119,8 +119,8 @@ const header = ref<EmptyArrayType>([
 	{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'text', isCheck: true },
 	{ key: 'receiptDate', colWidth: '', title: '收货时间', type: 'text', isCheck: true },
-	{ key: 'checkqty', colWidth: '100', title: '验收数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
-	{ key: 'passqty', colWidth: '100', title: '合格数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
+	{ key: 'checkQty', colWidth: '100', title: '验收数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
+	{ key: 'passQty', colWidth: '100', title: '合格数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
 	{ key: 'failqty', colWidth: '', title: '不合格数量', type: 'text', isCheck: true, isRequired: true },
 	{ key: 'checkDate', colWidth: '150', title: '验收时间', type: 'time', isCheck: true, isRequired: true },
 ]);
@@ -232,15 +232,14 @@ const dialogState = reactive<TableDemoState>({
 
 const changeInput = (val: number, i: number) => {
 	const data = dialogState.tableData.data[i];
-	header.value[6].max = data.checkqty;
-	data.failqty = data.checkqty - data.passqty || 0;
-	if (data.checkqty && data.passqty) {
-		if (data.checkqty < data.passqty) {
-			data.passqty = data.checkqty;
-			data.failqty = data.checkqty - data.passqty;
-		}
-	} else if (!data.checkqty) {
-		data.passqty = 0;
+	data.passQtymin = 0;
+	data.passQtymax = data.checkQty;
+	data.failqty = data.checkQty - data.passQty || 0;
+	if (data.checkQty && data.passQty && data.checkQty < data.passQty) {
+		data.passQty = data.checkQty;
+		data.failqty = data.checkQty - data.passQty;
+	} else if (!data.checkQty) {
+		data.passQty = 0;
 		data.failqty = 0;
 	}
 };
@@ -273,7 +272,7 @@ const getTableData = async () => {
 };
 // input框里面的数据
 const inputHandleChange: UploadProps['onChange'] = (uploadFile) => {
-	dialogState.tableData.form['accepreporturl'] = uploadFile.name;
+	dialogState.tableData.form['accepReportUrl'] = uploadFile.name;
 	inputuploadForm.value = uploadFile;
 };
 //可以在选中时自动替换上一个文件
@@ -286,12 +285,12 @@ const inputHandleExceed: UploadProps['onExceed'] = (files) => {
 // 上传文件
 const inputsubmitUpload = async () => {
 	const res = await getUploadFileApi(0, inputuploadForm.value.raw);
-	dialogState.tableData.form['accepreporturl'] = res.data;
+	dialogState.tableData.form['accepReportUrl'] = res.data;
 	res.status && ElMessage.success(`上传成功`);
 };
 // 查看上传的文件
 const lookUpload = () => {
-	window.open(`${import.meta.env.VITE_API_URL}${dialogState.tableData.form['accepreporturl']}`, '_blank');
+	window.open(`${import.meta.env.VITE_API_URL}${dialogState.tableData.form['accepReportUrl']}`, '_blank');
 };
 //删除
 const onDelRow = (row: EmptyObjectType, i: number) => {
@@ -314,6 +313,7 @@ const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 };
 // 详情接口
 const getDetailData = async (data: string) => {
+	dialogState.tableData.config.loading = true;
 	maintenanceCheckDialogVisible.value = true;
 	const res = await getRepariReceiveDetailsForCheckApi(data);
 	dialogState.tableData.form = res.data.head;
@@ -338,16 +338,17 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
 		let allData: EmptyObjectType = {};
 		const form = dialogState.tableData.form;
-		allData = { receiptno: form.receiptno, accepreporturl: form.accepreporturl || '', describe: form.describe || '' };
+		allData = { repairReceiveNo: form.repairReceiveNo, accepReportUrl: form.accepReportUrl || '', headDescribe: form.describe || '' };
 		let data = dialogState.tableData.data;
 		data = data.map((item) => {
-			return { receivedetailid: item.runid, checkqty: item.checkqty, failqty: item.failqty, passqty: item.passqty, checkDate: item.checkDate };
+			return { repairReceiveDetailId: item.repairReceiveDetailId, checkQty: item.checkQty, passQty: item.passQty, checkDate: item.checkDate };
 		});
-		allData['checkdetial'] = data;
+		allData['details'] = data;
 		const res = await getCheckApi(allData);
 		if (res.status) {
 			ElMessage.success(t('收货成功'));
 			maintenanceCheckDialogVisible.value = false;
+			getTableData();
 		}
 	});
 };

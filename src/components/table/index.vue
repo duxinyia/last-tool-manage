@@ -137,11 +137,11 @@
 							style="text-align: center; width: 100%; display: flex; justify-content: center"
 							v-else-if="item.type === 'number'"
 							v-model="data[scope.$index][item.key]"
-							:min="item.min"
-							:max="item.max"
+							:min="data[scope.$index][`${item.key}min`] || 0"
+							:max="data[scope.$index][`${item.key}max`]"
 							size="small"
 							@change="(value:number)=>handleNumberInputChange(value,scope.$index)"
-							@blur="handleNumberInputBlur"
+							@blur="(value:number)=>handleNumberInputBlur(value, scope.$index)"
 						/>
 						<!-- 自动补全输入框 -->
 						<el-autocomplete
@@ -368,7 +368,7 @@ const handleNumberInputChange = (value: number, index: number) => {
 	emit('handleNumberInputChange', value, index);
 };
 const handleNumberInputBlur = (value: number, index: number) => {
-	emit('handleNumberInputBlur', value);
+	emit('handleNumberInputBlur', value, index);
 };
 const changeData = (index: number) => {
 	emit('handlechange', index);

@@ -388,6 +388,7 @@ export const notFoundAndNoPower = [
 			isHide: true,
 		},
 	},
+
 	{
 		path: '/home',
 		name: 'home',
@@ -415,6 +416,23 @@ export const staticRoutes: Array<RouteRecordRaw> = [
 			title: '登录',
 		},
 	},
+	// 链接
+	{
+		path: '/link/noSearchLink',
+		name: 'noSearchLink',
+		component: () => import('/@/views/link/noSearchLink/index.vue'),
+		meta: {
+			title: '料号详情',
+		},
+	},
+	// {
+	// 	path: '/link/404',
+	// 	name: '404',
+	// 	component: () => import('/@/views/error/404.vue'),
+	// 	meta: {
+	// 		title: 'message.staticRoutes.noPower',
+	// 	},
+	// },
 	/**
 	 * 提示：写在这里的为全屏界面，不建议写在这里
 	 * 请写在 `dynamicRoutes` 路由数组中

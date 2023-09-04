@@ -123,7 +123,7 @@ const state = reactive<TableDemoState>({
 			},
 			{
 				label: '3D圖紙',
-				prop: '3ddrawPath',
+				prop: 'draw3dPath',
 				placeholder: 'message.pages.placeDrawPath',
 				required: true,
 				type: 'input3dFile',

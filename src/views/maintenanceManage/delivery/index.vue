@@ -193,7 +193,11 @@ const dialogState = reactive<TableDemoState>({
 // 控制收货数量<=可收货数量
 const changeInput = (val: number, i: number) => {
 	const data = dialogState.tableData.data[i];
-	header.value[8].max = data.pendingReceiptQty;
+	data.receiptQtymin = 0;
+	data.receiptQtymax = data.pendingReceiptQty;
+	if (data.receiptQty > data.pendingReceiptQty) {
+		data.receiptQty = data.pendingReceiptQty;
+	}
 };
 // 单元格字体颜色
 const changeToStyle = (indList: number[]) => {

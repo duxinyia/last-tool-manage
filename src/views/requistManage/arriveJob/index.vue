@@ -91,7 +91,7 @@ const header = ref([
 	{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
 	{ key: 'receiveQty', colWidth: '', title: '已收货数量', type: 'text', isCheck: true },
 	{ key: 'reqDate', colWidth: '', title: '需求时间', type: 'text', isCheck: true },
-	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'number', isCheck: true, isRequired: true, min: 0, max: 99 },
+	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'number', isCheck: true, isRequired: true },
 	{ key: 'receiptDate', colWidth: '150', title: '收货时间', type: 'time', isCheck: true, isRequired: true },
 ]);
 const header1 = ref([
@@ -194,9 +194,13 @@ const dialogState = reactive<TableDemoState>({
 		},
 	},
 });
-const changeInput = (val: number, i: number) => {
+const changeInput = (val: Number, i: number) => {
 	const data = dialogState.tableData.data[i];
-	header.value[8].max = data.reqQty - data.receiveQty;
+	data.receiptQtymin = 0;
+	data.receiptQtymax = data.reqQty - data.receiveQty;
+	if (data.receiptQty > data.receiveQty) {
+		data.receiptQty = data.reqQty - data.receiveQty;
+	}
 };
 // 单元格字体颜色
 const changeToStyle = (indList: number[]) => {
