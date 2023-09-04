@@ -20,10 +20,7 @@
 
 <script setup lang="ts" name="scrapBillQuery">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
-import { ElMessage } from 'element-plus';
-import { getToolApplyHeadPageApi, getreqNoApi } from '/@/api/requistManage/reportingInquiry';
-import { getQueryRepairOrderApi } from '/@/api/maintenanceManage/inquiry';
-import { getQueryExitPageApi } from '/@/api/scrapManage/scrapBillQuery';
+import { getQueryExitPageApi, getUselessDetailApi } from '/@/api/scrapManage/scrapBillQuery';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -91,19 +88,23 @@ const dialogState = reactive<TableDemoState>({
 		// 表头内容（必传，注意格式）
 		header: [
 			{
-				key: 'matNo',
+				key: 'matno',
 				colWidth: '250',
 				title: 'message.pages.matNo',
 				type: 'text',
 				isCheck: true,
 			},
-			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
-			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			// { key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
+			// { key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 			{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-			{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
-			{ key: 'reqDate', colWidth: '150', title: '需求时间', type: 'text', isCheck: true },
-			{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
+			{ key: 'qty', colWidth: '', title: '报废数量', type: 'text', isCheck: true },
+			{ key: 'reason', colWidth: '', title: '报废原因', type: 'text', isCheck: true },
+			{ key: 'state', colWidth: '', title: '站位', type: 'text', isCheck: true },
+			{ key: 'stage', colWidth: '', title: '阶段', type: 'text', isCheck: true },
+			{ key: 'classes', colWidth: '', title: '班次', type: 'text', isCheck: true },
+			{ key: 'me', colWidth: '', title: 'ME负责人', type: 'text', isCheck: true },
+			{ key: 'pm', colWidth: '', title: 'PM确认人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -147,11 +148,22 @@ cellStyle.value = changeToStyle([1]);
 const getTableData = async () => {
 	state.tableData.config.loading = true;
 	const form = state.tableData.form;
-	let data = {
-		uselessno: form.uselessno,
-		uselessdate: form.uselessdate,
-		page: state.tableData.page,
-	};
+	let data: EmptyObjectType = {};
+	if (form.uselessdate) {
+		data = {
+			uselessno: form.uselessno,
+			uselessdateStart: form.uselessdate[0],
+			uselessdateEnd: form.uselessdate[1],
+			page: state.tableData.page,
+		};
+	} else {
+		data = {
+			uselessno: form.uselessno,
+			uselessdateStart: '',
+			uselessdateEnd: '',
+			page: state.tableData.page,
+		};
+	}
 	const res = await getQueryExitPageApi(data);
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
@@ -162,14 +174,13 @@ const getTableData = async () => {
 // 点击申请单号
 const reqNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'uselessno') {
-		dilogTitle.value = '报废单号:' + row.reqNo;
-		let data = { reqNo: row.reqNo };
-		// const res = await getreqNoApi(data);
-		// dialogState.tableData.data = res.data.applyDetails;
+		dilogTitle.value = '报废单号:' + row.uselessno;
+		const res = await getUselessDetailApi(row.uselessno);
+		dialogState.tableData.data = res.data.uselessdetaillist;
 		reportInquiryDialogVisible.value = true;
-		// if (res.status) {
-		// 	dialogState.tableData.config.loading = false;
-		// }
+		if (res.status) {
+			dialogState.tableData.config.loading = false;
+		}
 	}
 };
 // 搜索点击时表单回调

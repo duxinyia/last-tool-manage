@@ -51,7 +51,7 @@ const state = reactive<TableDemoState>({
 			loading: true, // loading 加载
 			isBorder: false, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
-			isSelection: true, // 是否显示表格多选
+			isSelection: false, // 是否显示表格多选
 			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
@@ -93,10 +93,10 @@ const dialogData = reactive({
 	// 点击送料表格数据
 	otherHeaderData: [
 		{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'input', isCheck: true, isRequired: true },
-		{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'input', isCheck: true, isRequired: true },
+		{ key: 'vendorName', colWidth: '200px', title: '厂商名称', type: 'input', isCheck: true, isRequired: true },
 		// { key: 'sampleQty', colWidth: '', title: '送样数量', type: 'input', isCheck: true, isRequired: true },
 		{ key: 'sampleTime', colWidth: '', title: '需求送样时间', type: 'time', isCheck: true, isRequired: true },
-		{ key: 'needsQty', colWidth: '', title: '需求送样数量', type: 'input', isCheck: true, isRequired: true },
+		{ key: 'needsQty', colWidth: '150px', title: '需求送样数量', type: 'input', isCheck: true, isRequired: true },
 	],
 	// 送样弹窗数据
 	dialogForm: [

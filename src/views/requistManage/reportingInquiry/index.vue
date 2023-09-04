@@ -101,6 +101,7 @@ const dialogState = reactive<TableDemoState>({
 			{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
 			{ key: 'reqDate', colWidth: '150', title: '需求时间', type: 'text', isCheck: true },
 			{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
+			{ key: 'describe', colWidth: '150', title: '描述说明', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {

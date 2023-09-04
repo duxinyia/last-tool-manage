@@ -34,7 +34,7 @@
 				<el-table
 					ref="tableRef"
 					class="tableData"
-					height="500px"
+					height="300px"
 					id="elTable"
 					:data="state.dialog.num === 1 ? state.vendors : marNoData"
 					:border="true"

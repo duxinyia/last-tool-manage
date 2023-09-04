@@ -12,7 +12,7 @@
 				:cellStyle="cellStyle"
 				@onOpenOtherDialog="openArriveJobDialog"
 			/>
-			<el-dialog ref="arriveJobDialogRef" v-model="arriveJobDialogVisible" :title="dilogTitle" width="85%">
+			<el-dialog ref="arriveJobDialogRef" v-model="arriveJobDialogVisible" :title="dilogTitle" width="80%">
 				<el-row v-if="dilogTitle == '验收'">
 					<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb10" v-for="(val, key) in dialogState.tableData.search" :key="key">
 						<div v-if="val.type === 'text'">
@@ -139,6 +139,7 @@ const header1 = ref([
 	{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 	{ key: 'receiveqty', colWidth: '', title: '收货数量', type: 'text', isCheck: true },
 	{ key: 'receiptdate', colWidth: '150', title: '收货时间', type: 'text', isCheck: true },
+	{ key: 'describe', colWidth: '', title: '描述说明', type: 'text', isCheck: true },
 ]);
 const state = reactive<TableDemoState>({
 	tableData: {

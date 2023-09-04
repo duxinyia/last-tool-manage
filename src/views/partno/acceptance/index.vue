@@ -119,7 +119,7 @@ const state = reactive<TableDemoState>({
 			loading: false, // loading 加载
 			isBorder: false, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
-			isSelection: true, // 是否显示表格多选
+			isSelection: false, // 是否显示表格多选
 			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑

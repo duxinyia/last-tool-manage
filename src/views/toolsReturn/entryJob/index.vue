@@ -350,7 +350,6 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 		storageName: obj.storageName,
 		codeList: obj.codeList,
 	};
-	console.log('填写的信息', submitData);
 	if (submitData.stockqty > submitData.checkqty) {
 		ElMessage.error(`入库数量大于验收数量`);
 	} else if (submitData.codeList && submitData.stockqty < submitData.codeList.length) {

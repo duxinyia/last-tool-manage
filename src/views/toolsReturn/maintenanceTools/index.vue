@@ -188,7 +188,7 @@ const dialogState = reactive<TableDemoState>({
 				sm: 16,
 				md: 12,
 				lg: 16,
-				xl: 16,
+				xl: 9,
 			},
 			{
 				label: '退库数量',
