@@ -160,7 +160,7 @@
 										@input=" (val:any) => commonInputHandleChange(val,item.prop)"
 									></el-input>
 									<div v-else-if="item.type == 'tagsarea'">
-										<el-tag v-for="tag in state.formInnerData[item.prop]" :key="tag" closable type="info" @close="handleTagClose(tag)" class="mr10">
+										<el-tag v-for="tag in state.formInnerData[item.prop]" :key="tag" closable @close="handleTagClose(tag)" class="mr10">
 											{{ tag }}
 										</el-tag>
 									</div>
@@ -306,12 +306,12 @@ const allRules = (item: EmptyObjectType) => {
 			{
 				required: item.required,
 				message: `${t(item.label)}不能为空`,
-				trigger: item.type === 'input' || item.type === 'inputFile' || item.type === 'textarea' ? 'blur' : 'change',
+				trigger: item.type === 'select' || item.type === 'input' || item.type === 'inputFile' || item.type === 'textarea' ? 'blur' : 'change',
 				// type:'number',
 			},
 		],
 		other: [
-			{ validator: (rule: any, value: any, callback: any) => validatePass(rule, value, callback, item), trigger: 'blur', required: item.required },
+			{ validator: (rule: any, value: any, callback: any) => validatePass(rule, value, callback, item), trigger: 'change', required: item.required },
 		],
 	};
 	return item.validateForm ? rules['other'] : rules['default'];

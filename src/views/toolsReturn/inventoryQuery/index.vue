@@ -28,19 +28,23 @@
 				@handleTagClose="handleTagClose"
 				@selectChange="selectChange"
 			/>
+			<el-dialog v-model="inventoryDialogRef" title="库存条码" width="30%">
+				<el-tag v-for="tag in tags" :key="tag.code" class="mr10" :type="tag.runStatus === 1 ? '' : 'danger'">
+					{{ tag.code }}
+				</el-tag>
+			</el-dialog>
 		</div>
 	</div>
 </template>
 
-<script setup lang="ts" name="/toolsReturn/maintenanceTools">
+<script setup lang="ts" name="/toolsReturn/inventoryQuery">
 import { defineAsyncComponent, reactive, ref, onMounted, computed, nextTick } from 'vue';
 import type { FormInstance } from 'element-plus';
 
 import { ElMessage, ElMessageBox } from 'element-plus';
 // 引入接口
-import { getQueryNoPageApi } from '/@/api/requistManage/presentation';
+import { GetStockQrListApi } from '/@/api/toolsReturn/inventoryQuery';
 import { getStockListApi, ExitStoreApi, getExitReasonApi } from '/@/api/toolsReturn/maintentanceTools';
-import { getMaterialListApi, getGetSampleApi } from '/@/api/partno/sampleDelivery';
 
 import { useI18n } from 'vue-i18n';
 // 引入组件
@@ -53,11 +57,11 @@ const { t } = useI18n();
 const tableFormRef = ref();
 const tableRef = ref<RefType>();
 const repairReturnDialogRef = ref();
+const inventoryDialogRef = ref();
 // tags的数据
-const tags = ref<EmptyArrayType<string>>([]);
+let tags = ref<EmptyArrayType>([]);
 // 单元格样式
 const cellStyle = ref();
-
 // 弹窗标题
 const dilogTitle = ref();
 const header = ref([]);
@@ -92,7 +96,7 @@ const state = reactive<TableDemoState>({
 			isBorder: false, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
 			isSelection: false, // 是否显示表格多选
-			isOperate: true, // 是否显示表格操作栏
+			isOperate: false, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
@@ -106,7 +110,7 @@ const state = reactive<TableDemoState>({
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [{ type: 'sendReceive', name: '退库', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
+		btnConfig: [],
 		// 给后端的数据
 		form: {
 			matNo: '',
@@ -260,16 +264,16 @@ const dialogState = reactive<TableDemoState>({
 });
 // 单元格字体颜色
 const changeToStyle = (indList: number[]) => {
-	// return ({ columnIndex }: any) => {
-	// 	for (let j = 0; j < indList.length; j++) {
-	// 		let ind = indList[j];
-	// 		if (columnIndex === ind) {
-	// 			return { color: 'var(--el-color-primary)', cursor: 'pointer' };
-	// 		}
-	// 	}
-	// };
+	return ({ columnIndex }: any) => {
+		for (let j = 0; j < indList.length; j++) {
+			let ind = indList[j];
+			if (columnIndex === ind) {
+				return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+			}
+		}
+	};
 };
-cellStyle.value = changeToStyle([1]);
+cellStyle.value = changeToStyle([1, 8]);
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;
@@ -383,12 +387,22 @@ const innnerDialogCancel = (formData: EmptyObjectType, formInnerData: EmptyObjec
 	formData['exitQty'] = 0;
 };
 // 点击料号,暂时不做
-const matnoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
-	// if (column.property === 'matno') {
-	// 	dilogTitle.value = '料号:' + row.matNo;
-	// 	changeStatus(header1.value, 500, false);
-	// 	getDetailData(row.matNo);
-	// }
+const matnoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
+	if (column.property === 'matno') {
+		console.log('点击料号');
+
+		// dilogTitle.value = '料号:' + row.matNo;
+		// changeStatus(header1.value, 500, false);
+		// getDetailData(row.matNo);
+	} else if (column.property === 'qrstockqty') {
+		let res = await GetStockQrListApi(row.runid);
+		if (res.data.length == 0) {
+			ElMessage.error('暂无条码数据');
+		} else {
+			tags = res.data;
+			inventoryDialogRef.value = true;
+		}
+	}
 };
 
 // 提交 确认退库
@@ -467,5 +481,8 @@ onMounted(() => {
 	.el-select {
 		width: 90%;
 	}
+}
+:deep(.el-dialog__body) {
+	min-height: 150px;
 }
 </style>
