@@ -12,23 +12,10 @@
 				:cellStyle="cellStyle"
 				@onOpenOtherDialog="openReturnDialog"
 			/>
-			<Dialog
-				ref="repairReturnDialogRef"
-				:dialogConfig="dialogState.tableData.dialogConfig"
-				:innerDialogConfig="dialogState.tableData.innerDialogConfig"
-				dialogWidth="50%"
-				dialogType="nestDialogConfig"
-				@addData="returnSubmit"
-				@dailogFormButton="scanCodeEntry"
-				@commonInputHandleChange="change"
-				:tagsData="tags"
-				@innnerDialogCancel="innnerDialogCancel"
-				@innnerDialogSubmit="innnerDialogSubmit"
-				@openInnerDialog="openInnerDialog"
-				@handleTagClose="handleTagClose"
-				@selectChange="selectChange"
-			/>
-			<el-dialog v-model="inventoryDialogRef" title="库存条码" width="30%">
+			<el-dialog v-model="matNoDetaildialogVisible" title="料号详情" width="50%">
+				<matNoDetailDialog :isDialog="true" :matNoRef="matNoRef"
+			/></el-dialog>
+			<el-dialog v-model="inventoryDialogRef" title="库存条码" width="30%" draggable>
 				<el-tag v-for="tag in tags" :key="tag.code" class="mr10" :type="tag.runStatus === 1 ? '' : 'danger'">
 					{{ tag.code }}
 				</el-tag>
@@ -50,7 +37,7 @@ import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
-const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
+const matNoDetailDialog = defineAsyncComponent(() => import('/@/views/link/noSearchLink/index.vue'));
 
 // 定义变量内容
 const { t } = useI18n();
@@ -58,6 +45,8 @@ const tableFormRef = ref();
 const tableRef = ref<RefType>();
 const repairReturnDialogRef = ref();
 const inventoryDialogRef = ref();
+const matNoDetaildialogVisible = ref(false);
+const matNoRef = ref();
 // tags的数据
 let tags = ref<EmptyArrayType>([]);
 // 单元格样式
@@ -78,7 +67,7 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'matno', colWidth: '', title: '料号', type: 'text', isCheck: true },
+			{ key: 'matno', colWidth: '250', title: '料号', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
 			{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
@@ -389,11 +378,10 @@ const innnerDialogCancel = (formData: EmptyObjectType, formInnerData: EmptyObjec
 // 点击料号,暂时不做
 const matnoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'matno') {
-		console.log('点击料号');
-
-		// dilogTitle.value = '料号:' + row.matNo;
-		// changeStatus(header1.value, 500, false);
-		// getDetailData(row.matNo);
+		matNoRef.value = row.matno;
+		setTimeout(() => {
+			matNoDetaildialogVisible.value = true;
+		}, 100);
 	} else if (column.property === 'qrstockqty') {
 		let res = await GetStockQrListApi(row.runid);
 		if (res.data.length == 0) {

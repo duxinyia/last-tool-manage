@@ -67,6 +67,11 @@
 				</template>
 			</el-dialog>
 			<Dialog ref="matnoDetailDialogRef" :isFootBtn="false" :dialogConfig="dialogMatnoDetail" />
+			<el-dialog v-model="inventoryDialogRef" title="库存条码" width="30%" draggable>
+				<el-tag v-for="tag in tags" :key="tag.code" class="mr10" :type="tag.runstatus === 1 ? '' : 'danger'">
+					{{ tag.code }}
+				</el-tag>
+			</el-dialog>
 		</div>
 	</div>
 </template>
@@ -77,6 +82,8 @@ import { ElMessage, FormInstance } from 'element-plus';
 const presentationDialogVisible = ref(false);
 // 引入接口
 import { getQueryExitPageApi, getUselessBackStockApi } from '/@/api/scrapManage/scrapSheetSub';
+import { GetExitStoreQrCodeListApi } from '/@/api/maintenanceManage/maintenanceOrderSub';
+
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -88,11 +95,14 @@ const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vu
 const { t } = useI18n();
 const tableFormRef = ref();
 const matnoDetailDialogRef = ref();
+const inventoryDialogRef = ref();
 const tableRef = ref<RefType>();
 const dialogtableRef = ref<RefType>();
 const presentationDialogRef = ref();
 // 单元格样式
 const cellStyle = ref();
+// tags的数据
+let tags = ref<EmptyArrayType>([]);
 
 // 送修弹窗标题
 const dilogTitle = ref();
@@ -250,7 +260,7 @@ const changeToStyle = (indList: number[]) => {
 		}
 	};
 };
-cellStyle.value = changeToStyle([2]);
+cellStyle.value = changeToStyle([2, 8]);
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;
@@ -284,10 +294,18 @@ const onOpenSendRepair = (row: EmptyObjectType[]) => {
 };
 
 // 点击料号弹出详情
-const matNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
+const matNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'matno') {
 		row.exittype = exitTypeMap[row.exittype];
 		matnoDetailDialogRef.value.openDialog('matno', row, '退库详情');
+	} else if (column.property === 'exitqty') {
+		let res = await GetExitStoreQrCodeListApi(row.runid);
+		if (res.data.length == 0) {
+			ElMessage.error('暂无条码数据');
+		} else {
+			tags = res.data;
+			inventoryDialogRef.value = true;
+		}
 	}
 };
 // 提交
