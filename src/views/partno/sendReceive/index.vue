@@ -10,7 +10,7 @@
 				@onOpenOtherDialog="openReceiveDialog"
 				:cellStyle="cellStyle"
 			/>
-			<Dialog ref="sendReceiveDialogRef" v-bind="dialogData" @sampleSuccess="getTableData" />
+			<Dialog ref="sendReceiveDialogRef" v-bind="dialogData" @sampleSuccess="getTableData" @selectChange="selectChange" />
 		</div>
 	</div>
 </template>
@@ -19,6 +19,7 @@
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { GetRecieveTaskApi, GetSampleDetailApi } from '/@/api/partno/sendReceive';
+import { getEngieerGroupApi } from '/@/api/global/index';
 import { useI18n } from 'vue-i18n';
 
 // 引入表格组件
@@ -42,8 +43,8 @@ const state = reactive<TableDemoState>({
 			{ key: 'sampleNo', colWidth: '', title: 'message.pages.sampleNo', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
-			{ key: 'engineer', colWidth: '', title: 'message.pages.engineer', type: 'text', isCheck: true },
-			{ key: 'engineerName', colWidth: '', title: 'message.pages.engineerName', type: 'text', isCheck: true },
+			// { key: 'engineer', colWidth: '', title: 'message.pages.engineer', type: 'text', isCheck: true },
+			// { key: 'engineerName', colWidth: '', title: 'message.pages.engineerName', type: 'text', isCheck: true },
 			{ key: 'runStatus', colWidth: '', title: 'message.pages.state', type: 'text', isCheck: true },
 		],
 		// 表格配置项（必传）
@@ -96,7 +97,7 @@ const dialogData = reactive({
 		{ type: 'text', lable: '送样单号', prop: 'sampleNo', value: '', xs: 10, sm: 11, md: 11, lg: 11, xl: 11 },
 		{ type: 'text', lable: '品名-中文', prop: 'nameCh', value: '' },
 		{ type: 'text', lable: '品名-英文', prop: 'nameEn', value: '' },
-		{ type: 'input', lable: '工程验收人', prop: 'engineer', value: '' },
+		{ type: 'select', lable: '工程验收人', prop: 'engineerNo', value: '', options: [], isRequired: true },
 	],
 	//进行送样、收货还是验收操作
 	operation: '收货',
@@ -136,13 +137,24 @@ const openReceiveDialog = async (scope: any) => {
 	const res = await GetSampleDetailApi(scope.row.sampleNo);
 	sendReceiveDialogRef.value.openDialog(scope, 1, '收货', res.data.vendorDetails);
 };
-// 点击料号 2
-// const matnoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
-// const res = await getGetSampleApi(row.matNo);
-// if (column.property === 'matNo') {
-// 	sendReceiveDialogRef.value.openDialog(row, 2, res.data);
-// }
-// };
+// 搜索下拉选择
+const selectChange = (query: string) => {
+	if (query) {
+		sendReceiveDialogRef.value.loadingOpen();
+		setTimeout(async () => {
+			const res = await getEngieerGroupApi(query);
+			sendReceiveDialogRef.value.loadingClose();
+			let options = res.data.map((item: EmptyObjectType) => {
+				return { value: `${item.userid}`, label: `${item.userid}` };
+			});
+			dialogData.dialogForm[4].options = options.filter((item: EmptyObjectType) => {
+				return item.label.toLowerCase().includes(query.toLowerCase());
+			});
+		}, 500);
+	} else {
+		dialogData.dialogForm[4].options = [];
+	}
+};
 
 // 页面加载时
 onMounted(() => {

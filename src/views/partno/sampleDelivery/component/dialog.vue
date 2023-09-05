@@ -15,6 +15,23 @@
 					<div v-if="item.type === 'text'">
 						{{ item.lable }}：<span style="color: red" class="ml10">{{ state.formData[item.prop] }}</span>
 					</div>
+					<div v-if="item.type === 'select'">
+						<span v-if="item.isRequired" class="color-danger mr5">*</span>
+						<span style="width: 96px" class="mr10">{{ item.lable }}</span>
+						<el-select
+							size="default"
+							v-model="state.formData[item.prop]"
+							filterable
+							remote
+							:reserve-keyword="false"
+							placeholder="请选择工程验收人"
+							remote-show-suffix
+							:remote-method="selectChange"
+							:loading="loading"
+						>
+							<el-option v-for="val in item.options" :key="val.value" :label="val.label" :value="val.value" />
+						</el-select>
+					</div>
 					<div v-if="item.type === 'input'" class="objectCheck">
 						<span style="width: 96px" class="mr10">{{ item.lable }}</span>
 						<el-input style="height: 30px" v-model="state.formData[item.prop]" :placeholder="item.placeholder" clearable></el-input>
@@ -122,7 +139,7 @@ import { i18n } from '/@/i18n/index';
 import { ElMessage } from 'element-plus';
 import { getTakeSampleApi } from '/@/api/partno/sampleDelivery';
 import { SampleRecieveApi } from '/@/api/partno/sendReceive';
-const emit = defineEmits(['sampleSuccess']);
+const emit = defineEmits(['sampleSuccess', 'selectChange']);
 // 定义父组件传过来的值
 const props = defineProps({
 	otherHeaderData: {
@@ -149,6 +166,7 @@ const props = defineProps({
 // 定义变量内容
 const tableSampleRef = ref();
 const tableRef = ref();
+const loading = ref(false);
 let marNoData = ref<EmptyObjectType>([]);
 const state = reactive<dialogFormState>({
 	formData: {},
@@ -279,10 +297,14 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 		} else if (props.operation == '收货') {
 			let receiveData: EmptyObjectType = {};
 			props.dialogForm.forEach((item) => {
-				if (item.prop == 'engineer' || item.prop == 'sampleNo') {
+				if (item.prop == 'engineerNo') {
+					receiveData['engineer'] = state.formData[item.prop];
+				}
+				if (item.prop == 'sampleNo') {
 					receiveData[item.prop] = state.formData[item.prop];
 				}
 			});
+			if (!receiveData['engineer']) return ElMessage.warning('请选择工程验收人');
 			receiveData['recieveDetails'] = state.vendors.map((item) => {
 				let obj = {
 					sampleTime: item.receiveTime,
@@ -294,6 +316,7 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 			const res: any = await SampleRecieveApi(receiveData);
 			if (res.status) {
 				closeDialog();
+
 				ElMessage.success('收货成功');
 				emit('sampleSuccess');
 			}
@@ -301,12 +324,24 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 	});
 };
 
+// 工程验收人搜索下拉选择
+const selectChange = (query: string) => {
+	emit('selectChange', query, state.formData);
+};
+const loadingOpen = () => {
+	loading.value = true;
+};
+const loadingClose = () => {
+	loading.value = false;
+};
 // 页面加载时
 onMounted(() => {});
 
 // 暴露变量
 defineExpose({
 	openDialog,
+	loadingOpen,
+	loadingClose,
 });
 </script>
 
