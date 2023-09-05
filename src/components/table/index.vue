@@ -379,7 +379,7 @@ const handleSelect = (index: number, item: Object) => {
 const changeSelect = (index: number, item: Object) => {
 	emit('changeselect', index, item);
 };
-// 解决翻页组件开始输入中文时光标不居中问题
+// 解决翻页组件开始输入中文按enter键之后光标不居中问题
 onMounted(() => {
 	if (pagination.value) {
 		pagination.value.$el.querySelector('input[type=number]').oninput = (e: any) => {

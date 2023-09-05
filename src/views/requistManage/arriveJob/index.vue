@@ -29,6 +29,33 @@
 								style="height: 30px; max-width: 167px"
 							/>
 						</div>
+						<!-- 自动补全输入框 -->
+						<!-- <el-autocomplete
+							:debounce="500"
+							clearable
+							style="width: 100%"
+							v-else-if="val.type === 'autocomplete'"
+							v-model="dialogState.tableData.form[val.prop]"
+							:fetch-suggestions="querySearchAsync"
+							placeholder="请输入"
+						/> -->
+						<div v-if="val.type === 'select'">
+							<span v-if="val.isRequired" class="color-danger mr5">*</span>
+							<span style="width: 96px" class="mr10">{{ val.label }}</span>
+							<el-select
+								size="default"
+								v-model="dialogState.tableData.form[val.prop]"
+								filterable
+								remote
+								:reserve-keyword="false"
+								placeholder="请选择工程验收人"
+								remote-show-suffix
+								:remote-method="selectChange"
+								:loading="loading"
+							>
+								<el-option v-for="item in val.options" :key="item.value" :label="item.label" :value="item.value" />
+							</el-select>
+						</div>
 					</el-col>
 				</el-row>
 
@@ -64,7 +91,7 @@ const arriveJobDialogVisible = ref(false);
 // 引入接口
 import { getreqNoApi } from '/@/api/requistManage/reportingInquiry';
 import { getGetWaitRecievePageListApi, getAddReceiveApi } from '/@/api/requistManage/arriveJob';
-
+import { getEngieerGroupApi } from '/@/api/global/index';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -75,6 +102,7 @@ const { t } = useI18n();
 const tableFormRef = ref();
 const tableRef = ref<RefType>();
 const arriveJobDialogRef = ref();
+const loading = ref(false);
 // 单元格样式
 const cellStyle = ref();
 
@@ -185,6 +213,7 @@ const dialogState = reactive<TableDemoState>({
 			{ label: '收货单号', prop: 'sendNo', required: false, type: 'text' },
 			{ label: '申请单号', prop: 'reqNo', required: false, type: 'text' },
 			{ label: 'PR单号', prop: 'prNo', required: false, type: 'text' },
+			{ label: '工程验收人', prop: 'engineer', required: false, type: 'select', options: [], isRequired: true },
 			// { label: '收货时间', prop: 'sendTime', required: false, type: 'time', isRequired: true },
 		],
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: true }],
@@ -199,9 +228,45 @@ const changeInput = (val: Number, i: number) => {
 	const data = dialogState.tableData.data[i];
 	data.receiptQtymin = 0;
 	data.receiptQtymax = data.reqQty - data.receiveQty;
-	if (data.receiptQty > data.receiveQty) {
+	if (data.receiptQty > data.reqQty - data.receiveQty) {
 		data.receiptQty = data.reqQty - data.receiveQty;
 	}
+};
+// 搜索下拉选择
+const selectChange = (query: string) => {
+	if (query) {
+		loading.value = true;
+		setTimeout(async () => {
+			const res = await getEngieerGroupApi(query);
+			loading.value = false;
+			let options = res.data.map((item: EmptyObjectType) => {
+				return { value: `${item.userid}`, label: `${item.userid}` };
+			});
+			dialogState.tableData.search[3].options = options.filter((item: EmptyObjectType) => {
+				return item.label.toLowerCase().includes(query.toLowerCase());
+			});
+		}, 500);
+	} else {
+		dialogState.tableData.search[3].options = [];
+	}
+};
+// const selectChange = async (val: string) => {
+// 	const res = await getEngieerGroupApi(val);
+// };
+// 自动补全输入框
+const querySearchAsync = (queryString: string, cb: (arg: any) => void) => {
+	// if (queryString) {
+	// 	let res = await getQueryNoPageApi(queryString);
+	// 	res.data.forEach((item: any) => {
+	// 		item['value'] = item.matNo;
+	// 	});
+	// 	links.value = res.data;
+	// 	const results = links.value;
+	// 	cb(results);
+	// } else {
+	// 	links.value = [];
+	// 	cb(links.value);
+	// }
 };
 // 单元格字体颜色
 const changeToStyle = (indList: number[]) => {
@@ -275,7 +340,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
-		// if (!dialogState.tableData.form['sendTime']) return ElMessage.warning(t('请填写收货时间'));
+		if (!dialogState.tableData.form['engineer']) return ElMessage.warning(t('请选择工程验收人'));
 		let allData: EmptyObjectType = {};
 		allData = { ...dialogState.tableData.form };
 		let data = dialogState.tableData.data;
