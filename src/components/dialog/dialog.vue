@@ -1,6 +1,6 @@
 <template>
 	<div class="system-menu-dialog-container">
-		<el-dialog :title="state.dialog.title" v-model="state.dialog.isShowDialog" :width="dialogWidth">
+		<el-dialog draggable :title="state.dialog.title" v-model="state.dialog.isShowDialog" :width="dialogWidth">
 			<el-form v-if="state.dialog.type !== 'imp'" ref="dialogFormRef" :model="state.formData" size="default" label-width="85px">
 				<el-row :gutter="35">
 					<el-col

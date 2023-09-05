@@ -16,3 +16,10 @@ export function getUploadFileApi(funcType:number,file:any) {
     }
   });
 }
+// 拿到工程验收人接口
+export function getEngieerGroupApi(userId:string) {
+  return request({
+    url: '/api/Group/GetEngieerGroup',
+    method: 'GET',
+  	params:{userId}
+  });}
