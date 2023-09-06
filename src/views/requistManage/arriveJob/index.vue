@@ -53,7 +53,7 @@
 								:remote-method="selectChange"
 								:loading="loading"
 							>
-								<el-option v-for="item in val.options" :key="item.label" :label="item.label" :value="item.value">
+								<el-option v-for="item in val.options" :key="item.label" :label="item.value" :value="item.value">
 									<span style="float: left">{{ item.label }}</span>
 									<span style="float: right; color: var(--el-text-color-secondary)">{{ item.value }}</span>
 								</el-option>

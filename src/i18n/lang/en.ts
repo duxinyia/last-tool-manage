@@ -17,7 +17,7 @@ export default {
 		entryjob: 'please purchase for storage',
 		toolsReturn: 'return the tools',
 		report: 'report',
-		matNo: 'material number',
+		matNo: 'materialNo manage',
 		matSearch: 'material number search',
 		matSample: 'send samples with material',
 		sampleReceive: 'send samples and receive',

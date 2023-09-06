@@ -21,7 +21,13 @@
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
-import { getSearchBaseMachine, getBaseMachineAddApi, getBaseMachineUpdateApi, getBaseMachineDeleteApi } from '/@/api/basics/code';
+import {
+	getSearchBaseMachine,
+	getBaseMachineAddApi,
+	getBaseMachineUpdateApi,
+	getBaseMachineDeleteApi,
+	getDeleteBaseMachineBatchApi,
+} from '/@/api/basics/code';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
@@ -139,18 +145,22 @@ const addData = async (ruleForm: object, type: string) => {
 };
 // 删除当前项回调
 const onTableDelRow = async (row: EmptyObjectType, type: string) => {
-	let rows = [];
+	let rows: EmptyArrayType = [];
 	if (type === 'bulkDel') {
 		Object.keys(row).forEach((key) => {
 			rows.push(row[key].runid);
 		});
+		const res = await getDeleteBaseMachineBatchApi(rows);
+		if (res.status) {
+			ElMessage.success(`${t('批量刪除成功')}`);
+			getTableData();
+		}
 	} else {
-		rows.push(row.runid);
-	}
-	const res = await getBaseMachineDeleteApi(rows);
-	if (res.status) {
-		ElMessage.success(`${t('message.allButton.deleteBtn')}${row.dataname}${t('message.hint.success')}`);
-		getTableData();
+		const res = await getBaseMachineDeleteApi(row.runid);
+		if (res.status) {
+			ElMessage.success(`${t('message.allButton.deleteBtn')}${row.dataname}${t('message.hint.success')}`);
+			getTableData();
+		}
 	}
 };
 // 分页改变时回调

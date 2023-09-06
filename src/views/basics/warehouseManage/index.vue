@@ -15,7 +15,7 @@
 			<!-- 新增编辑弹窗 -->
 			<Dialog ref="warehouseDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="addData" />
 			<!-- 管理员设定弹窗 -->
-			<el-dialog ref="warehouseAdminDialogRef" v-model="warehouseDialogVisible" title="管理员设定" width="70%">
+			<el-dialog ref="warehouseAdminDialogRef" v-model="warehouseDialogVisible" title="管理员设定" width="50%">
 				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
 					<Table ref="dialogTableRef" v-bind="dialogState.tableData" class="table-dialog" @delRow="onDelRow" @addrow="onAddrow" />
 				</el-form>
@@ -71,7 +71,7 @@ const state = reactive<TableDemoState>({
 			loading: true, // loading 加载
 			isBorder: false, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
-			isSelection: true, // 是否显示表格多选
+			isSelection: false, // 是否显示表格多选
 			isOperate: true, // 是否显示表格操作栏
 			isButton: true, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑

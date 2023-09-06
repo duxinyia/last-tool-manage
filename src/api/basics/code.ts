@@ -24,15 +24,26 @@ export function getBaseMachineUpdateApi(data:Object) {
   });
 }
 // 删除
-export function getBaseMachineDeleteApi(runid:Array<string>) {
+export function getBaseMachineDeleteApi(runId:Array<string>) {
   return request({
     url: '/api/BaseMachineProcject/BaseMachineDelete',
     method: 'DELETE',
     data: {
-      runid,
+      runId,
     },
   });
 }
+// 批量刪除
+export function getDeleteBaseMachineBatchApi(ids:Array<string>) {
+  return request({
+    url: '/api/BaseMachineProcject/DeleteBaseMachineBatch',
+    method: 'DELETE',
+    data: {
+      ids,
+    },
+  });
+}
+
 // 导出
 // 下载模版
 // 导入
