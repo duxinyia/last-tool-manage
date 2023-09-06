@@ -53,7 +53,7 @@
 								:remote-method="selectChange"
 								:loading="loading"
 							>
-								<el-option v-for="item in val.options" :key="item.value" :label="item.label" :value="item.value">
+								<el-option v-for="item in val.options" :key="item.label" :label="item.label" :value="item.value">
 									<span style="float: left">{{ item.label }}</span>
 									<span style="float: right; color: var(--el-text-color-secondary)">{{ item.value }}</span>
 								</el-option>
@@ -243,7 +243,7 @@ const selectChange = (query: string) => {
 			const res = await getEngieerGroupApi(query);
 			loading.value = false;
 			let options = res.data.map((item: EmptyObjectType) => {
-				return { value: `${item.username}`, label: `${item.userid}` };
+				return { value: `${item.userid}`, label: `${item.username}` };
 			});
 			dialogState.tableData.search[3].options = options.filter((item: EmptyObjectType) => {
 				return item.label.toLowerCase().includes(query.toLowerCase()) || item.value.toLowerCase().includes(query.toLowerCase());
