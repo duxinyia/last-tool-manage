@@ -100,11 +100,11 @@ const dialogData = reactive({
 	],
 	// 送样弹窗数据
 	dialogForm: [
-		{ type: 'text', lable: '送样单号', prop: 'sampleNo', value: '' },
-		{ type: 'text', lable: '料号', prop: 'matNo', value: '', xs: 10, sm: 11, md: 11, lg: 11, xl: 11 },
-		{ type: 'text', lable: '品名-中文', prop: 'nameCh', value: '' },
-		{ type: 'text', lable: '品名-英文', prop: 'nameEn', value: '' },
-		// { type: 'input', lable: '工程验收人', prop: 'engineerName', placeholder: '请输入工程验收人', value: '' },
+		{ type: 'text', label: '送样单号', prop: 'sampleNo', value: '' },
+		{ type: 'text', label: '料号', prop: 'matNo', value: '', xs: 10, sm: 11, md: 11, lg: 11, xl: 11 },
+		{ type: 'text', label: '品名-中文', prop: 'nameCh', value: '' },
+		{ type: 'text', label: '品名-英文', prop: 'nameEn', value: '' },
+		// { type: 'input', label: '工程验收人', prop: 'engineerName', placeholder: '请输入工程验收人', value: '' },
 	],
 	//进行送样、收货还是验收操作
 	operation: '送样',

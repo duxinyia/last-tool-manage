@@ -93,11 +93,11 @@ const dialogData = reactive({
 	],
 	// 收货弹窗数据
 	dialogForm: [
-		{ type: 'text', lable: '料号', prop: 'matNo', value: '' },
-		{ type: 'text', lable: '送样单号', prop: 'sampleNo', value: '', xs: 10, sm: 11, md: 11, lg: 11, xl: 11 },
-		{ type: 'text', lable: '品名-中文', prop: 'nameCh', value: '' },
-		{ type: 'text', lable: '品名-英文', prop: 'nameEn', value: '' },
-		{ type: 'select', lable: '工程验收人', prop: 'engineerNo', value: '', options: [], isRequired: true },
+		{ type: 'text', label: '料号', prop: 'matNo', value: '' },
+		{ type: 'text', label: '送样单号', prop: 'sampleNo', value: '', xs: 10, sm: 11, md: 11, lg: 11, xl: 11 },
+		{ type: 'text', label: '品名-中文', prop: 'nameCh', value: '' },
+		{ type: 'text', label: '品名-英文', prop: 'nameEn', value: '' },
+		{ type: 'select', label: '工程验收人', prop: 'engineerNo', value: '', options: [], isRequired: true },
 	],
 	//进行送样、收货还是验收操作
 	operation: '收货',
@@ -143,12 +143,15 @@ const selectChange = (query: string) => {
 		sendReceiveDialogRef.value.loadingOpen();
 		setTimeout(async () => {
 			const res = await getEngieerGroupApi(query);
+			console.log('res', res);
+
 			sendReceiveDialogRef.value.loadingClose();
 			let options = res.data.map((item: EmptyObjectType) => {
-				return { value: `${item.userid}`, label: `${item.userid}` };
+				return { value: `${item.userid}`, label: `${item.username}` };
 			});
+			console.log('res', options);
 			dialogData.dialogForm[4].options = options.filter((item: EmptyObjectType) => {
-				return item.label.toLowerCase().includes(query.toLowerCase());
+				return item.label.toLowerCase().includes(query.toLowerCase()) || item.value.toLowerCase().includes(query.toLowerCase());
 			});
 		}, 500);
 	} else {

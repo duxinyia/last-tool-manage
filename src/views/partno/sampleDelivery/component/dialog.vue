@@ -13,11 +13,11 @@
 					class="sample-dialog-col"
 				>
 					<div v-if="item.type === 'text'">
-						{{ item.lable }}：<span style="color: red" class="ml10">{{ state.formData[item.prop] }}</span>
+						{{ item.label }}：<span style="color: red" class="ml10">{{ state.formData[item.prop] }}</span>
 					</div>
 					<div v-if="item.type === 'select'">
 						<span v-if="item.isRequired" class="color-danger mr5">*</span>
-						<span style="width: 96px" class="mr10">{{ item.lable }}</span>
+						<span style="width: 96px" class="mr10">{{ item.label }}</span>
 						<el-select
 							size="default"
 							v-model="state.formData[item.prop]"
@@ -29,11 +29,14 @@
 							:remote-method="selectChange"
 							:loading="loading"
 						>
-							<el-option v-for="val in item.options" :key="val.value" :label="val.label" :value="val.value" />
+							<el-option v-for="val in item.options" :key="val.label" :label="val.value" :value="val.value">
+								<span style="float: left">{{ val.label }}</span>
+								<span style="float: right; color: var(--el-text-color-secondary)">{{ val.value }}</span>
+							</el-option>
 						</el-select>
 					</div>
 					<div v-if="item.type === 'input'" class="objectCheck">
-						<span style="width: 96px" class="mr10">{{ item.lable }}</span>
+						<span style="width: 96px" class="mr10">{{ item.label }}</span>
 						<el-input style="height: 30px" v-model="state.formData[item.prop]" :placeholder="item.placeholder" clearable></el-input>
 					</div>
 				</el-col>

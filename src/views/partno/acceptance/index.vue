@@ -24,7 +24,7 @@
 						class="sample-dialog-col mb10"
 					>
 						<div>
-							{{ item.lable }}：<span style="color: red" class="ml10">{{ dialogData.formData[item.prop] }}</span>
+							{{ item.label }}：<span style="color: red" class="ml10">{{ dialogData.formData[item.prop] }}</span>
 						</div>
 					</el-col>
 				</el-row>
@@ -213,12 +213,12 @@ const dialogData = reactive<EmptyObjectType>({
 	],
 	// 收货弹窗表格顶部数据
 	dialogForm: [
-		{ type: 'text', lable: '验收单号', prop: 'checkNo', value: '' },
-		{ type: 'text', lable: '送样单号', prop: 'sampleNo', value: '' },
-		{ type: 'text', lable: '验收人', prop: 'engineerName', value: '', xs: 8, sm: 8, md: 8, lg: 8, xl: 8 },
-		{ type: 'text', lable: '料号', prop: 'matNo', value: '' },
-		{ type: 'text', lable: '品名-中文', prop: 'nameCh', value: '' },
-		{ type: 'text', lable: '品名-英文', prop: 'nameEn', value: '' },
+		{ type: 'text', label: '验收单号', prop: 'checkNo', value: '' },
+		{ type: 'text', label: '送样单号', prop: 'sampleNo', value: '' },
+		{ type: 'text', label: '验收人', prop: 'engineerName', value: '', xs: 8, sm: 8, md: 8, lg: 8, xl: 8 },
+		{ type: 'text', label: '料号', prop: 'matNo', value: '' },
+		{ type: 'text', label: '品名-中文', prop: 'nameCh', value: '' },
+		{ type: 'text', label: '品名-英文', prop: 'nameEn', value: '' },
 	],
 	//
 	formData: {},
