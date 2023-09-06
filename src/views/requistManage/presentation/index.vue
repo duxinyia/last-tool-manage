@@ -28,9 +28,8 @@
 					class="table"
 					@delRow="onDelRow"
 					@addrow="onAddRow"
-					@querysearchasync="querySearchAsync"
-					@handleselect="handleSelect"
-					@handlechange="handleChange"
+					@remoteMethod="remoteMethod"
+					@changeselect="changeSelect"
 				/>
 			</el-form>
 			<div class="describe">
@@ -64,6 +63,7 @@ import { getQueryNoPageApi, getToolApplyInsertApi } from '/@/api/requistManage/p
 const { t } = useI18n();
 const tableRef = ref<RefType>();
 const tableFormRef = ref();
+const resDataRef = ref([]);
 const state = reactive<EmptyObjectType>({
 	tableData: {
 		// 列表数据（必传）
@@ -99,9 +99,12 @@ const state = reactive<EmptyObjectType>({
 				key: 'matNo',
 				colWidth: '250',
 				title: 'message.pages.matNo',
-				type: 'autocomplete',
+				type: 'select',
 				isCheck: true,
 				isRequired: true,
+				loading: false,
+				option: [],
+				isfilterable: true,
 			},
 			{ key: 'nameCh', colWidth: '200', title: '品名-中文', type: 'text', isCheck: true, isRequired: true },
 			// { key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true, isRequired: true },
@@ -127,33 +130,56 @@ const state = reactive<EmptyObjectType>({
 		},
 	},
 });
-let links = ref([]);
-// 获取输入建议的方法， 仅当你的输入建议数据 resolve 时，通过调用 callback(data:[])  来返回它
-const querySearchAsync = async (queryString: string, cb: (arg: any) => void) => {
-	if (queryString) {
-		let res = await getQueryNoPageApi(queryString);
-		res.data.forEach((item: any) => {
-			item['value'] = item.matNo;
-		});
-		links.value = res.data;
-		const results = links.value;
-		cb(results);
+const remoteMethod = (index: number, query: string) => {
+	let loading = state.tableData.header[0].loading;
+	if (query) {
+		loading = true;
+		setTimeout(async () => {
+			const res = await getQueryNoPageApi(query);
+			loading = false;
+			resDataRef.value = res.data;
+			let option = res.data.map((item: EmptyObjectType) => {
+				return { value: `${item.matNo}`, label: `${item.matNo}` };
+			});
+			state.tableData.header[0].option = option.filter((item: EmptyObjectType) => {
+				return item.label.toLowerCase().includes(query.toLowerCase());
+			});
+		}, 500);
 	} else {
-		links.value = [];
-		cb(links.value);
+		state.tableData.header[0].option = [];
 	}
 };
-// 	点击选中建议项时触发 清空数据
-const handleChange = (i: number) => {
-	let data = state.tableData.data[i];
-	data.nameCh = '';
-	data.nameEn = '';
-};
-// 	在 Input 值改变时触发
-const handleSelect = async (i: number, item: any) => {
-	let data = state.tableData.data[i];
-	data.nameCh = item.nameCh;
-	data.nameEn = item.nameEn;
+// let links = ref([]);
+// // 获取输入建议的方法， 仅当你的输入建议数据 resolve 时，通过调用 callback(data:[])  来返回它
+// const querySearchAsync = async (queryString: string, cb: (arg: any) => void) => {
+// 	if (queryString) {
+// 		let res = await getQueryNoPageApi(queryString);
+// 		res.data.forEach((item: any) => {
+// 			item['value'] = item.matNo;
+// 		});
+// 		links.value = res.data;
+// 		const results = links.value;
+// 		cb(results);
+// 	} else {
+// 		links.value = [];
+// 		cb(links.value);
+// 	}
+// };
+// // 	点击选中建议项时触发 清空数据
+// const handleChange = (i: number) => {
+// 	let data = state.tableData.data[i];
+// 	data.nameCh = '';
+// 	data.nameEn = '';
+// };
+// // 	在 Input 值改变时触发
+const changeSelect = async (i: number, query: any) => {
+	resDataRef.value.forEach((item: any) => {
+		if (item.matNo === query) {
+			let data = state.tableData.data[i];
+			data.nameCh = item.nameCh;
+			data.nameEn = item.nameEn;
+		}
+	});
 };
 // 增加一行数据
 const onAddRow = () => {

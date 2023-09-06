@@ -161,7 +161,12 @@
 							v-model="data[scope.$index][item.key]"
 							:filterable="item.isfilterable"
 							placeholder="请选择"
+							remote
+							:reserve-keyword="false"
 							@change="(item:any) => changeSelect(scope.$index, item)"
+							remote-show-suffix
+							:remote-method="(query:string) => remoteMethod(scope.$index,query)"
+							:loading="item.loading"
 						>
 							<el-option v-for="i in item.option" :key="i.label" :label="i.text" :value="i.value" />
 						</el-select>
@@ -353,7 +358,22 @@ const emit = defineEmits([
 	'handleNumberInputChange',
 	'handleNumberInputBlur',
 	'onOpentopBtnOther',
+	'remoteMethod',
 ]);
+const remoteMethod = (index: number, query: string) => {
+	emit('remoteMethod', index, query);
+	// if (query) {
+	//   loading.value = true
+	//   setTimeout(() => {
+	//     loading.value = false
+	//     options.value = list.value.filter((item) => {
+	//       return item.label.toLowerCase().includes(query.toLowerCase())
+	//     })
+	//   }, 200)
+	// } else {
+	//   options.value = []
+	// }
+};
 // 表格行样式
 const tableRowClassName = (scope: EmptyObjectType) => {
 	// if (scope.row.isReceivable === false) {

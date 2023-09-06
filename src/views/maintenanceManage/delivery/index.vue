@@ -29,6 +29,23 @@
 								style="height: 30px; max-width: 167px"
 							/>
 						</div>
+						<div v-if="val.type === 'select'">
+							<span v-if="val.isRequired" class="color-danger mr5">*</span>
+							<span style="width: 96px" class="mr10">{{ val.label }}</span>
+							<el-select
+								size="default"
+								v-model="dialogState.tableData.form[val.prop]"
+								filterable
+								remote
+								:reserve-keyword="false"
+								placeholder="请选择工程验收人"
+								remote-show-suffix
+								:remote-method="selectChange"
+								:loading="loading"
+							>
+								<el-option v-for="item in val.options" :key="item.value" :label="item.label" :value="item.value" />
+							</el-select>
+						</div>
 					</el-col>
 				</el-row>
 
@@ -60,6 +77,7 @@
 <script setup lang="ts" name="/requistManage/arriveJob">
 import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
 import { ElMessage, FormInstance } from 'element-plus';
+import { getEngieerGroupApi } from '/@/api/global/index';
 const deliveryDialogVisible = ref(false);
 // 引入接口
 import { getQueryReceivableRepairOrdersApi, getRepariDetailsForReceiveApi, getReceiveApi } from '/@/api/maintenanceManage/delivery';
@@ -72,6 +90,7 @@ const TableSearch = defineAsyncComponent(() => import('/@/components/search/sear
 const { t } = useI18n();
 const tableFormRef = ref();
 const tableRef = ref<RefType>();
+const loading = ref(false);
 // 单元格样式
 const cellStyle = ref();
 // 弹窗标题
@@ -180,6 +199,7 @@ const dialogState = reactive<TableDemoState>({
 			{ label: '收货单号', prop: 'sendNo', required: false, type: 'text' },
 			{ label: '维修单号', prop: 'repairNo', required: false, type: 'text' },
 			{ label: 'PR单号', prop: 'prNo', required: false, type: 'text' },
+			{ label: '工程验收人', prop: 'engineer', required: false, type: 'select', options: [], isRequired: true },
 			// { label: '收货时间', prop: 'sendTime', required: false, type: 'time', isRequired: true },
 		],
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disable: true }],
@@ -234,6 +254,24 @@ const getTableData = async () => {
 		state.tableData.config.loading = false;
 	}
 };
+// 搜索下拉选择
+const selectChange = (query: string) => {
+	if (query) {
+		loading.value = true;
+		setTimeout(async () => {
+			const res = await getEngieerGroupApi(query);
+			loading.value = false;
+			let options = res.data.map((item: EmptyObjectType) => {
+				return { value: `${item.userid}`, label: `${item.userid}` };
+			});
+			dialogState.tableData.search[3].options = options.filter((item: EmptyObjectType) => {
+				return item.label.toLowerCase().includes(query.toLowerCase());
+			});
+		}, 500);
+	} else {
+		dialogState.tableData.search[3].options = [];
+	}
+};
 //删除一行
 const onDelRow = (row: EmptyObjectType, i: number) => {
 	dialogState.tableData.data.splice(i, 1);
@@ -278,6 +316,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
+		if (!dialogState.tableData.form['engineer']) return ElMessage.warning(t('请选择工程验收人'));
 		let allData: EmptyObjectType = {};
 		allData = { ...dialogState.tableData.form };
 		let data = dialogState.tableData.data;
