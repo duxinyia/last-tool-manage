@@ -31,6 +31,15 @@ export default {
 		unusedInquiry: '闲置查询',
 		unusedOrderSub: '闲置单提报',
 		arrivalAcceptance: '到货验收',
+		inventoryManage:'库存管理',
+		inventoryInquiry:'库存查询',
+		maintenanceWarehouse:'维修入库',
+		returnTools:'治工具退库',
+		scrapManage:'报废管理',
+		scrapBillQuery:'报废单查询',
+		scrapSheetSub:'报废单提报',
+		repairOrderAcceptance:'维修单验收',
+		warehouseManage:'仓库管理'
 	},
 	staticRoutes: {
 		signIn: '登录',

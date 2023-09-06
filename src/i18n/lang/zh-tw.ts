@@ -31,6 +31,15 @@ export default {
 		unusedInquiry: '閒置查詢',
 		unusedOrderSub: '閒置單提報',
 		arrivalAcceptance: '到貨驗收',
+		inventoryManage:'庫存管理',
+		inventoryInquiry:'庫存查詢',
+		maintenanceWarehouse:'維修入庫',
+		returnTools:'治工具退庫',
+		scrapManage:'報廢管理',
+		scrapBillQuery:'報廢單查詢',
+		scrapSheetSub:'報廢單提報',
+		repairOrderAcceptance:'維修單驗收',
+		warehouseManage:'倉庫管理'
 	},
 	staticRoutes: {
 		signIn: '登入',
