@@ -68,7 +68,7 @@
 			</el-dialog>
 			<Dialog ref="matnoDetailDialogRef" :isFootBtn="false" :dialogConfig="dialogMatnoDetail" />
 			<el-dialog v-model="inventoryDialogRef" title="库存条码" width="30%" draggable>
-				<el-tag v-for="tag in tags" :key="tag.code" class="mr10" :type="tag.runstatus === 1 ? '' : 'danger'">
+				<el-tag v-for="tag in tags" :key="tag.code" class="mr10 mb10" :type="tag.runstatus === 1 ? '' : 'danger'">
 					{{ tag.code }}
 				</el-tag>
 			</el-dialog>

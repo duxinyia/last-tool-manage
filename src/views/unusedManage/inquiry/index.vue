@@ -150,14 +150,14 @@ const getTableData = async () => {
 	if (form.idleDate) {
 		data = {
 			idleNo: form.idleNo,
-			idleDateSatrt: form.idleDate[0],
+			idleDateStart: form.idleDate[0],
 			idleDateEnd: form.idleDate[1],
 			page: state.tableData.page,
 		};
 	} else {
 		data = {
 			idleNo: form.idleNo,
-			idleDateSatrt: '',
+			idleDateStart: '',
 			idleDateEnd: '',
 			page: state.tableData.page,
 		};
