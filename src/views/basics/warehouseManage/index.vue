@@ -139,7 +139,7 @@ const dialogState = reactive<TableDemoState>({
 			isInlineEditing: true, //是否是行内编辑
 			isTopTool: false, //是否有表格右上角工具
 			isPage: false, //是否有分页
-			height: 300,
+			height: 380,
 			isAddRowBtn: true,
 		},
 		// 给后端的数据

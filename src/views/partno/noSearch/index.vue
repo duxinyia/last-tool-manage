@@ -13,7 +13,20 @@
 				@openAdd="openDialog"
 				:cellStyle="cellStyle"
 				@cellclick="matNoClick"
-			/>
+			>
+				<template #btn="{ row }">
+					<el-button
+						v-if="row.signStatus === 0 || row.signStatus === 2"
+						:color="row.signStatus === 0 ? '#D3C333' : '#27ba9b'"
+						plain
+						size="default"
+						class="button buttonBorder"
+						@click="onSign(row.matNo, row.signStatus)"
+					>
+						{{ row.signStatus === 0 ? $t('試產送簽') : $t('量產送簽') }}</el-button
+					>
+				</template>
+			</Table>
 			<Dialog
 				ref="noSearchDialogRef"
 				:dialogConfig="state.tableData.dialogConfig"
@@ -40,6 +53,8 @@ import {
 	getInvalidMaterialApi,
 	getAreaListApi,
 	getSelectListApi,
+	getSubmitTrialSignApi,
+	getSubmitProduceSignApi,
 } from '/@/api/partno/noSearch';
 import { useI18n } from 'vue-i18n';
 // 引入组件
@@ -66,6 +81,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'nameEn', colWidth: '', title: 'NameEn', type: 'text', isCheck: true },
 			{ key: 'drawNo', colWidth: '', title: 'message.pages.drawNo', type: 'text', isCheck: true },
 			{ key: 'specs', colWidth: '', title: 'message.pages.specs', type: 'text', isCheck: true },
+			{ key: 'signStatusStr', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
 			// { key: 'creator', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
 			// { key: 'createtime', title: 'message.pages.creationTime', type: 'text', isCheck: true },
 		],
@@ -81,7 +97,7 @@ const state = reactive<TableDemoState>({
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
-			operateWidth: 220, //操作栏宽度，如果操作栏有几个按钮就自己定宽度
+			operateWidth: 330, //操作栏宽度，如果操作栏有几个按钮就自己定宽度
 		},
 		topBtnConfig: [
 			{ type: 'add', name: '新增', defaultColor: 'primary', isSure: true, disabled: true },
@@ -191,6 +207,13 @@ const getTableData = async () => {
 	const res = await getMaterialListApi(data);
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
+	let arr = [];
+	state.tableData.data.forEach((item) => {
+		if (item.signStatus == 0 || item.signStatus == 2) {
+			arr.push(item.signStatus);
+		}
+	});
+	state.tableData.config.operateWidth = !arr.length ? 220 : 330;
 	if (res.status) {
 		state.tableData.config.loading = false;
 	}
@@ -278,8 +301,17 @@ const onTableDelRow = async (row: EmptyObjectType, type: string) => {
 	const res = await getInvalidMaterialApi(rows);
 	if (res.status) {
 		type === 'bulkDel'
-			? ElMessage.success(`删除成功`)
+			? ElMessage.success(`批量删除成功`)
 			: ElMessage.success(`${t('message.allButton.deleteBtn')}${row.matNo}${t('message.hint.success')}`);
+		getTableData();
+	}
+};
+
+const onSign = async (mat: string, signStatus: number) => {
+	// 0:試產簽核,2:量產签核
+	const res = signStatus === 0 ? await getSubmitTrialSignApi(mat) : await getSubmitProduceSignApi(mat);
+	if (res.status) {
+		ElMessage.success(`送簽成功`);
 		getTableData();
 	}
 };
@@ -366,5 +398,8 @@ onMounted(() => {
 			overflow: hidden;
 		}
 	}
+}
+.buttonBorder {
+	border: 0px !important;
 }
 </style>

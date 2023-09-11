@@ -1,35 +1,36 @@
 <template>
-	<!-- <div class="table-container layout-padding"> -->
-	<!-- <el-card :class="isDialog ? '' : 'box-card'"> -->
-	<el-form v-if="state.search.length" ref="tableSearchRef" :model="state.form" size="default" label-width="auto" class="table-form">
-		<el-row>
-			<el-col
-				:xs="val.xs || 24"
-				:sm="val.sm || 12"
-				:md="val.md || 10"
-				:lg="val.lg || 8"
-				:xl="val.xl || 6"
-				class="mb10"
-				v-for="(val, key) in state.search"
-				:key="key"
-			>
-				<template v-if="val.type !== ''">
-					<el-form-item
-						:label="$t(val.label)"
-						:prop="val.prop"
-						:rules="[{ required: val.required, message: `${val.label}不能为空`, trigger: val.type === 'input' ? 'blur' : 'change' }]"
+	<div class="main" :style="!isDialog ? 'height: 330px' : ''">
+		<nav v-if="!isDialog" class="pb10">料号详情</nav>
+		<div class="table-container">
+			<!-- <el-card :class="isDialog ? '' : 'box-card'"> -->
+			<el-form v-if="state.form" ref="tableSearchRef" :model="state.form" size="default" label-width="auto" class="table-form">
+				<el-row>
+					<el-col
+						:xs="val.xs || 24"
+						:sm="val.sm || 12"
+						:md="val.md || 10"
+						:lg="val.lg || 8"
+						:xl="val.xl || 6"
+						class="mb10"
+						v-for="(val, key) in state.search"
+						:key="key"
 					>
-						<span style="width: 100%; font-weight: 700; color: #1890ff">
-							{{ state.form[val.prop] }}
-						</span>
-					</el-form-item>
-				</template>
-			</el-col>
-		</el-row>
-	</el-form>
-	<el-empty v-else description="数据出错" />
-	<!-- </el-card> -->
-	<!-- </div> -->
+						<template v-if="val.type !== ''">
+							<el-form-item :label="val.prop !== 'drawPath' ? $t(val.label) : ''" :prop="val.prop">
+								<span v-if="val.type === 'text'" style="width: 100%; font-weight: 700; color: #1890ff">
+									{{ state.form[val.prop] }}
+								</span>
+								<el-button type="primary" class="ml20" v-if="val.type === 'btn'" @click="clickLink(val.prop)">查看图纸</el-button>
+							</el-form-item>
+						</template>
+					</el-col>
+				</el-row>
+			</el-form>
+			<el-empty v-else description="数据出错" />
+
+			<!-- </el-card> -->
+		</div>
+	</div>
 </template>
 
 <script setup lang="ts" name="/partno/noSearch">
@@ -67,23 +68,23 @@ const state = reactive<LinkState>({
 		{
 			label: '图纸文件：',
 			prop: 'drawPath',
-			type: 'text',
+			type: 'btn',
 			xs: 24,
 			sm: 24,
 			md: 24,
 			lg: 24,
 			xl: 24,
 		},
-		{
-			label: '3D圖紙：',
-			prop: 'draw3dPath',
-			type: 'text',
-			xs: 24,
-			sm: 24,
-			md: 24,
-			lg: 24,
-			xl: 24,
-		},
+		// {
+		// 	label: '3D圖紙：',
+		// 	prop: 'draw3dPath',
+		// 	type: 'text',
+		// 	xs: 24,
+		// 	sm: 24,
+		// 	md: 24,
+		// 	lg: 24,
+		// 	xl: 24,
+		// },
 		{
 			label: '备注：',
 			prop: 'describe',
@@ -113,7 +114,13 @@ const getSelect = async () => {
 	const res = await getMaterialApi(comkey);
 	state.form = res.data;
 	if (!res.status) {
-		state.search = [];
+		state.form = {};
+	}
+};
+// 点击文件
+const clickLink = (prop: string) => {
+	if (prop === 'drawPath') {
+		window.open(`${import.meta.env.VITE_API_URL}${state.form[prop]}`, '_blank');
 	}
 };
 // 页面加载时
@@ -123,16 +130,27 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+:deep(.table-form) {
+	width: 900px !important;
+}
+.main {
+	overflow: auto;
+	width: 100%;
+	background-color: white;
+}
+
 .table-container {
-	.table-padding {
-		padding: 15px;
-		.table {
-			flex: 1;
-			overflow: hidden;
-		}
-	}
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
-.box-card {
-	width: 1000px;
+nav {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 20px;
 }
+// .box-card {
+// 	width: 1000px;
+// }
 </style>

@@ -228,8 +228,15 @@
 				</template>
 			</el-table-column>
 
-			<el-table-column align="center" :label="$t('message.pages.operation')" :width="config.operateWidth || 120" v-if="config.isOperate">
+			<el-table-column
+				align="right"
+				header-align="center"
+				:label="$t('message.pages.operation')"
+				:width="config.operateWidth || 120"
+				v-if="config.isOperate"
+			>
 				<template v-slot="scope">
+					<slot name="btn" :row="scope.row"></slot>
 					<template v-for="btn in btnConfig" :key="btn.type">
 						<el-button
 							v-if="!btn.isSure"
@@ -242,7 +249,7 @@
 							<SvgIcon class="mr5" :name="btn.icon" />
 							{{ $t(btn.name) }}</el-button
 						>
-						<el-popconfirm v-if="btn.isSure" :title="$t('message.hint.suredel')" @confirm="onDelRow(scope.row, scope.$index)">
+						<el-popconfirm v-if="btn.type === 'del'" :title="$t('message.hint.suredel')" @confirm="onDelRow(scope.row, scope.$index)">
 							<template #reference>
 								<el-button :disabled="btn.disabled" class="button buttonBorder" :color="btn.color" plain size="default"
 									><el-icon class="mr5"><ele-Delete /></el-icon>{{ $t(btn.name) }}</el-button
