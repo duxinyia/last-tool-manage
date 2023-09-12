@@ -120,7 +120,7 @@ const changeToStyle = (data: any[], keyList: string[], indList: number[]) => {
 		}
 	};
 };
-cellStyle.value = changeToStyle(state.tableData.data, ['matNo'], [2]);
+cellStyle.value = changeToStyle(state.tableData.data, ['matNo'], [1]);
 // 初始化列表数据
 const getTableData = async () => {
 	state.tableData.config.loading = true;

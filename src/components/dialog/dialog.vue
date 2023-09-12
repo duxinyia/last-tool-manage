@@ -15,6 +15,14 @@
 					>
 						<el-form-item v-if="item.type != 'button'" :label="$t(item.label)" :prop="item.prop" :rules="allRules(item)">
 							<el-input v-if="item.type === 'input'" v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)" clearable></el-input>
+							<el-date-picker
+								v-if="item.type === 'date'"
+								value-format="YYYY-MM-DD"
+								v-model="state.formData[item.prop]"
+								type="date"
+								:placeholder="$t(item.placeholder)"
+								style="width: 100%"
+							/>
 							<!-- @change=" (val:any) => commonInputHandleChange(val,item.prop)" -->
 
 							<!-- <el-input :width="224" v-if="item.type === 'tagtextarea'" v-model="state.formData[item.prop]">
@@ -76,6 +84,11 @@
 								style="width: 100%"
 								:disabled="state.dialog.isdisable"
 								@change="(val:any) => selectHandelChange(val,item.prop)"
+								:filterable="item.filterable"
+								:remote="item.remote"
+								:remote-show-suffix="item.remoteShowSuffix"
+								:remote-method="remoteMethod"
+								:loading="item.loading"
 							>
 								<el-option v-for="val in item.options" :key="val.label" :label="val.text" :value="val.value"> </el-option>
 							</el-select>
@@ -92,7 +105,7 @@
 								v-model="state.formData[item.prop]"
 								type="textarea"
 								:placeholder="$t(item.placeholder)"
-								maxlength="150"
+								:maxlength="item.maxlength || 300"
 							></el-input>
 							<span v-if="item.type === 'text'" style="width: 100%; font-weight: 700; color: #1890ff">
 								{{ state.formData[item.prop] }}
@@ -215,6 +228,7 @@ const emit = defineEmits([
 	'innnerDialogSubmit',
 	'openInnerDialog',
 	'editDialog',
+	'remoteMethod',
 ]);
 // 定义父组件传过来的值
 const props = defineProps({
@@ -421,6 +435,10 @@ const handleTagClose = (tag: any) => {
 // 下拉框数据变化
 const selectHandelChange = (val: string, prop: string) => {
 	emit('selectChange', val, prop, state.formData);
+};
+// 能搜索的下拉框
+const remoteMethod = (query: string) => {
+	emit('remoteMethod', query);
 };
 // 文件input框里面的数据
 const input3dHandleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {

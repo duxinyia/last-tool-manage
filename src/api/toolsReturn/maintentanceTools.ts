@@ -27,3 +27,19 @@ export function getExitReasonApi(datacode: string) {
 		params: { datacode },
 	});
 }
+// 不分页查询仓库下拉
+export function getQueryStoreHouseNoPageApi(storeName: Object) {
+	return request({
+		url: '/api/BaseStore/QueryStoreHouseNoPage',
+		method: 'GET',
+		params: {storeName},
+	});
+}
+// 转仓提交
+export function getTransferStorageApi(data: Object) {
+	return request({
+		url: '/api/Stock/TransferStorage',
+		method: 'POST',
+		data: data,
+	});
+}

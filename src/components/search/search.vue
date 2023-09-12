@@ -13,45 +13,45 @@
 					:key="key"
 					v-show="key === 0 || state.isToggle"
 				>
-					<template v-if="val.type !== ''">
-						<el-form-item
-							:label="$t(val.label)"
-							:prop="val.prop"
-							:rules="[{ required: val.required, message: `${val.label}不能为空`, trigger: val.type === 'input' ? 'blur' : 'change' }]"
-						>
-							<el-input
-								v-model="state.form[val.prop]"
-								:placeholder="`请输入${$t(val.label)}`"
-								clearable
-								v-if="val.type === 'input'"
-								style="width: 100%"
-							/>
-							<el-date-picker
-								v-model="state.form[val.prop]"
-								type="date"
-								:placeholder="val.placeholder"
-								v-else-if="val.type === 'date'"
-								style="width: 100%"
-							/>
-							<el-date-picker
-								v-else-if="val.type === 'dateRange'"
-								value-format="YYYY-MM-DD"
-								v-model="state.form[val.prop]"
-								type="daterange"
-								range-separator="-"
-								start-placeholder="開始時間"
-								end-placeholder="結束時間"
-							/>
-							<el-select v-model="state.form[val.prop]" :placeholder="`请选择${val.label}`" v-else-if="val.type === 'select'" style="width: 100%">
-								<el-option v-for="item in val.options" :key="item.label" :label="item.text" :value="item.value"> </el-option>
-							</el-select>
-							<span v-else style="width: 100%; font-weight: 700; color: #1890ff">
-								{{ state.form[val.prop] }}
-							</span>
-						</el-form-item>
-					</template>
+					<el-form-item
+						v-if="val.type !== ''"
+						:label="$t(val.label)"
+						:prop="val.prop"
+						:rules="[{ required: val.required, message: `${val.label}不能为空`, trigger: val.type === 'input' ? 'blur' : 'change' }]"
+					>
+						<el-input
+							v-model="state.form[val.prop]"
+							:placeholder="`请输入${$t(val.label)}`"
+							clearable
+							v-if="val.type === 'input'"
+							style="width: 100%"
+						/>
+						<el-date-picker
+							v-model="state.form[val.prop]"
+							type="date"
+							:placeholder="val.placeholder"
+							v-else-if="val.type === 'date'"
+							style="width: 100%"
+						/>
+						<el-date-picker
+							v-else-if="val.type === 'dateRange'"
+							value-format="YYYY-MM-DD"
+							v-model="state.form[val.prop]"
+							type="daterange"
+							range-separator="-"
+							start-placeholder="開始時間"
+							end-placeholder="結束時間"
+							style="width: 100%"
+						/>
+						<el-select v-model="state.form[val.prop]" :placeholder="`请选择${val.label}`" v-else-if="val.type === 'select'" style="width: 100%">
+							<el-option v-for="item in val.options" :key="item.label" :label="item.text" :value="item.value"> </el-option>
+						</el-select>
+						<span v-else style="width: 100%; font-weight: 700; color: #1890ff">
+							{{ state.form[val.prop] }}
+						</span>
+					</el-form-item>
 				</el-col>
-				<el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4">
+				<el-col :xs="24" :sm="12" :md="8" :lg="2" :xl="2">
 					<el-form-item class="table-form-btn" :label-width="search.length <= 6 ? '20px' : '100px'">
 						<template #label v-if="search.length > 6">
 							<div class="table-form-btn-toggle ml10" @click="state.isToggle = !state.isToggle">
@@ -155,7 +155,12 @@ onMounted(() => {
 		}
 	}
 }
-.isMargin:nth-child(n + 5) {
-	margin-top: 20px;
+
+/* 页面宽度小于1200px
+------------------------------- */
+@media screen and (max-width: 1200px) {
+	.isMargin {
+		margin-bottom: 10px;
+	}
 }
 </style>

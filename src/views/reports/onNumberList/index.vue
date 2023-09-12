@@ -10,10 +10,11 @@
 				@sortHeader="onSortHeader"
 				@cellclick="reqNoClick"
 				:cellStyle="cellStyle"
+				:objectSpanMethod="objectSpanMethod"
 			/>
-			<el-dialog v-model="matNoDetaildialogVisible" title="料号详情" width="50%">
+			<!-- <el-dialog v-model="matNoDetaildialogVisible" title="料号详情" width="50%">
 				<matNoDetailDialog :isDialog="true" :matNoRef="matNoRef"
-			/></el-dialog>
+			/></el-dialog> -->
 		</div>
 	</div>
 </template>
@@ -58,12 +59,14 @@ const state = reactive<TableDemoState>({
 			{ key: 'repairQty', colWidth: '', title: '维修总数', type: 'text', isCheck: true },
 			{ key: 'idleQty', colWidth: '', title: '闲置总数', type: 'text', isCheck: true },
 			{ key: 'storedQty', colWidth: '', title: '库存总数', type: 'text', isCheck: true },
+			{ key: 'storeLocation', colWidth: '', title: '仓库位置', type: 'text', isCheck: true },
+			{ key: 'stockQty', colWidth: '', title: '库存数量', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
 			total: 0, // 列表总数
 			loading: true, // loading 加载
-			isBorder: false, // 是否显示表格边框
+			isBorder: true, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
 			isSelection: false, // 是否显示表格多选
 			isOperate: false, // 是否显示表格操作栏
@@ -110,7 +113,41 @@ const changeToStyle = (indList: number[]) => {
 		}
 	};
 };
-cellStyle.value = changeToStyle([1]);
+// cellStyle.value = changeToStyle([1]);
+// /**合并表格的第一列，处理表格数据 */
+const flitterData = (arr: EmptyObjectType, columnI: number, property: string) => {
+	let spanOneArr: EmptyArrayType = [];
+	let concatOne = 0;
+	arr.forEach((item: EmptyObjectType, index: number) => {
+		if (index === 0) {
+			spanOneArr.push(1);
+		} else {
+			// 注意这里的data是表格绑定的字段，根据自己的需求来改
+			if (item[property] === arr[index - 1][property] && item['matNo'] === arr[index - 1]['matNo']) {
+				//列需合并相同内容的判断条件
+				spanOneArr[concatOne] += 1;
+				spanOneArr.push(0);
+			} else {
+				spanOneArr.push(1);
+				concatOne = index;
+			}
+		}
+	});
+	return {
+		one: spanOneArr,
+	};
+};
+const objectSpanMethod = ({ row, column, rowIndex, columnIndex }: any) => {
+	let arr = ['storeLocation', 'stockQty'];
+	if (!arr.includes(column.property)) {
+		const _row = flitterData(state.tableData.data, columnIndex, column.property).one[rowIndex];
+		const _col = _row > 0 ? 1 : 0;
+		return {
+			rowspan: _row,
+			colspan: _col,
+		};
+	}
+};
 // 初始化列表数据
 const getTableData = async () => {
 	state.tableData.config.loading = true;
@@ -124,7 +161,14 @@ const getTableData = async () => {
 		page: state.tableData.page,
 	};
 	const res = await getQueryStoredInventoryApi(data);
-	state.tableData.data = res.data.data;
+
+	state.tableData.data = [];
+	res.data.data.forEach((item: any) => {
+		if (!item.stocks.length) state.tableData.data.push(item);
+		item.stocks.forEach((stock: any) => {
+			state.tableData.data.push({ ...item, storeLocation: stock.storeLocation, stockQty: stock.stockQty });
+		});
+	});
 	state.tableData.config.total = res.data.total;
 	if (res.status) {
 		state.tableData.config.loading = false;

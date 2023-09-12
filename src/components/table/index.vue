@@ -91,16 +91,17 @@
 			:border="setBorder"
 			v-bind="$attrs"
 			:row-key="selRowKey"
-			stripe
+			:stripe="objectSpanMethod ? false : true"
 			style="width: 100%"
 			:header-row-style="{ background: '#dce9fd' }"
 			v-loading="config.loading"
 			@selection-change="onSelectionChange"
 			@cell-click="cellClick"
 			:cell-style="cellStyle"
+			:span-method="objectSpanMethod"
 		>
 			<el-table-column type="selection" :reserve-selection="true" width="30" v-if="config.isSelection" />
-			<el-table-column align="center" type="index" :label="$t('message.pages.no')" width="60" v-if="config.isSerialNo" />
+			<el-table-column align="center" type="index" :label="$t('message.pages.no')" width="70" v-if="config.isSerialNo" />
 			<el-table-column
 				align="center"
 				v-for="(item, index) in setHeader"
@@ -240,7 +241,7 @@
 					<template v-for="btn in btnConfig" :key="btn.type">
 						<el-button
 							v-if="!btn.isSure"
-							@click="btn.type === 'edit' ? onOpenEdit(btn.type, scope.row) : onOpenOther(scope)"
+							@click="btn.type === 'edit' ? onOpenEdit(btn.type, scope.row) : onOpenOther(scope, btn.type)"
 							:color="btn.color"
 							plain
 							size="default"
@@ -341,6 +342,13 @@ const props = defineProps({
 			return Function;
 		},
 	},
+	// 合并单元格
+	objectSpanMethod: {
+		type: Function,
+		default: () => {
+			return Function;
+		},
+	},
 });
 
 // 定义子组件向父组件传值/事件
@@ -369,17 +377,6 @@ const emit = defineEmits([
 ]);
 const remoteMethod = (index: number, query: string) => {
 	emit('remoteMethod', index, query);
-	// if (query) {
-	//   loading.value = true
-	//   setTimeout(() => {
-	//     loading.value = false
-	//     options.value = list.value.filter((item) => {
-	//       return item.label.toLowerCase().includes(query.toLowerCase())
-	//     })
-	//   }, 200)
-	// } else {
-	//   options.value = []
-	// }
 };
 // 表格行样式
 const tableRowClassName = (scope: EmptyObjectType) => {
@@ -432,8 +429,8 @@ const onOpenEdit = (type: string, row: Object) => {
 	emit('openAdd', type, row);
 };
 // 打开送样(其他)弹窗
-const onOpenOther = (scope: EmptyObjectType) => {
-	emit('onOpenOtherDialog', scope);
+const onOpenOther = (scope: EmptyObjectType, type: string) => {
+	emit('onOpenOtherDialog', scope, type);
 };
 // 打开导入弹窗
 const onImportTable = (type: string) => {

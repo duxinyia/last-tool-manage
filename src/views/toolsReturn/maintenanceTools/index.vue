@@ -27,6 +27,7 @@
 				@openInnerDialog="openInnerDialog"
 				@handleTagClose="handleTagClose"
 				@selectChange="selectChange"
+				@remoteMethod="remoteMethod"
 			/>
 		</div>
 	</div>
@@ -36,13 +37,19 @@
 import { defineAsyncComponent, reactive, ref, onMounted, computed, nextTick } from 'vue';
 import type { FormInstance } from 'element-plus';
 
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage } from 'element-plus';
 // 引入接口
-import { getQueryNoPageApi } from '/@/api/requistManage/presentation';
-import { getStockListApi, ExitStoreApi, getExitReasonApi } from '/@/api/toolsReturn/maintentanceTools';
-import { getMaterialListApi, getGetSampleApi } from '/@/api/partno/sampleDelivery';
+import {
+	getStockListApi,
+	ExitStoreApi,
+	getExitReasonApi,
+	getQueryStoreHouseNoPageApi,
+	getTransferStorageApi,
+} from '/@/api/toolsReturn/maintentanceTools';
 
 import { useI18n } from 'vue-i18n';
+import { log } from 'console';
+import { constants } from 'buffer';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
@@ -97,6 +104,7 @@ const state = reactive<TableDemoState>({
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
+			operateWidth: 220, //操作栏宽度，如果操作栏有几个按钮就自己定宽度
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
@@ -106,7 +114,16 @@ const state = reactive<TableDemoState>({
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [{ type: 'sendReceive', name: '退库', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
+		btnConfig: [
+			{ type: 'transferStorage', name: '转仓', color: '#36C78B', isSure: false, icon: 'ele-Position' },
+			{
+				type: 'sendReceive',
+				name: '退库',
+				color: '#D3C333',
+				isSure: false,
+				icon: 'ele-EditPen',
+			},
+		],
 		// 给后端的数据
 		form: {
 			matNo: '',
@@ -166,6 +183,7 @@ const dialogState = reactive<TableDemoState>({
 				required: true,
 				bindOthers: 'reasonId',
 				type: 'select',
+
 				options: [
 					{ value: 1, label: '维修', text: '维修' },
 					{ value: 2, label: '闲置', text: '闲置' },
@@ -189,6 +207,47 @@ const dialogState = reactive<TableDemoState>({
 				md: 12,
 				lg: 9,
 				xl: 9,
+			},
+			{
+				label: '转仓仓库:',
+				prop: 'storageId',
+				placeholder: '请选择转仓仓库',
+				required: true,
+				type: 'select',
+				options: [],
+				loading: true,
+				filterable: true,
+				remote: true,
+				remoteShowSuffix: true,
+				xs: 24,
+				sm: 12,
+				md: 8,
+				lg: 8,
+				xl: 8,
+			},
+			{
+				label: '出库日期:',
+				prop: 'outDate',
+				placeholder: '请选择出库日期',
+				required: true,
+				type: 'date',
+				xs: 24,
+				sm: 12,
+				md: 8,
+				lg: 8,
+				xl: 8,
+			},
+			{
+				label: '描述说明:',
+				prop: 'describe',
+				placeholder: '请输入描述说明',
+				required: false,
+				type: 'textarea',
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
 			},
 			{
 				label: '退库数量',
@@ -285,10 +344,6 @@ const getTableData = async () => {
 		state.tableData.config.loading = false;
 	}
 };
-//删除
-const onDelRow = (row: EmptyObjectType, i: number) => {
-	dialogState.tableData.data.splice(i, 1);
-};
 const exitTypeMap: EmptyObjectType = {
 	1: 'RepairReason',
 	2: 'IdleReason',
@@ -322,9 +377,66 @@ const selectChange = async (val: string, name: string, formData: EmptyObjectType
 	}
 };
 
-// 点击退库弹窗
-const openReturnDialog = (scope: EmptyObjectType) => {
+// 点击退库或者转仓按钮弹窗
+let deleteData: any = [];
+let deleteStorage: any = [];
+const openReturnDialog = (scope: EmptyObjectType, type: string) => {
+	let dialogConfig = dialogState.tableData.dialogConfig;
+	// 转仓
+	if (type === 'transferStorage') {
+		dialogConfig?.forEach((item, index) => {
+			if (item.prop == 'exitType' || item.prop == 'reasonId') {
+				deleteData = JSON.parse(JSON.stringify(dialogConfig?.splice(index, 2)));
+			} else if (item.prop === 'exitQty') {
+				item.label = '转仓数量';
+				item.placeholder = '请输入转仓数量';
+			}
+		});
+		deleteStorage.reverse().forEach((item: any) => {
+			dialogConfig?.splice(5, 0, item);
+		});
+		deleteStorage = [];
+	} else {
+		dialogConfig?.forEach((item, index) => {
+			const arr = ['storageId', 'outDate', 'describe'];
+			if (arr.includes(item.prop)) {
+				deleteStorage = JSON.parse(JSON.stringify(dialogConfig?.splice(index, 3)));
+			} else if (item.prop === 'exitQty') {
+				item.label = '退库数量';
+				item.placeholder = '请输入退库数量';
+			}
+		});
+		deleteData.reverse().forEach((item: any) => {
+			dialogConfig?.splice(5, 0, item);
+		});
+		deleteData = [];
+	}
 	repairReturnDialogRef.value.openDialog('return', scope.row);
+};
+// 根据接口得到仓库下拉数据
+let options: EmptyArrayType = [];
+const remoteMethod = (query: string) => {
+	let dialogConfig = dialogState.tableData.dialogConfig;
+	dialogConfig?.forEach((item) => {
+		if (item.prop === 'storageId') item.loading = true;
+	});
+	if (query) {
+		setTimeout(async () => {
+			const res = await getQueryStoreHouseNoPageApi(query);
+			dialogConfig?.forEach((item) => {
+				if (item.prop === 'storageId') item.loading = false;
+			});
+			options = res.data.map((item: EmptyObjectType) => {
+				return { value: `${item.storeName}`, label: `${item.runId}` };
+			});
+			if (dialogConfig)
+				dialogConfig[5].options = options.filter((item: EmptyObjectType) => {
+					return item.value.toLowerCase().includes(query.toLowerCase());
+				});
+		}, 500);
+	} else {
+		if (dialogConfig) dialogConfig[5].options = [];
+	}
 };
 const scanCodeEntry = () => {
 	repairReturnDialogRef.value.openInnerDialog('扫码录入');
@@ -393,29 +505,47 @@ const matnoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 
 // 提交 确认退库
 const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerData: EmptyObjectType) => {
-	// if (!dialogState.tableData.form['sendTime']) return ElMessage.warning(t('请填写收货时间'));
 	let allData: EmptyObjectType = { ...ruleForm };
+	options.forEach((item) => {
+		if (item.value === allData.storageId) {
+			allData['receiveStorageId'] = item.label;
+		}
+	});
 	let submitData = {
 		stockId: allData.runid,
 		exitType: allData.exitType,
 		reasonId: allData.reasonId,
 		exitReason: allData.exitReason,
+		receiveStorageName: allData.storageId,
 		exitQty: allData.exitQty,
+		transferQty: allData.exitQty,
 		describe: allData.describe,
+		outDate: allData.outDate,
+		receiveStorageId: allData.receiveStorageId,
 		codeList: formInnerData.codeList,
 	};
-
 	if (submitData.exitQty > ruleForm.stockqty) {
 		ElMessage.error(`退库数量大于库存总量`);
 	} else if (submitData.exitQty < submitData.codeList.length) {
 		ElMessage.error(`退库数量小于扫码数量`);
 	} else {
-		const res = await ExitStoreApi(submitData);
-		if (res.status) {
-			ElMessage.success(t('退库成功'));
-			repairReturnDialogRef.value.closeDialog();
-			getTableData();
+		// 转仓提交
+		if (ruleForm.storageId) {
+			delete submitData.exitQty;
+			const res = await getTransferStorageApi(submitData);
+			if (res.status) {
+				ElMessage.success(t('转仓成功'));
+			}
+		} else {
+			// 退库提交
+			delete submitData.transferQty;
+			const res = await ExitStoreApi(submitData);
+			if (res.status) {
+				ElMessage.success(t('退库成功'));
+			}
 		}
+		repairReturnDialogRef.value.closeDialog();
+		getTableData();
 	}
 };
 // 搜索点击时表单回调

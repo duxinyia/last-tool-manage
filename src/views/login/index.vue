@@ -46,10 +46,10 @@
 						</span>
 						&nbsp;&nbsp;
 						<span class="author">
-							<el-icon class="icon"><ele-UserFilled /></el-icon>***/***-*****
+							<el-icon class="icon"><ele-UserFilled /></el-icon>刘进/***-*****
 						</span>
 						<span class="mail">
-							<el-icon class="icon"><ele-Message /></el-icon>123@mail.foxconn.com
+							<el-icon class="icon"><ele-Message /></el-icon>rein.j.liu@mail.foxconn.com
 						</span>
 					</div>
 				</div>
