@@ -15,3 +15,21 @@ export function getreqNoApi(data:Object) {
   	params:data
   });
 }
+// 修改
+export function getModifyApplyReqApi(data:Object) {
+  return request({
+    url: '/api/ToolApply/ModifyApplyReq',
+    method: 'POST',
+  	data:data
+  });
+}
+// 删除
+export function getDeleApplyItemApi(data:Object) {
+  return request({
+    url: `/api/ToolApply/DeleApplyItem`,
+    method: 'DELETE',
+    data:data
+  });
+}
+
+

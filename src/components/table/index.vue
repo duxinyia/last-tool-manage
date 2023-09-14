@@ -101,7 +101,7 @@
 			:span-method="objectSpanMethod"
 		>
 			<el-table-column type="selection" :reserve-selection="true" width="30" v-if="config.isSelection" />
-			<el-table-column align="center" type="index" :label="$t('message.pages.no')" width="70" v-if="config.isSerialNo" />
+			<el-table-column align="center" type="index" :index="indexMethod" :label="$t('message.pages.no')" width="70" v-if="config.isSerialNo" />
 			<el-table-column
 				align="center"
 				v-for="(item, index) in setHeader"
@@ -349,6 +349,9 @@ const props = defineProps({
 			return Function;
 		},
 	},
+	indexMethod: {
+		type: Function,
+	},
 });
 
 // 定义子组件向父组件传值/事件
@@ -437,6 +440,7 @@ const onImportTable = (type: string) => {
 	emit('openAdd', type);
 	// roleDialogRef.value.openDialog(type);
 };
+
 // 定义变量内容
 const { t } = useI18n();
 const toolSetRef = ref();

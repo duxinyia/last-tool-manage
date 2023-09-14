@@ -11,28 +11,42 @@
 				@cellclick="reqNoClick"
 				:cellStyle="cellStyle"
 				:objectSpanMethod="objectSpanMethod"
-			/>
-			<!-- <el-dialog v-model="matNoDetaildialogVisible" title="料号详情" width="50%">
-				<matNoDetailDialog :isDialog="true" :matNoRef="matNoRef"
-			/></el-dialog> -->
+				:indexMethod="indexMethod"
+			>
+				<template #btn="{ row }">
+					<el-button type="primary" plain size="default" class="button buttonBorder" @click="onSign(row.stockId)">
+						{{ $t('查看二维码编号') }}</el-button
+					>
+				</template>
+			</Table>
+			<el-dialog v-model="onNumberListDialogRef" title="二维码编号" width="30%" draggable>
+				<el-tag v-for="tag in tags" :key="tag.code" class="mr10 mb10">
+					{{ tag }}
+				</el-tag>
+			</el-dialog>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts" name="onNumberList">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
-import { getQueryStoredInventoryApi } from '/@/api/reports/onNumberList';
+import { getQueryStoredInventoryApi, getCodesByStockIdApi } from '/@/api/reports/onNumberList';
+import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
-const matNoDetailDialog = defineAsyncComponent(() => import('/@/views/link/noSearchLink/index.vue'));
+
 // 定义变量内容
 const { t } = useI18n();
 const tableRef = ref<RefType>();
 const matNoRef = ref();
+const onNumberListDialogRef = ref(false);
+// tags的数据
+let tags = ref<EmptyArrayType>([]);
 const matNoDetaildialogVisible = ref(false);
-
+const mergeArr: EmptyObjectType = ref({});
+const indexNum: EmptyObjectType = ref({});
 // 单元格样式
 const cellStyle = ref();
 // 弹窗标题
@@ -69,11 +83,12 @@ const state = reactive<TableDemoState>({
 			isBorder: true, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
 			isSelection: false, // 是否显示表格多选
-			isOperate: false, // 是否显示表格操作栏
+			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
+			operateWidth: 170, //操作栏宽度，如果操作栏有几个按钮就自己定宽度
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
@@ -114,38 +129,66 @@ const changeToStyle = (indList: number[]) => {
 	};
 };
 // cellStyle.value = changeToStyle([1]);
-// /**合并表格的第一列，处理表格数据 */
-const flitterData = (arr: EmptyObjectType, columnI: number, property: string) => {
-	let spanOneArr: EmptyArrayType = [];
-	let concatOne = 0;
-	arr.forEach((item: EmptyObjectType, index: number) => {
-		if (index === 0) {
-			spanOneArr.push(1);
-		} else {
-			// 注意这里的data是表格绑定的字段，根据自己的需求来改
-			if (item[property] === arr[index - 1][property] && item['matNo'] === arr[index - 1]['matNo']) {
-				//列需合并相同内容的判断条件
-				spanOneArr[concatOne] += 1;
-				spanOneArr.push(0);
+// 表格调用的合并方法
+const objectSpanMethod = ({ row, column, rowIndex, columnIndex }: any) => {
+	let arr = mergeArr.value[column.property] || [];
+	if (column.type == 'index' && mergeArr.value['matNo']) return mergeArr.value['matNo'][rowIndex];
+	else if (arr.length) return arr[rowIndex];
+	else [1, 1];
+};
+// 封装一个需要合并的行方法
+const colMethod = (columnArr: EmptyArrayType, data: EmptyArrayType) => {
+	// columnArr 合并行所在的列字段
+	// data 需要合并的表格数据
+	let column: EmptyObjectType = {};
+	let position = 0;
+	// 遍历合并的列数据
+	columnArr.forEach((prop: any) => {
+		column[prop] = [];
+		//  遍历合并的行数据
+		data.forEach((row, rowIndex) => {
+			// 第N列第一行
+			column[prop][rowIndex] = [1, 1];
+			if (rowIndex === 0) {
+				// 记录当前行号
+				position = 0;
+			} else if (row[prop] === data[rowIndex - 1][prop] && row.matNo === data[rowIndex - 1].matNo) {
+				// 当前行数据等于上一行，根据记录的行号，计算需要合并几行。
+				column[prop][position][0] += 1;
+				// 当前行 隐藏不显示
+				column[prop][rowIndex][0] = 0;
 			} else {
-				spanOneArr.push(1);
-				concatOne = index;
+				// 不相等之后，重置记录行号
+				position = rowIndex;
 			}
+		});
+	});
+	return column;
+};
+// 排列序号
+const indexobj = () => {
+	let num = 0;
+	mergeArr.value['matNo'].forEach((item: any, index: number) => {
+		if (item[0] != 0) {
+			indexNum.value[index] = num += 1;
 		}
 	});
-	return {
-		one: spanOneArr,
-	};
 };
-const objectSpanMethod = ({ row, column, rowIndex, columnIndex }: any) => {
-	let arr = ['storeLocation', 'stockQty'];
-	if (!arr.includes(column.property)) {
-		const _row = flitterData(state.tableData.data, columnIndex, column.property).one[rowIndex];
-		const _col = _row > 0 ? 1 : 0;
-		return {
-			rowspan: _row,
-			colspan: _col,
-		};
+
+// 自定义序号
+const indexMethod = (index: number) => {
+	return indexNum.value[index];
+};
+// 点击按钮
+const onSign = async (stockId: string) => {
+	const res = await getCodesByStockIdApi(stockId);
+	if (res.data) {
+		if (!res.data.length) {
+			ElMessage.error('暂无二维码编号');
+		} else {
+			onNumberListDialogRef.value = true;
+			tags.value = res.data;
+		}
 	}
 };
 // 初始化列表数据
@@ -166,22 +209,28 @@ const getTableData = async () => {
 	res.data.data.forEach((item: any) => {
 		if (!item.stocks.length) state.tableData.data.push(item);
 		item.stocks.forEach((stock: any) => {
-			state.tableData.data.push({ ...item, storeLocation: stock.storeLocation, stockQty: stock.stockQty });
+			state.tableData.data.push({ ...item, storeLocation: stock.storeLocation, stockQty: stock.stockQty, stockId: stock.stockId });
 		});
 	});
 	state.tableData.config.total = res.data.total;
+	// 计算合并的行
+	mergeArr.value = colMethod(
+		['matNo', 'buCode', 'machineType', 'projectCode', 'nameCh', 'nameEn', 'applyQty', 'uselessQty', 'repairQty', 'idleQty', 'storedQty'],
+		state.tableData.data
+	);
+	indexobj(); //排列序号
 	if (res.status) {
 		state.tableData.config.loading = false;
 	}
 };
 // 点击料号
 const reqNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
-	if (column.property === 'matNo') {
-		matNoRef.value = row.matNo;
-		setTimeout(() => {
-			matNoDetaildialogVisible.value = true;
-		}, 100);
-	}
+	// if (column.property === 'matNo') {
+	// 	matNoRef.value = row.matNo;
+	// 	setTimeout(() => {
+	// 		matNoDetaildialogVisible.value = true;
+	// 	}, 100);
+	// }
 };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
@@ -215,5 +264,8 @@ onMounted(() => {
 			overflow: hidden;
 		}
 	}
+}
+.buttonBorder {
+	border: 0px !important;
 }
 </style>

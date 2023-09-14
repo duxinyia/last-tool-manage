@@ -213,8 +213,6 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
 		let allData: EmptyObjectType = {};
 		let userIdsArr: EmptyArrayType = [];
-		console.log(dialogState.tableData.data);
-
 		dialogState.tableData.data.forEach((item) => {
 			userIdsArr.push({ runId: item.runid, userId: item.userId });
 		});

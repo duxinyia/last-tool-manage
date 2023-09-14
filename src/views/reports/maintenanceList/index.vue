@@ -5,11 +5,11 @@
 			<Table ref="tableRef" v-bind="state.tableData" class="table" @pageChange="onTablePageChange" @sortHeader="onSortHeader" @cellclick="reqNoClick">
 				<template #btn="{ row }">
 					<el-button type="primary" plain size="default" class="button buttonBorder" @click="onSign(row.exitStoreId)">
-						{{ $t('查看二维码编码') }}</el-button
+						{{ $t('查看二维码编号') }}</el-button
 					>
 				</template>
 			</Table>
-			<el-dialog v-model="maintenanceListDialogRef" title="二维码编码" width="30%" draggable>
+			<el-dialog v-model="maintenanceListDialogRef" title="二维码编号" width="30%" draggable>
 				<el-tag v-for="tag in tags" :key="tag.code" class="mr10 mb10">
 					{{ tag.code }}
 				</el-tag>
@@ -103,7 +103,7 @@ const onSign = async (exitStoreId: string) => {
 	const res = await GetExitStoreQrCodeListApi(exitStoreId);
 	if (res.data) {
 		if (!res.data.length) {
-			ElMessage.error('暂无二维码编码');
+			ElMessage.error('暂无二维码编号');
 		} else {
 			maintenanceListDialogRef.value = true;
 			tags.value = res.data;

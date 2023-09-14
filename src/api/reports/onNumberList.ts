@@ -8,3 +8,10 @@ export function getQueryStoredInventoryApi(data:Object) {
   	data:data
   });
 }
+// 二维码编码
+export function getCodesByStockIdApi(stockId:string) {
+  return request({
+    url: `/api/Report/GetCodesByStockId/${stockId}`,
+    method: 'GET',
+  });
+}

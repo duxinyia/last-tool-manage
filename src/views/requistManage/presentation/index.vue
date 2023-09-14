@@ -72,8 +72,9 @@ const state = reactive<EmptyObjectType>({
 				matNo: '',
 				nameCh: '',
 				nameEn: '',
-				vendorCode: '',
-				vendorName: '',
+				drawNo: '',
+				// vendorCode: '',
+				// vendorName: '',
 				reqQty: null,
 				reqDate: '',
 				prItemNo: '',
@@ -106,10 +107,11 @@ const state = reactive<EmptyObjectType>({
 				option: [],
 				isfilterable: true,
 			},
-			{ key: 'nameCh', colWidth: '200', title: '品名-中文', type: 'text', isCheck: true, isRequired: true },
-			// { key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true, isRequired: true },
-			{ key: 'vendorCode', colWidth: '250', title: '厂商代码', type: 'input', isCheck: true, isRequired: true },
-			{ key: 'vendorName', colWidth: '300', title: '厂商名称', type: 'input', isCheck: true, isRequired: true },
+			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true, isRequired: true },
+			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true, isRequired: true },
+			{ key: 'drawNo', colWidth: '', title: '图纸编号', type: 'text', isCheck: true, isRequired: true },
+			// { key: 'vendorCode', colWidth: '250', title: '厂商代码', type: 'input', isCheck: true, isRequired: true },
+			// { key: 'vendorName', colWidth: '300', title: '厂商名称', type: 'input', isCheck: true, isRequired: true },
 			{ key: 'reqQty', colWidth: '150', title: '需求数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
 			{ key: 'reqDate', colWidth: '150', title: '需求时间', type: 'time', isCheck: true, isRequired: true },
 			{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'input', isCheck: true, isRequired: true },
@@ -178,6 +180,7 @@ const changeSelect = async (i: number, query: any) => {
 			let data = state.tableData.data[i];
 			data.nameCh = item.nameCh;
 			data.nameEn = item.nameEn;
+			data.drawNo = item.drawNo;
 		}
 	});
 };
@@ -187,8 +190,9 @@ const onAddRow = () => {
 		matNo: '',
 		nameCh: '',
 		nameEn: '',
-		vendorCode: '',
-		vendorName: '',
+		drawNo: '',
+		// vendorCode: '',
+		// vendorName: '',
 		sampleQty: '',
 		sampleTime: '',
 		pr: '',
