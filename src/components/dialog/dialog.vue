@@ -1,7 +1,7 @@
 <template>
 	<div class="system-menu-dialog-container">
 		<el-dialog draggable :title="state.dialog.title" v-model="state.dialog.isShowDialog" :width="dialogWidth">
-			<el-form v-if="state.dialog.type !== 'imp'" ref="dialogFormRef" :model="state.formData" size="default" label-width="85px">
+			<el-form v-if="state.dialog.type !== 'imp'" ref="dialogFormRef" :model="state.formData" size="default" label-width="100px">
 				<el-row :gutter="35">
 					<el-col
 						:xs="item.xs || 24"
@@ -23,6 +23,8 @@
 								:placeholder="$t(item.placeholder)"
 								style="width: 100%"
 							/>
+							<!-- 数字输入框 -->
+							<el-input-number v-if="item.type === 'number'" v-model="state.formData[item.prop]" :min="item.min || 0" :max="item.max" size="small" />
 							<!-- @change=" (val:any) => commonInputHandleChange(val,item.prop)" -->
 
 							<!-- <el-input :width="224" v-if="item.type === 'tagtextarea'" v-model="state.formData[item.prop]">
@@ -367,7 +369,7 @@ const openDialog = (type: string, row?: any, title?: string) => {
 		state.dialog.submitTxt = '确 定';
 		nextTick(() => {
 			state.formData = JSON.parse(JSON.stringify(row));
-			dialogFormRef.value.resetFields();
+			dialogFormRef.value && dialogFormRef.value.resetFields();
 			innnerDialogFormRef.value && innnerDialogFormRef.value.resetFields();
 		});
 	}

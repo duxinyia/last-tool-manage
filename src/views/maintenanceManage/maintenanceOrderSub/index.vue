@@ -138,6 +138,8 @@ const state = reactive<TableDemoState>({
 			{ key: 'nameen', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 			{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+			{ key: 'storageType', colWidth: '', title: '倉庫類型', type: 'text', isCheck: true },
+			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
 			{ key: 'exitqty', colWidth: '', title: '退库数量', type: 'text', isCheck: true },
 			{ key: 'exitreason', colWidth: '', title: '退库原因', type: 'text', isCheck: true },
 		],
@@ -257,7 +259,7 @@ const changeToStyle = (indList: number[]) => {
 		}
 	};
 };
-cellStyle.value = changeToStyle([2, 7]);
+cellStyle.value = changeToStyle([2, 9]);
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;

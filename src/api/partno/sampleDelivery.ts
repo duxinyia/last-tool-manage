@@ -23,6 +23,14 @@ export function getGetSampleApi(matNo:string) {
   	params:{matNo}
   });
 }
+// 新增样品需求
+export function getAddSampleNeedsApi(data:Object) {
+  return request({
+    url: '/api/Material/AddSampleNeeds',
+    method: 'POST',
+  	data:data
+  });
+}
 
 
 

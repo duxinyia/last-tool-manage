@@ -80,7 +80,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: 'NameEn', type: 'text', isCheck: true },
 			{ key: 'drawNo', colWidth: '', title: 'message.pages.drawNo', type: 'text', isCheck: true },
-			{ key: 'specs', colWidth: '', title: 'message.pages.specs', type: 'text', isCheck: true },
+			// { key: 'specs', colWidth: '', title: 'message.pages.specs', type: 'text', isCheck: true },
 			{ key: 'signStatusStr', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
 			// { key: 'creator', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
 			// { key: 'createtime', title: 'message.pages.creationTime', type: 'text', isCheck: true },

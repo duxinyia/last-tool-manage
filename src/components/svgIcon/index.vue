@@ -69,7 +69,7 @@ const setIconImgOutStyle = computed(() => {
 });
 // svg图标样式
 const svgiconStyle = computed(() => {
-	return `margin-right:10px`;
+	return `margin-right:10px;`;
 });
 // 设置图片样式
 const setIconSvgInsStyle = computed(() => {

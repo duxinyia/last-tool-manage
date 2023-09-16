@@ -326,7 +326,7 @@ const openEntryDialog = async (scope: any) => {
 	let res = await GetUserManagedStoreHouseApi();
 	if (state.tableData.dialogConfig) {
 		state.tableData.dialogConfig[11].options = res.data.map((item: any) => {
-			return { label: item.storeId, text: item.storeName, value: item.storeId };
+			return { label: item.storeType, text: item.sLocation, value: item.storeId };
 		});
 	}
 	entryJobDialogRef.value.openDialog('entry', scope.row);
@@ -340,7 +340,8 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 	state.tableData.dialogConfig &&
 		state.tableData.dialogConfig[11].options?.forEach((item) => {
 			if (item.value == obj.storageId) {
-				obj.storageName = item.text;
+				obj.sLocation = item.text;
+				obj.storeType = item.label;
 			}
 		});
 
@@ -356,11 +357,12 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 		nameen: obj.nameen,
 		vendorcode: obj.vendorcode,
 		vendorname: obj.vendorname,
-		checkqty: obj.checkqty,
+		checkqty: obj.checkQty,
 		putQty: obj.stockqty,
 		stockcode: obj.stockcode,
 		storageId: obj.storageId,
-		storageName: obj.storageName,
+		storeType: obj.storeType,
+		sLocation: obj.sLocation,
 		Codes: obj.codeList,
 	};
 	if (submitData.putQty > submitData.checkqty) {

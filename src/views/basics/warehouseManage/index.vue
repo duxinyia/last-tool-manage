@@ -42,6 +42,7 @@ import {
 	getAdminsInfosOfStoreHouseApi,
 	getAddAdminsToStoreHouseApi,
 	getRemoveAdminFromStoreHouseApi,
+	getLegalStoreTypesApi,
 } from '/@/api/basics/warehouseManage';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -61,8 +62,8 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'storeName', colWidth: '', title: '倉庫名', type: 'text', isCheck: true },
-			{ key: 'location', colWidth: '', title: '倉庫地址', type: 'text', isCheck: true },
+			{ key: 'storeType', colWidth: '', title: '倉庫类型', type: 'text', isCheck: true },
+			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
 			// { key: 'runstatus', colWidth: '', title: 'message.pages.state', type: 'status', isCheck: true },
 		],
 		// 配置项（必传）
@@ -89,8 +90,15 @@ const state = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{
-				label: '仓库名',
-				prop: 'storeName',
+				label: '仓库类型',
+				prop: 'storeType',
+				required: false,
+				type: 'select',
+				options: [],
+			},
+			{
+				label: '仓库位置',
+				prop: 'sLocation',
 				required: false,
 				type: 'input',
 			},
@@ -100,7 +108,8 @@ const state = reactive<TableDemoState>({
 		},
 		// 给后端的数据
 		form: {
-			projectcode: '',
+			storeType: '',
+			sLocation: '',
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -111,9 +120,8 @@ const state = reactive<TableDemoState>({
 		printName: '表格打印演示',
 		// 弹窗表单
 		dialogConfig: [
-			{ label: '倉庫名', prop: 'storeName', placeholder: '请输入倉庫名', required: true, type: 'input' },
-			{ label: '倉庫地址', prop: 'location', placeholder: '请输入倉庫地址', required: true, type: 'input' },
-			// { label: '状态', prop: 'stage', placeholder: '请输入阶段', required: true, type: 'input' },
+			{ label: '倉庫类型', prop: 'storeType', placeholder: '请输入倉庫类型', required: true, type: 'select', options: [] },
+			{ label: '倉庫位置', prop: 'sLocation', placeholder: '请输入倉庫位置', required: true, type: 'input' },
 		],
 	},
 });
@@ -167,7 +175,7 @@ const getAdminData = async (runId: string) => {
 // 打开管理员设定弹窗
 const openAdminDialog = async (scope: EmptyObjectType) => {
 	warehouseDialogVisible.value = true;
-	getAdminData(scope.row.runId);
+	getAdminData(scope.row.storeId);
 };
 //删除
 const onDelRow = async (row: EmptyObjectType, i: number) => {
@@ -232,7 +240,8 @@ const getTableData = async () => {
 	state.tableData.config.loading = true;
 	const form = state.tableData.form;
 	let data = {
-		storeName: form.storeName,
+		sLocation: form.sLocation,
+		storeType: form.storeType,
 		page: state.tableData.page,
 	};
 	const res = await getQueryStoreHouseInfo(data);
@@ -242,7 +251,17 @@ const getTableData = async () => {
 		state.tableData.config.loading = false;
 	}
 };
-
+// 下拉框数据
+const getSelect = async () => {
+	const res = await getLegalStoreTypesApi();
+	const option = res.data.map((item: any) => {
+		return { label: item, text: item, value: item };
+	});
+	state.tableData.search[0].options = option;
+	if (state.tableData.dialogConfig) {
+		state.tableData.dialogConfig[0].options = option;
+	}
+};
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
@@ -255,7 +274,7 @@ const openDialog = (type: string, row: Object) => {
 // 新增数据  修改数据
 const addData = async (ruleForm: EmptyObjectType, type: string) => {
 	ruleForm['storeLocation'] = ruleForm.location;
-	ruleForm['storeId'] = ruleForm.runId;
+	ruleForm['storeId'] = ruleForm.storeId;
 	const res = type === 'add' ? await getAddStoreHouseApi(ruleForm) : await getUpdateStoreHouseApi(ruleForm);
 	if (res.status) {
 		type === 'add' ? ElMessage.success(`新增成功`) : ElMessage.success(`修改成功`);
@@ -265,9 +284,9 @@ const addData = async (ruleForm: EmptyObjectType, type: string) => {
 };
 // 删除当前项回调
 const onTableDelRow = async (row: EmptyObjectType, type: string) => {
-	const res = await getDeleteStoreHouseApi(row.runId);
+	const res = await getDeleteStoreHouseApi(row.storeId);
 	if (res.status) {
-		ElMessage.success(`${t('message.allButton.deleteBtn')}${row.storeName}${t('message.hint.success')}`);
+		ElMessage.success(`${t('message.allButton.deleteBtn')}${t('message.hint.success')}`);
 		getTableData();
 	}
 };
@@ -293,6 +312,7 @@ watch(
 // 页面加载时
 onMounted(() => {
 	getTableData();
+	getSelect();
 });
 </script>
 

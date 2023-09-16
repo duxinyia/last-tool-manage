@@ -58,8 +58,16 @@ export function getAdminsInfosOfStoreHouseApi(storeId:string|number) {
   return request({
     url: `/api/BaseStore/GetAdminsInfosOfStoreHouse`,
     method: 'GET',
-    params:{storeId:storeId}
+    params:{storeId}
   });
 }
 
+// 下拉框数据
+export function getLegalStoreTypesApi() {
+  return request({
+    url: '/api/BaseStore/GetLegalStoreTypes',
+    method: 'GET',
+  
+  });
+}
 

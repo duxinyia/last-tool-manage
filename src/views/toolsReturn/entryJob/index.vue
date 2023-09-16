@@ -123,19 +123,19 @@ const state = reactive<TableDemoState>({
 			{ label: '料号:', prop: 'matno', placeholder: '请输入料号', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 8, xl: 8 },
 			{ label: '品名-中文:', prop: 'namech', placeholder: '请输入品名-中文', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 8, xl: 8 },
 			{ label: '品名-英文:', prop: 'nameen', placeholder: '请输入品名-英文', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 8, xl: 8 },
-			{ label: '厂商代码:', prop: 'vendorcode', placeholder: '请输入厂商代码', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 8, xl: 8 },
-			{
-				label: '厂商名称:',
-				prop: 'vendorname',
-				placeholder: '请输入厂商名称',
-				required: false,
-				type: 'text',
-				xs: 24,
-				sm: 12,
-				md: 12,
-				lg: 8,
-				xl: 8,
-			},
+			// { label: '厂商代码:', prop: 'vendorcode', placeholder: '请输入厂商代码', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 8, xl: 8 },
+			// {
+			// 	label: '厂商名称:',
+			// 	prop: 'vendorname',
+			// 	placeholder: '请输入厂商名称',
+			// 	required: false,
+			// 	type: 'text',
+			// 	xs: 24,
+			// 	sm: 12,
+			// 	md: 12,
+			// 	lg: 8,
+			// 	xl: 8,
+			// },
 			{ label: '验收数量:', prop: 'checkqty', placeholder: '请输入验收数量', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
 			// 这个字段待定
 			{
@@ -314,8 +314,12 @@ const handleTagClose = (tag: any, state: EmptyObjectType) => {
 const openEntryDialog = async (scope: any) => {
 	let res = await GetUserManagedStoreHouseApi();
 	if (state.tableData.dialogConfig) {
-		state.tableData.dialogConfig[11].options = res.data.map((item: any) => {
-			return { label: item.storeId, text: item.storeName, value: item.storeId };
+		state.tableData.dialogConfig.forEach((item) => {
+			if (item.prop == 'storageId') {
+				item.options = res.data.map((item: any) => {
+					return { label: item.storeType, text: item.sLocation, value: item.storeId };
+				});
+			}
 		});
 	}
 	entryJobDialogRef.value.openDialog('entry', scope.row);
@@ -327,13 +331,18 @@ const scanCodeEntry = () => {
 const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyObjectType) => {
 	let obj: EmptyObjectType = { ...ruleForm };
 	state.tableData.dialogConfig &&
-		state.tableData.dialogConfig[11].options?.forEach((item) => {
-			if (item.value == obj.storageId) {
-				obj.storageName = item.text;
+		state.tableData.dialogConfig.forEach((item) => {
+			if (item.prop == 'storageId' && item.options) {
+				item.options.forEach((option) => {
+					if (option.value == obj.storageId) {
+						obj.sLocation = option.text;
+						obj.storeType = option.label;
+					}
+				});
 			}
 		});
-	obj.codeList = formInnerData.codeList;
 
+	obj.codeList = formInnerData.codeList;
 	let submitData = {
 		runId: obj.runid,
 		checkno: obj.checkno,
@@ -341,13 +350,12 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 		matno: obj.matno,
 		namech: obj.namech,
 		nameen: obj.nameen,
-		vendorcode: obj.vendorcode,
-		vendorname: obj.vendorname,
 		checkqty: obj.checkqty,
 		stockqty: obj.stockqty,
 		stockcode: obj.stockcode,
 		storageId: obj.storageId,
-		storageName: obj.storageName,
+		sLocation: obj.sLocation,
+		storeType: obj.storeType,
 		codeList: obj.codeList,
 	};
 	if (submitData.stockqty > submitData.checkqty) {

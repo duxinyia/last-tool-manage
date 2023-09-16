@@ -121,6 +121,7 @@ const onSignIn = (formEl: EmptyObjectType | undefined) => {
 					redirect: 'noRedirect',
 					meta: { title: '首页', titleEn: 'message.router.home', isAffix: true, icon: 'home' },
 				});
+
 				// 添加是否缓存组件状态
 				const menudatas = addIsKeepAlive(res.data.datas);
 				Local.set('datas', menudatas);
@@ -151,6 +152,11 @@ const onSignIn = (formEl: EmptyObjectType | undefined) => {
 const addIsKeepAlive = (datas: EmptyArrayType) => {
 	datas.forEach((item) => {
 		item.meta['isKeepAlive'] = false;
+		item.children &&
+			item.children.forEach((c: any) => {
+				let reg = new RegExp('/', 'g');
+				c.name = c.name.replace(reg, '');
+			});
 		// 菜单是否隐藏
 		item.meta['isHide'] = Boolean(item.hidden);
 		if (item.children) {

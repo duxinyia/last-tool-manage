@@ -1,34 +1,39 @@
 <template>
 	<div class="table-container layout-padding">
 		<div class="table-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
-			<Table
-				ref="tableRef"
-				v-bind="state.tableData"
-				class="table"
-				@pageChange="onTablePageChange"
-				@sortHeader="onSortHeader"
-				@cellclick="matnoClick"
-				:cellStyle="cellStyle"
-				@onOpenOtherDialog="openReturnDialog"
-			/>
-			<Dialog
-				ref="repairReturnDialogRef"
-				:dialogConfig="dialogState.tableData.dialogConfig"
-				:innerDialogConfig="dialogState.tableData.innerDialogConfig"
-				dialogWidth="50%"
-				dialogType="nestDialogConfig"
-				@addData="returnSubmit"
-				@dailogFormButton="scanCodeEntry"
-				@commonInputHandleChange="change"
-				:tagsData="tags"
-				@innnerDialogCancel="innnerDialogCancel"
-				@innnerDialogSubmit="innnerDialogSubmit"
-				@openInnerDialog="openInnerDialog"
-				@handleTagClose="handleTagClose"
-				@selectChange="selectChange"
-				@remoteMethod="remoteMethod"
-			/>
+			<el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
+				<el-tab-pane label="退库" name="first">
+					<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
+					<Table
+						ref="tableRef"
+						v-bind="state.tableData"
+						class="table"
+						@pageChange="onTablePageChange"
+						@sortHeader="onSortHeader"
+						@cellclick="matnoClick"
+						:cellStyle="cellStyle"
+						@onOpenOtherDialog="openReturnDialog"
+					/>
+					<Dialog
+						ref="repairReturnDialogRef"
+						:dialogConfig="dialogState.tableData.dialogConfig"
+						:innerDialogConfig="dialogState.tableData.innerDialogConfig"
+						dialogWidth="50%"
+						dialogType="nestDialogConfig"
+						@addData="returnSubmit"
+						@dailogFormButton="scanCodeEntry"
+						@commonInputHandleChange="change"
+						:tagsData="tags"
+						@innnerDialogCancel="innnerDialogCancel"
+						@innnerDialogSubmit="innnerDialogSubmit"
+						@openInnerDialog="openInnerDialog"
+						@handleTagClose="handleTagClose"
+						@selectChange="selectChange"
+						@remoteMethod="remoteMethod"
+					/>
+				</el-tab-pane>
+				<el-tab-pane label="送签进度" name="second">送签进度</el-tab-pane>
+			</el-tabs>
 		</div>
 	</div>
 </template>
@@ -50,11 +55,16 @@ import {
 import { useI18n } from 'vue-i18n';
 import { log } from 'console';
 import { constants } from 'buffer';
+import type { TabsPaneContext } from 'element-plus';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
 const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
+const activeName = ref('first');
 
+const handleClick = (tab: TabsPaneContext, event: Event) => {
+	console.log(tab, event);
+};
 // 定义变量内容
 const { t } = useI18n();
 const tableFormRef = ref();
@@ -86,7 +96,8 @@ const state = reactive<TableDemoState>({
 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
 			{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 			{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-			{ key: 'storagename', colWidth: '', title: '倉庫名', type: 'text', isCheck: true },
+			{ key: 'storageType', colWidth: '', title: '倉庫類型', type: 'text', isCheck: true },
+			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
 			{ key: 'stockqty', colWidth: '', title: '库存总量', type: 'text', isCheck: true },
 			{ key: 'qrstockqty', colWidth: '', title: '有码库存量', type: 'text', isCheck: true },
 			{ key: 'notqrstockqty', colWidth: '', title: '无码库存量', type: 'text', isCheck: true },
@@ -427,11 +438,11 @@ const remoteMethod = (query: string) => {
 				if (item.prop === 'storageId') item.loading = false;
 			});
 			options = res.data.map((item: EmptyObjectType) => {
-				return { value: `${item.storeName}`, label: `${item.runId}` };
+				return { value: `${item.storeType}`, label: `${item.storeId}`, text: `${item.sLocation}` };
 			});
 			if (dialogConfig)
 				dialogConfig[5].options = options.filter((item: EmptyObjectType) => {
-					return item.value.toLowerCase().includes(query.toLowerCase());
+					return item.text.toLowerCase().includes(query.toLowerCase());
 				});
 		}, 500);
 	} else {
@@ -509,6 +520,7 @@ const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerDa
 	options.forEach((item) => {
 		if (item.value === allData.storageId) {
 			allData['receiveStorageId'] = item.label;
+			allData['sLocation'] = item.text;
 		}
 	});
 	let submitData = {
@@ -521,6 +533,7 @@ const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerDa
 		transferQty: allData.exitQty,
 		describe: allData.describe,
 		outDate: allData.outDate,
+		sLocation: allData.sLocation,
 		receiveStorageId: allData.receiveStorageId,
 		codeList: formInnerData.codeList,
 	};
@@ -597,5 +610,9 @@ onMounted(() => {
 	.el-select {
 		width: 90%;
 	}
+}
+:deep(.el-tabs__item) {
+	font-weight: 700;
+	font-size: 14px;
 }
 </style>

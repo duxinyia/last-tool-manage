@@ -8,7 +8,8 @@
 					:md="val.md || 8"
 					:lg="val.lg || 4"
 					:xl="val.xl || 4"
-					class="mr20 isMargin"
+					class="mr15 isMargin"
+					:class="{ isMoreSearch: search.length >= 6 }"
 					v-for="(val, key) in search"
 					:key="key"
 					v-show="key === 0 || state.isToggle"
@@ -52,8 +53,8 @@
 					</el-form-item>
 				</el-col>
 				<el-col :xs="24" :sm="12" :md="8" :lg="2" :xl="2">
-					<el-form-item class="table-form-btn" :label-width="search.length <= 6 ? '20px' : '100px'">
-						<template #label v-if="search.length > 6">
+					<el-form-item class="table-form-btn" :label-width="search.length < 6 ? '20px' : '100px'">
+						<template #label v-if="search.length >= 6">
 							<div class="table-form-btn-toggle ml10" @click="state.isToggle = !state.isToggle">
 								<span>{{ state.isToggle ? '收筛选' : '展筛选' }}</span>
 								<SvgIcon :name="state.isToggle ? 'ele-ArrowUp' : 'ele-ArrowDown'" />
@@ -162,5 +163,8 @@ onMounted(() => {
 	.isMargin {
 		margin-bottom: 10px;
 	}
+}
+.isMoreSearch {
+	margin-bottom: 10px;
 }
 </style>
