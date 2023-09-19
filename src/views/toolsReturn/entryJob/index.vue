@@ -25,7 +25,12 @@
 				@innnerDialogSubmit="innnerDialogSubmit"
 				@openInnerDialog="openInnerDialog"
 				@handleTagClose="handleTagClose"
-			/>
+			>
+				<template #optionFat="{ row }">
+					<span style="float: left">{{ row.text }}</span>
+					<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
+				</template>
+			</Dialog>
 		</div>
 	</div>
 </template>
@@ -243,6 +248,19 @@ const changeToStyle = (indList: number[]) => {
 	};
 };
 // cellStyle.value = changeToStyle([1]);
+// 下拉选项数据
+const getOptionsData = async () => {
+	let res = await GetUserManagedStoreHouseApi();
+	if (state.tableData.dialogConfig) {
+		state.tableData.dialogConfig.forEach((item) => {
+			if (item.prop == 'storageId') {
+				item.options = res.data.map((item: any) => {
+					return { label: item.storeType, text: item.sLocation, value: item.storeId };
+				});
+			}
+		});
+	}
+};
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;
@@ -312,16 +330,6 @@ const handleTagClose = (tag: any, state: EmptyObjectType) => {
 };
 // 打开入库弹窗
 const openEntryDialog = async (scope: any) => {
-	let res = await GetUserManagedStoreHouseApi();
-	if (state.tableData.dialogConfig) {
-		state.tableData.dialogConfig.forEach((item) => {
-			if (item.prop == 'storageId') {
-				item.options = res.data.map((item: any) => {
-					return { label: item.storeType, text: item.sLocation, value: item.storeId };
-				});
-			}
-		});
-	}
 	entryJobDialogRef.value.openDialog('entry', scope.row);
 };
 const scanCodeEntry = () => {
@@ -449,6 +457,7 @@ const onSortHeader = (data: TableHeaderType[]) => {
 // 页面加载时
 onMounted(() => {
 	getTableData();
+	getOptionsData();
 });
 </script>
 

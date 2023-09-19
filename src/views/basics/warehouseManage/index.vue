@@ -120,7 +120,7 @@ const state = reactive<TableDemoState>({
 		printName: '表格打印演示',
 		// 弹窗表单
 		dialogConfig: [
-			{ label: '倉庫类型', prop: 'storeType', placeholder: '请输入倉庫类型', required: true, type: 'select', options: [] },
+			{ label: '倉庫类型', prop: 'storeType', placeholder: '请选择倉庫类型', required: true, type: 'select', options: [] },
 			{ label: '倉庫位置', prop: 'sLocation', placeholder: '请输入倉庫位置', required: true, type: 'input' },
 		],
 	},

@@ -77,8 +77,9 @@ const state = reactive<TableDemoState>({
 		// 表头内容（必传，注意格式）
 		header: [
 			{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'text', isCheck: true },
+			{ key: 'bu', colWidth: '', title: 'BU', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
-			{ key: 'nameEn', colWidth: '', title: 'NameEn', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
 			{ key: 'drawNo', colWidth: '', title: 'message.pages.drawNo', type: 'text', isCheck: true },
 			// { key: 'specs', colWidth: '', title: 'message.pages.specs', type: 'text', isCheck: true },
 			{ key: 'signStatusStr', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
@@ -98,6 +99,7 @@ const state = reactive<TableDemoState>({
 			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
 			operateWidth: 330, //操作栏宽度，如果操作栏有几个按钮就自己定宽度
+			exportIcon: true, //是否有导出icon(导出功能)
 		},
 		topBtnConfig: [
 			{ type: 'add', name: '新增', defaultColor: 'primary', isSure: true, disabled: true },
@@ -108,13 +110,21 @@ const state = reactive<TableDemoState>({
 			{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true },
 		],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-		search: [{ label: '料号', prop: 'matNo', placeholder: '请输入料号', required: false, type: 'input' }],
+		search: [
+			{ label: '料号', prop: 'matNo', placeholder: '请输入料号', required: false, type: 'input' },
+			{ label: 'BU', prop: 'bu', placeholder: '', required: false, type: 'input' },
+			{ label: '品名', prop: 'name', placeholder: '', required: false, type: 'input' },
+			{ label: '图纸编号', prop: 'drawNo', placeholder: '', required: false, type: 'input' },
+		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
 		// 给后端的数据
 		form: {
 			matNo: '',
+			bu: '',
+			name: '',
+			drawNo: '',
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -201,6 +211,9 @@ const getTableData = async () => {
 	const form = state.tableData.form;
 	let data = {
 		matNo: form.matNo,
+		bu: form.bu,
+		name: form.name,
+		drawNo: form.drawNo,
 		page: state.tableData.page,
 		queryType: 1,
 	};

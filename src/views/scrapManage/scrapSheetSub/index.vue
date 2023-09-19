@@ -117,8 +117,8 @@ const header = ref([
 	{ key: 'machine', colWidth: '', title: '机种', type: 'text', isCheck: true },
 	{ key: 'namech', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	{ key: 'nameen', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-	{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-	{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+	// { key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
+	// { key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 	{ key: 'exitqty', colWidth: '', title: '报废数量', type: 'text', isCheck: true },
 	{ key: 'exitreason', colWidth: '', title: '报废原因', type: 'text', isCheck: true },
 ]);
@@ -137,8 +137,8 @@ const state = reactive<TableDemoState>({
 			},
 			{ key: 'namech', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameen', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-			{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+			// { key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
+			// { key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 			{ key: 'storageType', colWidth: '', title: '倉庫類型', type: 'text', isCheck: true },
 			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
 			{ key: 'exitqty', colWidth: '', title: '报废数量', type: 'text', isCheck: true },
@@ -230,8 +230,8 @@ const dialogMatnoDetail = ref([
 	{ label: '料号:', prop: 'matno', type: 'text' },
 	{ label: '品名-中文:', prop: 'namech', type: 'text' },
 	{ label: '品名-英文:', prop: 'nameen', type: 'text' },
-	{ label: '厂商代码:', prop: 'vendorcode', type: 'text' },
-	{ label: '厂商名称:', prop: 'vendorname', type: 'text' },
+	// { label: '厂商代码:', prop: 'vendorcode', type: 'text' },
+	// { label: '厂商名称:', prop: 'vendorname', type: 'text' },
 	{ label: '退库类型:', prop: 'exittype', type: 'text' },
 	{ label: '退库原因:', prop: 'exitreason', type: 'text' },
 	{ label: '退库数量:', prop: 'exitqty', type: 'text' },
@@ -261,7 +261,7 @@ const changeToStyle = (indList: number[]) => {
 		}
 	};
 };
-cellStyle.value = changeToStyle([2, 9]);
+cellStyle.value = changeToStyle([2, 7]);
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;

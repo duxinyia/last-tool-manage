@@ -204,7 +204,6 @@ const getTableData = async () => {
 		page: state.tableData.page,
 	};
 	const res = await getQueryStoredInventoryApi(data);
-
 	state.tableData.data = [];
 	res.data.data.forEach((item: any) => {
 		if (!item.stocks.length) state.tableData.data.push(item);

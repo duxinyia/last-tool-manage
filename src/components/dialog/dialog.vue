@@ -92,7 +92,9 @@
 								:remote-method="remoteMethod"
 								:loading="item.loading"
 							>
-								<el-option v-for="val in item.options" :key="val.label" :label="val.text" :value="val.value"> </el-option>
+								<el-option v-for="val in item.options" :key="val.label" :label="val.text" :value="val.value">
+									<slot name="optionFat" :row="val"></slot>
+								</el-option>
 							</el-select>
 							<el-switch
 								v-if="item.type === 'switch'"

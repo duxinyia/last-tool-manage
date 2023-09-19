@@ -25,7 +25,12 @@
 				@innnerDialogSubmit="innnerDialogSubmit"
 				@openInnerDialog="openInnerDialog"
 				@handleTagClose="handleTagClose"
-			/>
+			>
+				<template #optionFat="{ row }">
+					<span style="float: left">{{ row.text }}</span>
+					<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
+				</template>
+			</Dialog>
 		</div>
 	</div>
 </template>
@@ -53,19 +58,7 @@ const tags = ref<EmptyArrayType<string>>([]);
 const cellStyle = ref();
 // 弹窗标题
 const dilogTitle = ref();
-const header = ref([
-	{ key: 'matNo', colWidth: '250', title: 'message.pages.matNo', type: 'text', isCheck: true },
-	{ key: 'machinetype', colWidth: '', title: '机种', type: 'text', isCheck: true },
-	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
-	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-	{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-	{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
-	{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
-	{ key: 'reqDate', colWidth: '', title: '需求时间', type: 'text', isCheck: true },
-	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'input', isCheck: true, isRequired: true },
-	{ key: 'receiptDate', colWidth: '150', title: '收货时间', type: 'time', isCheck: true, isRequired: true },
-]);
+
 const state = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
@@ -134,19 +127,19 @@ const state = reactive<TableDemoState>({
 			{ label: '料号:', prop: 'matNo', placeholder: '请输入料号', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 8, xl: 8 },
 			{ label: '品名-中文:', prop: 'nameCh', placeholder: '请输入品名-中文', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
 			{ label: '品名-英文:', prop: 'nameEn', placeholder: '请输入品名-英文', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
-			{ label: '厂商代码:', prop: 'vendorCode', placeholder: '请输入厂商代码', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
-			{
-				label: '厂商名称:',
-				prop: 'vendorName',
-				placeholder: '请输入厂商名称',
-				required: false,
-				type: 'text',
-				xs: 24,
-				sm: 8,
-				md: 8,
-				lg: 16,
-				xl: 16,
-			},
+			// { label: '厂商代码:', prop: 'vendorCode', placeholder: '请输入厂商代码', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
+			// {
+			// 	label: '厂商名称:',
+			// 	prop: 'vendorName',
+			// 	placeholder: '请输入厂商名称',
+			// 	required: false,
+			// 	type: 'text',
+			// 	xs: 24,
+			// 	sm: 8,
+			// 	md: 8,
+			// 	lg: 16,
+			// 	xl: 16,
+			// },
 			{ label: '验收数量:', prop: 'checkQty', placeholder: '请输入验收数量', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
 			// 这个字段待定
 			{
@@ -254,6 +247,19 @@ const changeToStyle = (indList: number[]) => {
 	};
 };
 // cellStyle.value = changeToStyle([1]);
+// 下拉选项数据
+const getOptionsData = async () => {
+	let res = await GetUserManagedStoreHouseApi();
+	if (state.tableData.dialogConfig) {
+		state.tableData.dialogConfig.forEach((option) => {
+			if (option.prop == 'storageId') {
+				option.options = res.data.map((item: any) => {
+					return { label: item.storeType, text: item.sLocation, value: item.storeId };
+				});
+			}
+		});
+	}
+};
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;
@@ -323,12 +329,6 @@ const handleTagClose = (tag: any, state: EmptyObjectType) => {
 };
 // 打开入库弹窗
 const openEntryDialog = async (scope: any) => {
-	let res = await GetUserManagedStoreHouseApi();
-	if (state.tableData.dialogConfig) {
-		state.tableData.dialogConfig[11].options = res.data.map((item: any) => {
-			return { label: item.storeType, text: item.sLocation, value: item.storeId };
-		});
-	}
 	entryJobDialogRef.value.openDialog('entry', scope.row);
 };
 const scanCodeEntry = () => {
@@ -338,13 +338,16 @@ const scanCodeEntry = () => {
 const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyObjectType) => {
 	let obj: EmptyObjectType = { ...ruleForm };
 	state.tableData.dialogConfig &&
-		state.tableData.dialogConfig[11].options?.forEach((item) => {
-			if (item.value == obj.storageId) {
-				obj.sLocation = item.text;
-				obj.storeType = item.label;
+		state.tableData.dialogConfig.forEach((option) => {
+			if (option.prop == 'storageId' && option.options) {
+				option.options.forEach((item) => {
+					if (item.value == obj.storageId) {
+						obj.sLocation = item.text;
+						obj.storeType = item.label;
+					}
+				});
 			}
 		});
-
 	obj.codeList = formInnerData.codeList;
 
 	let submitData = {
@@ -456,6 +459,7 @@ const onSortHeader = (data: TableHeaderType[]) => {
 // 页面加载时
 onMounted(() => {
 	getTableData();
+	getOptionsData();
 });
 </script>
 

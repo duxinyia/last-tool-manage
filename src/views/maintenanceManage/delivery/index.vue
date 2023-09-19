@@ -12,7 +12,7 @@
 				:cellStyle="cellStyle"
 				@onOpenOtherDialog="openArriveJobDialog"
 			/>
-			<el-dialog v-model="deliveryDialogVisible" :title="dilogTitle" width="85%">
+			<el-dialog v-model="deliveryDialogVisible" :title="dilogTitle" width="65%">
 				<el-row v-if="dilogTitle == '收货'">
 					<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb10" v-for="(val, key) in dialogState.tableData.search" :key="key">
 						<div v-if="val.type === 'text'">
@@ -103,8 +103,8 @@ const header = ref<deliveryDialogHeader>([
 	// { key: 'machinetype', colWidth: '', title: '机种', type: 'text', isCheck: true },
 	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	// { key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-	{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-	{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+	// { key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
+	// { key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
 	{ key: 'qty', colWidth: '', title: '维修数量', type: 'text', isCheck: true },
 	{ key: 'pendingReceiptQty', colWidth: '', title: '可收货数量', type: 'text', isCheck: true },
@@ -122,8 +122,8 @@ const header1 = ref<deliveryDialogHeader>([
 	},
 	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-	{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-	{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+	// { key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
+	// { key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 	{ key: 'qty', colWidth: '', title: '维修数量', type: 'text', isCheck: true },
 	{ key: 'reason', colWidth: '150', title: '维修原因', type: 'text', isCheck: true },
 	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },

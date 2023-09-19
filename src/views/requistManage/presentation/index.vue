@@ -1,7 +1,7 @@
 <template>
 	<div class="table-container layout-padding">
 		<div class="table-padding layout-padding-view layout-padding-auto">
-			<div class="title">需求提报单</div>
+			<div class="title">需求请购单</div>
 			<el-form ref="tableSearchRef" size="default" label-width="auto" class="table-form">
 				<el-row>
 					<el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4" class="mb20 mr20" v-for="(val, key) in state.tableData.search" :key="key">

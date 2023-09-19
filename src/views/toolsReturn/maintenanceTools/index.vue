@@ -1,39 +1,39 @@
 <template>
 	<div class="table-container layout-padding">
 		<div class="table-padding layout-padding-view layout-padding-auto">
-			<el-tabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
-				<el-tab-pane label="退库" name="first">
-					<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
-					<Table
-						ref="tableRef"
-						v-bind="state.tableData"
-						class="table"
-						@pageChange="onTablePageChange"
-						@sortHeader="onSortHeader"
-						@cellclick="matnoClick"
-						:cellStyle="cellStyle"
-						@onOpenOtherDialog="openReturnDialog"
-					/>
-					<Dialog
-						ref="repairReturnDialogRef"
-						:dialogConfig="dialogState.tableData.dialogConfig"
-						:innerDialogConfig="dialogState.tableData.innerDialogConfig"
-						dialogWidth="50%"
-						dialogType="nestDialogConfig"
-						@addData="returnSubmit"
-						@dailogFormButton="scanCodeEntry"
-						@commonInputHandleChange="change"
-						:tagsData="tags"
-						@innnerDialogCancel="innnerDialogCancel"
-						@innnerDialogSubmit="innnerDialogSubmit"
-						@openInnerDialog="openInnerDialog"
-						@handleTagClose="handleTagClose"
-						@selectChange="selectChange"
-						@remoteMethod="remoteMethod"
-					/>
-				</el-tab-pane>
-				<el-tab-pane label="送签进度" name="second">送签进度</el-tab-pane>
-			</el-tabs>
+			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
+			<Table
+				ref="tableRef"
+				v-bind="state.tableData"
+				class="table"
+				@pageChange="onTablePageChange"
+				@sortHeader="onSortHeader"
+				@cellclick="matnoClick"
+				:cellStyle="cellStyle"
+				@onOpenOtherDialog="openReturnDialog"
+			/>
+			<Dialog
+				ref="repairReturnDialogRef"
+				:dialogConfig="dialogState.tableData.dialogConfig"
+				:innerDialogConfig="dialogState.tableData.innerDialogConfig"
+				dialogWidth="50%"
+				dialogType="nestDialogConfig"
+				@addData="returnSubmit"
+				@dailogFormButton="scanCodeEntry"
+				@commonInputHandleChange="change"
+				:tagsData="tags"
+				@innnerDialogCancel="innnerDialogCancel"
+				@innnerDialogSubmit="innnerDialogSubmit"
+				@openInnerDialog="openInnerDialog"
+				@handleTagClose="handleTagClose"
+				@selectChange="selectChange"
+				@remoteMethod="remoteMethod"
+			>
+				<template #optionFat="{ row }" v-if="dilogTitle === '转仓'">
+					<span style="float: left">{{ row.text }}</span>
+					<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
+				</template>
+			</Dialog>
 		</div>
 	</div>
 </template>
@@ -53,7 +53,6 @@ import {
 } from '/@/api/toolsReturn/maintentanceTools';
 
 import { useI18n } from 'vue-i18n';
-import { log } from 'console';
 import { constants } from 'buffer';
 import type { TabsPaneContext } from 'element-plus';
 // 引入组件
@@ -94,8 +93,8 @@ const state = reactive<TableDemoState>({
 			{ key: 'matno', colWidth: '', title: '料号', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
-			{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-			{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+			// { key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
+			// { key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 			{ key: 'storageType', colWidth: '', title: '倉庫類型', type: 'text', isCheck: true },
 			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
 			{ key: 'stockqty', colWidth: '', title: '库存总量', type: 'text', isCheck: true },
@@ -149,6 +148,67 @@ const state = reactive<TableDemoState>({
 		printName: '表格打印演示',
 	},
 });
+// const secondState = reactive<TableDemoState>({
+// 	tableData: {
+// 		// 列表数据（必传）
+// 		data: [],
+// 		// 表头内容（必传，注意格式）
+// 		header: [
+// 			{ key: 'matno', colWidth: '', title: '料号', type: 'text', isCheck: true },
+// 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
+// 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
+// 			{ key: 'storageType', colWidth: '', title: '倉庫類型', type: 'text', isCheck: true },
+// 			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
+// 			{ key: 'stockqty', colWidth: '', title: '数量', type: 'text', isCheck: true },
+// 			{ key: 'qrstockqty', colWidth: '', title: '原因', type: 'text', isCheck: true },
+// 		],
+// 		// 配置项（必传）
+
+// 		config: {
+// 			total: 0, // 列表总数
+// 			loading: true, // loading 加载
+// 			isBorder: false, // 是否显示表格边框
+// 			isSerialNo: true, // 是否显示表格序号
+// 			isSelection: false, // 是否显示表格多选
+// 			isOperate: true, // 是否显示表格操作栏
+// 			isButton: false, //是否显示表格上面的新增删除按钮
+// 			isInlineEditing: false, //是否是行内编辑
+// 			isTopTool: true, //是否有表格右上角工具
+// 			isPage: true, //是否有分页
+// 			operateWidth: 220, //操作栏宽度，如果操作栏有几个按钮就自己定宽度
+// 		},
+// 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
+// 		search: [
+// 			{ label: '料号', prop: 'matNo', required: false, type: 'input' },
+// 			{ label: '品名', prop: 'matName', required: false, type: 'input' },
+// 		],
+// 		searchConfig: {
+// 			isSearchBtn: true,
+// 		},
+// 		btnConfig: [
+// 			{ type: 'transferStorage', name: '详情', color: '#36C78B', isSure: false, icon: 'ele-Position' },
+// 			{
+// 				type: 'sendReceive',
+// 				name: '送签',
+// 				color: '#D3C333',
+// 				isSure: false,
+// 				icon: 'ele-EditPen',
+// 			},
+// 		],
+// 		// 给后端的数据
+// 		form: {
+// 			matNo: '',
+// 			matName: '',
+// 		},
+// 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
+// 		page: {
+// 			pageNum: 1,
+// 			pageSize: 10,
+// 		},
+// 		// 打印标题
+// 		printName: '表格打印演示',
+// 	},
+// });
 const dialogState = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
@@ -185,8 +245,8 @@ const dialogState = reactive<TableDemoState>({
 			{ label: '料号', prop: 'matno', placeholder: '', required: false, type: 'text', xs: 24, sm: 24, md: 12, lg: 8, xl: 8 },
 			{ label: '品名-中文', prop: 'nameCh', placeholder: '', required: false, type: 'text', xs: 24, sm: 8, md: 12, lg: 8, xl: 8 },
 			{ label: '品名-英文', prop: 'nameEn', placeholder: '', required: false, type: 'text', xs: 24, sm: 8, md: 12, lg: 8, xl: 8 },
-			{ label: '厂商代码', prop: 'vendorcode', placeholder: '', required: false, type: 'text', xs: 24, sm: 8, md: 12, lg: 8, xl: 8 },
-			{ label: '厂商名称', prop: 'vendorname', placeholder: '', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 12, xl: 12 },
+			// { label: '厂商代码', prop: 'vendorcode', placeholder: '', required: false, type: 'text', xs: 24, sm: 8, md: 12, lg: 8, xl: 8 },
+			// { label: '厂商名称', prop: 'vendorname', placeholder: '', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 12, xl: 12 },
 			{
 				label: '退库类型',
 				prop: 'exitType',
@@ -395,6 +455,7 @@ const openReturnDialog = (scope: EmptyObjectType, type: string) => {
 	let dialogConfig = dialogState.tableData.dialogConfig;
 	// 转仓
 	if (type === 'transferStorage') {
+		dilogTitle.value = '转仓';
 		dialogConfig?.forEach((item, index) => {
 			if (item.prop == 'exitType' || item.prop == 'reasonId') {
 				deleteData = JSON.parse(JSON.stringify(dialogConfig?.splice(index, 2)));
@@ -404,10 +465,11 @@ const openReturnDialog = (scope: EmptyObjectType, type: string) => {
 			}
 		});
 		deleteStorage.reverse().forEach((item: any) => {
-			dialogConfig?.splice(5, 0, item);
+			dialogConfig?.splice(3, 0, item);
 		});
 		deleteStorage = [];
 	} else {
+		dilogTitle.value = '退库';
 		dialogConfig?.forEach((item, index) => {
 			const arr = ['storageId', 'outDate', 'describe'];
 			if (arr.includes(item.prop)) {
@@ -418,11 +480,11 @@ const openReturnDialog = (scope: EmptyObjectType, type: string) => {
 			}
 		});
 		deleteData.reverse().forEach((item: any) => {
-			dialogConfig?.splice(5, 0, item);
+			dialogConfig?.splice(3, 0, item);
 		});
 		deleteData = [];
 	}
-	repairReturnDialogRef.value.openDialog('return', scope.row);
+	repairReturnDialogRef.value.openDialog('return', scope.row, dilogTitle.value);
 };
 // 根据接口得到仓库下拉数据
 let options: EmptyArrayType = [];
@@ -434,19 +496,20 @@ const remoteMethod = (query: string) => {
 	if (query) {
 		setTimeout(async () => {
 			const res = await getQueryStoreHouseNoPageApi(query);
+			options = res.data.map((item: EmptyObjectType) => {
+				return { value: `${item.storeId}`, label: `${item.storeType}`, text: `${item.sLocation}` };
+			});
 			dialogConfig?.forEach((item) => {
 				if (item.prop === 'storageId') item.loading = false;
-			});
-			options = res.data.map((item: EmptyObjectType) => {
-				return { value: `${item.storeType}`, label: `${item.storeId}`, text: `${item.sLocation}` };
-			});
-			if (dialogConfig)
-				dialogConfig[5].options = options.filter((item: EmptyObjectType) => {
-					return item.text.toLowerCase().includes(query.toLowerCase());
+				item.options = options.filter((item: EmptyObjectType) => {
+					return item.text.toLowerCase().includes(query.toLowerCase()) || item.label.toLowerCase().includes(query.toLowerCase());
 				});
+			});
 		}, 500);
 	} else {
-		if (dialogConfig) dialogConfig[5].options = [];
+		dialogConfig?.forEach((item) => {
+			if (item.prop === 'storageId') item.options = [];
+		});
 	}
 };
 const scanCodeEntry = () => {

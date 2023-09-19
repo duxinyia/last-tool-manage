@@ -11,7 +11,7 @@
 				@cellclick="idleNoClick"
 				:cellStyle="cellStyle"
 			/>
-			<el-dialog ref="reportInquiryDialogRef" v-model="reportInquiryDialogVisible" :title="dilogTitle" width="60%">
+			<el-dialog ref="reportInquiryDialogRef" v-model="reportInquiryDialogVisible" :title="dilogTitle" width="40%">
 				<Table v-bind="dialogState.tableData" class="table" />
 			</el-dialog>
 		</div>
@@ -98,8 +98,8 @@ const dialogState = reactive<TableDemoState>({
 				type: 'text',
 				isCheck: true,
 			},
-			{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-			{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+			// { key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
+			// { key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 			{ key: 'qty', colWidth: '', title: '闲置数量', type: 'text', isCheck: true },
 			{ key: 'idlereason', colWidth: '150', title: '闲置原因', type: 'text', isCheck: true },
 			// { key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },

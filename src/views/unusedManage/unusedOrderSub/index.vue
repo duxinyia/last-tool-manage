@@ -12,10 +12,10 @@
 				:cellStyle="cellStyle"
 				@onOpentopBtnOther="onOpenSendRepair"
 			/>
-			<el-dialog ref="presentationDialogRef" v-model="presentationDialogVisible" :title="dilogTitle" width="85%">
+			<el-dialog ref="presentationDialogRef" v-model="presentationDialogVisible" :title="dilogTitle" width="70%">
 				<el-row>
 					<el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4" class="mb20 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
-						<div v-if="val.type === 'text'">
+						<div v-if="val.type === 'text'" style="line-height: 30px">
 							{{ val.label }}<span style="color: red" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
 						</div>
 						<template v-if="val.type === 'input'">
@@ -116,8 +116,8 @@ const header = ref([
 	{ key: 'machine', colWidth: '', title: '机种', type: 'text', isCheck: true },
 	{ key: 'namech', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	{ key: 'nameen', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-	{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-	{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+	// { key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
+	// { key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 	{ key: 'exitqty', colWidth: '', title: '闲置数量', type: 'text', isCheck: true },
 	{ key: 'exitreason', colWidth: '', title: '闲置原因', type: 'text', isCheck: true },
 	// { key: 'prItemNo', colWidth: '', title: 'pr项次', type: 'input', isCheck: true },
@@ -137,8 +137,8 @@ const state = reactive<TableDemoState>({
 			},
 			{ key: 'namech', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameen', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-			{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+			// { key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
+			// { key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 			{ key: 'storageType', colWidth: '', title: '倉庫類型', type: 'text', isCheck: true },
 			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
 			{ key: 'exitqty', colWidth: '', title: '闲置数量', type: 'text', isCheck: true },
@@ -151,7 +151,7 @@ const state = reactive<TableDemoState>({
 			isBorder: false, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
 			isSelection: true, // 是否显示表格多选
-			isOperate: false, // 是否显示表格操作栏
+			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
@@ -203,7 +203,7 @@ const dialogState = reactive<TableDemoState>({
 			isTopTool: false, //是否有表格右上角工具
 			isPage: false, //是否有分页
 			isDialogTab: true, //是否是弹窗里面的表格
-			height: 500,
+			height: 300,
 		},
 		// 给后端的数据
 		form: {},
@@ -230,8 +230,8 @@ const dialogMatnoDetail = ref([
 	{ label: '料号:', prop: 'matno', type: 'text' },
 	{ label: '品名-中文:', prop: 'namech', type: 'text' },
 	{ label: '品名-英文:', prop: 'nameen', type: 'text' },
-	{ label: '厂商代码:', prop: 'vendorcode', type: 'text' },
-	{ label: '厂商名称:', prop: 'vendorname', type: 'text' },
+	// { label: '厂商代码:', prop: 'vendorcode', type: 'text' },
+	// { label: '厂商名称:', prop: 'vendorname', type: 'text' },
 	{ label: '退库类型:', prop: 'exittype', type: 'text' },
 	{ label: '退库原因:', prop: 'exitreason', type: 'text' },
 	{ label: '退库数量:', prop: 'exitqty', type: 'text' },
@@ -242,6 +242,7 @@ const exitTypeMap: EmptyObjectType = {
 	2: '閒置',
 	3: '報廢',
 };
+// 关闭弹窗清除选中
 watch(
 	() => presentationDialogVisible.value,
 	(val) => {
@@ -261,7 +262,7 @@ const changeToStyle = (indList: number[]) => {
 		}
 	};
 };
-cellStyle.value = changeToStyle([2, 9]);
+cellStyle.value = changeToStyle([2, 7]);
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;

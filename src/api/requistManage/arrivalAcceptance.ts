@@ -23,3 +23,30 @@ export function getTInsertCheckApi(data:Object) {
   	data:data
   });
 }
+// 驗收記錄查询
+export function getQueryCheckPageApi(data:Object) {
+  return request({
+    url: '/api/ToolCheck/QueryCheckPage',
+    method: 'POST',
+  	data:data
+  });
+}
+// 送簽
+export function getSubmitSignApi(comKey:Object) {
+  return request({
+    url: '/api/ToolCheck/SubmitSign',
+    method: 'POST',
+  	data:{comKey}
+  });
+}
+// 详情
+export function getCheckdetailApi(checkNo:Object) {
+  return request({
+    url: '/api/ToolCheck/GetCheckdetail',
+    method: 'GET',
+  	params:checkNo
+  });
+}
+
+
+
