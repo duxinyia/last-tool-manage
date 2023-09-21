@@ -1,7 +1,12 @@
 <template>
 	<div class="table-container layout-padding">
 		<div class="table-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
+			<TableSearch
+				v-if="state.tableData.search[2].options && state.tableData.search[2].options.length > 0"
+				:search="state.tableData.search"
+				@search="onSearch"
+				:searchConfig="state.tableData.searchConfig"
+			/>
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
@@ -10,9 +15,36 @@
 				@sortHeader="onSortHeader"
 				@cellclick="reqNoClick"
 				:cellStyle="cellStyle"
+				@onOpenOtherDialog="openDetailDialog"
 			/>
-			<el-dialog ref="reportInquiryDialogRef" v-model="reportInquiryDialogVisible" :title="dilogTitle" width="80%">
+			<el-dialog ref="reportInquiryDialogRef" v-model="reportInquiryDialogVisible" :title="dilogTitle" width="70%">
+				<el-form ref="dialogFormRef" :model="dialogState.tableData" size="default" label-width="100px">
+					<el-row>
+						<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb5" v-for="(val, key) in dialogState.tableData.search" :key="key">
+							<el-form-item :label="$t(val.label)" :prop="val.prop">
+								<span v-if="val.type === 'text'" style="width: 100%; font-weight: 500; color: red">
+									{{ dialogState.tableData.form[val.prop] }}
+								</span>
+							</el-form-item>
+						</el-col>
+					</el-row>
+				</el-form>
 				<Table v-bind="dialogState.tableData" class="table" />
+				<div class="describe">
+					<div style="line-height: 30px">
+						描述说明：<span style="color: red" class="ml10">{{ dialogState.tableData.form['describe'] }}</span>
+					</div>
+				</div>
+			</el-dialog>
+			<!-- 閒置詳情彈窗 -->
+			<el-dialog v-model="detaildialogVisible" :title="dilogTitle" width="50%">
+				<UselessNoDetailDialog :isDialog="true" :UselessNoRef="UselessNoRef" />
+				<template #footer v-if="dilogTitle == '详情'">
+					<span class="dialog-footer">
+						<el-button size="default" auto-insert-space @click="reportInquiryDialogVisible = false">取消</el-button>
+						<el-button size="default" type="primary" auto-insert-space @click="onSend"> 送 簽 </el-button>
+					</span>
+				</template>
 			</el-dialog>
 		</div>
 	</div>
@@ -20,8 +52,12 @@
 
 <script setup lang="ts" name="scrapBillQuery">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
-import { getQueryExitPageApi, getUselessDetailApi } from '/@/api/scrapManage/scrapBillQuery';
+import { getQueryExitPageApi, getUselessDetailApi, getUselessSubmitSignApi } from '/@/api/scrapManage/scrapBillQuery';
+const UselessNoDetailDialog = defineAsyncComponent(() => import('/@/views/link/scrapBillQueryLink/index.vue'));
+import { ElMessage } from 'element-plus';
+
 import { useI18n } from 'vue-i18n';
+
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
@@ -31,6 +67,8 @@ const reportInquiryDialogVisible = ref(false);
 const { t } = useI18n();
 const tableRef = ref<RefType>();
 const reportInquiryDialogRef = ref();
+const detaildialogVisible = ref(false);
+const UselessNoRef = ref();
 // 单元格样式
 const cellStyle = ref();
 // 弹窗标题
@@ -43,6 +81,7 @@ const state = reactive<TableDemoState>({
 		header: [
 			{ key: 'uselessno', colWidth: '', title: '报废单号', type: 'text', isCheck: true },
 			{ key: 'uselessdate', colWidth: '', title: '报废时间', type: 'text', isCheck: true },
+			{ key: 'signStatus', colWidth: '', title: '签核状态', type: 'text', isCheck: true },
 			{ key: 'creator', colWidth: '', title: '操作人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -52,7 +91,7 @@ const state = reactive<TableDemoState>({
 			isBorder: false, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
 			isSelection: false, // 是否显示表格多选
-			isOperate: false, // 是否显示表格操作栏
+			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
@@ -62,7 +101,19 @@ const state = reactive<TableDemoState>({
 		search: [
 			{ label: '报废单号', prop: 'uselessno', required: false, type: 'input' },
 			{ label: '报废时间', prop: 'uselessdate', required: false, type: 'dateRange' },
+			{
+				label: '签核状态',
+				prop: 'signStatus',
+				required: false,
+				type: 'select',
+				options: [
+					{ value: 0, label: '未送签', text: '未送签', selected: true },
+					{ value: 1, label: '签核中', text: '签核中', selected: false },
+					{ value: 2, label: '签核完成', text: '签核完成', selected: false },
+				],
+			},
 		],
+		btnConfig: [{ type: 'detail', name: '详情', color: '#1890ff', isSure: false, icon: 'ele-View' }],
 		searchConfig: {
 			isSearchBtn: true,
 		},
@@ -71,6 +122,7 @@ const state = reactive<TableDemoState>({
 		form: {
 			uselessno: '',
 			uselessdate: '',
+			signStatus: 0,
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -119,12 +171,17 @@ const dialogState = reactive<TableDemoState>({
 			isTopTool: false, //是否有表格右上角工具
 			isPage: false, //是否有分页
 			isDialogTab: true, //是否是弹窗里面的表格
-			height: 500,
+			height: 300,
 		},
 		// 给后端的数据
 		form: {},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-		search: [],
+		search: [
+			{ label: '报废单号:', prop: 'uselessno', type: 'text', required: false },
+			{ label: '报废时间:', prop: 'uselessDate', type: 'text', required: false },
+			{ label: '班别:', prop: 'classes', type: 'text', required: false },
+			{ label: '站位:', prop: 'state', type: 'text', required: false },
+		],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
 			pageNum: 1,
@@ -132,6 +189,7 @@ const dialogState = reactive<TableDemoState>({
 		},
 	},
 });
+
 // 单元格字体颜色
 const changeToStyle = (indList: number[]) => {
 	return ({ columnIndex }: any) => {
@@ -154,6 +212,7 @@ const getTableData = async () => {
 			uselessno: form.uselessno,
 			uselessdateStart: form.uselessdate[0],
 			uselessdateEnd: form.uselessdate[1],
+			signStatus: form.signStatus,
 			page: state.tableData.page,
 		};
 	} else {
@@ -161,32 +220,67 @@ const getTableData = async () => {
 			uselessno: form.uselessno,
 			uselessdateStart: '',
 			uselessdateEnd: '',
+			signStatus: form.signStatus,
 			page: state.tableData.page,
 		};
 	}
+	const signStatusMap: EmptyObjectType = {
+		0: '未送签',
+		1: '签核中',
+		2: '签核完成',
+	};
 	const res = await getQueryExitPageApi(data);
+	res.data.data.forEach((item: any) => {
+		item.signStatus = signStatusMap[item.signStatus];
+	});
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
 	if (res.status) {
 		state.tableData.config.loading = false;
 	}
 };
+// 详情接口
+const getDetailData = async (uselessno: string) => {
+	const res = await getUselessDetailApi(uselessno);
+	dialogState.tableData.data = res.data.uselessdetaillist;
+	dialogState.tableData.form = res.data;
+	reportInquiryDialogVisible.value = true;
+	if (res.status) {
+		dialogState.tableData.config.loading = false;
+	}
+};
+// 点击详情按钮
+const openDetailDialog = (scope: EmptyObjectType) => {
+	UselessNoRef.value = scope.row.uselessno;
+	// getDetailData(scope.row.uselessno);
+	detaildialogVisible.value = true;
+	dilogTitle.value = '详情';
+};
 // 点击申请单号
-const reqNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
+const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'uselessno') {
 		dilogTitle.value = '报废单号:' + row.uselessno;
-		const res = await getUselessDetailApi(row.uselessno);
-		dialogState.tableData.data = res.data.uselessdetaillist;
-		reportInquiryDialogVisible.value = true;
-		if (res.status) {
-			dialogState.tableData.config.loading = false;
-		}
+		getDetailData(row.uselessno);
+	}
+};
+// 送簽
+const onSend = async () => {
+	const res = await getUselessSubmitSignApi(UselessNoRef.value);
+	if (res.status) {
+		ElMessage.success(t('送签成功'));
+		detaildialogVisible.value = false;
+		getTableData();
 	}
 };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
+	state.tableData.search[2].options?.forEach((item) => {
+		if (data.signStatus === item.text) {
+			data.signStatus = item.value;
+		}
+	});
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
-	tableRef.value.pageReset();
+	tableRef.value && tableRef.value.pageReset();
 };
 
 // 分页改变时回调

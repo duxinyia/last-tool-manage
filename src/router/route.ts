@@ -425,6 +425,30 @@ export const staticRoutes: Array<RouteRecordRaw> = [
 			title: '料号详情',
 		},
 	},
+	{
+		path: '/link/arrivalAcceptanceLink',
+		name: 'arrivalAcceptanceLink',
+		component: () => import('/@/views/link/arrivalAcceptanceLink/index.vue'),
+		meta: {
+			title: '驗收單详情',
+		},
+	},
+	{
+		path: '/link/idleInquiryLink',
+		name: 'idleInquiryLink',
+		component: () => import('/@/views/link/idleInquiryLink/index.vue'),
+		meta: {
+			title: '閒置單详情',
+		},
+	},
+	{
+		path: '/link/scrapBillQueryLink',
+		name: 'scrapBillQueryLink',
+		component: () => import('/@/views/link/scrapBillQueryLink/index.vue'),
+		meta: {
+			title: '報廢單详情',
+		},
+	},
 	// {
 	// 	path: '/link/404',
 	// 	name: '404',

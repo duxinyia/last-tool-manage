@@ -1,7 +1,12 @@
 <template>
 	<div class="table-container layout-padding">
 		<div class="table-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
+			<TableSearch
+				v-if="state.tableData.search[2].options && state.tableData.search[2].options.length > 0"
+				:search="state.tableData.search"
+				@search="onSearch"
+				:searchConfig="state.tableData.searchConfig"
+			/>
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
@@ -10,9 +15,37 @@
 				@sortHeader="onSortHeader"
 				@cellclick="idleNoClick"
 				:cellStyle="cellStyle"
+				@onOpenOtherDialog="openDetailDialog"
 			/>
 			<el-dialog ref="reportInquiryDialogRef" v-model="reportInquiryDialogVisible" :title="dilogTitle" width="40%">
+				<el-form ref="dialogFormRef" :model="dialogState.tableData" size="default" label-width="100px">
+					<el-row>
+						<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb5" v-for="(val, key) in dialogState.tableData.search" :key="key">
+							<el-form-item :label="$t(val.label)" :prop="val.prop">
+								<span v-if="val.type === 'text'" style="width: 100%; font-weight: 500; color: red">
+									{{ dialogState.tableData.form[val.prop] }}
+								</span>
+							</el-form-item>
+						</el-col>
+					</el-row>
+				</el-form>
 				<Table v-bind="dialogState.tableData" class="table" />
+
+				<div class="describe">
+					<div style="line-height: 30px">
+						描述说明：<span style="color: red" class="ml10">{{ dialogState.tableData.form['describe'] }}</span>
+					</div>
+				</div>
+			</el-dialog>
+			<!-- 閒置詳情彈窗 -->
+			<el-dialog v-model="detaildialogVisible" :title="dilogTitle" width="50%">
+				<IdleNoDetailDialog :isDialog="true" :IdleNoRef="IdleNoRef" />
+				<template #footer v-if="dilogTitle == '详情'">
+					<span class="dialog-footer">
+						<el-button size="default" auto-insert-space @click="reportInquiryDialogVisible = false">取消</el-button>
+						<el-button size="default" type="primary" auto-insert-space @click="onSend"> 送 簽 </el-button>
+					</span>
+				</template>
 			</el-dialog>
 		</div>
 	</div>
@@ -21,12 +54,12 @@
 <script setup lang="ts" name="/requistManage/reportingInquiry">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { getToolApplyHeadPageApi, getreqNoApi } from '/@/api/requistManage/reportingInquiry';
-import { IdleQueryPageListApi, GetIdleDetailApi } from '/@/api/unusedManage/unusedInquiry';
+import { IdleQueryPageListApi, GetIdleDetailApi, getIdleSubmitSignApi } from '/@/api/unusedManage/unusedInquiry';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
+const IdleNoDetailDialog = defineAsyncComponent(() => import('/@/views/link/idleInquiryLink/index.vue'));
 
 // 定义变量内容
 const reportInquiryDialogVisible = ref(false);
@@ -37,6 +70,8 @@ const reportInquiryDialogRef = ref();
 const cellStyle = ref();
 // 弹窗标题
 const dilogTitle = ref();
+const detaildialogVisible = ref(false);
+const IdleNoRef = ref();
 const state = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
@@ -47,6 +82,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'idledate', colWidth: '', title: '闲置时间', type: 'text', isCheck: true },
 			{ key: 'classes', colWidth: '', title: '班次', type: 'text', isCheck: true },
 			{ key: 'position', colWidth: '', title: '规划存放位置', type: 'text', isCheck: true },
+			{ key: 'signStatus', colWidth: '', title: '签核状态', type: 'text', isCheck: true },
 			{ key: 'creator', colWidth: '', title: '操作人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -56,7 +92,7 @@ const state = reactive<TableDemoState>({
 			isBorder: false, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
 			isSelection: false, // 是否显示表格多选
-			isOperate: false, // 是否显示表格操作栏
+			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
@@ -66,15 +102,27 @@ const state = reactive<TableDemoState>({
 		search: [
 			{ label: '闲置单号', prop: 'idleNo', required: false, type: 'input' },
 			{ label: '闲置时间', prop: 'idleDate', required: false, type: 'dateRange' },
+			{
+				label: '签核状态',
+				prop: 'signStatus',
+				required: false,
+				type: 'select',
+				options: [
+					{ value: 0, label: '未送签', text: '未送签', selected: true },
+					{ value: 1, label: '签核中', text: '签核中', selected: false },
+					{ value: 2, label: '签核完成', text: '签核完成', selected: false },
+				],
+			},
 		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [],
+		btnConfig: [{ type: 'detail', name: '详情', color: '#1890ff', isSure: false, icon: 'ele-View' }],
 		// 给后端的数据
 		form: {
 			idleNo: '',
 			idleDate: '',
+			signStatus: 0,
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -117,12 +165,17 @@ const dialogState = reactive<TableDemoState>({
 			isTopTool: false, //是否有表格右上角工具
 			isPage: false, //是否有分页
 			isDialogTab: true, //是否是弹窗里面的表格
-			height: 500,
+			height: 300,
 		},
 		// 给后端的数据
 		form: {},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-		search: [],
+		search: [
+			{ label: '闲置单号:', prop: 'idleno', type: 'text', required: false },
+			{ label: '闲置时间:', prop: 'idleDate', type: 'text', required: false },
+			{ label: '班别:', prop: 'classes', type: 'text', required: false },
+			{ label: '规划存放位置:', prop: 'position', type: 'text', required: false },
+		],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
 			pageNum: 1,
@@ -130,6 +183,13 @@ const dialogState = reactive<TableDemoState>({
 		},
 	},
 });
+// 点击详情按钮
+const openDetailDialog = (scope: EmptyObjectType) => {
+	IdleNoRef.value = scope.row.idleno;
+	// getDetailData(scope.row.idleno);
+	detaildialogVisible.value = true;
+	dilogTitle.value = '详情';
+};
 // 单元格字体颜色
 const changeToStyle = (indList: number[]) => {
 	return ({ columnIndex }: any) => {
@@ -150,6 +210,7 @@ const getTableData = async () => {
 	if (form.idleDate) {
 		data = {
 			idleNo: form.idleNo,
+			signStatus: form.signStatus,
 			idleDateStart: form.idleDate[0],
 			idleDateEnd: form.idleDate[1],
 			page: state.tableData.page,
@@ -157,13 +218,21 @@ const getTableData = async () => {
 	} else {
 		data = {
 			idleNo: form.idleNo,
+			signStatus: form.signStatus,
 			idleDateStart: '',
 			idleDateEnd: '',
 			page: state.tableData.page,
 		};
 	}
-
+	const signStatusMap: EmptyObjectType = {
+		0: '未送签',
+		1: '签核中',
+		2: '签核完成',
+	};
 	const res = await IdleQueryPageListApi(data);
+	res.data.data.forEach((item: any) => {
+		item.signStatus = signStatusMap[item.signStatus];
+	});
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
 	if (res.status) {
@@ -171,21 +240,40 @@ const getTableData = async () => {
 	}
 };
 // 点击闲置单号
-const idleNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
+const idleNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'idleno') {
 		dilogTitle.value = '闲置单号:' + row.idleno;
-		const res = await GetIdleDetailApi(row.idleno);
-		dialogState.tableData.data = res.data.idledetaillist;
-		reportInquiryDialogVisible.value = true;
-		if (res.status) {
-			dialogState.tableData.config.loading = false;
-		}
+		getDetailData(row.idleno);
+	}
+};
+// 详情接口
+const getDetailData = async (idleno: string) => {
+	const res = await GetIdleDetailApi(idleno);
+	dialogState.tableData.data = res.data.idledetaillist;
+	dialogState.tableData.form = res.data;
+	reportInquiryDialogVisible.value = true;
+	if (res.status) {
+		dialogState.tableData.config.loading = false;
+	}
+};
+// 送簽
+const onSend = async () => {
+	const res = await getIdleSubmitSignApi(IdleNoRef.value);
+	if (res.status) {
+		ElMessage.success(t('送签成功'));
+		detaildialogVisible.value = false;
+		getTableData();
 	}
 };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
+	state.tableData.search[2].options?.forEach((item) => {
+		if (data.signStatus === item.text) {
+			data.signStatus = item.value;
+		}
+	});
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
-	tableRef.value.pageReset();
+	tableRef.value && tableRef.value.pageReset();
 };
 
 // 分页改变时回调
@@ -213,6 +301,13 @@ onMounted(() => {
 			flex: 1;
 			overflow: hidden;
 		}
+	}
+}
+.describe {
+	display: flex;
+	margin-top: 10px;
+	span {
+		width: 90px;
 	}
 }
 </style>

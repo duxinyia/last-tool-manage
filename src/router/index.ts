@@ -101,7 +101,7 @@ router.beforeEach(async (to, from, next) => {
 		next();
 		//start进度条开始， done进度条加载结束
 		NProgress.done();
-	} else if(!token&&to.path.includes('/link')||token&&to.path.includes('/link')){
+	} else if(!token&&to.path.includes('/link')||token&&to.path.includes('/link')){	
 		next();	
 		NProgress.done();
 	}

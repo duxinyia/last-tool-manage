@@ -11,7 +11,12 @@
 				@cellclick="matnoClick"
 				:cellStyle="cellStyle"
 			/>
-			<Dialog ref="sampleDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="onSubmit" />
+			<Dialog ref="sampleDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="onSubmit" @remoteMethod="remoteMethod">
+				<template #optionFat="{ row }">
+					<span style="float: left">{{ row.text }}</span>
+					<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
+				</template>
+			</Dialog>
 			<el-dialog v-model="matNoDetaildialogVisible" title="料号详情" width="50%">
 				<Table v-bind="dialogState.tableData" :objectSpanMethod="objectSpanMethod" />
 			</el-dialog>
@@ -21,7 +26,7 @@
 <script setup lang="ts" name="partnoSampleDelivery">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { getMaterialListApi, getGetSampleApi, getAddSampleNeedsApi } from '/@/api/partno/sampleDelivery';
+import { getMaterialListApi, getGetSampleApi, getAddSampleNeedsApi, getPurchaserGroupApi } from '/@/api/partno/sampleDelivery';
 import { useI18n } from 'vue-i18n';
 
 // 引入表格组件
@@ -42,6 +47,7 @@ const state = reactive<TableDemoState>({
 		// 表头内容（必传，注意格式）
 		header: [
 			{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'text', isCheck: true },
+			{ key: 'depart', colWidth: '', title: '部门', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
 			{ key: 'drawNo', colWidth: '', title: 'message.pages.drawNo', type: 'text', isCheck: true },
@@ -64,7 +70,13 @@ const state = reactive<TableDemoState>({
 
 		btnConfig: [{ type: 'sample', name: '样品需求', color: '#D3C333', isSure: false }],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-		search: [{ label: '料号', prop: 'matNo', placeholder: '请输入料号', required: false, type: 'input' }],
+		search: [
+			{ label: '料号', prop: 'matNo', placeholder: '请输入料号', required: false, type: 'input' },
+			// { label: 'BU', prop: 'bu', placeholder: '', required: false, type: 'input' },
+			{ label: '部门', prop: 'depart', placeholder: '', required: false, type: 'input' },
+			{ label: '品名', prop: 'name', placeholder: '', required: false, type: 'input' },
+			{ label: '图纸编号', prop: 'drawNo', placeholder: '', required: false, type: 'input' },
+		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
@@ -77,10 +89,26 @@ const state = reactive<TableDemoState>({
 			{ type: 'text', label: '规格', prop: 'specs', required: false, placeholder: '' },
 			{ type: 'number', label: '需求数量', prop: 'needsQty', required: true, placeholder: '', min: 1 },
 			{ type: 'date', label: '需求时间', prop: 'needsDate', required: true, placeholder: '' },
+			{
+				label: '采购人员:',
+				prop: 'purchaserName',
+				placeholder: '请输入采购人员',
+				required: true,
+				type: 'select',
+				options: [],
+				loading: true,
+				filterable: true,
+				remote: true,
+				remoteShowSuffix: true,
+			},
 		],
 		// 给后端的数据
 		form: {
 			matNo: '',
+			// bu: '',
+			depart: '',
+			name: '',
+			drawNo: '',
 		},
 		// printName: '表格打印演示',
 		// 页码
@@ -157,6 +185,10 @@ const getTableData = async () => {
 	const form = state.tableData.form;
 	let data = {
 		matNo: form.matNo,
+		// bu: form.bu,
+		depart: form.depart,
+		name: form.name,
+		drawNo: form.drawNo,
 		page: state.tableData.page,
 		queryType: 2,
 	};
@@ -167,9 +199,47 @@ const getTableData = async () => {
 		state.tableData.config.loading = false;
 	}
 };
+// 选择下拉
+let options: EmptyArrayType = [];
+const remoteMethod = (query: string) => {
+	let dialogConfig = state.tableData.dialogConfig;
+	dialogConfig?.forEach((item) => {
+		if (item.prop === 'purchaserName') item.loading = true;
+	});
+	if (query) {
+		setTimeout(async () => {
+			const res = await getPurchaserGroupApi(query);
+			options = res.data.map((item: EmptyObjectType) => {
+				return { value: `${item.userid}`, label: `${item.userid}`, text: `${item.username}` };
+			});
+			dialogConfig?.forEach((item) => {
+				if (item.prop === 'purchaserName') item.loading = false;
+				item.options = options.filter((item: EmptyObjectType) => {
+					return item.text.toLowerCase().includes(query.toLowerCase()) || item.label.toLowerCase().includes(query.toLowerCase());
+				});
+			});
+		}, 500);
+	} else {
+		dialogConfig?.forEach((item) => {
+			if (item.prop === 'purchaserName') item.options = [];
+		});
+	}
+};
 // 提交
 const onSubmit = async (formData: any) => {
-	const getData = { matNo: formData.matNo, needsQty: formData.needsQty, needsDate: formData.needsDate };
+	const getData = {
+		matNo: formData.matNo,
+		needsQty: formData.needsQty,
+		needsDate: formData.needsDate,
+		purchaser: formData.purchaser,
+		purchaserName: formData.purchaserName,
+	};
+	options.forEach((item) => {
+		if (item.value === formData.purchaserName) {
+			getData['purchaser'] = item.label;
+			getData['purchaserName'] = item.text;
+		}
+	});
 	const res = await getAddSampleNeedsApi(getData);
 	if (res.status) {
 		ElMessage.success(t('新增成功'));

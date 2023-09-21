@@ -14,27 +14,30 @@
 				:cellStyle="cellStyle"
 				@cellclick="matNoClick"
 			>
-				<template #btn="{ row }">
-					<el-button
-						v-if="row.signStatus === 0 || row.signStatus === 2"
-						:color="row.signStatus === 0 ? '#D3C333' : '#27ba9b'"
-						plain
-						size="default"
-						class="button buttonBorder"
-						@click="onSign(row.matNo, row.signStatus)"
+				<template #otherbtn="{ row }">
+					<el-popconfirm
+						v-for="btn in buttonConfig"
+						:key="btn.prop"
+						icon="ele-InfoFilled"
+						:icon-color="btn.color"
+						width="160"
+						:title="$t(btn.title)"
+						@confirm="btn.prop === 'try' ? onSubmitTrialSign(row.matNo) : onSubmitProduceSign(row.matNo)"
 					>
-						{{ row.signStatus === 0 ? $t('試產送簽') : $t('量產送簽') }}</el-button
-					>
+						<template #reference>
+							<el-button class="button buttonBorder" :color="btn.color" plain size="default">{{ $t(btn.name) }}</el-button>
+						</template>
+					</el-popconfirm>
 				</template>
 			</Table>
+			<!-- @selectChange="selectChange"
+				@editDialog="editDialog" -->
 			<Dialog
 				ref="noSearchDialogRef"
 				:dialogConfig="state.tableData.dialogConfig"
 				@addData="addData"
 				@downloadTemp="ondownloadTemp"
 				@importTableData="onImportTable"
-				@selectChange="selectChange"
-				@editDialog="editDialog"
 			/>
 			<el-dialog v-model="matNoDetaildialogVisible" title="料号详情" width="50%">
 				<matNoDetailDialog :isDialog="true" :matNoRef="matNoRef"
@@ -70,6 +73,10 @@ const matNoRef = ref();
 const matNoDetaildialogVisible = ref(false);
 // 单元格样式
 const cellStyle = ref();
+const buttonConfig = reactive([
+	{ name: '試產', prop: 'try', color: '#D3C333', title: '確定試產送簽嗎？' },
+	{ name: '量產', prop: 'more', color: '#27ba9b', title: '確定量產送簽嗎？' },
+]);
 const state = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
@@ -77,6 +84,7 @@ const state = reactive<TableDemoState>({
 		// 表头内容（必传，注意格式）
 		header: [
 			{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'text', isCheck: true },
+			{ key: 'depart', colWidth: '', title: '部门', type: 'text', isCheck: true },
 			{ key: 'bu', colWidth: '', title: 'BU', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
@@ -98,8 +106,11 @@ const state = reactive<TableDemoState>({
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
-			operateWidth: 330, //操作栏宽度，如果操作栏有几个按钮就自己定宽度
+			operateWidth: 220, //操作栏宽度，如果操作栏有几个按钮就自己定宽度
+			otherBtnOperateWidth: 150,
 			exportIcon: true, //是否有导出icon(导出功能)
+			isOtherBtnOperate: true, //其他按钮列
+			otherBtnOperate: '送簽選擇',
 		},
 		topBtnConfig: [
 			{ type: 'add', name: '新增', defaultColor: 'primary', isSure: true, disabled: true },
@@ -113,6 +124,7 @@ const state = reactive<TableDemoState>({
 		search: [
 			{ label: '料号', prop: 'matNo', placeholder: '请输入料号', required: false, type: 'input' },
 			{ label: 'BU', prop: 'bu', placeholder: '', required: false, type: 'input' },
+			{ label: '部门', prop: 'depart', placeholder: '', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', placeholder: '', required: false, type: 'input' },
 			{ label: '图纸编号', prop: 'drawNo', placeholder: '', required: false, type: 'input' },
 		],
@@ -123,6 +135,7 @@ const state = reactive<TableDemoState>({
 		form: {
 			matNo: '',
 			bu: '',
+			depart: '',
 			name: '',
 			drawNo: '',
 		},
@@ -137,14 +150,16 @@ const state = reactive<TableDemoState>({
 		dialogConfig: [
 			{ label: 'message.pages.matNo', prop: 'matNo', placeholder: 'message.pages.placeMatNo', required: false, type: 'text' },
 			{ label: 'message.pages.nameCh', prop: 'nameCh', placeholder: 'message.pages.placeNameCh', required: true, type: 'input' },
-			{ label: 'NameEn', prop: 'nameEn', placeholder: 'message.pages.placeNameEn', required: true, type: 'input' },
+			{ label: 'message.pages.nameEn', prop: 'nameEn', placeholder: 'message.pages.placeNameEn', required: true, type: 'input' },
 			{ label: 'message.pages.drawNo', prop: 'drawNo', placeholder: 'message.pages.placeDrawNo', required: true, type: 'input' },
-			{ label: 'message.pages.specs', prop: 'specs', placeholder: 'message.pages.placeSpecs', required: true, type: 'input' },
-			{ label: '厂区', prop: 'area', placeholder: '请选择厂区', required: false, type: 'select', options: [] },
-			{ label: 'BU', prop: 'bu', placeholder: '请选择BU', required: false, type: 'select', options: [] },
-			{ label: '专案代码', prop: 'projectCode', placeholder: '请选择专案代码', required: false, type: 'select', options: [] },
-			{ label: '阶段', prop: 'stage', placeholder: '请选择阶段', required: false, type: 'select', options: [] },
-			{ label: '机种', prop: 'machineType', placeholder: '请选择机种', required: false, type: 'select', options: [] },
+			// { label: 'message.pages.specs', prop: 'specs', placeholder: 'message.pages.placeSpecs', required: true, type: 'input' },
+			{ label: '阶段', prop: 'stage', placeholder: '请输入阶段', required: false, type: 'input' },
+			{ label: '部门', prop: 'depart', placeholder: '请输入部门', required: false, type: 'input' },
+			// { label: '厂区', prop: 'area', placeholder: '请选择厂区', required: false, type: 'select', options: [] },
+			// { label: 'BU', prop: 'bu', placeholder: '请选择BU', required: false, type: 'select', options: [] },
+			// { label: '专案代码', prop: 'projectCode', placeholder: '请选择专案代码', required: false, type: 'select', options: [] },
+			// { label: '阶段', prop: 'stage', placeholder: '请选择阶段', required: false, type: 'select', options: [] },
+			// { label: '机种', prop: 'machineType', placeholder: '请选择机种', required: false, type: 'select', options: [] },
 			{
 				label: 'message.pages.drawPath',
 				prop: 'drawPath',
@@ -161,7 +176,7 @@ const state = reactive<TableDemoState>({
 				label: '3D圖紙',
 				prop: 'draw3dPath',
 				placeholder: 'message.pages.placeDrawPath',
-				required: true,
+				required: false,
 				type: 'input3dFile',
 				xs: 24,
 				sm: 24,
@@ -212,6 +227,7 @@ const getTableData = async () => {
 	let data = {
 		matNo: form.matNo,
 		bu: form.bu,
+		depart: form.depart,
 		name: form.name,
 		drawNo: form.drawNo,
 		page: state.tableData.page,
@@ -226,7 +242,7 @@ const getTableData = async () => {
 			arr.push(item.signStatus);
 		}
 	});
-	state.tableData.config.operateWidth = !arr.length ? 220 : 330;
+	// state.tableData.config.operateWidth = !arr.length ? 220 : 330;
 	if (res.status) {
 		state.tableData.config.loading = false;
 	}
@@ -272,35 +288,35 @@ const selcectMAP: EmptyObjectType = {
 	stage: { api: 'GetmachineTypeList', index: 9, prop: 'stage', clearProp: ['machineType'] },
 };
 // 调下拉框接口
-const getAllSelectApi = async (val: string, prop: string) => {
-	let data: EmptyObjectType = {};
-	// 设置每个api的传参key字段
-	data[selcectMAP[prop].prop] = val;
-	const res = await getSelectListApi(data, selcectMAP[prop].api);
-	if (state.tableData.dialogConfig) {
-		state.tableData.dialogConfig[selcectMAP[prop].index].options = res.data.map((item: any) => {
-			return { value: item, label: item, text: item };
-		});
-	}
-};
-// 下拉框改變
-const selectChange = (val: string, prop: string, formData: EmptyObjectType) => {
-	if (!selcectMAP[prop]) return;
-	selcectMAP[prop].clearProp.forEach((item: string) => {
-		formData[item] = '';
-		if (state.tableData.dialogConfig && selcectMAP[item]) {
-			state.tableData.dialogConfig[selcectMAP[item].index].options = [];
-		}
-	});
-	getAllSelectApi(val, prop);
-};
-// 编辑弹窗，重新给下拉框值
-const editDialog = async (formData: EmptyObjectType) => {
-	const arr = ['area', 'bu', 'projectCode', 'stage'];
-	arr.forEach((item) => {
-		getAllSelectApi(formData[item], item);
-	});
-};
+// const getAllSelectApi = async (val: string, prop: string) => {
+// 	let data: EmptyObjectType = {};
+// 	// 设置每个api的传参key字段
+// 	data[selcectMAP[prop].prop] = val;
+// 	const res = await getSelectListApi(data, selcectMAP[prop].api);
+// 	if (state.tableData.dialogConfig) {
+// 		state.tableData.dialogConfig[selcectMAP[prop].index].options = res.data.map((item: any) => {
+// 			return { value: item, label: item, text: item };
+// 		});
+// 	}
+// };
+// // 下拉框改變
+// const selectChange = (val: string, prop: string, formData: EmptyObjectType) => {
+// 	if (!selcectMAP[prop]) return;
+// 	selcectMAP[prop].clearProp.forEach((item: string) => {
+// 		formData[item] = '';
+// 		if (state.tableData.dialogConfig && selcectMAP[item]) {
+// 			state.tableData.dialogConfig[selcectMAP[item].index].options = [];
+// 		}
+// 	});
+// 	getAllSelectApi(val, prop);
+// };
+// // 编辑弹窗，重新给下拉框值
+// const editDialog = async (formData: EmptyObjectType) => {
+// 	const arr = ['area', 'bu', 'projectCode', 'stage'];
+// 	arr.forEach((item) => {
+// 		getAllSelectApi(formData[item], item);
+// 	});
+// };
 // 删除当前项回调
 const onTableDelRow = async (row: EmptyObjectType, type: string) => {
 	let rows = [];
@@ -319,15 +335,31 @@ const onTableDelRow = async (row: EmptyObjectType, type: string) => {
 		getTableData();
 	}
 };
-
-const onSign = async (mat: string, signStatus: number) => {
-	// 0:試產簽核,2:量產签核
-	const res = signStatus === 0 ? await getSubmitTrialSignApi(mat) : await getSubmitProduceSignApi(mat);
+// 试产
+const onSubmitTrialSign = async (mat: string) => {
+	const res = await getSubmitTrialSignApi(mat);
 	if (res.status) {
-		ElMessage.success(`送簽成功`);
+		ElMessage.success(`試產送簽成功`);
 		getTableData();
 	}
 };
+// 量產
+const onSubmitProduceSign = async (mat: string) => {
+	const res = await getSubmitProduceSignApi(mat);
+	if (res.status) {
+		ElMessage.success(`量產送簽成功`);
+		getTableData();
+	}
+};
+
+// const onSign = async (mat: string, signStatus: number) => {
+// 	// 0:試產簽核,2:量產签核
+// 	const res = signStatus === 0 ? await getSubmitTrialSignApi(mat) : await getSubmitProduceSignApi(mat);
+// 	if (res.status) {
+// 		ElMessage.success(`送簽成功`);
+// 		getTableData();
+// 	}
+// };
 // 分页改变时回调
 const onTablePageChange = (page: TableDemoPageType) => {
 	state.tableData.page.pageNum = page.pageNum;
@@ -398,7 +430,7 @@ const getSelect = async () => {
 // 页面加载时
 onMounted(() => {
 	getTableData();
-	getSelect();
+	// getSelect();
 });
 </script>
 
@@ -414,5 +446,9 @@ onMounted(() => {
 }
 .buttonBorder {
 	border: 0px !important;
+}
+:deep(.cell) {
+	display: flex !important;
+	justify-content: center;
 }
 </style>

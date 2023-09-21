@@ -11,7 +11,7 @@
 				@sortHeader="onSortHeader"
 				@openAdd="openDialog"
 			/>
-			<Dialog ref="purchaseDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="addData" />
+			<Dialog ref="purchaseDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="addData" dialogWidth="30%" />
 		</div>
 	</div>
 </template>
@@ -85,7 +85,7 @@ const state = reactive<TableDemoState>({
 		// 打印标题
 		printName: '表格打印演示',
 		// 弹窗表单
-		dialogConfig: [{ label: '工号', prop: 'UserId', placeholder: '请输入工号', required: true, type: 'input' }],
+		dialogConfig: [{ label: '工号', prop: 'UserId', placeholder: '请输入工号', required: true, type: 'input', md: 20, lg: 20, xl: 20 }],
 	},
 });
 

@@ -30,7 +30,7 @@
 			/>
 		</el-tab-pane>
 		<el-dialog ref="arriveJobDialogRef" v-model="arriveJobDialogVisible" :title="dilogTitle" width="60%">
-			<el-row v-if="dilogTitle == '验收' || dilogTitle == '詳情'">
+			<el-row v-if="dilogTitle == '验收'">
 				<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb10" v-for="(val, key) in dialogState.tableData.search" :key="key">
 					<div v-if="val.type === 'text'">
 						{{ val.label }}：<span style="color: red" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
@@ -52,8 +52,8 @@
 			<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
 				<Table v-bind="dialogState.tableData" class="table" @delRow="onDelRow" @handleNumberInputChange="changeInput" />
 			</el-form>
-			<template v-if="dilogTitle == '验收' || dilogTitle == '詳情'">
-				<div class="describe up-file" v-if="dilogTitle == '验收'">
+			<template v-if="dilogTitle == '验收'">
+				<div class="describe up-file">
 					<span>收货报告url：</span>
 					<el-input disabled v-model="dialogState.tableData.form['accepreporturl']" clearable>
 						<template #prepend
@@ -81,6 +81,7 @@
 				<div class="describe">
 					<span>描述说明：</span>
 					<el-input
+						:disabled="dilogTitle == '验收' ? false : true"
 						class="input-textarea"
 						show-word-limit
 						v-model="dialogState.tableData.form['describe']"
@@ -97,7 +98,11 @@
 					<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)"> 确定 </el-button>
 				</span>
 			</template>
-			<template #footer v-if="isSendBtn && dilogTitle == '詳情'">
+		</el-dialog>
+		<!-- 驗收記錄詳情彈窗 -->
+		<el-dialog v-model="detaildialogVisible" :title="dilogTitle" width="50%">
+			<checkNoDetailDialog :isDialog="true" :checkNoRef="checkNoRef" />
+			<template #footer v-if="dilogTitle == '詳情'">
 				<span class="dialog-footer">
 					<el-button size="default" auto-insert-space @click="arriveJobDialogVisible = false">取消</el-button>
 					<el-button size="default" type="primary" auto-insert-space @click="onSend"> 送 簽 </el-button>
@@ -118,14 +123,13 @@ import {
 	getTInsertCheckApi,
 	getQueryCheckPageApi,
 	getSubmitSignApi,
-	getCheckdetailApi,
 } from '/@/api/requistManage/arrivalAcceptance';
 import { getUploadFileApi } from '/@/api/global/index';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
-
+const checkNoDetailDialog = defineAsyncComponent(() => import('/@/views/link/arrivalAcceptanceLink/index.vue'));
 // 定义变量内容
 const { t } = useI18n();
 const tableFormRef = ref();
@@ -137,6 +141,8 @@ const inputuploadRefs = ref<UploadInstance>();
 const inputuploadForm = ref();
 const arriveJobDialogVisible = ref(false);
 const isSendBtn = ref(false);
+const detaildialogVisible = ref(false);
+const checkNoRef = ref();
 // 单元格样式
 const cellStyle = ref();
 const activeName = ref<string | number>('first');
@@ -416,7 +422,7 @@ const inputHandleExceed: UploadProps['onExceed'] = (files) => {
 };
 // 上传文件
 const inputsubmitUpload = async () => {
-	const res = await getUploadFileApi(0, inputuploadForm.value.raw);
+	const res = await getUploadFileApi(2, inputuploadForm.value.raw);
 	dialogState.tableData.form['accepreporturl'] = res.data;
 	res.status && ElMessage.success(`上传成功`);
 };
@@ -438,12 +444,14 @@ const openArriveJobDialog = (scope: EmptyObjectType) => {
 };
 // 点击详情按钮
 const openDetailDialog = (scope: EmptyObjectType) => {
-	isSendBtn.value = scope.row.signstatus === '未送签' ? true : false;
+	checkNoRef.value = scope.row.checkno;
+	detaildialogVisible.value = true;
+	// isSendBtn.value = scope.row.signstatus === '未送签' ? true : false;
 	dilogTitle.value = '詳情';
-	dialogState.tableData.form = scope.row;
-	changeStatus(header2.value, 300, false);
-	let data = { checkNo: scope.row.checkno };
-	getDetailData(data, scope.row.checkno);
+	// dialogState.tableData.form = scope.row;
+	// changeStatus(header2.value, 300, false);
+	// let data = { checkNo: scope.row.checkno };
+	// getDetailData(data, scope.row.checkno);
 };
 // 点击收货单号
 const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
@@ -459,7 +467,8 @@ const getDetailData = async (data: EmptyObjectType, checkno?: string) => {
 	dialogState.tableData.form = {};
 	dialogState.tableData.data = [];
 	arriveJobDialogVisible.value = true;
-	const res = checkno ? await getCheckdetailApi(data) : await getReceiveApi(data);
+	// const res = checkno ? await getCheckdetailApi(data) : await getReceiveApi(data);
+	const res = await getReceiveApi(data);
 	dialogState.tableData.form = res.data;
 	dialogState.tableData.form.checkno = checkno;
 	dialogState.tableData.data = res.data.receiveDetails;
@@ -478,10 +487,10 @@ const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) =
 };
 // 送簽
 const onSend = async () => {
-	const res = await getSubmitSignApi(dialogState.tableData.form.checkno);
+	const res = await getSubmitSignApi(checkNoRef.value);
 	if (res.status) {
 		ElMessage.success(t('送签成功'));
-		arriveJobDialogVisible.value = false;
+		detaildialogVisible.value = false;
 		getTableData();
 	}
 };

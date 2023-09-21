@@ -2,7 +2,7 @@ import request from '/@/utils/request';
 // 查询接口
 export function getQueryExitPageApi(data: Object) {
 	return request({
-		url: '/api/Idle/UselessPageList',
+		url: '/api/Useless/UselessPageList',
 		method: 'POST',
 		data: data,
 	});
@@ -11,8 +11,16 @@ export function getQueryExitPageApi(data: Object) {
 
 export function getUselessDetailApi(UselessNo: string) {
 	return request({
-		url: '/api/Idle/GetUselessDetail/UselessNo',
+		url: '/api/Useless/GetUselessDetail/UselessNo',
 		method: 'GET',
 		params: { UselessNo },
 	});
+}
+// 送簽
+export function getUselessSubmitSignApi(comKey:Object) {
+  return request({
+    url: '/api/Useless/SubmitSign',
+    method: 'POST',
+  	data:{comKey}
+  });
 }

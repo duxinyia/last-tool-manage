@@ -13,7 +13,7 @@
 					class="sample-dialog-col"
 				>
 					<div v-if="item.type === 'text'">
-						{{ item.label }}：<span style="color: red" class="ml10">{{ state.formData[item.prop] }}</span>
+						{{ item.label }}：<span style="color: red; line-height: 30px" class="ml10">{{ state.formData[item.prop] }}</span>
 					</div>
 					<div v-if="item.type === 'select'">
 						<span v-if="item.isRequired" class="color-danger mr5">*</span>
@@ -366,6 +366,6 @@ defineExpose({
 	border: 0px !important;
 }
 .sample-dialog-col {
-	margin-bottom: 20px;
+	margin-bottom: 10px;
 }
 </style>

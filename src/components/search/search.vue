@@ -126,8 +126,6 @@ const onReset = (formEl: FormInstance | undefined) => {
 const initFormField = () => {
 	if (props.search.length <= 0) return false;
 	props.search.forEach((v) => {
-		console.log(v.options);
-
 		if (v.type === 'select' && v.options && v.options?.length > 0) {
 			v.options?.forEach((item) => {
 				if (item.selected) {

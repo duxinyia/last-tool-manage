@@ -12,9 +12,9 @@
 				:cellStyle="cellStyle"
 				@onOpentopBtnOther="onOpenSendRepair"
 			/>
-			<el-dialog ref="presentationDialogRef" v-model="presentationDialogVisible" :title="dilogTitle" width="85%">
+			<el-dialog ref="presentationDialogRef" v-model="presentationDialogVisible" :title="dilogTitle" width="60%">
 				<el-row>
-					<el-col :xs="24" :sm="12" :md="8" :lg="5" :xl="5" class="mb20 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
+					<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb20 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
 						<div v-if="val.type === 'text'">
 							{{ val.label }}<span style="color: red" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
 						</div>
@@ -203,7 +203,7 @@ const dialogState = reactive<TableDemoState>({
 			isTopTool: false, //是否有表格右上角工具
 			isPage: false, //是否有分页
 			isDialogTab: true, //是否是弹窗里面的表格
-			height: 500,
+			height: 300,
 		},
 		// 给后端的数据
 		form: {},

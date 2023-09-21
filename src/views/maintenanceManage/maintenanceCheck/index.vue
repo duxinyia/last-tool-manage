@@ -284,7 +284,7 @@ const inputHandleExceed: UploadProps['onExceed'] = (files) => {
 };
 // 上传文件
 const inputsubmitUpload = async () => {
-	const res = await getUploadFileApi(0, inputuploadForm.value.raw);
+	const res = await getUploadFileApi(3, inputuploadForm.value.raw);
 	dialogState.tableData.form['accepReportUrl'] = res.data;
 	res.status && ElMessage.success(`上传成功`);
 };

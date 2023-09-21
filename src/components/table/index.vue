@@ -192,6 +192,7 @@
 							:active-text="$t('message.allButton.statusY')"
 							:inactive-text="$t('message.allButton.statusN')"
 						></el-switch>
+
 						<!-- 日期框 -->
 						<el-date-picker
 							v-else-if="item.type === 'time'"
@@ -228,7 +229,17 @@
 					</span>
 				</template>
 			</el-table-column>
-
+			<el-table-column
+				align="right"
+				header-align="center"
+				:label="config.otherBtnOperate"
+				:width="config.otherBtnOperateWidth || 120"
+				v-if="config.isOtherBtnOperate"
+			>
+				<template v-slot="scope">
+					<slot name="otherbtn" :row="scope.row"></slot>
+				</template>
+			</el-table-column>
 			<el-table-column
 				align="right"
 				header-align="center"

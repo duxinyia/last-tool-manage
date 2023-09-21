@@ -484,7 +484,8 @@ const inputHandleExceed: UploadProps['onExceed'] = (files) => {
 // 上传文件
 const inputsubmitUpload = async (prop: string) => {
 	let value = prop == 'drawPath' ? inputuploadForm.value.raw : input3duploadForm.value.raw;
-	const res = await getUploadFileApi(0, value);
+	let funcType = prop == 'drawPath' ? 0 : 1;
+	const res = await getUploadFileApi(funcType, value);
 	state.formData[prop] = res.data;
 	res.status && ElMessage.success(`上传成功`);
 };

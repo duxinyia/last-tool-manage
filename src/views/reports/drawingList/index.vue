@@ -162,7 +162,7 @@ onMounted(() => {
 <style scoped lang="scss">
 .table-container {
 	.table-padding {
-		padding: 0.0781rem;
+		padding: 15px;
 		.table {
 			flex: 1;
 			overflow: hidden;

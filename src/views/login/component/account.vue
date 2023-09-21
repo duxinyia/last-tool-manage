@@ -76,8 +76,10 @@ const router = useRouter();
 const state = reactive({
 	isShowPassword: false,
 	ruleForm: {
-		userName: 'G1656790',
-		password: 'MISAdmin',
+		// userName: 'G1656790',
+		// password: 'MISAdmin',
+		userName: '',
+		password: '',
 	},
 	loading: {
 		signIn: false,

@@ -31,6 +31,14 @@ export function getAddSampleNeedsApi(data:Object) {
   	data:data
   });
 }
+// 采购人员下拉
+export function getPurchaserGroupApi(userId:string) {
+  return request({
+    url: `/api/Group/GetPurchaserGroup`,
+    method: 'GET',
+    params:{userId}
+  });
+}
 
 
 

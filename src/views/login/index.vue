@@ -46,7 +46,7 @@
 						</span>
 						&nbsp;&nbsp;
 						<span class="author">
-							<el-icon class="icon"><ele-UserFilled /></el-icon>刘进/***-*****
+							<el-icon class="icon"><ele-UserFilled /></el-icon>劉進/37500
 						</span>
 						<span class="mail">
 							<el-icon class="icon"><ele-Message /></el-icon>rein.j.liu@mail.foxconn.com

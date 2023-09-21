@@ -86,8 +86,8 @@ const dialogData = reactive({
 	otherHeaderData: [
 		{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 		{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-		{ key: 'needsTime', colWidth: '', title: '需求送样时间', type: 'text', isCheck: true },
-		{ key: 'needsQty', colWidth: '', title: '需求送样数量', type: 'text', isCheck: true },
+		// { key: 'needsTime', colWidth: '', title: '需求送样时间', type: 'text', isCheck: true },
+		{ key: 'needsQty', colWidth: '', title: '送样数量', type: 'text', isCheck: true },
 		{ key: 'receiveTime', colWidth: '', title: '收货时间', type: 'time', isCheck: true, isRequired: true },
 		{ key: 'receiveQty', colWidth: '', title: '收货数量', type: 'input', isCheck: true, isRequired: true },
 	],
@@ -98,6 +98,8 @@ const dialogData = reactive({
 		{ type: 'text', label: '品名-中文', prop: 'nameCh', value: '' },
 		{ type: 'text', label: '品名-英文', prop: 'nameEn', value: '' },
 		{ type: 'select', label: '工程验收人', prop: 'engineerNo', value: '', options: [], isRequired: true },
+		{ type: 'text', label: '送样时间', prop: 'needsDate', value: '' },
+		{ type: 'text', label: '送样数量', prop: 'needsQty', value: '' },
 	],
 	//进行送样、收货还是验收操作
 	operation: '收货',

@@ -10,7 +10,7 @@ export function getQueryExitPageApi(data:Object) {
 // 报废
 export function getUselessBackStockApi(data:Object) {
   return request({
-    url: '/api/Idle/UselessBackStock',
+    url: '/api/Useless/UselessBackStock',
     method: 'POST',
   	data:data
   });

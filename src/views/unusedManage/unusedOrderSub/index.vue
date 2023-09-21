@@ -151,7 +151,7 @@ const state = reactive<TableDemoState>({
 			isBorder: false, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
 			isSelection: true, // 是否显示表格多选
-			isOperate: true, // 是否显示表格操作栏
+			isOperate: false, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
@@ -217,7 +217,7 @@ const dialogState = reactive<TableDemoState>({
 			{ label: '班别', prop: 'classes', placeholder: '请输入班别', type: 'input', required: false, isRequired: false },
 			{ label: '规划存放位置', prop: 'position', placeholder: '请输入规划存放位置', type: 'input', required: false, isRequired: false },
 		],
-		// 弹窗表单
+		// 弹窗按钮
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
