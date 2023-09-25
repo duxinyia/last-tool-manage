@@ -1,5 +1,5 @@
 <template>
-	<i v-if="isShowIconSvg" class="el-icon" :style="setIconSvgStyle">
+	<i v-if="isShowIconSvg" class="el-icon" :style="setIconSvgStyle" :title="title">
 		<component :is="getIconName" />
 	</i>
 	<div v-else-if="isShowIconImg" :style="setIconImgOutStyle">
@@ -27,6 +27,10 @@ const props = defineProps({
 	},
 	// svg 颜色
 	color: {
+		type: String,
+	},
+	// 提示
+	title: {
 		type: String,
 	},
 	// 位置

@@ -23,3 +23,11 @@ export function getEngieerGroupApi(userId:string) {
     method: 'GET',
   	params:{userId}
   });}
+  // 仓库类型下拉框数据
+export function getLegalStoreTypesApi() {
+  return request({
+    url: '/api/BaseStore/GetLegalStoreTypes',
+    method: 'GET',
+  
+  });
+}

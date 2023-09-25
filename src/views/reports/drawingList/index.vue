@@ -2,18 +2,13 @@
 	<div class="table-container layout-padding">
 		<div class="table-padding layout-padding-view layout-padding-auto">
 			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" class="mt15" />
-			<Table ref="tableRef" v-bind="state.tableData" class="table" @pageChange="onTablePageChange" @sortHeader="onSortHeader" @cellclick="reqNoClick">
-				<!-- <template #btn="{ row }">
-					<el-button type="primary" plain size="default" class="button buttonBorder" @click="onSign(row.exitStoreId)">
-						{{ $t('查看二维码编码') }}</el-button
+			<Table ref="tableRef" v-bind="state.tableData" class="table" @pageChange="onTablePageChange" @sortHeader="onSortHeader">
+				<template #btn="{ row }">
+					<el-button type="primary" plain size="default" class="button buttonBorder" @click="drawPathClick(row.drawPath)">
+						{{ $t('查看图纸') }}</el-button
 					>
-				</template> -->
+				</template>
 			</Table>
-			<!-- <el-dialog v-model="maintenanceListDialogRef" title="二维码编码" width="30%" draggable>
-				<el-tag v-for="tag in tags" :key="tag.code" class="mr10 mb10">
-					{{ tag.code }}
-				</el-tag>
-			</el-dialog> -->
 		</div>
 	</div>
 </template>
@@ -21,21 +16,14 @@
 <script setup lang="ts" name="drawingList">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { getQueryDrawInventoryApi } from '/@/api/reports/drawingList';
-import { GetExitStoreQrCodeListApi } from '/@/api/maintenanceManage/maintenanceOrderSub';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
-const matNoDetailDialog = defineAsyncComponent(() => import('/@/views/link/noSearchLink/index.vue'));
 // 定义变量内容
 const { t } = useI18n();
 const tableRef = ref<RefType>();
-const matNoRef = ref();
-const maintenanceListDialogRef = ref(false);
-// tags的数据
-let tags = ref<EmptyArrayType>([]);
-// 弹窗标题
 const state = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
@@ -49,7 +37,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'drawNo', colWidth: '', title: '图纸编号', type: 'text', isCheck: true },
-			{ key: 'drawPath', colWidth: '', title: '图纸路径', type: 'text', isCheck: true },
+			// { key: 'drawPath', colWidth: '', title: '图纸路径', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -58,12 +46,12 @@ const state = reactive<TableDemoState>({
 			isBorder: false, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
 			isSelection: false, // 是否显示表格多选
-			isOperate: false, // 是否显示表格操作栏
+			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
-			operateWidth: 150, //操作栏宽度，如果操作栏有几个按钮就自己定宽度
+			// operateWidth: 150, //操作栏宽度，如果操作栏有几个按钮就自己定宽度
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
@@ -79,12 +67,12 @@ const state = reactive<TableDemoState>({
 		},
 		// 给后端的数据
 		form: {
-			matNo: '',
-			buCode: '',
-			machineType: '',
-			nameEn: '',
-			nameCh: '',
-			drawNo: '',
+			// matNo: '',
+			// buCode: '',
+			// machineType: '',
+			// nameEn: '',
+			// nameCh: '',
+			// drawNo: '',
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -95,29 +83,13 @@ const state = reactive<TableDemoState>({
 		printName: '表格打印演示',
 	},
 });
-// const onSign = async (exitStoreId: string) => {
-// 	const res = await GetExitStoreQrCodeListApi(exitStoreId);
-// 	if (res.data) {
-// 		if (!res.data.length) {
-// 			ElMessage.error('暂无二维码编码');
-// 		} else {
-// 			maintenanceListDialogRef.value = true;
-// 			tags.value = res.data;
-// 		}
-// 	}
-// };
 // 初始化列表数据
 const getTableData = async () => {
 	state.tableData.config.loading = true;
 	const form = state.tableData.form;
 	let data: EmptyObjectType = {};
 	data = {
-		matNo: form.matNo,
-		buCode: form.buCode,
-		machineType: form.machineType,
-		nameEn: form.nameEn,
-		nameCh: form.nameCh,
-		drawNo: form.drawNo,
+		...form,
 		page: state.tableData.page,
 	};
 	const res = await getQueryDrawInventoryApi(data);
@@ -127,13 +99,10 @@ const getTableData = async () => {
 		state.tableData.config.loading = false;
 	}
 };
-// 点击料号
-const reqNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
-	// if (column.property === 'matNo') {
-	// 	matNoRef.value = row.matNo;
-	// 	setTimeout(() => {
-	// 		maintenanceListDialogRef.value = true;
-	// 	}, 100);
+// 点击查看图纸
+const drawPathClick = async (drawPath: string) => {
+	// if (drawPath.includes('/')) {
+	window.open(`${import.meta.env.VITE_API_URL}${drawPath}`, '_blank');
 	// }
 };
 // 搜索点击时表单回调

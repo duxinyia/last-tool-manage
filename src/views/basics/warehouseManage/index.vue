@@ -42,8 +42,8 @@ import {
 	getAdminsInfosOfStoreHouseApi,
 	getAddAdminsToStoreHouseApi,
 	getRemoveAdminFromStoreHouseApi,
-	getLegalStoreTypesApi,
 } from '/@/api/basics/warehouseManage';
+import { getLegalStoreTypesApi } from '/@/api/global';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));

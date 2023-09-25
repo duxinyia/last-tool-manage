@@ -42,6 +42,13 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
+			{
+				key: 'matNo',
+				colWidth: '',
+				title: 'message.pages.matNo',
+				type: 'text',
+				isCheck: true,
+			},
 			{ key: 'buCode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
 			{ key: 'machineType', colWidth: '', title: '机种', type: 'text', isCheck: true },
 			{ key: 'projectCode', colWidth: '', title: '专案代码', type: 'text', isCheck: true },
@@ -72,21 +79,23 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: 'BU', prop: 'buCode', required: false, type: 'input', lg: 3, xl: 3 },
+			{ label: '料号', prop: 'matNo', required: false, type: 'input' },
+			{ label: 'BU', prop: 'buCode', required: false, type: 'input' },
 			{ label: '机种', prop: 'machineType', required: false, type: 'input' },
-			{ label: '品名-中文', prop: 'nameCh', required: false, type: 'input' },
-			{ label: '品名-英文', prop: 'nameEn', required: false, type: 'input' },
-			{ label: '报废日期', prop: 'scrapDate', required: false, type: 'dateRange', lg: 5, xl: 5 },
+			{ label: '品名', prop: 'name', required: false, type: 'input' },
+			// { label: '品名-中文', prop: 'nameCh', required: false, type: 'input' },
+			// { label: '品名-英文', prop: 'nameEn', required: false, type: 'input' },
+			{ label: '报废日期', prop: 'scrapDate', required: false, type: 'dateRange', lg: 4, xl: 4 },
 		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
 		// 给后端的数据
 		form: {
-			buCode: '',
-			machineType: '',
-			nameEn: '',
-			nameCh: '',
+			// buCode: '',
+			// machineType: '',
+			// nameEn: '',
+			// nameCh: '',
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -114,16 +123,13 @@ const getTableData = async () => {
 	const form = state.tableData.form;
 	let data: EmptyObjectType = {};
 	data = {
-		buCode: form.buCode,
-		machineType: form.machineType,
+		...form,
 		startUselessDate: form.scrapDate && form.scrapDate[0],
 		endUselessDate: form.scrapDate && form.scrapDate[1],
-		nameEn: form.nameEn,
-		nameCh: form.nameCh,
 		page: state.tableData.page,
 	};
+	delete data.scrapDate;
 	const res = await getQueryUselessInventoryApi(data);
-
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
 	if (res.status) {

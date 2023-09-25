@@ -27,8 +27,8 @@
 				</el-dropdown-menu>
 			</template>
 		</el-dropdown>
-
-		<!-- <div class="layout-navbars-breadcrumb-user-icon" @click="onLayoutSetingClick">
+		<!-- 
+		<div class="layout-navbars-breadcrumb-user-icon" @click="onLayoutSetingClick">
 			<i class="icon-huanfu iconfont" :title="$t('message.user.title3')"></i>
 		</div> -->
 		<!-- <div class="layout-navbars-breadcrumb-user-icon" ref="userNewsBadgeRef" v-click-outside="onUserNewsClick">

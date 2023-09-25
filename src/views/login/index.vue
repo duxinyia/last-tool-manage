@@ -98,6 +98,7 @@ onMounted(() => {
 	height: 100%;
 	background: url('../../assets/images/login-page.png') no-repeat center;
 	position: relative;
+	// background-size: 100% 100%;
 }
 .login-top {
 	height: 120px;

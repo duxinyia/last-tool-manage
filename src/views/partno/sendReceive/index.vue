@@ -145,13 +145,10 @@ const selectChange = (query: string) => {
 		sendReceiveDialogRef.value.loadingOpen();
 		setTimeout(async () => {
 			const res = await getEngieerGroupApi(query);
-			console.log('res', res);
-
 			sendReceiveDialogRef.value.loadingClose();
 			let options = res.data.map((item: EmptyObjectType) => {
 				return { value: `${item.userid}`, label: `${item.username}` };
 			});
-			console.log('res', options);
 			dialogData.dialogForm[4].options = options.filter((item: EmptyObjectType) => {
 				return item.label.toLowerCase().includes(query.toLowerCase()) || item.value.toLowerCase().includes(query.toLowerCase());
 			});

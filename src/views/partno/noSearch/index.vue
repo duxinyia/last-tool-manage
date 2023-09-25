@@ -91,6 +91,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'drawNo', colWidth: '', title: 'message.pages.drawNo', type: 'text', isCheck: true },
 			// { key: 'specs', colWidth: '', title: 'message.pages.specs', type: 'text', isCheck: true },
 			{ key: 'signStatusStr', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
+			{ key: 'img', colWidth: '', title: '图片', width: '70', height: '40', type: 'image', isCheck: true },
 			// { key: 'creator', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
 			// { key: 'createtime', title: 'message.pages.creationTime', type: 'text', isCheck: true },
 		],
@@ -196,6 +197,7 @@ const state = reactive<TableDemoState>({
 				lg: 24,
 				xl: 24,
 			},
+			{ label: '图片', prop: 'image', placeholder: '', required: true, type: 'uploadImage' },
 		],
 	},
 });
@@ -254,7 +256,7 @@ const onSearch = (data: EmptyObjectType) => {
 	tableRef.value.pageReset();
 };
 // 打开弹窗
-const openDialog = (type: string, row: Object) => {
+const openDialog = (type: string, row: EmptyObjectType) => {
 	noSearchDialogRef.value.openDialog(type, row);
 	if (type === 'add') {
 		let arr = ['bu', 'projectCode', 'machineType', 'stage'];

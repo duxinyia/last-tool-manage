@@ -93,7 +93,7 @@
 			:row-key="selRowKey"
 			:stripe="objectSpanMethod ? false : true"
 			style="width: 100%"
-			:header-row-style="{ background: '#dce9fd' }"
+			:header-row-style="{ background: '' }"
 			v-loading="config.loading"
 			@selection-change="onSelectionChange"
 			@cell-click="cellClick"
@@ -202,7 +202,7 @@
 							placeholder="请选择"
 							style="height: 30px; max-width: 167px"
 						/>
-						<!-- 日期范围框 -->
+						<!-- 图片 -->
 						<template v-else-if="item.type === 'image'">
 							<el-image
 								:style="{ width: `${item.width}px`, height: `${item.height}px` }"
@@ -241,10 +241,11 @@
 				</template>
 			</el-table-column>
 			<el-table-column
+				fixed="right"
 				align="right"
 				header-align="center"
 				:label="$t('message.pages.operation')"
-				:width="config.operateWidth || 120"
+				:width="config.operateWidth || 130"
 				v-if="config.isOperate"
 			>
 				<template v-slot="scope">
@@ -669,7 +670,7 @@ defineExpose({
 		justify-content: flex-end;
 	}
 	:deep(.el-table th.el-table__cell) {
-		background-color: unset;
+		background-color: #dce9fd;
 		color: var(--el-color-primary);
 	}
 }

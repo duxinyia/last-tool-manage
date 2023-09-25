@@ -319,7 +319,7 @@ const inputHandleExceed: UploadProps['onExceed'] = (files) => {
 };
 // 上传文件
 const inputsubmitUpload = async () => {
-	const res = await getUploadFileApi(0, inputuploadForm.value.raw);
+	const res = await getUploadFileApi(4, inputuploadForm.value.raw);
 	dialogData.fileInfo['drawPath'] = res.data;
 	res.status && ElMessage.success(`上传成功`);
 };

@@ -78,7 +78,46 @@
 									<el-button v-if="state.formData['draw3dPath'].includes('/')" class="look-file" @click="lookUpload(item.prop)">查看文件</el-button>
 								</template>
 							</el-input>
-
+							<!-- 上传图片 -->
+							<el-upload
+								ref="imageuploadRefs"
+								v-model:file-list="imagefileList"
+								v-if="item.type === 'uploadImage'"
+								action="#"
+								list-type="picture-card"
+								class="avatar-uploader"
+								:show-file-list="true"
+								:on-success="handleAvatarSuccess"
+								:before-upload="beforeAvatarUpload"
+								:http-request="httpRequest"
+								:limit="1"
+								:on-exceed="imageHandleExceed"
+								:on-change="imageHandleChange"
+							>
+								<SvgIcon class="avatar-uploader-icon" name="ele-Plus" />
+								<template #file="{ file }">
+									<div style="width: 148px; height: 148px">
+										<el-image
+											class="el-upload-list__item-thumbnail"
+											v-if="imageUrl"
+											:src="imageUrl"
+											fit="contain"
+											style="width: 148px; height: 148px"
+										/>
+										<span class="el-upload-list__item-actions" style="width: 100%; height: 100%">
+											<span class="el-upload-list__item-preview" @click="handlePictureCardPreview(file)">
+												<el-icon title="查看大图"><ele-ZoomIn /></el-icon>
+											</span>
+										</span>
+									</div>
+								</template>
+							</el-upload>
+							<!-- <template #default>
+								<el-dialog v-model="dialogVisible" width="30%" title="Inner Dialog" append-to-body />
+							</template> -->
+							<!-- <el-dialog v-model="dialogVisible">
+								<el-image fit="contain" :src="dialogImageUrl" alt="Preview Image" />
+							</el-dialog> -->
 							<el-select
 								v-model="state.formData[item.prop]"
 								:placeholder="$t(item.placeholder)"
@@ -153,6 +192,12 @@
 					>
 				</div>
 			</el-form>
+			<!-- 嵌套图片弹窗 -->
+			<template>
+				<el-dialog v-model="dialogVisible" width="50%" title="大图展示" append-to-body
+					><el-image fit="contain" :src="dialogImageUrl" alt="Preview Image"
+				/></el-dialog>
+			</template>
 			<!-- 嵌套弹窗 -->
 			<template v-if="dialogType == 'nestDialogConfig'">
 				<el-dialog :title="state.innerdialog.title" v-model="state.innerdialog.isShowInnerDialog" width="40%" append-to-body>
@@ -212,7 +257,7 @@ import { defineAsyncComponent, reactive, onMounted, ref, nextTick } from 'vue';
 import { storeToRefs } from 'pinia';
 import { debounce } from '/@/utils/debounceAndThrottle';
 import { ElMessage, genFileId, UploadRawFile, FormRules, FormInstance } from 'element-plus';
-import type { UploadInstance, UploadProps, UploadUserFile } from 'element-plus';
+import type { UploadInstance, UploadProps, UploadUserFile, UploadRequestOptions } from 'element-plus';
 import { UploadFilled } from '@element-plus/icons-vue';
 import { getUploadFileApi } from '/@/api/global/index';
 import { verifyPhone, verifyEmail, verifiyNumberInteger } from '/@/utils/toolsValidate';
@@ -266,9 +311,11 @@ const { t } = useI18n();
 const uploadRefs = ref<UploadInstance>();
 const inputuploadRefs = ref<UploadInstance>();
 const input3duploadRefs = ref<UploadInstance>();
+const imageuploadRefs = ref<UploadInstance>();
 const fileList = ref<UploadUserFile[]>([]);
 const inputfileList = ref<UploadUserFile[]>([]);
 const input3dfileList = ref<UploadUserFile[]>([]);
+const imagefileList = ref<UploadUserFile[]>([]);
 const fileListName = ref();
 // 定义变量内容
 const dialogFormRef = ref();
@@ -276,7 +323,9 @@ const innnerDialogFormRef = ref();
 const uploadForm = ref();
 const inputuploadForm = ref();
 const input3duploadForm = ref();
-
+const imageUrl = ref('');
+const dialogImageUrl = ref('');
+const dialogVisible = ref(false);
 let rules = reactive<EmptyObjectType>({});
 const state = reactive<dialogFormState>({
 	formData: {},
@@ -344,6 +393,9 @@ const openDialog = (type: string, row?: any, title?: string) => {
 		// 清空表单，此项需加表单验证才能使用
 		nextTick(() => {
 			inputuploadForm.value = '';
+			// 清除图片
+			let upload_list: any = imageuploadRefs.value;
+			upload_list[0]!.clearFiles();
 			dialogFormRef.value.resetFields();
 		});
 	} else if (type === 'edit') {
@@ -540,6 +592,51 @@ const submitUpload = () => {
 	emit('importTableData', uploadForm.value);
 	// closeDialog();
 };
+// 上传图片
+const handleAvatarSuccess: UploadProps['onSuccess'] = async (response, uploadFile) => {
+	// console.log(imagefileList.value[0]);
+	// let arr = imagefileList.value;
+	// imagefileList.value = [];
+	// imagefileList.value.push(arr[arr.length - 1]);
+};
+// 图片改变时
+const imageHandleChange: UploadProps['onChange'] = async (uploadFile, uploadFiles) => {
+	imageUrl.value = URL.createObjectURL(uploadFile.raw!);
+};
+//可以在选中时自动替换上一个文件
+const imageHandleExceed: UploadProps['onExceed'] = async (files, uploadFiles) => {
+	let upload_list: any = imageuploadRefs.value;
+	upload_list[0]!.clearFiles();
+	const file = files[0] as UploadRawFile;
+	file.uid = genFileId();
+	upload_list[0]!.handleStart(file);
+	httpRequest();
+};
+// 查看大图
+const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
+	dialogImageUrl.value = uploadFile.url!;
+	dialogVisible.value = true;
+};
+const httpRequest = async () => {
+	const res = await getUploadFileApi(0, imagefileList.value[0].raw);
+	if (res.status) {
+		props.dialogConfig.forEach((item) => {
+			if (item.type === 'uploadImage') {
+				state.formData[item.prop] = res.data;
+			}
+		});
+	}
+};
+const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
+	if (rawFile.type !== 'image/jpeg') {
+		ElMessage.error('Avatar picture must be JPG format!');
+		return false;
+	} else if (rawFile.size / 1024 / 1024 > 2) {
+		ElMessage.error('Avatar picture size can not exceed 2MB!');
+		return false;
+	}
+	return true;
+};
 // 页面加载时
 onMounted(() => {
 	initFormField();
@@ -575,5 +672,8 @@ defineExpose({
 }
 .look-file {
 	color: var(--el-color-primary) !important;
+}
+:deep(.el-upload-list--picture-card) {
+	flex-wrap: nowrap !important;
 }
 </style>

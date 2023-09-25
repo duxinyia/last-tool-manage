@@ -32,7 +32,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 // 引入接口
 import { GetStockQrListApi } from '/@/api/toolsReturn/inventoryQuery';
 import { getStockListApi, ExitStoreApi, getExitReasonApi } from '/@/api/toolsReturn/maintentanceTools';
-
+import { getLegalStoreTypesApi } from '/@/api/global';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -96,6 +96,8 @@ const state = reactive<TableDemoState>({
 		search: [
 			{ label: '料号', prop: 'matNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'matName', required: false, type: 'input' },
+			{ label: '仓库类型', prop: 'storeType', required: false, type: 'select', options: [] },
+			{ label: '仓库位置', prop: 'sLocation', required: false, type: 'select', options: [] },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -105,6 +107,8 @@ const state = reactive<TableDemoState>({
 		form: {
 			matNo: '',
 			matName: '',
+			storeType: '',
+			sLocation: '',
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -264,12 +268,19 @@ const changeToStyle = (indList: number[]) => {
 	};
 };
 cellStyle.value = changeToStyle([1, 9]);
+// 下拉框数据
+const getSelect = async () => {
+	const res = await getLegalStoreTypesApi();
+	const option = res.data.map((item: any) => {
+		return { label: item, text: item, value: item };
+	});
+	state.tableData.search[2].options = option;
+};
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;
 	let data = {
-		matNo: form.matNo,
-		matName: form.matName,
+		...form,
 		page: state.tableData.page,
 	};
 	const res = await getStockListApi(data);
@@ -441,6 +452,7 @@ const onSortHeader = (data: TableHeaderType[]) => {
 // 页面加载时
 onMounted(() => {
 	getTableData();
+	getSelect();
 });
 </script>
 

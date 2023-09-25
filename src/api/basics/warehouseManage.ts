@@ -62,12 +62,5 @@ export function getAdminsInfosOfStoreHouseApi(storeId:string|number) {
   });
 }
 
-// 下拉框数据
-export function getLegalStoreTypesApi() {
-  return request({
-    url: '/api/BaseStore/GetLegalStoreTypes',
-    method: 'GET',
-  
-  });
-}
+
 
