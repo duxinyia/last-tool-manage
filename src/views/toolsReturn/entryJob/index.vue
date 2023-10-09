@@ -27,7 +27,7 @@
 				@handleTagClose="handleTagClose"
 			>
 				<template #optionFat="{ row }">
-					<span style="float: left">{{ row.text }}</span>
+					<span style="float: left; margin-right: 35px">{{ row.text }}</span>
 					<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
 				</template>
 			</Dialog>

@@ -1,7 +1,13 @@
 <template>
 	<div class="table-container layout-padding">
 		<div class="table-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
+			<TableSearch
+				:search="state.tableData.search"
+				@search="onSearch"
+				:searchConfig="state.tableData.searchConfig"
+				@remoteMethod="remoteMethod"
+				@selectChange="selectChangeStoreType"
+			/>
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
@@ -43,7 +49,7 @@ import {
 	getAddAdminsToStoreHouseApi,
 	getRemoveAdminFromStoreHouseApi,
 } from '/@/api/basics/warehouseManage';
-import { getLegalStoreTypesApi } from '/@/api/global';
+import { getLegalStoreTypesApi, getQueryStoreHouseNoPageApi } from '/@/api/global';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
@@ -100,7 +106,13 @@ const state = reactive<TableDemoState>({
 				label: '仓库位置',
 				prop: 'sLocation',
 				required: false,
-				type: 'input',
+				type: 'select',
+				placeholder: '请输入选择仓库位置',
+				options: [],
+				loading: true,
+				filterable: true,
+				remote: true,
+				remoteShowSuffix: true,
 			},
 		],
 		searchConfig: {
@@ -199,7 +211,7 @@ const onAddrow = () => {
 	dialogState.tableData.data.push({
 		userId: '',
 		username: '',
-		disabled: false,
+		userIddisabled: true,
 	});
 	//超过设置的高度出现滚动条，添加行定位到底部
 	//  1.先拿到设置table的最大高度【滚动条的高度】的元素，获取元素的clientHeight
@@ -235,10 +247,39 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 		}
 	});
 };
+// 改变仓库类型下拉
+const selectChangeStoreType = (vals: string, prop: string, form: EmptyObjectType) => {
+	if (prop === 'storeType') {
+		form.sLocation = '';
+	}
+};
+let option: EmptyArrayType = [];
+const remoteMethod = (query: string, form: EmptyObjectType) => {
+	if (query) {
+		state.tableData.search[1].loading = true;
+		setTimeout(async () => {
+			const res = await getQueryStoreHouseNoPageApi(form.storeType, query);
+			state.tableData.search[1].loading = false;
+			option = res.data.map((item: EmptyObjectType) => {
+				return { value: `${item.storeId}`, label: `${item.storeType}`, text: `${item.sLocation}` };
+			});
+			state.tableData.search[1].options = option.filter((item: EmptyObjectType) => {
+				return item.text.toLowerCase().includes(query.toLowerCase()) || item.label.toLowerCase().includes(query.toLowerCase());
+			});
+		}, 500);
+	} else {
+		state.tableData.search[1].options = [];
+	}
+};
 // 初始化列表数据
 const getTableData = async () => {
 	state.tableData.config.loading = true;
 	const form = state.tableData.form;
+	option.forEach((item) => {
+		if (item.value === form.sLocation) {
+			form.sLocation = item.text;
+		}
+	});
 	let data = {
 		sLocation: form.sLocation,
 		storeType: form.storeType,

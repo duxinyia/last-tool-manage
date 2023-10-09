@@ -76,6 +76,7 @@ const state = reactive<TableDemoState>({
 			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
 			operateWidth: 230,
+			exportIcon: true, //是否有导出icon(导出功能)
 		},
 		btnConfig: [
 			{ type: 'edit', name: 'message.allButton.editBtn', color: '#39D339', isSure: false, icon: 'ele-Edit' },

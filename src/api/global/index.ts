@@ -31,3 +31,11 @@ export function getLegalStoreTypesApi() {
   
   });
 }
+// 不分页查询仓库位置模糊查询下拉
+export function getQueryStoreHouseNoPageApi(storeType: string,sLocation:string) {
+	return request({
+		url: '/api/BaseStore/QueryStoreHouseNoPage',
+		method: 'GET',
+		params: {storeType,sLocation},
+	});
+}

@@ -68,6 +68,7 @@ const reportInquiryDialogVisible = ref(false);
 import { getToolApplyHeadPageApi, getreqNoApi, getModifyApplyReqApi, getDeleApplyItemApi } from '/@/api/requistManage/reportingInquiry';
 import { getQueryNoPageApi } from '/@/api/requistManage/presentation';
 import { useI18n } from 'vue-i18n';
+import { getMachineTypesOfMatApi } from '/@/api/partno/noSearch';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
@@ -158,11 +159,25 @@ const header1 = ref<deliveryDialogHeader>([
 		option: [],
 		isfilterable: true,
 	},
+	{ key: 'reqMatNo', colWidth: '', title: '请购料号', type: 'text', isCheck: true, isRequired: false },
 	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+	{
+		key: 'machineType',
+		colWidth: '150',
+		title: '機種',
+		type: 'select',
+		isCheck: true,
+		isRequired: false,
+		collapseTags: true,
+		collapseTagsTooltip: true,
+		rowOption: true,
+		clearable: true,
+	},
+	{ key: 'line', colWidth: '', title: '線體', type: 'input', isCheck: true, isRequired: true },
 	{ key: 'reqQty', colWidth: '100', title: '需求数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
 	{ key: 'reqDate', colWidth: '150', title: '需求时间', type: 'time', isCheck: true, isRequired: true },
-	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'input', isCheck: true, isRequired: true },
+	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'input', isCheck: true, isRequired: false },
 	// { key: 'describe', colWidth: '150', title: '描述说明', type: 'text', isCheck: true },
 ]);
 const dialogState = reactive<TableDemoState>({
@@ -231,7 +246,7 @@ const getTableData = async () => {
 	}
 };
 // 打开修改弹窗
-const openDialog = (type: string, row: EmptyObjectType) => {
+const openDialog = async (type: string, row: EmptyObjectType) => {
 	dialogState.tableData.form = row;
 	// dialogState.tableData.form['describe'] = '';
 	let data = { reqNo: row.reqNo };
@@ -257,6 +272,16 @@ const getDetailData = async (data: EmptyObjectType) => {
 	if (res.status) {
 		dialogState.tableData.config.loading = false;
 	}
+	dialogState.tableData.data.forEach(async (item, index) => {
+		const res1 = await getMachineTypesOfMatApi(item.matNo);
+		dialogState.tableData.data[index].machineTypeoption = res1.data.map((item: EmptyObjectType) => {
+			return { value: `${item}`, label: `${item}` };
+		});
+	});
+	// const res1 = await getMachineTypesOfMatApi();
+	// dialogState.tableData.header[4].option = res.data.map((item: EmptyObjectType) => {
+	// 	return { value: `${item}`, label: `${item}` };
+	// });
 };
 // 根据弹出窗不一样展现的配置不一样
 const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) => {
@@ -290,12 +315,17 @@ const remoteMethod = (index: number, query: string) => {
 };
 // // 	在 Input 值改变时触发
 const changeSelect = async (i: number, query: any) => {
-	resDataRef.value.forEach((item: any) => {
+	resDataRef.value.forEach(async (item: any) => {
 		if (item.matNo === query) {
 			let data = dialogState.tableData.data[i];
 			data.nameCh = item.nameCh;
 			data.nameEn = item.nameEn;
 			data.drawNo = item.drawNo;
+			data.machineType = item.machineType;
+			const res = await getMachineTypesOfMatApi(item.matNo);
+			dialogState.tableData.data[i].machineTypeoption = res.data.map((item: EmptyObjectType) => {
+				return { value: `${item}`, label: `${item}` };
+			});
 		}
 	});
 };
@@ -348,6 +378,8 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 				prItemNo: item.prItemNo,
 				reqQty: item.reqQty,
 				reqDate: item.reqDate,
+				reqMatNo: item.reqMatNo,
+				machineType: item.machineType,
 			};
 		});
 		allData['reqDetails'] = data;

@@ -56,6 +56,11 @@
 									<el-button v-if="state.formData['drawPath'].includes('/')" class="look-file" @click="lookUpload(item.prop)">查看文件</el-button>
 								</template>
 							</el-input>
+							<div v-if="item.type == 'tagsarea'">
+								<el-tag v-for="tag in state.formData[item.prop]" :key="tag" closable class="mr10">
+									{{ tag }}
+								</el-tag>
+							</div>
 							<el-input disabled v-if="item.type === 'input3dFile'" v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)" clearable>
 								<template #prepend
 									><el-upload
@@ -84,7 +89,6 @@
 								v-model:file-list="imagefileList"
 								v-if="item.type === 'uploadImage'"
 								action="#"
-								list-type="picture-card"
 								class="avatar-uploader"
 								:show-file-list="true"
 								:on-success="handleAvatarSuccess"
@@ -94,8 +98,10 @@
 								:on-exceed="imageHandleExceed"
 								:on-change="imageHandleChange"
 							>
-								<SvgIcon class="avatar-uploader-icon" name="ele-Plus" />
-								<template #file="{ file }">
+								<el-image class="avatar" v-if="imageUrl" :src="imageUrl" fit="contain" style="width: 148px; height: 148px" />
+								<SvgIcon v-else class="avatar-uploader-icon" name="ele-Plus" />
+
+								<!-- <template #file="{ file }">
 									<div style="width: 148px; height: 148px">
 										<el-image
 											class="el-upload-list__item-thumbnail"
@@ -108,16 +114,13 @@
 											<span class="el-upload-list__item-preview" @click="handlePictureCardPreview(file)">
 												<el-icon title="查看大图"><ele-ZoomIn /></el-icon>
 											</span>
+											<span class="el-upload-list__item-preview" @click="handlePictureChange(file)">
+												<el-icon title="改变图片"><ele-PictureFilled /></el-icon>
+											</span>
 										</span>
 									</div>
-								</template>
+								</template> -->
 							</el-upload>
-							<!-- <template #default>
-								<el-dialog v-model="dialogVisible" width="30%" title="Inner Dialog" append-to-body />
-							</template> -->
-							<!-- <el-dialog v-model="dialogVisible">
-								<el-image fit="contain" :src="dialogImageUrl" alt="Preview Image" />
-							</el-dialog> -->
 							<el-select
 								v-model="state.formData[item.prop]"
 								:placeholder="$t(item.placeholder)"
@@ -130,6 +133,10 @@
 								:remote-show-suffix="item.remoteShowSuffix"
 								:remote-method="remoteMethod"
 								:loading="item.loading"
+								:multiple="item.multiple"
+								:max-collapse-tags="item.maxCollapseTags"
+								:collapse-tags="item.collapseTags"
+								:collapse-tags-tooltip="item.collapseTagsTooltip"
 							>
 								<el-option v-for="val in item.options" :key="val.label" :label="val.text" :value="val.value">
 									<slot name="optionFat" :row="val"></slot>
@@ -257,7 +264,7 @@ import { defineAsyncComponent, reactive, onMounted, ref, nextTick } from 'vue';
 import { storeToRefs } from 'pinia';
 import { debounce } from '/@/utils/debounceAndThrottle';
 import { ElMessage, genFileId, UploadRawFile, FormRules, FormInstance } from 'element-plus';
-import type { UploadInstance, UploadProps, UploadUserFile, UploadRequestOptions } from 'element-plus';
+import type { UploadInstance, UploadProps, UploadUserFile, UploadRequestOptions, UploadFile } from 'element-plus';
 import { UploadFilled } from '@element-plus/icons-vue';
 import { getUploadFileApi } from '/@/api/global/index';
 import { verifyPhone, verifyEmail, verifiyNumberInteger } from '/@/utils/toolsValidate';
@@ -392,10 +399,14 @@ const openDialog = (type: string, row?: any, title?: string) => {
 		state.dialog.submitTxt = '新 增';
 		// 清空表单，此项需加表单验证才能使用
 		nextTick(() => {
-			inputuploadForm.value = '';
-			// 清除图片
-			let upload_list: any = imageuploadRefs.value;
-			upload_list[0]!.clearFiles();
+			if (imageUrl.value) {
+				inputuploadForm.value = '';
+				// 清除图片
+				let upload_list: any = imageuploadRefs.value;
+				upload_list[0]!.clearFiles();
+				imagefileList.value = [];
+				imageUrl.value = '';
+			}
 			dialogFormRef.value.resetFields();
 		});
 	} else if (type === 'edit') {
@@ -407,6 +418,9 @@ const openDialog = (type: string, row?: any, title?: string) => {
 		// 解决表单重置不成功的问题
 		nextTick(() => {
 			state.formData = JSON.parse(JSON.stringify(row));
+			imagefileList.value = [];
+			if (row.picture) imagefileList.value.push({ name: 'figure.png', url: state.formData.picture });
+			imageUrl.value = state.formData.picture;
 			emit('editDialog', state.formData);
 		});
 		props.dialogConfig.forEach((v) => {
@@ -602,23 +616,29 @@ const handleAvatarSuccess: UploadProps['onSuccess'] = async (response, uploadFil
 // 图片改变时
 const imageHandleChange: UploadProps['onChange'] = async (uploadFile, uploadFiles) => {
 	imageUrl.value = URL.createObjectURL(uploadFile.raw!);
+	imagefileList.value = uploadFiles;
 };
 //可以在选中时自动替换上一个文件
 const imageHandleExceed: UploadProps['onExceed'] = async (files, uploadFiles) => {
-	let upload_list: any = imageuploadRefs.value;
-	upload_list[0]!.clearFiles();
-	const file = files[0] as UploadRawFile;
-	file.uid = genFileId();
-	upload_list[0]!.handleStart(file);
-	httpRequest();
+	if (files[0].type !== 'image/jpeg' && files[0].type !== 'image/png') {
+		ElMessage.error('图片必须是JPG或者PNG格式!');
+	} else {
+		let upload_list: any = imageuploadRefs.value;
+		upload_list[0]!.clearFiles();
+		const file = files[0] as UploadRawFile;
+		file.uid = genFileId();
+		upload_list[0]!.handleStart(file);
+		httpRequest();
+	}
 };
 // 查看大图
 const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
 	dialogImageUrl.value = uploadFile.url!;
 	dialogVisible.value = true;
 };
+const handlePictureChange = (file: UploadFile) => {};
 const httpRequest = async () => {
-	const res = await getUploadFileApi(0, imagefileList.value[0].raw);
+	const res = await getUploadFileApi(5, imagefileList.value[0].raw);
 	if (res.status) {
 		props.dialogConfig.forEach((item) => {
 			if (item.type === 'uploadImage') {
@@ -628,13 +648,13 @@ const httpRequest = async () => {
 	}
 };
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
-	if (rawFile.type !== 'image/jpeg') {
-		ElMessage.error('Avatar picture must be JPG format!');
-		return false;
-	} else if (rawFile.size / 1024 / 1024 > 2) {
-		ElMessage.error('Avatar picture size can not exceed 2MB!');
-		return false;
+	if (rawFile.type !== 'image/jpeg' && rawFile.type !== 'image/png') {
+		ElMessage.error('图片必须是JPG或者PNG格式!');
 	}
+	//  else if (rawFile.size / 1024 / 1024 > 2) {
+	// 	ElMessage.error('图片大小不能超过2MB!');
+	// 	return false;
+	// }
 	return true;
 };
 // 页面加载时
@@ -675,5 +695,33 @@ defineExpose({
 }
 :deep(.el-upload-list--picture-card) {
 	flex-wrap: nowrap !important;
+}
+.avatar-uploader .avatar {
+	width: 148px;
+	height: 148px;
+	display: block;
+}
+
+.avatar-uploader {
+	width: 148px;
+	height: 148px;
+	border: 1px dashed var(--el-border-color);
+	border-radius: 6px;
+	cursor: pointer;
+	position: relative;
+	overflow: hidden;
+	transition: var(--el-transition-duration-fast);
+}
+
+.avatar-uploader .el-upload:hover {
+	border-color: var(--el-color-primary);
+}
+
+.el-icon.avatar-uploader-icon {
+	font-size: 28px;
+	color: #8c939d;
+	width: 148px;
+	height: 148px;
+	text-align: center;
 }
 </style>

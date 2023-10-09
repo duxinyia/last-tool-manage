@@ -29,7 +29,7 @@
 					</el-col>
 				</el-row>
 				<el-form ref="dialogTableFormRef" :model="dialogState.tableData" size="default">
-					<Table ref="tableRef2" v-bind="dialogState.tableData" @delRow="onDelRow" class="table-demo" />
+					<Table ref="tableRef2" v-bind="dialogState.tableData" @delRow="onDelRow" class="table-demo" @handlestatus1Change="handlestatus1Change" />
 				</el-form>
 				<el-input disabled v-model="dialogData.fileInfo.name" placeholder="文件" clearable class="mb10">
 					<template #prepend
@@ -162,6 +162,7 @@ const dialogState = reactive<TableDemoState>({
 			{ key: 'isPass', colWidth: '', title: '是否验收通过', type: 'status1', isCheck: true, isRequired: true },
 			{ key: 'failReason', colWidth: '', title: '验收失败原因', type: 'multipleSelect', isCheck: true, options: [] },
 			{ key: 'isStorage', colWidth: '', title: '是否入库', type: 'status1', isCheck: true, isRequired: true },
+			{ key: 'isResubmit', colWidth: '', title: '是否重送', type: 'status1', isCheck: true, isRequired: false },
 		],
 		// 表格配置项（必传）
 		config: {
@@ -247,7 +248,18 @@ const getTableData = async () => {
 		state.tableData.config.loading = false;
 	}
 };
-
+//改变是否验收通过
+const handlestatus1Change = (value: number, index: number, key: string) => {
+	let dataIndex = dialogState.tableData.data[index];
+	if (key === 'isPass') {
+		if (value === 1) {
+			dataIndex.isResubmit = 0;
+			dataIndex.isResubmitdisabled = true;
+		} else if (value === 0) {
+			dataIndex.isResubmitdisabled = false;
+		}
+	}
+};
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });

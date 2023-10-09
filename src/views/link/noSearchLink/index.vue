@@ -21,6 +21,11 @@
 									{{ state.form[val.prop] }}
 								</span>
 								<el-button type="primary" class="ml20" v-if="val.type === 'btn'" @click="clickLink(val.prop)">查看图纸</el-button>
+								<div v-if="val.type == 'tagsarea'">
+									<el-tag v-for="tag in state.form[val.prop]" :key="tag" class="mr10">
+										{{ tag }}
+									</el-tag>
+								</div>
 							</el-form-item>
 						</template>
 					</el-col>
@@ -39,7 +44,7 @@ import { defineAsyncComponent, reactive, ref, onMounted, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { getMaterialApi } from '/@/api/link/noSearchLink';
 import { useI18n } from 'vue-i18n';
-
+import { getMachineTypesOfMatApi } from '/@/api/partno/noSearch';
 const route = useRoute();
 const router = useRouter();
 // 定义父组件传过来的值
@@ -65,7 +70,7 @@ const state = reactive<LinkState>({
 		// { label: '专案代码：', prop: 'projectCode', type: 'text' },
 		{ label: '阶段：', prop: 'stage', type: 'text' },
 		{ label: '部门：', prop: 'depart', type: 'text' },
-		// { label: '机种：', prop: 'machineType', type: 'text' },
+		{ label: '机种：', prop: 'machineType', type: 'tagsarea', xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
 		{
 			label: '图纸文件：',
 			prop: 'drawPath',
@@ -105,16 +110,18 @@ const state = reactive<LinkState>({
 watch(
 	() => props.matNoRef,
 	() => {
-		getSelect();
+		getDetailData();
 	}
 );
-// 下拉框数据
-const getSelect = async () => {
+// 详情数据
+const getDetailData = async () => {
 	// link/noSearchLink?comkey=CSG2023243-DP-56321-003
 	let comkey = props.isDialog ? props.matNoRef : route.query.comkey;
 	const res = await getMaterialApi(comkey);
 	state.form = res.data;
-	if (!res.status) {
+	const res1 = await getMachineTypesOfMatApi(comkey);
+	state.form.machineType = res1.data;
+	if (!res.status && !res1.status) {
 		state.form = {};
 	}
 };
@@ -126,7 +133,7 @@ const clickLink = (prop: string) => {
 };
 // 页面加载时
 onMounted(() => {
-	getSelect();
+	getDetailData();
 });
 </script>
 

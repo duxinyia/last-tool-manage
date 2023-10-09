@@ -44,9 +44,9 @@ service.interceptors.response.use(
 			if (res.code === 401 || res.code === 4001) {
 				Session.clear(); // 清除浏览器全部临时缓存
 				Local.clear();
-				setTimeout(()=>{
-					ElMessage.error("登录过期，请重新登录")
-				},500)
+				ElMessageBox.alert('登录过期,你已被登出,请重新登录', '提示', {})
+				.then(() => {})
+				.catch(() => {});
 			}else if(res.code===500||res.Code===500){
 				ElMessage.error(res.message||res.Message);
 			}
@@ -66,9 +66,9 @@ service.interceptors.response.use(
 			Session.clear();
 			Local.clear();
 			window.location.href = '/'; // 去登录页
-			setTimeout(()=>{
-				ElMessage.error("登录过期，请重新登录")
-			},500)
+			ElMessageBox.alert('登录过期,你已被登出,请重新登录', '提示', {})
+				.then(() => {})
+				.catch(() => {});
 		}
 		else {
 			if (error.response.data) ElMessage.error(error.response.statusText)
@@ -100,9 +100,9 @@ const replaceToken=async()=>{
 		Session.clear();
 		Local.clear();
 		window.location.href = '/'; // 去登录页
-		setTimeout(()=>{
-			ElMessage.error("登录过期，请重新登录")
-		},500)
+		ElMessageBox.alert('登录过期,你已被登出,请重新登录', '提示', {})
+				.then(() => {})
+				.catch(() => {});
 	}
 }
 // 导出 axios 实例

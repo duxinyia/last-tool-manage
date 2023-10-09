@@ -54,7 +54,7 @@
 			</el-form>
 			<template v-if="dilogTitle == '验收'">
 				<div class="describe up-file">
-					<span>收货报告url：</span>
+					<span>验收报告：</span>
 					<el-input disabled v-model="dialogState.tableData.form['accepreporturl']" clearable>
 						<template #prepend
 							><el-upload

@@ -61,7 +61,7 @@
 import { defineAsyncComponent, reactive, ref, onMounted, computed, watch, nextTick } from 'vue';
 import { ElMessage, FormInstance } from 'element-plus';
 const deliveryDialogVisible = ref(false);
-import { getQuerySampleNeedsApi } from '/@/api/partno/sampleRequirement';
+import { getQuerySampleNeedsApi, getSampleDetailsForTakeSampleApi } from '/@/api/partno/sampleRequirement';
 // 送样
 import { getTakeSampleApi } from '/@/api/partno/sampleDelivery';
 import { useI18n } from 'vue-i18n';
@@ -165,7 +165,7 @@ const dialogState = reactive<TableDemoState>({
 			{ label: '需求数量', prop: 'needsQty', required: false, type: 'text' },
 			{ label: '需求时间', prop: 'needsDate', required: false, type: 'text' },
 		],
-		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disable: true }],
+		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
 			pageNum: 1,
@@ -219,17 +219,22 @@ watch(
 );
 //删除一行
 const onDelRow = (row: EmptyObjectType, i: number) => {
-	dialogState.tableData.data.splice(i, 1);
+	if (row.runId) {
+		ElMessage.error(t('不能删除已有的厂商信息'));
+	} else {
+		dialogState.tableData.data.splice(i, 1);
+	}
 };
 // 增加一行
 const onAddrow = () => {
-	dialogState.tableData.data.push({ needsQtymin: 1 });
+	dialogState.tableData.data.push({ needsQtymin: 1, vendorCodedisabled: true, vendorNamedisabled: true });
 };
 // 点击收货弹窗
-const openArriveJobDialog = (scope: EmptyObjectType) => {
+const openArriveJobDialog = async (scope: EmptyObjectType) => {
+	const res = await getSampleDetailsForTakeSampleApi(scope.row.sampleNo);
+	dialogState.tableData.data = res.data;
 	dialogState.tableData.form = scope.row;
 	deliveryDialogVisible.value = true;
-	// getDetailData(scope.row.repairNo);
 	dilogTitle.value = '料号送样';
 	changeStatus(header.value, 200, true);
 };
@@ -274,6 +279,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 				vendorName: item.vendorName,
 				vendorCode: item.vendorCode,
 				needsQty: item.needsQty,
+				runId: item.runId,
 			};
 		});
 		allData['vendors'] = data;

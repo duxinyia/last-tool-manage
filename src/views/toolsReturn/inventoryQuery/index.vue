@@ -1,7 +1,13 @@
 <template>
 	<div class="table-container layout-padding">
 		<div class="table-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
+			<TableSearch
+				:search="state.tableData.search"
+				@search="onSearch"
+				:searchConfig="state.tableData.searchConfig"
+				@remoteMethod="remoteMethod"
+				@selectChange="selectChangeStoreType"
+			/>
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
@@ -32,7 +38,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 // 引入接口
 import { GetStockQrListApi } from '/@/api/toolsReturn/inventoryQuery';
 import { getStockListApi, ExitStoreApi, getExitReasonApi } from '/@/api/toolsReturn/maintentanceTools';
-import { getLegalStoreTypesApi } from '/@/api/global';
+import { getLegalStoreTypesApi, getQueryStoreHouseNoPageApi } from '/@/api/global';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -97,7 +103,18 @@ const state = reactive<TableDemoState>({
 			{ label: '料号', prop: 'matNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'matName', required: false, type: 'input' },
 			{ label: '仓库类型', prop: 'storeType', required: false, type: 'select', options: [] },
-			{ label: '仓库位置', prop: 'sLocation', required: false, type: 'select', options: [] },
+			{
+				label: '仓库位置',
+				prop: 'sLocation',
+				required: false,
+				type: 'select',
+				placeholder: '请输入选择仓库位置',
+				options: [],
+				loading: true,
+				filterable: true,
+				remote: true,
+				remoteShowSuffix: true,
+			},
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -267,7 +284,7 @@ const changeToStyle = (indList: number[]) => {
 		}
 	};
 };
-cellStyle.value = changeToStyle([1, 9]);
+cellStyle.value = changeToStyle([1, 7]);
 // 下拉框数据
 const getSelect = async () => {
 	const res = await getLegalStoreTypesApi();
@@ -276,9 +293,38 @@ const getSelect = async () => {
 	});
 	state.tableData.search[2].options = option;
 };
+// 改变仓库类型下拉
+const selectChangeStoreType = (vals: string, prop: string, form: EmptyObjectType) => {
+	if (prop === 'storeType') {
+		form.sLocation = '';
+	}
+};
+let option: EmptyArrayType = [];
+const remoteMethod = (query: string, form: EmptyObjectType) => {
+	if (query) {
+		state.tableData.search[3].loading = true;
+		setTimeout(async () => {
+			const res = await getQueryStoreHouseNoPageApi(form.storeType, query);
+			state.tableData.search[3].loading = false;
+			option = res.data.map((item: EmptyObjectType) => {
+				return { value: `${item.storeId}`, label: `${item.storeType}`, text: `${item.sLocation}` };
+			});
+			state.tableData.search[3].options = option.filter((item: EmptyObjectType) => {
+				return item.text.toLowerCase().includes(query.toLowerCase()) || item.label.toLowerCase().includes(query.toLowerCase());
+			});
+		}, 500);
+	} else {
+		state.tableData.search[3].options = [];
+	}
+};
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;
+	option.forEach((item) => {
+		if (item.value === form.sLocation) {
+			form.sLocation = item.text;
+		}
+	});
 	let data = {
 		...form,
 		page: state.tableData.page,

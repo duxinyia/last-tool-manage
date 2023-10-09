@@ -59,6 +59,7 @@ import { useI18n } from 'vue-i18n';
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 // 接口
 import { getQueryNoPageApi, getToolApplyInsertApi } from '/@/api/requistManage/presentation';
+import { getMachineTypesOfMatApi } from '/@/api/partno/noSearch';
 // 定义变量内容
 const { t } = useI18n();
 const tableRef = ref<RefType>();
@@ -107,10 +108,22 @@ const state = reactive<EmptyObjectType>({
 				option: [],
 				isfilterable: true,
 			},
+			{ key: 'reqMatNo', colWidth: '', title: '请购料号', type: 'text', isCheck: true, isRequired: false },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true, isRequired: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true, isRequired: true },
 			{ key: 'drawNo', colWidth: '', title: '图纸编号', type: 'text', isCheck: true, isRequired: true },
-			{ key: 'machinetype', colWidth: '', title: '機種', type: 'input', isCheck: true, isRequired: true },
+			{
+				key: 'machineType',
+				colWidth: '150',
+				title: '機種',
+				type: 'select',
+				isCheck: true,
+				isRequired: false,
+				collapseTags: true,
+				collapseTagsTooltip: true,
+				clearable: true,
+				rowOption: true,
+			},
 			{ key: 'line', colWidth: '', title: '線體', type: 'input', isCheck: true, isRequired: true },
 			// { key: 'vendorCode', colWidth: '250', title: '厂商代码', type: 'input', isCheck: true, isRequired: true },
 			// { key: 'vendorName', colWidth: '300', title: '厂商名称', type: 'input', isCheck: true, isRequired: true },
@@ -177,12 +190,18 @@ const remoteMethod = (index: number, query: string) => {
 // };
 // // 	在 Input 值改变时触发
 const changeSelect = async (i: number, query: any) => {
-	resDataRef.value.forEach((item: any) => {
+	resDataRef.value.forEach(async (item: any) => {
 		if (item.matNo === query) {
 			let data = state.tableData.data[i];
 			data.nameCh = item.nameCh;
 			data.nameEn = item.nameEn;
 			data.drawNo = item.drawNo;
+			data.reqMatNo = item.reqMatNo;
+			data.machineType = '';
+			const res = await getMachineTypesOfMatApi(item.matNo);
+			state.tableData.data[i].machineTypeoption = res.data.map((item: EmptyObjectType) => {
+				return { value: `${item}`, label: `${item}` };
+			});
 		}
 	});
 };

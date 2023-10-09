@@ -121,9 +121,9 @@
 						:prop="`data.${scope.$index}.${item.key}`"
 						:rules="[{ required: item.isRequired, message: '不能为空', trigger: item.type === 'input' || item.type === 'time' ? 'blur' : 'change' }]"
 					>
-						<!-- 输入框 -->
+						<!-- 输入框 :disabled="route.path == '/basics/warehouseManage' ? (data[scope.$index].disabled === false ? false : true) : false"-->
 						<el-input
-							:disabled="route.path == '/basics/warehouseManage' ? (data[scope.$index].disabled === false ? false : true) : false"
+							:disabled="!data[scope.$index][`${item.key}disabled`]"
 							v-if="item.type === 'input'"
 							style="height: 30px"
 							v-model="data[scope.$index][item.key]"
@@ -159,6 +159,7 @@
 						<!-- 下拉框 -->
 						<el-select
 							v-else-if="item.type === 'select'"
+							:clearable="item.clearable"
 							v-model="data[scope.$index][item.key]"
 							:filterable="item.isfilterable"
 							placeholder="请选择"
@@ -168,8 +169,18 @@
 							remote-show-suffix
 							:remote-method="(query:string) => remoteMethod(scope.$index,query)"
 							:loading="item.loading"
+							:multiple="item.multiple"
+							:max-collapse-tags="item.maxCollapseTags"
+							:collapse-tags="item.collapseTags"
+							:collapse-tags-tooltip="item.collapseTagsTooltip"
 						>
-							<el-option v-for="i in item.option" :key="i.label" :label="i.text" :value="i.value" />
+							<template v-if="item.rowOption">
+								<el-option v-for="i in data[scope.$index][`${item.key}option`]" :key="i.label" :label="i.text" :value="i.value" />
+							</template>
+
+							<template v-else>
+								<el-option v-for="i in item.option" :key="i.label" :label="i.text" :value="i.value" />
+							</template>
 						</el-select>
 						<!-- 多选下拉框 -->
 						<el-select
@@ -184,11 +195,14 @@
 						</el-select>
 						<!-- 状态 -->
 						<el-switch
+							:disabled="data[scope.$index][`${item.key}disabled`]"
 							v-else-if="item.type === 'status1'"
 							v-model="data[scope.$index][item.key]"
 							:active-value="1"
 							:inactive-value="0"
+							validate-event
 							inline-prompt
+							@change="(value:number)=>handlestatus1Change(value,scope.$index,item.key)"
 							:active-text="$t('message.allButton.statusY')"
 							:inactive-text="$t('message.allButton.statusN')"
 						></el-switch>
@@ -202,17 +216,6 @@
 							placeholder="请选择"
 							style="height: 30px; max-width: 167px"
 						/>
-						<!-- 图片 -->
-						<template v-else-if="item.type === 'image'">
-							<el-image
-								:style="{ width: `${item.width}px`, height: `${item.height}px` }"
-								:src="scope.row[item.key]"
-								:zoom-rate="1.2"
-								:preview-src-list="[scope.row[item.key]]"
-								preview-teleported
-								fit="cover"
-							/>
-						</template>
 
 						<span v-else-if="item.type === 'text'" style="text-align: center; width: 100%">
 							{{ scope.row[item.key] }}
@@ -223,7 +226,17 @@
 						<el-tag type="success" v-if="scope.row.runstatus === 1">启用</el-tag>
 						<el-tag type="info" v-else>禁用</el-tag>
 					</template>
-
+					<!-- 图片 -->
+					<template v-if="item.type === 'uploadImage'">
+						<el-image
+							:style="{ width: `${item.width}px`, height: `${item.height}px` }"
+							:src="`${scope.row[item.key]}`"
+							:zoom-rate="1.2"
+							:preview-src-list="[scope.row[item.key]]"
+							preview-teleported
+							fit="cover"
+						/>
+					</template>
 					<span v-if="!config.isInlineEditing && item.type === 'text'" style="text-align: center; width: 100%">
 						{{ scope.row[item.key] }}
 					</span>
@@ -386,6 +399,7 @@ const emit = defineEmits([
 	'inputBlur',
 	'changeData',
 	'handleNumberInputChange',
+	'handlestatus1Change',
 	'handleNumberInputBlur',
 	'onOpentopBtnOther',
 	'remoteMethod',
@@ -406,6 +420,11 @@ const querySearchAsync = (queryString: string, cb: (arg: any) => void) => {
 const handleNumberInputChange = (value: number, index: number) => {
 	emit('handleNumberInputChange', value, index);
 };
+// 状态改变
+const handlestatus1Change = (value: number, index: number, key: string) => {
+	emit('handlestatus1Change', value, index, key);
+};
+
 const handleNumberInputBlur = (value: number, index: number) => {
 	emit('handleNumberInputBlur', value, index);
 };
@@ -495,7 +514,7 @@ const onCheckChange = () => {
 };
 //为行设置独有key
 const selRowKey = (row: EmptyObjectType) => {
-	return row.runid;
+	return row.runid || row.matNo;
 };
 // 表格多选改变时，用于导出和删除
 const onSelectionChange = (val: EmptyObjectType[]) => {
@@ -551,11 +570,13 @@ const onPrintTable = () => {
 	});
 	// 表格内容
 	props.data.forEach((val, key) => {
+		console.log(9);
+
 		if (!tableTd[key]) tableTd[key] = [];
 		props.header.forEach((v) => {
 			if (v.type === 'text') {
 				tableTd[key].push(`<td class="table-th table-center">${val[v.key]}</td>`);
-			} else if (v.type === 'image') {
+			} else if (v.type === 'uploadImage') {
 				tableTd[key].push(`<td class="table-th table-center"><img src="${val[v.key]}" style="width:${v.width}px;height:${v.height}px;"/></td>`);
 			}
 		});
@@ -678,5 +699,9 @@ defineExpose({
 	color: #ccc !important;
 	pointer-events: none !important;
 	cursor: not-allowed !important;
+}
+:deep(.el-form-item__content) {
+	display: flex;
+	justify-content: center;
 }
 </style>

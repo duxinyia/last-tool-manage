@@ -36,8 +36,10 @@
 				ref="noSearchDialogRef"
 				:dialogConfig="state.tableData.dialogConfig"
 				@addData="addData"
+				@editDialog="editDialog"
 				@downloadTemp="ondownloadTemp"
 				@importTableData="onImportTable"
+				@remoteMethod="remoteMethod"
 			/>
 			<el-dialog v-model="matNoDetaildialogVisible" title="料号详情" width="50%">
 				<matNoDetailDialog :isDialog="true" :matNoRef="matNoRef"
@@ -58,6 +60,8 @@ import {
 	getSelectListApi,
 	getSubmitTrialSignApi,
 	getSubmitProduceSignApi,
+	getMachineTypesApi,
+	getMachineTypesOfMatApi,
 } from '/@/api/partno/noSearch';
 import { useI18n } from 'vue-i18n';
 // 引入组件
@@ -84,6 +88,7 @@ const state = reactive<TableDemoState>({
 		// 表头内容（必传，注意格式）
 		header: [
 			{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'text', isCheck: true },
+			{ key: 'reqMatNo', colWidth: '', title: '请购料号', type: 'text', isCheck: true },
 			{ key: 'depart', colWidth: '', title: '部门', type: 'text', isCheck: true },
 			{ key: 'bu', colWidth: '', title: 'BU', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
@@ -91,7 +96,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'drawNo', colWidth: '', title: 'message.pages.drawNo', type: 'text', isCheck: true },
 			// { key: 'specs', colWidth: '', title: 'message.pages.specs', type: 'text', isCheck: true },
 			{ key: 'signStatusStr', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
-			{ key: 'img', colWidth: '', title: '图片', width: '70', height: '40', type: 'image', isCheck: true },
+			{ key: 'picture', colWidth: '', title: '图片', width: '70', height: '40', type: 'uploadImage', isCheck: true },
 			// { key: 'creator', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
 			// { key: 'createtime', title: 'message.pages.creationTime', type: 'text', isCheck: true },
 		],
@@ -156,6 +161,24 @@ const state = reactive<TableDemoState>({
 			// { label: 'message.pages.specs', prop: 'specs', placeholder: 'message.pages.placeSpecs', required: true, type: 'input' },
 			{ label: '阶段', prop: 'stage', placeholder: '请输入阶段', required: false, type: 'input' },
 			{ label: '部门', prop: 'depart', placeholder: '请输入部门', required: false, type: 'input' },
+			{ label: '请购料号', prop: 'reqMatNo', placeholder: '请输入购料号', required: false, type: 'input' },
+			{
+				label: '机种',
+				prop: 'machineTypes',
+				placeholder: '请输入查询机种',
+				required: false,
+				type: 'select',
+				options: [],
+				loading: true,
+				filterable: true,
+				remote: true,
+				remoteShowSuffix: true,
+				multiple: true,
+				maxCollapseTags: 1,
+				collapseTags: true,
+				collapseTagsTooltip: true,
+			},
+
 			// { label: '厂区', prop: 'area', placeholder: '请选择厂区', required: false, type: 'select', options: [] },
 			// { label: 'BU', prop: 'bu', placeholder: '请选择BU', required: false, type: 'select', options: [] },
 			// { label: '专案代码', prop: 'projectCode', placeholder: '请选择专案代码', required: false, type: 'select', options: [] },
@@ -197,7 +220,7 @@ const state = reactive<TableDemoState>({
 				lg: 24,
 				xl: 24,
 			},
-			{ label: '图片', prop: 'image', placeholder: '', required: true, type: 'uploadImage' },
+			{ label: '图片', prop: 'picture', placeholder: '', required: true, type: 'uploadImage' },
 		],
 	},
 });
@@ -222,28 +245,55 @@ const matNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 		}, 100);
 	}
 };
+// 选择下拉
+let options: EmptyArrayType = [];
+const remoteMethod = (query: string) => {
+	let dialogConfig = state.tableData.dialogConfig;
+	dialogConfig?.forEach((item) => {
+		if (item.prop === 'machineTypes') item.loading = true;
+	});
+	if (query) {
+		setTimeout(async () => {
+			const res = await getMachineTypesApi(query);
+
+			options = res.data.map((item: EmptyObjectType) => {
+				return { value: `${item}`, label: `${item}`, text: `${item}` };
+			});
+			dialogConfig?.forEach((item) => {
+				if (item.prop === 'machineTypes') item.loading = false;
+				item.options = options.filter((item: EmptyObjectType) => {
+					return item.value.toLowerCase().includes(query.toLowerCase());
+				});
+			});
+		}, 500);
+	} else {
+		dialogConfig?.forEach((item) => {
+			if (item.prop === 'machineTypes') item.options = [];
+		});
+	}
+};
 // 初始化列表数据
 const getTableData = async () => {
 	state.tableData.config.loading = true;
 	const form = state.tableData.form;
 	let data = {
-		matNo: form.matNo,
-		bu: form.bu,
-		depart: form.depart,
-		name: form.name,
-		drawNo: form.drawNo,
+		...form,
 		page: state.tableData.page,
 		queryType: 1,
 	};
 	const res = await getMaterialListApi(data);
+	res.data.data.forEach((item: any) => {
+		item.picture = `${import.meta.env.VITE_API_URL}${item.picture}`;
+	});
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
-	let arr = [];
-	state.tableData.data.forEach((item) => {
-		if (item.signStatus == 0 || item.signStatus == 2) {
-			arr.push(item.signStatus);
-		}
-	});
+
+	// let arr = [];
+	// state.tableData.data.forEach((item) => {
+	// 	if (item.signStatus == 0 || item.signStatus == 2) {
+	// 		arr.push(item.signStatus);
+	// 	}
+	// });
 	// state.tableData.config.operateWidth = !arr.length ? 220 : 330;
 	if (res.status) {
 		state.tableData.config.loading = false;
@@ -255,19 +305,24 @@ const onSearch = (data: EmptyObjectType) => {
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
 	tableRef.value.pageReset();
 };
+// 打开修改弹窗
+const editDialog = async (formData: EmptyObjectType) => {
+	const res = await getMachineTypesOfMatApi(formData.matNo);
+	formData.machineTypes = res.data;
+};
 // 打开弹窗
-const openDialog = (type: string, row: EmptyObjectType) => {
+const openDialog = async (type: string, row: EmptyObjectType) => {
 	noSearchDialogRef.value.openDialog(type, row);
-	if (type === 'add') {
-		let arr = ['bu', 'projectCode', 'machineType', 'stage'];
-		if (state.tableData.dialogConfig) {
-			state.tableData.dialogConfig.forEach((item) => {
-				if (arr.includes(item.prop)) {
-					item.options = [];
-				}
-			});
-		}
-	}
+	// if (type === 'add') {
+	// 	let arr = ['bu', 'projectCode', 'machineType', 'stage'];
+	// 	if (state.tableData.dialogConfig) {
+	// 		state.tableData.dialogConfig.forEach((item) => {
+	// 			if (arr.includes(item.prop)) {
+	// 				item.options = [];
+	// 			}
+	// 		});
+	// 	}
+	// }
 };
 // 新增数据  修改数据
 const addData = async (ruleForm: EmptyObjectType, type: string) => {

@@ -187,7 +187,7 @@ const signInSuccess = (isNoPower: boolean | undefined) => {
 		}
 		// 登录成功提示
 		const signInText = t('message.signInText');
-		ElMessage.success(`${currentTimeInfo}，${signInText}`);
+		ElMessage.success(`${Cookies.get('userName')}${currentTimeInfo}，${signInText}`);
 		// 添加 loading，防止第一次进入界面时出现短暂空白
 		NextLoading.start();
 	}

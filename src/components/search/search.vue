@@ -44,7 +44,23 @@
 							end-placeholder="結束時間"
 							style="width: 100%"
 						/>
-						<el-select v-model="state.form[val.prop]" :placeholder="`请选择${val.label}`" v-else-if="val.type === 'select'" style="width: 100%">
+						<el-select
+							v-model="state.form[val.prop]"
+							:placeholder="val.placeholder || `请选择${val.label}`"
+							v-else-if="val.type === 'select'"
+							style="width: 100%"
+							@change="(vals:any) => selectHandelChange(vals,val.prop)"
+							clearable
+							:filterable="val.filterable"
+							:remote="val.remote"
+							:remote-show-suffix="val.remoteShowSuffix"
+							:remote-method="remoteMethod"
+							:loading="val.loading"
+							:multiple="val.multiple"
+							:max-collapse-tags="val.maxCollapseTags"
+							:collapse-tags="val.collapseTags"
+							:collapse-tags-tooltip="val.collapseTagsTooltip"
+						>
 							<el-option v-for="item in val.options" :key="item.label" :label="item.text" :value="item.value"> </el-option>
 						</el-select>
 						<span v-else style="width: 100%; font-weight: 700; color: #1890ff">
@@ -95,7 +111,7 @@ const props = defineProps({
 });
 
 // 定义子组件向父组件传值/事件
-const emit = defineEmits(['search']);
+const emit = defineEmits(['search', 'remoteMethod', 'selectChange']);
 
 // 定义变量内容
 const { t } = useI18n();
@@ -115,6 +131,14 @@ const onSearch = (formEl: FormInstance | undefined) => {
 			return false;
 		}
 	});
+};
+// 下拉框数据变化
+const selectHandelChange = (vals: string, prop: string) => {
+	emit('selectChange', vals, prop, state.form);
+};
+// 能搜索的下拉框
+const remoteMethod = (query: string) => {
+	emit('remoteMethod', query, state.form);
 };
 // 重置
 const onReset = (formEl: FormInstance | undefined) => {

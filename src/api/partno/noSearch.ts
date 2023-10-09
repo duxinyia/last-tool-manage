@@ -79,4 +79,22 @@ export function getSubmitProduceSignApi(comKey:string) {
     },
   });
 }
+// 机种模糊查询下拉
+export function getMachineTypesApi(machineTypeArg:string) {
+  return request({
+    url: `/api/BaseMachineProcject/GetMachineTypes`,
+    method: 'GET',
+    params:{machineTypeArg}
+  });
+}
+// 获取料号下的所有机种
+export function getMachineTypesOfMatApi(matNo:any) {
+  return request({
+    url: `/api/Material/GetMachineTypesOfMat`,
+    method: 'GET',
+    params:{matNo}
+  });
+}
+
+
 
