@@ -39,7 +39,9 @@ export default {
 		scrapBillQuery:'scrap bill query',
 		scrapSheetSub:'scrap sheet submission',
 		repairOrderAcceptance:'repair order acceptance',
-		warehouseManage:'warehouse management'
+		warehouseManage:'warehouse management',
+		transferReceipt:'transfer receipt',
+		purchaseSampleDelivery:'purchase sample delivery'
 	},
 	staticRoutes: {
 		signIn: 'signIn',

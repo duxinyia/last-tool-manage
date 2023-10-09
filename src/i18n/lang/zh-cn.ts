@@ -39,7 +39,9 @@ export default {
 		scrapBillQuery:'报废单查询',
 		scrapSheetSub:'报废单提报',
 		repairOrderAcceptance:'维修单验收',
-		warehouseManage:'仓库管理'
+		warehouseManage:'仓库管理',
+		transferReceipt:'转仓接收',
+		purchaseSampleDelivery:'采购送样'
 	},
 	staticRoutes: {
 		signIn: '登录',
