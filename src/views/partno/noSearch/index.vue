@@ -62,6 +62,7 @@ import {
 	getSubmitProduceSignApi,
 	getMachineTypesApi,
 	getMachineTypesOfMatApi,
+	getMatnoDownloadApi,
 } from '/@/api/partno/noSearch';
 import { useI18n } from 'vue-i18n';
 // 引入组件
@@ -429,26 +430,24 @@ const onSortHeader = (data: TableHeaderType[]) => {
 };
 // 导出
 const onExportTableData = async (row: EmptyObjectType) => {
-	// let rows: EmptyArrayType = [];
-	// Object.keys(row).forEach((key) => {
-	// 	rows.push(row[key].runid);
-	// });
-	// const res = await getBaseDownloadApi(rows);
-	// let blob = new Blob([res], {
-	// 	// 这里一定要和后端对应，不然可能出现乱码或者打不开文件
-	// 	type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-	// });
-	// if (window.navigator.msSaveOrOpenBlob) {
-	// 	navigator.msSaveBlob(blob, fileName);
-	// } else {
-	// 	const link = document.createElement('a');
-	// 	link.href = window.URL.createObjectURL(blob);
-	// 	link.download = `${t('message.router.basicsBasic')} ${new Date().toLocaleString()}.xlsx`; // 在前端也可以设置文件名字
-	// 	link.click();
-	// 	//释放内存
-	// 	window.URL.revokeObjectURL(link.href);
-	// }
+	let rows: EmptyArrayType = [];
+	Object.keys(row).forEach((key) => {
+		rows.push(row[key].matNo);
+	});
+	const res = await getMatnoDownloadApi(rows);
+	const result: any = res;
+	let blob = new Blob([result], {
+		// 这里一定要和后端对应，不然可能出现乱码或者打不开文件
+		type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+	});
+	const link = document.createElement('a');
+	link.href = window.URL.createObjectURL(blob);
+	link.download = `${t('料號')} ${new Date().toLocaleString()}.xlsx`; // 在前端也可以设置文件名字
+	link.click();
+	//释放内存
+	window.URL.revokeObjectURL(link.href);
 };
+
 // 下载模版
 const ondownloadTemp = async () => {
 	// const res = await getDownloadTemplateApi();

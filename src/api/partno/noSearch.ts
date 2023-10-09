@@ -95,6 +95,17 @@ export function getMachineTypesOfMatApi(matNo:any) {
     params:{matNo}
   });
 }
+// 导出
+export function getMatnoDownloadApi(matNo:Array<string>) {
+  return request({
+    url: '/api/Export/Matno',
+    method: 'POST',
+    responseType: 'blob', // 设置响应数据类型为 blob
+    data: 
+      matNo
+    ,
+  });
+}
 
 
 

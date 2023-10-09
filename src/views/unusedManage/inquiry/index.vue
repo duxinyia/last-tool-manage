@@ -16,6 +16,7 @@
 				@cellclick="idleNoClick"
 				:cellStyle="cellStyle"
 				@onOpenOtherDialog="openDetailDialog"
+				@importTable="onExportTableData"
 			/>
 			<el-dialog ref="reportInquiryDialogRef" v-model="reportInquiryDialogVisible" :title="dilogTitle" width="40%">
 				<el-form ref="dialogFormRef" :model="dialogState.tableData" size="default" label-width="100px">
@@ -54,7 +55,7 @@
 <script setup lang="ts" name="/requistManage/reportingInquiry">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { IdleQueryPageListApi, GetIdleDetailApi, getIdleSubmitSignApi } from '/@/api/unusedManage/unusedInquiry';
+import { IdleQueryPageListApi, GetIdleDetailApi, getIdleSubmitSignApi, getIdleDownloadApi } from '/@/api/unusedManage/unusedInquiry';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -91,12 +92,13 @@ const state = reactive<TableDemoState>({
 			loading: true, // loading 加载
 			isBorder: false, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
-			isSelection: false, // 是否显示表格多选
+			isSelection: true, // 是否显示表格多选
 			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
+			exportIcon: true, //是否有导出icon(导出功能)
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
@@ -201,7 +203,7 @@ const changeToStyle = (indList: number[]) => {
 		}
 	};
 };
-cellStyle.value = changeToStyle([1]);
+cellStyle.value = changeToStyle([2]);
 // 初始化列表数据
 const getTableData = async () => {
 	state.tableData.config.loading = true;
@@ -275,7 +277,25 @@ const onSearch = (data: EmptyObjectType) => {
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
 	tableRef.value && tableRef.value.pageReset();
 };
-
+// 导出
+const onExportTableData = async (row: EmptyObjectType) => {
+	let rows: EmptyArrayType = [];
+	Object.keys(row).forEach((key) => {
+		rows.push(row[key].idleno);
+	});
+	const res = await getIdleDownloadApi(rows);
+	const result: any = res;
+	let blob = new Blob([result], {
+		// 这里一定要和后端对应，不然可能出现乱码或者打不开文件
+		type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+	});
+	const link = document.createElement('a');
+	link.href = window.URL.createObjectURL(blob);
+	link.download = `${t('閒置單')} ${new Date().toLocaleString()}.xlsx`; // 在前端也可以设置文件名字
+	link.click();
+	//释放内存
+	window.URL.revokeObjectURL(link.href);
+};
 // 分页改变时回调
 const onTablePageChange = (page: TableDemoPageType) => {
 	state.tableData.page.pageNum = page.pageNum;

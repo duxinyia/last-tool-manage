@@ -14,3 +14,12 @@ export function getRepairDetailsApi(repairNo:string) {
     method: 'GET',
   });
 }
+// 导出
+export function getRepairDownloadApi(repairNo:Array<string>) {
+  return request({
+    url: '/api/Export/Repair',
+    method: 'POST',
+    responseType: 'blob', // 设置响应数据类型为 blob
+    data: repairNo,
+  });
+}

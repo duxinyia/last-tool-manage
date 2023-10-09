@@ -31,5 +31,14 @@ export function getDeleApplyItemApi(data:Object) {
     data:data
   });
 }
+// 导出
+export function getPurchaseRequestDownloadApi(reqNo:Array<string>) {
+  return request({
+    url: '/api/Export/PurchaseRequest',
+    method: 'POST',
+    responseType: 'blob', // 设置响应数据类型为 blob
+    data: reqNo,
+  });
+}
 
 

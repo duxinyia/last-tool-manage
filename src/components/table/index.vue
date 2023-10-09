@@ -514,7 +514,7 @@ const onCheckChange = () => {
 };
 //为行设置独有key
 const selRowKey = (row: EmptyObjectType) => {
-	return row.runid || row.matNo;
+	return row.runid || row.matNo || row.reqNo || row.repairNo || row.idleno || row.uselessno;
 };
 // 表格多选改变时，用于导出和删除
 const onSelectionChange = (val: EmptyObjectType[]) => {
@@ -592,7 +592,7 @@ const onPrintTable = () => {
 };
 // 导出
 const onExportTable = () => {
-	// if (state.selectlist.length <= 0) return ElMessage.warning('请先选择要导出的数据');
+	if (state.selectlist.length <= 0) return ElMessage.warning('请先选择要导出的数据');
 	props.header.forEach((item) => {
 		item.title = t(item.title);
 	});

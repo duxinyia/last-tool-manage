@@ -24,3 +24,12 @@ export function getUselessSubmitSignApi(comKey:Object) {
   	data:{comKey}
   });
 }
+// 导出
+export function getUselessDownloadApi(repairNo:Array<string>) {
+  return request({
+    url: '/api/Export/Useless',
+    method: 'POST',
+    responseType: 'blob', // 设置响应数据类型为 blob
+    data: repairNo,
+  });
+}

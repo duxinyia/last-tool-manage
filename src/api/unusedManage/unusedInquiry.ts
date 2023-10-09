@@ -24,3 +24,12 @@ export function getIdleSubmitSignApi(comKey:Object) {
   	data:{comKey}
   });
 }
+// 导出
+export function getIdleDownloadApi(repairNo:Array<string>) {
+  return request({
+    url: '/api/Export/Idle',
+    method: 'POST',
+    responseType: 'blob', // 设置响应数据类型为 blob
+    data: repairNo,
+  });
+}

@@ -10,6 +10,7 @@
 				@sortHeader="onSortHeader"
 				@cellclick="reqNoClick"
 				:cellStyle="cellStyle"
+				@importTable="onExportTableData"
 			/>
 			<el-dialog ref="reportInquiryDialogRef" v-model="reportInquiryDialogVisible" :title="dilogTitle" width="80%">
 				<el-row>
@@ -28,7 +29,7 @@
 <script setup lang="ts" name="/requistManage/reportingInquiry">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
-import { getQueryRepairOrderApi, getRepairDetailsApi } from '/@/api/maintenanceManage/inquiry';
+import { getQueryRepairOrderApi, getRepairDetailsApi, getRepairDownloadApi } from '/@/api/maintenanceManage/inquiry';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -59,12 +60,13 @@ const state = reactive<TableDemoState>({
 			loading: true, // loading 加载
 			isBorder: false, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
-			isSelection: false, // 是否显示表格多选
+			isSelection: true, // 是否显示表格多选
 			isOperate: false, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
+			exportIcon: true, //是否有导出icon(导出功能)
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
@@ -145,7 +147,7 @@ const changeToStyle = (indList: number[]) => {
 		}
 	};
 };
-cellStyle.value = changeToStyle([1]);
+cellStyle.value = changeToStyle([2]);
 // 初始化列表数据
 const getTableData = async () => {
 	state.tableData.config.loading = true;
@@ -175,6 +177,25 @@ const reqNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
 			dialogState.tableData.config.loading = false;
 		}
 	}
+};
+// 导出
+const onExportTableData = async (row: EmptyObjectType) => {
+	let rows: EmptyArrayType = [];
+	Object.keys(row).forEach((key) => {
+		rows.push(row[key].repairNo);
+	});
+	const res = await getRepairDownloadApi(rows);
+	const result: any = res;
+	let blob = new Blob([result], {
+		// 这里一定要和后端对应，不然可能出现乱码或者打不开文件
+		type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+	});
+	const link = document.createElement('a');
+	link.href = window.URL.createObjectURL(blob);
+	link.download = `${t('维修单')} ${new Date().toLocaleString()}.xlsx`; // 在前端也可以设置文件名字
+	link.click();
+	//释放内存
+	window.URL.revokeObjectURL(link.href);
 };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
