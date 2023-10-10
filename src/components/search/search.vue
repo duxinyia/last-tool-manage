@@ -21,6 +21,7 @@
 						:rules="[{ required: val.required, message: `${val.label}不能为空`, trigger: val.type === 'input' ? 'blur' : 'change' }]"
 					>
 						<el-input
+							:maxlength="val.maxlength"
 							v-model="state.form[val.prop]"
 							:placeholder="`请输入${$t(val.label)}`"
 							clearable

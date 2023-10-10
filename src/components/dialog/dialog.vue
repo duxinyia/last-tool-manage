@@ -252,7 +252,7 @@
 			<template #footer v-if="isFootBtn">
 				<span class="dialog-footer">
 					<el-button @click="onCancel" size="default">取 消</el-button>
-					<el-button type="primary" @click="onSubmit(dialogFormRef)" size="default">{{ state.dialog.submitTxt }}</el-button>
+					<el-button :loading="loadingBtn" type="primary" @click="onSubmit(dialogFormRef)" size="default">{{ state.dialog.submitTxt }}</el-button>
 				</span>
 			</template>
 		</el-dialog>
@@ -312,6 +312,10 @@ const props = defineProps({
 	tagsData: {
 		type: Array,
 		default: () => [],
+	},
+	loadingBtn: {
+		type: Boolean,
+		default: () => false,
 	},
 });
 const { t } = useI18n();
@@ -482,7 +486,6 @@ const onSubmit = (formEl: EmptyObjectType | undefined) => {
 	formEl.validate((valid: boolean) => {
 		if (valid) {
 			emit('addData', state.formData, state.dialog.type, state.formInnerData);
-		} else {
 		}
 	});
 };

@@ -115,6 +115,8 @@ const state = reactive<TableDemoState>({
 					{ value: 2, label: '签核完成', text: '签核完成', selected: false },
 				],
 			},
+			{ label: '班次', prop: 'classes', type: 'input', required: false },
+			{ label: '规划存放位置', prop: 'position', type: 'input', required: false },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -122,8 +124,8 @@ const state = reactive<TableDemoState>({
 		btnConfig: [{ type: 'detail', name: '详情', color: '#1890ff', isSure: false, icon: 'ele-View' }],
 		// 给后端的数据
 		form: {
-			idleNo: '',
-			idleDate: '',
+			// idleNo: '',
+			// idleDate: '',
 			signStatus: 0,
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
@@ -173,7 +175,7 @@ const dialogState = reactive<TableDemoState>({
 		form: {},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '闲置单号:', prop: 'idleno', type: 'text', required: false },
+			{ label: '闲置单号:', prop: 'idlepno', type: 'text', required: false },
 			{ label: '闲置时间:', prop: 'idleDate', type: 'text', required: false },
 			{ label: '班别:', prop: 'classes', type: 'text', required: false },
 			{ label: '规划存放位置:', prop: 'position', type: 'text', required: false },
@@ -211,21 +213,20 @@ const getTableData = async () => {
 	let data: EmptyObjectType = {};
 	if (form.idleDate) {
 		data = {
-			idleNo: form.idleNo,
-			signStatus: form.signStatus,
+			...form,
 			idleDateStart: form.idleDate[0],
 			idleDateEnd: form.idleDate[1],
 			page: state.tableData.page,
 		};
 	} else {
 		data = {
-			idleNo: form.idleNo,
-			signStatus: form.signStatus,
+			...form,
 			idleDateStart: '',
 			idleDateEnd: '',
 			page: state.tableData.page,
 		};
 	}
+	delete data.idleDate;
 	const signStatusMap: EmptyObjectType = {
 		0: '未送签',
 		1: '签核中',

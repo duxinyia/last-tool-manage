@@ -83,6 +83,8 @@ const state = reactive<TableDemoState>({
 			{ key: 'uselessno', colWidth: '', title: '報廢單號', type: 'text', isCheck: true },
 			{ key: 'uselessdate', colWidth: '', title: '報廢時間', type: 'text', isCheck: true },
 			{ key: 'signStatus', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
+			{ key: 'classes', colWidth: '', title: '班別', type: 'text', isCheck: true },
+			{ key: 'state', colWidth: '', title: '站位', type: 'text', isCheck: true },
 			{ key: 'creator', colWidth: '', title: '操作人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -114,6 +116,8 @@ const state = reactive<TableDemoState>({
 					{ value: 2, label: '簽核完成', text: '簽核完成', selected: false },
 				],
 			},
+			{ label: '班別', prop: 'classes', required: false, type: 'input' },
+			{ label: '站位', prop: 'state', required: false, type: 'input' },
 		],
 		btnConfig: [{ type: 'detail', name: '详情', color: '#1890ff', isSure: false, icon: 'ele-View' }],
 		searchConfig: {
@@ -122,8 +126,8 @@ const state = reactive<TableDemoState>({
 		// btnConfig: [{ type: 'send', name: '送签', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
 		// 给后端的数据
 		form: {
-			uselessno: '',
-			uselessdate: '',
+			// uselessno: '',
+			// uselessdate: '',
 			signStatus: 0,
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
@@ -211,18 +215,16 @@ const getTableData = async () => {
 	let data: EmptyObjectType = {};
 	if (form.uselessdate) {
 		data = {
-			uselessno: form.uselessno,
+			...form,
 			uselessdateStart: form.uselessdate[0],
 			uselessdateEnd: form.uselessdate[1],
-			signStatus: form.signStatus,
 			page: state.tableData.page,
 		};
 	} else {
 		data = {
-			uselessno: form.uselessno,
+			...form,
 			uselessdateStart: '',
 			uselessdateEnd: '',
-			signStatus: form.signStatus,
 			page: state.tableData.page,
 		};
 	}
@@ -231,6 +233,7 @@ const getTableData = async () => {
 		1: '簽核中',
 		2: '簽核完成',
 	};
+	delete data.uselessdate;
 	const res = await getQueryExitPageApi(data);
 	res.data.data.forEach((item: any) => {
 		item.signStatus = signStatusMap[item.signStatus];

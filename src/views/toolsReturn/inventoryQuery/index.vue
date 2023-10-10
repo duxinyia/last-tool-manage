@@ -76,6 +76,8 @@ const state = reactive<TableDemoState>({
 			{ key: 'matno', colWidth: '250', title: '料号', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
+			{ key: 'depart', colWidth: '', title: '部门', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '图纸编号', type: 'text', isCheck: true },
 			// { key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 			// { key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 			{ key: 'storageType', colWidth: '', title: '倉庫類型', type: 'text', isCheck: true },
@@ -100,12 +102,12 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '料号', prop: 'matNo', required: false, type: 'input' },
+			{ label: '料号', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
 			{ label: '品名', prop: 'matName', required: false, type: 'input' },
 			{ label: '仓库类型', prop: 'storeType', required: false, type: 'select', options: [] },
 			{
 				label: '仓库位置',
-				prop: 'sLocation',
+				prop: 'storageId',
 				required: false,
 				type: 'select',
 				placeholder: '请输入选择仓库位置',
@@ -115,6 +117,8 @@ const state = reactive<TableDemoState>({
 				remote: true,
 				remoteShowSuffix: true,
 			},
+			{ label: '部门', prop: 'depart', required: false, type: 'input' },
+			{ label: '图纸编号', prop: 'drawNo', required: false, type: 'input', lg: 6, xl: 6 },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -125,7 +129,7 @@ const state = reactive<TableDemoState>({
 			matNo: '',
 			matName: '',
 			storeType: '',
-			sLocation: '',
+			storageId: '',
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -284,7 +288,7 @@ const changeToStyle = (indList: number[]) => {
 		}
 	};
 };
-cellStyle.value = changeToStyle([1, 7]);
+cellStyle.value = changeToStyle([1, 9]);
 // 下拉框数据
 const getSelect = async () => {
 	const res = await getLegalStoreTypesApi();
@@ -296,7 +300,7 @@ const getSelect = async () => {
 // 改变仓库类型下拉
 const selectChangeStoreType = (vals: string, prop: string, form: EmptyObjectType) => {
 	if (prop === 'storeType') {
-		form.sLocation = '';
+		form.storageId = '';
 	}
 };
 let option: EmptyArrayType = [];
@@ -320,15 +324,20 @@ const remoteMethod = (query: string, form: EmptyObjectType) => {
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;
+	console.log(option);
+
 	option.forEach((item) => {
 		if (item.value === form.sLocation) {
-			form.sLocation = item.text;
+			// form.sLocation = item.text;
+			form.storageId = item.value;
 		}
 	});
+
 	let data = {
 		...form,
 		page: state.tableData.page,
 	};
+
 	const res = await getStockListApi(data);
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;

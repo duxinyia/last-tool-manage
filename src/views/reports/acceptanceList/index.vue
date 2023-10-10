@@ -37,7 +37,7 @@ const state = reactive<TableDemoState>({
 		header: [
 			{ key: 'matNo', colWidth: '', title: '料号', type: 'text', isCheck: true },
 			{ key: 'buCode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
-			{ key: 'machineType', colWidth: '', title: '机种', type: 'text', isCheck: true },
+			// { key: 'machineType', colWidth: '', title: '机种', type: 'text', isCheck: true },
 			{ key: 'projectCode', colWidth: '', title: '专案代码', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
@@ -59,9 +59,9 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '料号', prop: 'matNo', required: false, type: 'input' },
+			{ label: '料号', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
 			{ label: 'BU', prop: 'buCode', required: false, type: 'input' },
-			{ label: '机种', prop: 'machineType', required: false, type: 'input' },
+			// { label: '机种', prop: 'machineType', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 		],
 		searchConfig: {

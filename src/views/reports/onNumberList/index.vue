@@ -64,7 +64,7 @@ const state = reactive<TableDemoState>({
 				isCheck: true,
 			},
 			{ key: 'buCode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
-			{ key: 'machineType', colWidth: '', title: '机种', type: 'text', isCheck: true },
+			// { key: 'machineType', colWidth: '', title: '机种', type: 'text', isCheck: true },
 			{ key: 'projectCode', colWidth: '', title: '专案代码', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
@@ -93,9 +93,9 @@ const state = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: 'BU', prop: 'buCode', required: false, type: 'input' },
-			{ label: '机种', prop: 'machineType', required: false, type: 'input' },
-			{ label: '品名-中文', prop: 'nameCh', required: false, type: 'input' },
-			{ label: '品名-英文', prop: 'nameEn', required: false, type: 'input' },
+			// { label: '机种', prop: 'machineType', required: false, type: 'input' },
+			{ label: '品名', prop: 'name', required: false, type: 'input' },
+			// { label: '品名-英文', prop: 'nameEn', required: false, type: 'input' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -103,10 +103,10 @@ const state = reactive<TableDemoState>({
 		// btnConfig: [{ type: 'send', name: '送签', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
 		// 给后端的数据
 		form: {
-			buCode: '',
-			machineType: '',
-			nameEn: '',
-			nameCh: '',
+			// buCode: '',
+			// machineType: '',
+			// nameEn: '',
+			// nameCh: '',
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -197,10 +197,7 @@ const getTableData = async () => {
 	const form = state.tableData.form;
 	let data: EmptyObjectType = {};
 	data = {
-		buCode: form.buCode,
-		machineType: form.machineType,
-		nameEn: form.nameEn,
-		nameCh: form.nameCh,
+		...form,
 		page: state.tableData.page,
 	};
 	const res = await getQueryStoredInventoryApi(data);

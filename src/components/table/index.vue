@@ -90,7 +90,7 @@
 			:data="data"
 			:border="setBorder"
 			v-bind="$attrs"
-			:row-key="selRowKey"
+			:row-key="config.isSelection ? selRowKey : ' '"
 			:stripe="objectSpanMethod ? false : true"
 			style="width: 100%"
 			:header-row-style="{ background: '' }"
@@ -123,7 +123,8 @@
 					>
 						<!-- 输入框 :disabled="route.path == '/basics/warehouseManage' ? (data[scope.$index].disabled === false ? false : true) : false"-->
 						<el-input
-							:disabled="!data[scope.$index][`${item.key}disabled`]"
+							:disabled="data[scope.$index][`${item.key}disabled`]"
+							:maxlength="item.maxlength"
 							v-if="item.type === 'input'"
 							style="height: 30px"
 							v-model="data[scope.$index][item.key]"

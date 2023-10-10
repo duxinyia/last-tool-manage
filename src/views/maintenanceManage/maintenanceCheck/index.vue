@@ -79,7 +79,7 @@
 				<template #footer v-if="dilogTitle == '验收'">
 					<span class="dialog-footer">
 						<el-button size="default" auto-insert-space @click="maintenanceCheckDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)"> 确定 </el-button>
+						<el-button :disabled="isSureDisabled" size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)"> 确定 </el-button>
 					</span>
 				</template>
 			</el-dialog>
@@ -108,7 +108,7 @@ const inputuploadRefs = ref<UploadInstance>();
 const inputuploadForm = ref();
 // 单元格样式
 const cellStyle = ref();
-
+const isSureDisabled = ref(true);
 // 弹窗标题
 const dilogTitle = ref();
 const header = ref<EmptyArrayType>([
@@ -300,6 +300,7 @@ const onDelRow = (row: EmptyObjectType, i: number) => {
 const openArriveJobDialog = (scope: EmptyObjectType) => {
 	dialogState.tableData.form = scope.row;
 	getDetailData(scope.row.repairReceiveNo);
+	isSureDisabled.value = true;
 	dilogTitle.value = '验收';
 	changeStatus(header.value, 300, true);
 };
@@ -320,6 +321,9 @@ const getDetailData = async (data: string) => {
 	dialogState.tableData.data = res.data.details;
 	if (res.status) {
 		dialogState.tableData.config.loading = false;
+		isSureDisabled.value = false;
+	} else {
+		isSureDisabled.value = true;
 	}
 };
 // 根据弹出窗不一样展现的配置不一样

@@ -180,6 +180,9 @@ const dialogState = reactive<TableDemoState>({
 
 const getAdminData = async (runId: string) => {
 	const res = await getAdminsInfosOfStoreHouseApi(runId);
+	res.data.forEach((item: any) => {
+		item.userIddisabled = true;
+	});
 	const tableData = dialogState.tableData;
 	tableData.form['runId'] = runId;
 	tableData.data = res.data;
@@ -211,7 +214,7 @@ const onAddrow = () => {
 	dialogState.tableData.data.push({
 		userId: '',
 		username: '',
-		userIddisabled: true,
+		userIddisabled: false,
 	});
 	//超过设置的高度出现滚动条，添加行定位到底部
 	//  1.先拿到设置table的最大高度【滚动条的高度】的元素，获取元素的clientHeight

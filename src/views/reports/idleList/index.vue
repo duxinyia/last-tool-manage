@@ -75,7 +75,7 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '料号', prop: 'matNo', required: false, type: 'input' },
+			{ label: '料号', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
 			{ label: 'BU', prop: 'buCode', required: false, type: 'input' },
 			// { label: '机种', prop: 'machineType', required: false, type: 'input' },
 			// { label: '品名-中文', prop: 'nameCh', required: false, type: 'input' },

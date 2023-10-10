@@ -185,7 +185,7 @@ const header1 = ref<deliveryDialogHeader>([
 	{ key: 'line', colWidth: '', title: '線體', type: 'input', isCheck: true, isRequired: true },
 	{ key: 'reqQty', colWidth: '100', title: '需求数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
 	{ key: 'reqDate', colWidth: '150', title: '需求时间', type: 'time', isCheck: true, isRequired: true },
-	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'input', isCheck: true, isRequired: false },
+	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'input', isCheck: true, isRequired: false, maxlength: 20 },
 	// { key: 'describe', colWidth: '150', title: '描述说明', type: 'text', isCheck: true },
 ]);
 const dialogState = reactive<TableDemoState>({

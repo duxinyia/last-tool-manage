@@ -11,7 +11,7 @@
 				@sortHeader="onSortHeader"
 				@openAdd="openDialog"
 			/>
-			<Dialog ref="purchaseDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="addData" dialogWidth="30%" />
+			<Dialog ref="purchaseDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="addData" dialogWidth="30%" :loadingBtn="loadingBtn" />
 		</div>
 	</div>
 </template>
@@ -31,6 +31,7 @@ const { t } = useI18n();
 // 定义变量内容
 const purchaseDialogRef = ref();
 const tableRef = ref<RefType>();
+const loadingBtn = ref(false);
 const state = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
@@ -104,7 +105,6 @@ const getTableData = async () => {
 		item.grouptype = '工程';
 	});
 	state.tableData.data = res.data.data;
-
 	state.tableData.config.total = res.data.total;
 	if (res.status) {
 		state.tableData.config.loading = false;
@@ -121,6 +121,7 @@ const openDialog = (type: string, row: Object) => {
 };
 // 新增数据  修改数据
 const addData = async (ruleForm: EmptyObjectType) => {
+	loadingBtn.value = true;
 	ruleForm['GroupType'] = 2;
 	const res = await getAddGroupMemberApi(ruleForm);
 	if (res.status) {
@@ -128,6 +129,7 @@ const addData = async (ruleForm: EmptyObjectType) => {
 		purchaseDialogRef.value.closeDialog();
 		getTableData();
 	}
+	loadingBtn.value = false;
 };
 // 删除当前项回调
 const onTableDelRow = async (row: EmptyObjectType, type: string) => {

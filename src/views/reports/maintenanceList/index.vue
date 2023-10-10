@@ -50,7 +50,7 @@ const state = reactive<TableDemoState>({
 				isCheck: true,
 			},
 			{ key: 'buCode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
-			{ key: 'machineType', colWidth: '', title: '机种', type: 'text', isCheck: true },
+			// { key: 'machineType', colWidth: '', title: '机种', type: 'text', isCheck: true },
 			{ key: 'projectCode', colWidth: '', title: '专案代码', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
@@ -75,10 +75,10 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '料号', prop: 'matNo', required: false, type: 'input' },
+			{ label: '料号', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
 			// { label: '机种', prop: 'machineType', required: false, type: 'input' },
-			{ label: '品名-中文', prop: 'nameCh', required: false, type: 'input' },
-			{ label: '品名-英文', prop: 'nameEn', required: false, type: 'input' },
+			{ label: '品名', prop: 'name', required: false, type: 'input' },
+			// { label: '品名-英文', prop: 'nameEn', required: false, type: 'input' },
 			{ label: '维修日期', prop: 'sendRepairDate', required: false, type: 'dateRange', lg: 6, xl: 6 },
 		],
 		searchConfig: {
@@ -119,8 +119,7 @@ const getTableData = async () => {
 		matNo: form.matNo,
 		startDate: form.sendRepairDate && form.sendRepairDate[0],
 		endDate: form.sendRepairDate && form.sendRepairDate[1],
-		nameEn: form.nameEn,
-		nameCh: form.nameCh,
+		name: form.name,
 		page: state.tableData.page,
 	};
 	const res = await getQueryRepairInventoryApi(data);

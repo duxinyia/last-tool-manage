@@ -227,11 +227,14 @@ const onDelRow = (row: EmptyObjectType, i: number) => {
 };
 // 增加一行
 const onAddrow = () => {
-	dialogState.tableData.data.push({ needsQtymin: 1, vendorCodedisabled: true, vendorNamedisabled: true });
+	dialogState.tableData.data.push({ needsQtymin: 1, vendorCodedisabled: false, vendorNamedisabled: false });
 };
 // 点击收货弹窗
 const openArriveJobDialog = async (scope: EmptyObjectType) => {
 	const res = await getSampleDetailsForTakeSampleApi(scope.row.sampleNo);
+	res.data.forEach((item: any) => {
+		(item.vendorCodedisabled = true), (item.vendorNamedisabled = true);
+	});
 	dialogState.tableData.data = res.data;
 	dialogState.tableData.form = scope.row;
 	deliveryDialogVisible.value = true;

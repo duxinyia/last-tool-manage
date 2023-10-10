@@ -7,6 +7,7 @@
 					<el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4" class="mb20 mr20" v-for="(val, key) in state.tableData.search" :key="key">
 						<el-form-item :label="$t(val.label)" :prop="val.prop">
 							<el-input
+								:maxlength="val.maxlength"
 								v-model="state.tableData.form[val.prop]"
 								:placeholder="`请输入${$t(val.label)}`"
 								clearable
@@ -45,7 +46,7 @@
 			</div>
 			<!-- 提交按钮 -->
 			<span class="table-bottom">
-				<el-button type="primary" @click="onSubmit(tableFormRef)" size="default">提交</el-button>
+				<el-button :loading="subLoading" type="primary" @click="onSubmit(tableFormRef)" size="default">提交</el-button>
 			</span>
 		</div>
 	</div>
@@ -65,6 +66,7 @@ const { t } = useI18n();
 const tableRef = ref<RefType>();
 const tableFormRef = ref();
 const resDataRef = ref([]);
+const subLoading = ref(false);
 const state = reactive<EmptyObjectType>({
 	tableData: {
 		// 列表数据（必传）
@@ -79,6 +81,8 @@ const state = reactive<EmptyObjectType>({
 				reqQty: null,
 				reqDate: '',
 				prItemNo: '',
+				// linedisabled: true,
+				// prItemNodisabled: true,
 			},
 		],
 		config: {
@@ -129,7 +133,7 @@ const state = reactive<EmptyObjectType>({
 			// { key: 'vendorName', colWidth: '300', title: '厂商名称', type: 'input', isCheck: true, isRequired: true },
 			{ key: 'reqQty', colWidth: '150', title: 'PR数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
 			{ key: 'reqDate', colWidth: '150', title: '需求时间', type: 'time', isCheck: true, isRequired: true },
-			{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'input', isCheck: true, isRequired: false },
+			{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'input', isCheck: true, isRequired: false, maxlength: 20 },
 		],
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
@@ -138,7 +142,7 @@ const state = reactive<EmptyObjectType>({
 		},
 		search: [
 			{ label: '申请单号：', prop: 'reqNo', placeholder: '请输入料号', type: 'text' },
-			{ label: 'PR单号', prop: 'prNo', placeholder: '请输入PR单号', type: 'input' },
+			{ label: 'PR单号', prop: 'prNo', placeholder: '请输入PR单号', type: 'input', maxlength: 20 },
 		],
 		// 给后端的数据
 		form: {
@@ -212,6 +216,8 @@ const onAddRow = () => {
 		nameCh: '',
 		nameEn: '',
 		drawNo: '',
+		// linedisabled: true,
+		// prItemNodisabled: true,
 		// vendorCode: '',
 		// vendorName: '',
 		sampleQty: '',
@@ -230,16 +236,23 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
+		subLoading.value = true;
 		let allData: EmptyObjectType = {};
 		allData = { ...state.tableData.form };
 		allData['details'] = state.tableData.data;
-		const res = await getToolApplyInsertApi(allData);
-		if (res.status) {
-			ElMessage.success(t('提交成功'));
-			// 清空
-			const tableData = state.tableData;
-			tableData.form = {};
-			tableData.data = [];
+		if (state.tableData.data.length <= 0) {
+			ElMessage.warning(t('提交数据为空，请新增数据'));
+			subLoading.value = false;
+		} else {
+			const res = await getToolApplyInsertApi(allData);
+			if (res.status) {
+				ElMessage.success(t('提交成功'));
+				subLoading.value = false;
+				// 清空
+				const tableData = state.tableData;
+				tableData.form = {};
+				tableData.data = [];
+			}
 		}
 	});
 };

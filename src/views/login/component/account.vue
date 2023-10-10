@@ -209,6 +209,9 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+:deep(.is-loading) {
+	font-size: 24px !important;
+}
 .login-content-form {
 	margin-top: 20px;
 	@for $i from 1 through 4 {
