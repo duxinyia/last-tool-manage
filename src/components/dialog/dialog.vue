@@ -14,7 +14,13 @@
 						:key="item.prop"
 					>
 						<el-form-item v-if="item.type != 'button'" :label="$t(item.label)" :prop="item.prop" :rules="allRules(item)">
-							<el-input v-if="item.type === 'input'" v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)" clearable></el-input>
+							<el-input
+								:maxlength="item.maxlength"
+								v-if="item.type === 'input'"
+								v-model="state.formData[item.prop]"
+								:placeholder="$t(item.placeholder)"
+								clearable
+							></el-input>
 							<el-date-picker
 								v-if="item.type === 'date'"
 								value-format="YYYY-MM-DD"
@@ -267,7 +273,7 @@ import { ElMessage, genFileId, UploadRawFile, FormRules, FormInstance } from 'el
 import type { UploadInstance, UploadProps, UploadUserFile, UploadRequestOptions, UploadFile } from 'element-plus';
 import { UploadFilled } from '@element-plus/icons-vue';
 import { getUploadFileApi } from '/@/api/global/index';
-import { verifyPhone, verifyEmail, verifiyNumberInteger } from '/@/utils/toolsValidate';
+import { verifyPhone, verifyTelPhone, verifyEmail, verifiyNumberInteger } from '/@/utils/toolsValidate';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const IconSelector = defineAsyncComponent(() => import('/@/components/iconSelector/index.vue'));
@@ -369,7 +375,7 @@ const validatePass = (rule: any, value: any, callback: any, item: EmptyObjectTyp
 	if (value === '') {
 		callback(new Error(`${t(item.label)}不能为空`));
 	} else if (
-		(validateForm && validateForm === 'phone' && !verifyPhone(value)) ||
+		(validateForm && validateForm === 'phone' && !verifyPhone(value) && !verifyTelPhone(value)) ||
 		(validateForm === 'email' && !verifyEmail(value)) ||
 		(validateForm === 'number' && !verifiyNumberInteger(value))
 	) {

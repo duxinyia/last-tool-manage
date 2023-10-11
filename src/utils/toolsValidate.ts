@@ -209,7 +209,8 @@ export function verifyPhone(val: string) {
  */
 export function verifyTelPhone(val: string) {
 	// false: 国内电话号码不正确
-	if (!/\d{3}-\d{8}|\d{4}-\d{7}/.test(val)) return false;
+	// if (!/\d{3}-\d{8}|\d{4}-\d{7}/.test(val)) return false;
+	if (!/\d{3}-\d{5}|\d{4}-\d{5}|\d{5}/.test(val)) return false;
 	// true: 国内电话号码正确
 	else return true;
 }

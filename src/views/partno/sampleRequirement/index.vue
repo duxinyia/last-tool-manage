@@ -96,6 +96,8 @@ const state = reactive<TableDemoState>({
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'runStatus', colWidth: '', title: '状态', type: 'text', isCheck: true },
 			{ key: 'needsQty', colWidth: '', title: '需求數量', type: 'text', isCheck: true },
+			{ key: 'needor', colWidth: '', title: '需求人', type: 'text', isCheck: true },
+			{ key: 'needorTel', colWidth: '', title: '需求人电话', type: 'text', isCheck: true },
 			{ key: 'needsDate', colWidth: '', title: '需求日期', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）

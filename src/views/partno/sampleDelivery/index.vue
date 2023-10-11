@@ -90,7 +90,7 @@ const state = reactive<TableDemoState>({
 			{ type: 'number', label: '需求数量', prop: 'needsQty', required: true, placeholder: '', min: 1 },
 			{ type: 'date', label: '需求时间', prop: 'needsDate', required: true, placeholder: '' },
 			{
-				label: '采购人员:',
+				label: '采购人员',
 				prop: 'purchaserName',
 				placeholder: '请输入采购人员',
 				required: true,
@@ -100,6 +100,17 @@ const state = reactive<TableDemoState>({
 				filterable: true,
 				remote: true,
 				remoteShowSuffix: true,
+			},
+			{ type: 'input', label: '需求人', prop: 'needor', required: true, placeholder: '请输入需求人', maxlength: 20 },
+			{
+				type: 'input',
+				label: '需求人电话',
+				prop: 'needorTel',
+				required: true,
+				placeholder: '请输入需求人电话',
+				validateForm: 'number',
+				message: '请输入正确的电话格式',
+				maxlength: 20,
 			},
 		],
 		// 给后端的数据
@@ -233,6 +244,8 @@ const onSubmit = async (formData: any) => {
 		needsDate: formData.needsDate,
 		purchaser: formData.purchaser,
 		purchaserName: formData.purchaserName,
+		needor: formData.needor,
+		needorTel: formData.needorTel,
 	};
 	options.forEach((item) => {
 		if (item.value === formData.purchaserName) {
