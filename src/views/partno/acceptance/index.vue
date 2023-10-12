@@ -160,7 +160,7 @@ const dialogState = reactive<TableDemoState>({
 			{ key: 'checkTime', colWidth: '', title: '验收时间', type: 'time', isCheck: true, isRequired: true },
 			{ key: 'checkQty', colWidth: '', title: '验收数量', type: 'input', isCheck: true, isRequired: true },
 			{ key: 'isPass', colWidth: '', title: '是否验收通过', type: 'status1', isCheck: true, isRequired: true },
-			{ key: 'failReason', colWidth: '', title: '验收失败原因', type: 'multipleSelect', isCheck: true, options: [] },
+			{ key: 'failReasonIds', colWidth: '180', title: '验收失败原因', type: 'multipleSelect', isCheck: true, options: [] },
 			{ key: 'isStorage', colWidth: '', title: '是否入库', type: 'status1', isCheck: true, isRequired: true },
 			{ key: 'isResubmit', colWidth: '', title: '是否重送', type: 'status1', isCheck: true, isRequired: false },
 		],
@@ -255,8 +255,11 @@ const handlestatus1Change = (value: number, index: number, key: string) => {
 		if (value === 1) {
 			dataIndex.isResubmit = 0;
 			dataIndex.isResubmitdisabled = true;
+			dataIndex.failReasonIdsdisabled = true;
+			dialogState.tableData.data[index].failReasonIds = '';
 		} else if (value === 0) {
 			dataIndex.isResubmitdisabled = false;
+			dataIndex.failReasonIdsdisabled = false;
 		}
 	}
 };
@@ -285,7 +288,7 @@ const openAcceptanceDialog = async (scope: any) => {
 	//获取验收失败原因
 	let res1 = await getExitReasonApi('CheckFail');
 	dialogState.tableData.header[7].options = res1.data.map((item: any) => {
-		return { value: item.dataname, label: item.dataname };
+		return { value: item.runid, label: item.dataname };
 	});
 	// let res = {
 	// 	status: true,
@@ -311,6 +314,15 @@ const openAcceptanceDialog = async (scope: any) => {
 
 	const res = await GetSampleWaitCheckDetailApi(scope.row.sampleNo);
 	dialogState.tableData.data = res.data.vendorDetails;
+
+	dialogState.tableData.data.forEach((item) => {
+		if (item.isStorage != 0 || item.isStorage != 1) {
+			item.isStorage = 0;
+		}
+		if (item.isPass != 0 || item.isPass != 1) {
+			item.isPass = 0;
+		}
+	});
 };
 //删除表格某一行數據
 const onDelRow = (row: EmptyObjectType, i: number) => {
@@ -351,6 +363,7 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 				delete item.sampleTime;
 				return item;
 			});
+
 			let submitparams = {
 				sampleNo: dialogData.formData.sampleNo,
 				matNo: dialogData.formData.matNo,

@@ -1,10 +1,9 @@
 import request from '/@/utils/request';
 // 下拉框接口
 export function getParentIdListApi() {
-			return request({
+			return request<parentIdListType[]>({
 				url: '/api/BaseData/ParentIdList',
 				method: 'GET',
-			
 			});
 }
 // 查询

@@ -93,6 +93,7 @@ import { ElMessage, UploadInstance, UploadProps, UploadUserFile, genFileId, Uplo
 const maintenanceCheckDialogVisible = ref(false);
 // 引入接口
 import { getQueryCheckableRepairReceiveHeadApi, getRepariReceiveDetailsForCheckApi, getCheckApi } from '/@/api/maintenanceManage/maintenanceCheck';
+import { getExitReasonApi } from '/@/api/toolsReturn/maintentanceTools';
 import { getUploadFileApi } from '/@/api/global/index';
 import { useI18n } from 'vue-i18n';
 // 引入组件
@@ -122,6 +123,7 @@ const header = ref<EmptyArrayType>([
 	{ key: 'checkQty', colWidth: '100', title: '验收数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
 	{ key: 'passQty', colWidth: '100', title: '合格数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
 	{ key: 'failqty', colWidth: '', title: '不合格数量', type: 'text', isCheck: true, isRequired: true },
+	{ key: 'failReasonIds', colWidth: '180', title: '验收不合格原因', type: 'multipleSelect', isCheck: true, options: [] },
 	{ key: 'checkDate', colWidth: '150', title: '验收时间', type: 'time', isCheck: true, isRequired: true },
 ]);
 const header1 = ref([
@@ -242,6 +244,7 @@ const changeInput = (val: number, i: number) => {
 		data.passQty = 0;
 		data.failqty = 0;
 	}
+	data.failReasonIdsdisabled = data.failqty === 0 ? true : false;
 };
 // 单元格字体颜色
 const changeToStyle = (indList: number[]) => {
@@ -325,6 +328,11 @@ const getDetailData = async (data: string) => {
 	} else {
 		isSureDisabled.value = true;
 	}
+	// 获取验收不合格原因
+	let res1 = await getExitReasonApi('CheckFail');
+	dialogState.tableData.header[7].options = res1.data.map((item: any) => {
+		return { value: item.runid, label: item.dataname };
+	});
 };
 // 根据弹出窗不一样展现的配置不一样
 const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) => {
@@ -345,7 +353,13 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 		allData = { repairReceiveNo: form.repairReceiveNo, accepReportUrl: form.accepReportUrl || '', headDescribe: form.describe || '' };
 		let data = dialogState.tableData.data;
 		data = data.map((item) => {
-			return { repairReceiveDetailId: item.repairReceiveDetailId, checkQty: item.checkQty, passQty: item.passQty, checkDate: item.checkDate };
+			return {
+				repairReceiveDetailId: item.repairReceiveDetailId,
+				checkQty: item.checkQty,
+				passQty: item.passQty,
+				checkDate: item.checkDate,
+				failReasonIds: item.failReasonIds,
+			};
 		});
 		allData['details'] = data;
 		const res = await getCheckApi(allData);

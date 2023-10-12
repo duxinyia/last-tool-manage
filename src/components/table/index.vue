@@ -185,6 +185,7 @@
 						</el-select>
 						<!-- 多选下拉框 -->
 						<el-select
+							:disabled="data[scope.$index][`${item.key}disabled`]"
 							v-if="item.type === 'multipleSelect'"
 							v-model="data[scope.$index][item.key]"
 							multiple

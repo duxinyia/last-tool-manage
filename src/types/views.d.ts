@@ -119,3 +119,10 @@ declare type LinkState = {
 		searchConfig:boolean;
 		form: EmptyObjectType;
 };
+// 基础数据类别接口下拉框返回数据类型
+declare type parentIdListType={
+	label: number;
+	selected: boolean;
+	text: string;
+	value:string;
+}

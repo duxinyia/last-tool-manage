@@ -29,7 +29,7 @@
 				@onOpenOtherDialog="openDetailDialog"
 			/>
 		</el-tab-pane>
-		<el-dialog ref="arriveJobDialogRef" v-model="arriveJobDialogVisible" :title="dilogTitle" width="60%">
+		<el-dialog ref="arriveJobDialogRef" v-model="arriveJobDialogVisible" :title="dilogTitle" width="70%">
 			<el-row v-if="dilogTitle == '验收'">
 				<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb10" v-for="(val, key) in dialogState.tableData.search" :key="key">
 					<div v-if="val.type === 'text'">
@@ -124,6 +124,7 @@ import {
 	getQueryCheckPageApi,
 	getSubmitSignApi,
 } from '/@/api/requistManage/arrivalAcceptance';
+import { getExitReasonApi } from '/@/api/toolsReturn/maintentanceTools';
 import { getUploadFileApi } from '/@/api/global/index';
 import { useI18n } from 'vue-i18n';
 // 引入组件
@@ -168,6 +169,7 @@ const header = ref<EmptyArrayType>([
 	{ key: 'checkqty', colWidth: '100', title: '验收数量', type: 'number', isCheck: true, isRequired: true },
 	{ key: 'passqty', colWidth: '100', title: '合格数量', type: 'number', isCheck: true, isRequired: true },
 	{ key: 'failqty', colWidth: '', title: '不合格数量', type: 'text', isCheck: true, isRequired: true },
+	{ key: 'failReasonIds', colWidth: '180', title: '验收不合格原因', type: 'multipleSelect', isCheck: true, options: [] },
 	{ key: 'checkDate', colWidth: '150', title: '验收时间', type: 'time', isCheck: true, isRequired: true },
 ]);
 const header1 = ref([
@@ -356,6 +358,7 @@ const changeInput = (val: number, i: number) => {
 		data.passqty = 0;
 		data.failqty = 0;
 	}
+	data.failReasonIdsdisabled = data.failqty === 0 ? true : false;
 };
 // 单元格字体颜色
 const changeToStyle = (indList: number[]) => {
@@ -435,7 +438,7 @@ const onDelRow = (row: EmptyObjectType, i: number) => {
 	dialogState.tableData.data.splice(i, 1);
 };
 // 点击验收按钮
-const openArriveJobDialog = (scope: EmptyObjectType) => {
+const openArriveJobDialog = async (scope: EmptyObjectType) => {
 	let data = { receiptNo: scope.row.receiptno };
 	dialogState.tableData.form = scope.row;
 	getDetailData(data);
@@ -475,6 +478,11 @@ const getDetailData = async (data: EmptyObjectType, checkno?: string) => {
 	if (res.status) {
 		dialogState.tableData.config.loading = false;
 	}
+	// 获取验收不合格原因
+	let res1 = await getExitReasonApi('CheckFail');
+	dialogState.tableData.header[7].options = res1.data.map((item: any) => {
+		return { value: item.runid, label: item.dataname };
+	});
 };
 // 根据弹出窗不一样展现的配置不一样
 const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) => {
@@ -504,7 +512,14 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 		allData = { receiptno: form.receiptno, accepreporturl: form.accepreporturl || '', describe: form.describe || '' };
 		let data = dialogState.tableData.data;
 		data = data.map((item) => {
-			return { receivedetailid: item.runid, checkqty: item.checkqty, failqty: item.failqty, passqty: item.passqty, checkDate: item.checkDate };
+			return {
+				receivedetailid: item.runid,
+				checkqty: item.checkqty,
+				failqty: item.failqty,
+				passqty: item.passqty,
+				checkDate: item.checkDatem,
+				failReasonIds: item.failReasonIds,
+			};
 		});
 		allData['checkdetial'] = data;
 		const res = await getTInsertCheckApi(allData);
