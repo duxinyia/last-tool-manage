@@ -391,7 +391,6 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 			};
 		});
 		allData['reqDetails'] = data;
-		console.log(allData);
 		const res = await getModifyApplyReqApi(allData);
 		if (res.status) {
 			getTableData();

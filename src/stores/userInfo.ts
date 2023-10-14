@@ -25,7 +25,7 @@ export const useUserInfo = defineStore('userInfo', {
 				this.userInfos = userInfos;
 			}
 		},
-		// 模拟接口数据
+		// 接口数据
 		async getApiUserInfo() {
 			return new Promise((resolve) => {
 				setTimeout(() => {

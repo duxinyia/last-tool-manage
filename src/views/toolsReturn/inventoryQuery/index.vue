@@ -324,8 +324,6 @@ const remoteMethod = (query: string, form: EmptyObjectType) => {
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;
-	console.log(option);
-
 	option.forEach((item) => {
 		if (item.value === form.sLocation) {
 			// form.sLocation = item.text;

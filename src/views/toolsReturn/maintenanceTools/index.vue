@@ -56,7 +56,7 @@ const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vu
 const activeName = ref('first');
 
 const handleClick = (tab: TabsPaneContext, event: Event) => {
-	console.log(tab, event);
+	// console.log(tab, event);
 };
 // 定义变量内容
 const { t } = useI18n();

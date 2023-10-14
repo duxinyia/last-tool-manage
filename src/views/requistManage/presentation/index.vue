@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts" name="/requistManage/presentation">
-import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
+import { defineAsyncComponent, reactive, ref, onMounted, watch, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 // 引入组件
@@ -63,7 +63,7 @@ import { getQueryNoPageApi, getToolApplyInsertApi } from '/@/api/requistManage/p
 import { getMachineTypesOfMatApi } from '/@/api/partno/noSearch';
 // 定义变量内容
 const { t } = useI18n();
-const tableRef = ref<RefType>();
+const tableRef = ref();
 const tableFormRef = ref();
 const resDataRef = ref([]);
 const subLoading = ref(false);
@@ -227,6 +227,16 @@ const onAddRow = () => {
 	// 对 Table 进行重新布局。 当表格可见性变化时，您可能需要调用此方法以获得正确的布局
 	// tableRef.value.doLayout();
 };
+// 新增的时候超过表格了跟着移动
+watch(
+	() => state.tableData.data,
+	() => {
+		nextTick(() => {
+			tableRef.value.setScrollTop();
+		});
+	},
+	{ deep: true }
+);
 //删除
 const onDelRow = (row: EmptyObjectType, i: number) => {
 	state.tableData.data.splice(i, 1);

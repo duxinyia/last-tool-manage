@@ -41,7 +41,15 @@ export default {
 		repairOrderAcceptance:'維修單驗收',
 		warehouseManage:'倉庫管理',
 		transferReceipt:'轉倉接收',
-		purchaseSampleDelivery:'採購送樣'
+		purchaseSampleDelivery:'採購送樣',
+		reportManagement:'報表管理',
+		sampleDeliveryList:'送樣清單',
+		idleList:'治工具閒置清單',
+		maintenanceList:'治工具維修清單',
+		acceptanceList:'治工具驗收清單',
+		scrapList:'治工具報廢清單',
+		numberOnRecord:'治工具在冊數量清單',
+		drawingList:'治工具圖表清單'
 	},
 	staticRoutes: {
 		signIn: '登入',

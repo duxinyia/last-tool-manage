@@ -59,7 +59,7 @@
 								:timestamp="activity.generateTime"
 							>
 								<span>{{ activity.content }}</span>
-								<el-icon color="#1890ff" title="点击复制该单号" class="ml10" @click="copyText(odd)"><ele-CopyDocument /></el-icon>
+								<el-icon color="#1890ff" title="点击复制该单号" class="ml10" @click="copyText(activity.keyNo)"><ele-CopyDocument /></el-icon>
 							</el-timeline-item>
 						</el-timeline>
 					</div>
@@ -122,7 +122,7 @@ const storesThemeConfig = useThemeConfig();
 const { themeConfig } = storeToRefs(storesThemeConfig);
 const { isTagsViewCurrenFull } = storeToRefs(storesTagsViewRoutes);
 const topCardItemRefs = ref<RefType[]>([]);
-const activities = ref([{ generateTime: '', content: '' }]);
+const activities = ref([{ generateTime: '', content: '', keyNo: '' }]);
 const odd = ref();
 const state = reactive({
 	global: {
@@ -334,20 +334,20 @@ const getTodos = async () => {
 	// },
 	const todoTypeMap: EmptyObjectType = {
 		0: '待采购送样',
-		1: '样品待验收',
-		2: '请购待验收',
-		3: '维修待验收',
+		1: '待验收',
+		2: '待验收',
+		3: '待验收',
 	};
 	const noTypeMap: EmptyObjectType = {
-		0: '送样单号',
-		1: '送样单号',
-		2: '请购单号',
-		3: '维修单号',
+		0: '送样单',
+		1: '送样单',
+		2: '请购单',
+		3: '维修单',
 	};
 	res.data.forEach((item: any) => {
 		let type = item.todoType;
 		item.todoType = todoTypeMap[item.todoType];
-		odd.value = item.keyNo;
+
 		item['content'] = `${noTypeMap[type]}：${item.keyNo}${item.todoType}`;
 	});
 	activities.value = res.data;

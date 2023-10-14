@@ -41,7 +41,15 @@ export default {
 		repairOrderAcceptance:'维修单验收',
 		warehouseManage:'仓库管理',
 		transferReceipt:'转仓接收',
-		purchaseSampleDelivery:'采购送样'
+		purchaseSampleDelivery:'采购送样',
+		reportManagement:'报表管理',
+		sampleDeliveryList:'送样清单',
+		idleList:'治工具闲置清单',
+		maintenanceList:'治工具维修清单',
+		acceptanceList:'治工具验收清单',
+		scrapList:'治工具报废清单',
+		numberOnRecord:'治工具在册数量清单',
+		drawingList:'治工具图纸清单'
 	},
 	staticRoutes: {
 		signIn: '登录',

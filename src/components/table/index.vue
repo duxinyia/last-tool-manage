@@ -556,8 +556,9 @@ const clearSelection = () => {
 	tableRef.value.clearSelection();
 };
 // 增加表格行到最后一行的时候滚动条随之到末尾
-const setScrollTop = (height: string | number) => {
-	tableRef.value.setScrollTop(height);
+const setScrollTop = () => {
+	tableRef.value.$refs.bodyWrapper.getElementsByClassName('el-scrollbar__wrap')[0].scrollTop =
+		tableRef.value.$refs.bodyWrapper.getElementsByClassName('el-scrollbar__wrap')[0].scrollHeight;
 };
 // 打印
 const onPrintTable = () => {
@@ -572,8 +573,6 @@ const onPrintTable = () => {
 	});
 	// 表格内容
 	props.data.forEach((val, key) => {
-		console.log(9);
-
 		if (!tableTd[key]) tableTd[key] = [];
 		props.header.forEach((v) => {
 			if (v.type === 'text') {

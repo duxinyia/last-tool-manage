@@ -41,7 +41,15 @@ export default {
 		repairOrderAcceptance:'repair order acceptance',
 		warehouseManage:'warehouse management',
 		transferReceipt:'transfer receipt',
-		purchaseSampleDelivery:'purchase sample delivery'
+		purchaseSampleDelivery:'purchase sample delivery',
+		reportManagement:'report management',
+		sampleDeliveryList:'sample delivery list',
+		idleList:'idle list',
+		maintenanceList:'maintenance list',
+		acceptanceList:'acceptance list',
+		scrapList:'scrap list',
+		numberOnRecord:'number on record list',
+		drawingList:'drawing list'
 	},
 	staticRoutes: {
 		signIn: 'signIn',

@@ -214,7 +214,7 @@ watch(
 	() => dialogState.tableData.data,
 	() => {
 		nextTick(() => {
-			dialogTableRef.value.setScrollTop(500);
+			dialogTableRef.value.setScrollTop();
 		});
 	},
 	{ deep: true }
@@ -288,8 +288,6 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 			};
 		});
 		allData['vendors'] = data;
-		console.log(allData);
-
 		const res = await getTakeSampleApi(allData);
 		if (res.status) {
 			ElMessage.success(t('送样成功'));
@@ -298,6 +296,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 		}
 	});
 };
+
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });

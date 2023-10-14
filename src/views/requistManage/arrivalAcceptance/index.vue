@@ -151,7 +151,7 @@ const activeName = ref<string | number>('first');
 const handleClick = (tab: TabsPaneContext, event: Event) => {
 	activeName.value = tab.paneName as string | number;
 	getTableData();
-	console.log(tab.paneName);
+	// console.log(tab.paneName);
 
 	// console.log(tab, event);
 };

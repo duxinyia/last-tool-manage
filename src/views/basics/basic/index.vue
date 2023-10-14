@@ -43,6 +43,7 @@ import {
 	getBaseDaDeleteApi,
 } from '/@/api/basics/basic';
 import { useI18n } from 'vue-i18n';
+import { log } from 'console';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
@@ -135,7 +136,6 @@ const state = reactive<TableDemoState>({
 		],
 	},
 });
-
 // 初始化列表数据
 const getTableData = async () => {
 	state.tableData.config.loading = true;
