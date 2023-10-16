@@ -25,6 +25,7 @@
 				@innnerDialogSubmit="innnerDialogSubmit"
 				@openInnerDialog="openInnerDialog"
 				@handleTagClose="handleTagClose"
+				:loadingBtn="loadingBtn"
 			>
 				<template #optionFat="{ row }">
 					<span style="float: left; margin-right: 35px">{{ row.text }}</span>
@@ -48,6 +49,7 @@ const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vu
 
 // 定义变量内容
 const { t } = useI18n();
+const loadingBtn = ref(false);
 const tableFormRef = ref();
 const tableRef = ref<RefType>();
 const entryJobDialogRef = ref();
@@ -337,6 +339,7 @@ const scanCodeEntry = () => {
 };
 //点击确认入库
 const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyObjectType) => {
+	loadingBtn.value = true;
 	let obj: EmptyObjectType = { ...ruleForm };
 	state.tableData.dialogConfig &&
 		state.tableData.dialogConfig.forEach((item) => {
@@ -399,6 +402,7 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 			getTableData();
 		}
 	}
+	loadingBtn.value = false;
 };
 // 点击收货单号
 const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {

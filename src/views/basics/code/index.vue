@@ -12,7 +12,7 @@
 				@importTable="onImportTableData"
 				@openAdd="openDialog"
 			/>
-			<Dialog ref="codeDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="addData" />
+			<Dialog ref="codeDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="addData" :loadingBtn="loadingBtn" />
 		</div>
 	</div>
 </template>
@@ -35,6 +35,7 @@ const TableSearch = defineAsyncComponent(() => import('/@/components/search/sear
 const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 // 定义变量内容
 const { t } = useI18n();
+const loadingBtn = ref(false);
 const codeDialogRef = ref();
 const tableRef = ref<RefType>();
 const state = reactive<TableDemoState>({
@@ -136,12 +137,14 @@ const openDialog = (type: string, row: Object) => {
 
 // 新增数据  修改数据
 const addData = async (ruleForm: object, type: string) => {
+	loadingBtn.value = true;
 	const res = type === 'add' ? await getBaseMachineAddApi(ruleForm) : await getBaseMachineUpdateApi(ruleForm);
 	if (res.status) {
 		type === 'add' ? ElMessage.success(`新增成功`) : ElMessage.success(`修改成功`);
 		codeDialogRef.value.closeDialog();
 		getTableData();
 	}
+	loadingBtn.value = false;
 };
 // 删除当前项回调
 const onTableDelRow = async (row: EmptyObjectType, type: string) => {

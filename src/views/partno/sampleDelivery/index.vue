@@ -11,7 +11,13 @@
 				@cellclick="matnoClick"
 				:cellStyle="cellStyle"
 			/>
-			<Dialog ref="sampleDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="onSubmit" @remoteMethod="remoteMethod">
+			<Dialog
+				ref="sampleDialogRef"
+				:dialogConfig="state.tableData.dialogConfig"
+				@addData="onSubmit"
+				@remoteMethod="remoteMethod"
+				:loadingBtn="loadingBtn"
+			>
 				<template #optionFat="{ row }">
 					<span style="float: left">{{ row.text }}</span>
 					<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
@@ -40,6 +46,7 @@ const { t } = useI18n();
 const sampleDialogRef = ref();
 const tableRef = ref<RefType>();
 const matNoDetaildialogVisible = ref(false);
+const loadingBtn = ref(false);
 const state = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
@@ -238,6 +245,7 @@ const remoteMethod = (query: string) => {
 };
 // 提交
 const onSubmit = async (formData: any) => {
+	loadingBtn.value = true;
 	const getData = {
 		matNo: formData.matNo,
 		needsQty: formData.needsQty,
@@ -259,6 +267,7 @@ const onSubmit = async (formData: any) => {
 		sampleDialogRef.value.closeDialog();
 		getTableData();
 	}
+	loadingBtn.value = false;
 };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {

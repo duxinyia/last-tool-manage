@@ -95,7 +95,7 @@
 			<template #footer v-if="dilogTitle == '验收'">
 				<span class="dialog-footer">
 					<el-button size="default" auto-insert-space @click="arriveJobDialogVisible = false">取消</el-button>
-					<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)"> 确定 </el-button>
+					<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn"> 确定 </el-button>
 				</span>
 			</template>
 		</el-dialog>
@@ -105,7 +105,7 @@
 			<template #footer v-if="dilogTitle == '詳情'">
 				<span class="dialog-footer">
 					<el-button size="default" auto-insert-space @click="arriveJobDialogVisible = false">取消</el-button>
-					<el-button size="default" type="primary" auto-insert-space @click="onSend"> 送 簽 </el-button>
+					<el-button size="default" type="primary" auto-insert-space @click="onSend" :loading="loadingBtn"> 送 簽 </el-button>
 				</span>
 			</template>
 		</el-dialog>
@@ -144,6 +144,7 @@ const arriveJobDialogVisible = ref(false);
 const isSendBtn = ref(false);
 const detaildialogVisible = ref(false);
 const checkNoRef = ref();
+const loadingBtn = ref(false);
 // 单元格样式
 const cellStyle = ref();
 const activeName = ref<string | number>('first');
@@ -151,9 +152,6 @@ const activeName = ref<string | number>('first');
 const handleClick = (tab: TabsPaneContext, event: Event) => {
 	activeName.value = tab.paneName as string | number;
 	getTableData();
-	// console.log(tab.paneName);
-
-	// console.log(tab, event);
 };
 
 // 弹窗标题
@@ -495,18 +493,21 @@ const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) =
 };
 // 送簽
 const onSend = async () => {
+	loadingBtn.value = true;
 	const res = await getSubmitSignApi(checkNoRef.value);
 	if (res.status) {
 		ElMessage.success(t('送签成功'));
 		detaildialogVisible.value = false;
 		getTableData();
 	}
+	loadingBtn.value = false;
 };
 // 提交
 const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
+		loadingBtn.value = true;
 		let allData: EmptyObjectType = {};
 		const form = dialogState.tableData.form;
 		allData = { receiptno: form.receiptno, accepreporturl: form.accepreporturl || '', describe: form.describe || '' };
@@ -528,6 +529,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 			arriveJobDialogVisible.value = false;
 			getTableData();
 		}
+		loadingBtn.value = false;
 	});
 };
 // 搜索点击时表单回调

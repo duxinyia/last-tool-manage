@@ -28,6 +28,7 @@
 				@handleTagClose="handleTagClose"
 				@selectChange="selectChange"
 				@remoteMethod="remoteMethod"
+				:loadingBtn="loadingBtn"
 			>
 				<template #optionFat="{ row }" v-if="dilogTitle === '转仓'">
 					<span style="float: left">{{ row.text }}</span>
@@ -62,6 +63,7 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
 const { t } = useI18n();
 const tableFormRef = ref();
 const tableRef = ref<RefType>();
+const loadingBtn = ref(false);
 const repairReturnDialogRef = ref();
 // tags的数据
 const tags = ref<EmptyArrayType<string>>([]);
@@ -573,6 +575,7 @@ const matnoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 
 // 提交 确认退库
 const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerData: EmptyObjectType) => {
+	loadingBtn.value = true;
 	let allData: EmptyObjectType = { ...ruleForm };
 	options.forEach((item) => {
 		if (item.value === allData.storageId) {
@@ -619,6 +622,7 @@ const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerDa
 			}
 		}
 	}
+	loadingBtn.value = false;
 };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {

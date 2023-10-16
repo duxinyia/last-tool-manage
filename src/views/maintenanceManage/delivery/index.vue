@@ -69,7 +69,7 @@
 				<template #footer v-if="dilogTitle == '收货'">
 					<span class="dialog-footer">
 						<el-button size="default" auto-insert-space @click="deliveryDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)"> 确定 </el-button>
+						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn"> 确定 </el-button>
 					</span>
 				</template>
 			</el-dialog>
@@ -94,6 +94,7 @@ const { t } = useI18n();
 const tableFormRef = ref();
 const tableRef = ref<RefType>();
 const loading = ref(false);
+const loadingBtn = ref(false);
 // 单元格样式
 const cellStyle = ref();
 // 弹窗标题
@@ -320,6 +321,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
 		if (!dialogState.tableData.form['engineer']) return ElMessage.warning(t('请选择工程验收人'));
+		loadingBtn.value = true;
 		let allData: EmptyObjectType = {};
 		allData = { ...dialogState.tableData.form };
 		let data = dialogState.tableData.data;
@@ -337,6 +339,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 			deliveryDialogVisible.value = false;
 			getTableData();
 		}
+		loadingBtn.value = fasle;
 	});
 };
 // 搜索点击时表单回调

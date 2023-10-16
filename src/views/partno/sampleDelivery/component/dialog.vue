@@ -129,7 +129,7 @@
 			<template #footer v-if="state.dialog.num === 1">
 				<span class="dialog-footer">
 					<el-button @click="onCancel" size="default">取 消</el-button>
-					<el-button type="primary" @click="onSubmit(tableSampleRef)" size="default">确定</el-button>
+					<el-button type="primary" @click="onSubmit(tableSampleRef)" size="default" :loading="loadingBtn">确定</el-button>
 				</span>
 			</template>
 		</el-dialog>
@@ -170,6 +170,7 @@ const props = defineProps({
 const tableSampleRef = ref();
 const tableRef = ref();
 const loading = ref(false);
+const loadingBtn = ref(false);
 let marNoData = ref<EmptyObjectType>([]);
 const state = reactive<dialogFormState>({
 	formData: {},
@@ -306,6 +307,7 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 				}
 			});
 			if (!receiveData['engineer']) return ElMessage.warning('请选择工程验收人');
+			loadingBtn.value = true;
 			receiveData['recieveDetails'] = state.vendors.map((item) => {
 				let obj = {
 					sampleTime: item.receiveTime,
@@ -322,6 +324,7 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 				emit('sampleSuccess');
 			}
 		}
+		loadingBtn.value = false;
 	});
 };
 

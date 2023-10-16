@@ -19,7 +19,7 @@
 				@onOpenOtherDialog="openAdminDialog"
 			/>
 			<!-- 新增编辑弹窗 -->
-			<Dialog ref="warehouseDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="addData" />
+			<Dialog ref="warehouseDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="addData" :loadingBtn="loadingBtn" />
 			<!-- 管理员设定弹窗 -->
 			<el-dialog ref="warehouseAdminDialogRef" v-model="warehouseDialogVisible" title="管理员设定" width="50%">
 				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
@@ -28,7 +28,7 @@
 				<template #footer>
 					<span class="dialog-footer">
 						<el-button size="default" auto-insert-space @click="warehouseDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)"> 确定 </el-button>
+						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn"> 确定 </el-button>
 					</span>
 				</template>
 			</el-dialog>
@@ -62,6 +62,7 @@ const tableRef = ref<RefType>();
 const dialogTableRef = ref<RefType>();
 const warehouseDialogVisible = ref(false);
 const tableFormRef = ref();
+const loadingBtn = ref(false);
 const state = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
@@ -234,6 +235,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
+		loadingBtn.value = true;
 		let allData: EmptyObjectType = {};
 		let userIdsArr: EmptyArrayType = [];
 		dialogState.tableData.data.forEach((item) => {
@@ -243,11 +245,16 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 			storeId: dialogState.tableData.form.runId,
 			adminUserInfos: userIdsArr,
 		};
-		const res = await getAddAdminsToStoreHouseApi(allData);
-		if (res.status) {
-			ElMessage.success(t('新增成功'));
-			warehouseDialogVisible.value = false;
+		if (allData.adminUserInfos.length <= 0) {
+			ElMessage.warning(t('表格数据为0条,请新增数据'));
+		} else {
+			const res = await getAddAdminsToStoreHouseApi(allData);
+			if (res.status) {
+				ElMessage.success(t('新增成功'));
+				warehouseDialogVisible.value = false;
+			}
 		}
+		loadingBtn.value = false;
 	});
 };
 // 改变仓库类型下拉
@@ -317,6 +324,7 @@ const openDialog = (type: string, row: Object) => {
 };
 // 新增数据  修改数据
 const addData = async (ruleForm: EmptyObjectType, type: string) => {
+	loadingBtn.value = true;
 	ruleForm['storeLocation'] = ruleForm.location;
 	ruleForm['storeId'] = ruleForm.storeId;
 	const res = type === 'add' ? await getAddStoreHouseApi(ruleForm) : await getUpdateStoreHouseApi(ruleForm);
@@ -325,6 +333,7 @@ const addData = async (ruleForm: EmptyObjectType, type: string) => {
 		warehouseDialogRef.value.closeDialog();
 		getTableData();
 	}
+	loadingBtn.value = false;
 };
 // 删除当前项回调
 const onTableDelRow = async (row: EmptyObjectType, type: string) => {

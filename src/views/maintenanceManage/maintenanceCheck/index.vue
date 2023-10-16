@@ -79,7 +79,16 @@
 				<template #footer v-if="dilogTitle == '验收'">
 					<span class="dialog-footer">
 						<el-button size="default" auto-insert-space @click="maintenanceCheckDialogVisible = false">取消</el-button>
-						<el-button :disabled="isSureDisabled" size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)"> 确定 </el-button>
+						<el-button
+							:disabled="isSureDisabled"
+							size="default"
+							type="primary"
+							auto-insert-space
+							@click="onSubmit(tableFormRef)"
+							:loading="loadingBtn"
+						>
+							确定
+						</el-button>
 					</span>
 				</template>
 			</el-dialog>
@@ -103,6 +112,7 @@ const TableSearch = defineAsyncComponent(() => import('/@/components/search/sear
 // 定义变量内容
 const { t } = useI18n();
 const tableFormRef = ref();
+const loadingBtn = ref(false);
 const tableRef = ref<RefType>();
 const inputfileList = ref<UploadUserFile[]>([]);
 const inputuploadRefs = ref<UploadInstance>();
@@ -348,6 +358,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
+		loadingBtn.value = true;
 		let allData: EmptyObjectType = {};
 		const form = dialogState.tableData.form;
 		allData = { repairReceiveNo: form.repairReceiveNo, accepReportUrl: form.accepReportUrl || '', headDescribe: form.describe || '' };
@@ -368,6 +379,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 			maintenanceCheckDialogVisible.value = false;
 			getTableData();
 		}
+		loadingBtn.value = fasle;
 	});
 };
 // 搜索点击时表单回调

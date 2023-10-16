@@ -40,6 +40,7 @@
 				@downloadTemp="ondownloadTemp"
 				@importTableData="onImportTable"
 				@remoteMethod="remoteMethod"
+				:loadingBtn="loadingBtn"
 			/>
 			<el-dialog v-model="matNoDetaildialogVisible" title="料号详情" width="50%">
 				<matNoDetailDialog :isDialog="true" :matNoRef="matNoRef"
@@ -72,6 +73,7 @@ const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vu
 const matNoDetailDialog = defineAsyncComponent(() => import('/@/views/link/noSearchLink/index.vue'));
 // 定义变量内容
 const { t } = useI18n();
+const loadingBtn = ref(false);
 const tableRef = ref<RefType>();
 const noSearchDialogRef = ref();
 const matNoRef = ref();
@@ -327,6 +329,7 @@ const openDialog = async (type: string, row: EmptyObjectType) => {
 };
 // 新增数据  修改数据
 const addData = async (ruleForm: EmptyObjectType, type: string) => {
+	loadingBtn.value = true;
 	if (ruleForm.drawPath.includes('/')) {
 		const res = type === 'add' ? await getAddMaterialApi(ruleForm) : await getModifyMaterialApi(ruleForm);
 		if (res.status) {
@@ -337,6 +340,7 @@ const addData = async (ruleForm: EmptyObjectType, type: string) => {
 	} else {
 		ElMessage.error(`新增失败,请点击上传文件按钮进行上传`);
 	}
+	loadingBtn.value = false;
 };
 // 公共数据
 const selcectMAP: EmptyObjectType = {

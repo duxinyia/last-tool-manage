@@ -11,7 +11,7 @@
 				@sortHeader="onSortHeader"
 				@openAdd="openDialog"
 			/>
-			<Dialog ref="purchaseDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="addData" dialogWidth="30%" />
+			<Dialog ref="purchaseDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="addData" dialogWidth="30%" :loadingBtn="loadingBtn" />
 		</div>
 	</div>
 </template>
@@ -29,6 +29,7 @@ const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vu
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 // 定义变量内容
+const loadingBtn = ref(false);
 const purchaseDialogRef = ref();
 const tableRef = ref<RefType>();
 const state = reactive<TableDemoState>({
@@ -121,6 +122,7 @@ const openDialog = (type: string, row: Object) => {
 };
 // 新增数据  修改数据
 const addData = async (ruleForm: EmptyObjectType) => {
+	loadingBtn.value = true;
 	ruleForm['GroupType'] = 1;
 	const res = await getAddGroupMemberApi(ruleForm);
 	if (res.status) {
@@ -128,6 +130,7 @@ const addData = async (ruleForm: EmptyObjectType) => {
 		purchaseDialogRef.value.closeDialog();
 		getTableData();
 	}
+	loadingBtn.value = false;
 };
 // 删除当前项回调
 const onTableDelRow = async (row: EmptyObjectType, type: string) => {

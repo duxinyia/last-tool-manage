@@ -49,7 +49,7 @@
 				<template #footer v-if="dilogTitle == '料号送样'">
 					<span class="dialog-footer">
 						<el-button size="default" auto-insert-space @click="deliveryDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)"> 确定 </el-button>
+						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn"> 确定 </el-button>
 					</span>
 				</template>
 			</el-dialog>
@@ -74,6 +74,7 @@ const { t } = useI18n();
 const tableFormRef = ref();
 const tableRef = ref<RefType>();
 const loading = ref(false);
+const loadingBtn = ref(false);
 const dialogTableRef = ref<RefType>();
 // 单元格样式
 const cellStyle = ref();
@@ -275,6 +276,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
+		loadingBtn.value = true;
 		let allData: EmptyObjectType = {};
 		let form = dialogState.tableData.form;
 		allData = { sampleNo: form.sampleNo, matNo: form.matNo };
@@ -288,12 +290,17 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 			};
 		});
 		allData['vendors'] = data;
-		const res = await getTakeSampleApi(allData);
-		if (res.status) {
-			ElMessage.success(t('送样成功'));
-			deliveryDialogVisible.value = false;
-			getTableData();
+		if (allData['vendors'].length <= 0) {
+			ElMessage.warning(t('请新增厂商数据'));
+		} else {
+			const res = await getTakeSampleApi(allData);
+			if (res.status) {
+				ElMessage.success(t('送样成功'));
+				deliveryDialogVisible.value = false;
+				getTableData();
+			}
 		}
+		loadingBtn.value = false;
 	});
 };
 

@@ -390,7 +390,7 @@ const allRules = (item: EmptyObjectType) => {
 			{
 				required: item.required,
 				message: `${t(item.label)}不能为空`,
-				trigger: item.type === 'select' || item.type === 'input' || item.type === 'inputFile' || item.type === 'textarea' ? 'blur' : 'change',
+				trigger: item.type === 'input' || item.type === 'inputFile' || item.type === 'textarea' ? 'blur' : 'change',
 				// type:'number',
 			},
 		],

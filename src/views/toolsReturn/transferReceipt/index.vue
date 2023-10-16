@@ -12,7 +12,7 @@
 				:cellStyle="cellStyle"
 				@onOpenOtherDialog="openTransDialog"
 			/>
-			<Dialog ref="transDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="onSubmit" />
+			<Dialog ref="transDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="onSubmit" :loadingBtn="loadingBtn" />
 		</div>
 	</div>
 </template>
@@ -32,6 +32,7 @@ const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vu
 const { t } = useI18n();
 const tableRef = ref<RefType>();
 const transDialogRef = ref();
+const loadingBtn = ref(false);
 // 单元格样式
 const cellStyle = ref();
 const state = reactive<TableDemoState>({
@@ -148,6 +149,7 @@ const openTransDialog = (scope: EmptyObjectType) => {
 const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {};
 // 提交
 const onSubmit = async (formData: any) => {
+	loadingBtn.value = true;
 	const getData = { receiveDate: formData.receiveDate, operateType: 1, transferId: formData.runid };
 	const res = await getReceiveTransferApi(getData);
 	if (res.status) {
@@ -155,6 +157,7 @@ const onSubmit = async (formData: any) => {
 		transDialogRef.value.closeDialog();
 		getTableData();
 	}
+	loadingBtn.value = false;
 };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {

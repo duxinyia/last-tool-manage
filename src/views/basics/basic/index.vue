@@ -24,6 +24,7 @@
 				@addData="addData"
 				@downloadTemp="ondownloadTemp"
 				@importTableData="onImportTable"
+				:loadingBtn="loadingBtn"
 			/>
 		</div>
 	</div>
@@ -43,7 +44,6 @@ import {
 	getBaseDaDeleteApi,
 } from '/@/api/basics/basic';
 import { useI18n } from 'vue-i18n';
-import { log } from 'console';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
@@ -51,6 +51,7 @@ const TableSearch = defineAsyncComponent(() => import('/@/components/search/sear
 const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 // 定义变量内容
 const { t } = useI18n();
+const loadingBtn = ref(false);
 const tableRef = ref<RefType>();
 const basicDialogRef = ref();
 const state = reactive<TableDemoState>({
@@ -171,12 +172,14 @@ const openDialog = (type: string, row: Object) => {
 };
 // 新增数据  修改数据
 const addData = async (ruleForm: object, type: string) => {
+	loadingBtn.value = true;
 	const res = type === 'add' ? await getBaseDaInsertApi(ruleForm) : await getBaseDaUpdateApi(ruleForm);
 	if (res.status) {
 		type === 'add' ? ElMessage.success(`新增成功`) : ElMessage.success(`修改成功`);
 		basicDialogRef.value.closeDialog();
 		getTableData();
 	}
+	loadingBtn.value = false;
 };
 
 // 删除当前项回调

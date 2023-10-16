@@ -54,7 +54,7 @@
 				<template #footer v-if="dilogTitle == '修改'">
 					<span class="dialog-footer">
 						<el-button size="default" auto-insert-space @click="reportInquiryDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)"> 确定 </el-button>
+						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn"> 确定 </el-button>
 					</span>
 				</template>
 			</el-dialog>
@@ -83,6 +83,7 @@ const TableSearch = defineAsyncComponent(() => import('/@/components/search/sear
 // 定义变量内容
 const { t } = useI18n();
 const tableRef = ref<RefType>();
+const loadingBtn = ref(false);
 const reportInquiryDialogRef = ref();
 const dialogTableRef = ref<RefType>();
 const tableFormRef = ref();
@@ -363,7 +364,7 @@ watch(
 	() => dialogState.tableData.data,
 	() => {
 		nextTick(() => {
-			dialogTableRef.value.setScrollTop(500);
+			dialogTableRef.value.setScrollTop();
 		});
 	},
 	{ deep: true }
@@ -373,6 +374,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
+		loadingBtn.value = true;
 		let allData: EmptyObjectType = {};
 		let form = dialogState.tableData.form;
 		allData = { reqNo: form.reqNo, prNo: form.prNo, describe: form.describe };
@@ -397,6 +399,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 			ElMessage.success(t('修改成功'));
 			reportInquiryDialogVisible.value = false;
 		}
+		loadingBtn.value = false;
 	});
 };
 // 导出

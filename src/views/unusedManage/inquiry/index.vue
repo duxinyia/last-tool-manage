@@ -44,7 +44,7 @@
 				<template #footer v-if="dilogTitle == '详情'">
 					<span class="dialog-footer">
 						<el-button size="default" auto-insert-space @click="reportInquiryDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" auto-insert-space @click="onSend"> 送 簽 </el-button>
+						<el-button size="default" type="primary" auto-insert-space @click="onSend" :loading="loadingBtn"> 送 簽 </el-button>
 					</span>
 				</template>
 			</el-dialog>
@@ -72,6 +72,7 @@ const cellStyle = ref();
 // 弹窗标题
 const dilogTitle = ref();
 const detaildialogVisible = ref(false);
+const loadingBtn = ref(false);
 const IdleNoRef = ref();
 const state = reactive<TableDemoState>({
 	tableData: {
@@ -261,12 +262,14 @@ const getDetailData = async (idleno: string) => {
 };
 // 送簽
 const onSend = async () => {
+	loadingBtn.value = true;
 	const res = await getIdleSubmitSignApi(IdleNoRef.value);
 	if (res.status) {
 		ElMessage.success(t('送签成功'));
 		detaildialogVisible.value = false;
 		getTableData();
 	}
+	loadingBtn.value = false;
 };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {

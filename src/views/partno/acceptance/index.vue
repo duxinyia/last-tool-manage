@@ -66,7 +66,7 @@
 				<template #footer>
 					<span class="dialog-footer">
 						<el-button @click="dialogData.dialogVisible = false" size="default">取 消</el-button>
-						<el-button type="primary" @click="onSubmit(dialogTableFormRef)" size="default">确定</el-button>
+						<el-button type="primary" @click="onSubmit(dialogTableFormRef)" size="default" :loading="loadingBtn">确定</el-button>
 					</span>
 				</template>
 			</el-dialog>
@@ -75,7 +75,7 @@
 </template>
 
 <script setup lang="ts" name="/partno/acceptance">
-import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
+import { defineAsyncComponent, reactive, ref, onMounted, watch } from 'vue';
 import { getUploadFileApi } from '/@/api/global/index';
 import { ElMessage, genFileId, UploadRawFile } from 'element-plus';
 import { GetCheckTaskApi, SampleCheckApi, GetSampleWaitCheckDetailApi } from '/@/api/partno/acceptance';
@@ -94,6 +94,7 @@ const Dialog = defineAsyncComponent(() => import('../sampleDelivery/component/di
 // 定义变量内容
 const { t } = useI18n();
 const sendReceiveDialogRef = ref();
+const loadingBtn = ref(false);
 const tableRef = ref<RefType>();
 const dialogTableFormRef = ref();
 const inputuploadRefs = ref<UploadInstance>();
@@ -180,7 +181,7 @@ const dialogState = reactive<TableDemoState>({
 			isDialogTab: true,
 			height: 400,
 		},
-		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }], // 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
+		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: false }], // 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [],
 		searchConfig: {
 			isSearchBtn: false,
@@ -234,6 +235,13 @@ const dialogData = reactive<EmptyObjectType>({
 	},
 	describe: '',
 });
+watch(
+	() => dialogState.tableData.data.length,
+	(newValue) => {
+		dialogState.tableData.btnConfig![0].disabled = newValue <= 1 ? true : false;
+	},
+	{ deep: true }
+);
 // 初始化列表数据
 const getTableData = async () => {
 	state.tableData.config.loading = true;
@@ -355,33 +363,31 @@ const lookUpload = () => {
 const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
-		if (valid) {
-			let checkDetails = dialogState.tableData.data.filter((item) => {
-				delete item.needsQty;
-				delete item.needsTime;
-				delete item.sampleQty;
-				delete item.sampleTime;
-				return item;
-			});
+		if (!valid) return ElMessage.warning(t('表格项必填未填'));
+		loadingBtn.value = true;
+		let checkDetails = dialogState.tableData.data.filter((item) => {
+			delete item.needsQty;
+			delete item.needsTime;
+			delete item.sampleQty;
+			delete item.sampleTime;
+			return item;
+		});
+		let submitparams = {
+			sampleNo: dialogData.formData.sampleNo,
+			matNo: dialogData.formData.matNo,
+			describe: dialogData.describe,
+			accepReportUrl: dialogData.fileInfo.drawPath,
+			checkDetails: checkDetails,
+		};
+		// console.log('shuju', submitparams);
 
-			let submitparams = {
-				sampleNo: dialogData.formData.sampleNo,
-				matNo: dialogData.formData.matNo,
-				describe: dialogData.describe,
-				accepReportUrl: dialogData.fileInfo.drawPath,
-				checkDetails: checkDetails,
-			};
-			// console.log('shuju', submitparams);
-
-			let res = await SampleCheckApi(submitparams);
-			if (res.status) {
-				dialogData.dialogVisible = false;
-				ElMessage.success('验收成功');
-				getTableData();
-			}
-		} else {
-			return ElMessage.warning(t('表格项必填未填'));
+		let res = await SampleCheckApi(submitparams);
+		if (res.status) {
+			dialogData.dialogVisible = false;
+			ElMessage.success('验收成功');
+			getTableData();
 		}
+		loadingBtn.value = false;
 	});
 };
 // 页面加载时
