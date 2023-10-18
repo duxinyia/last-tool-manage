@@ -51,7 +51,7 @@
 							v-else-if="val.type === 'select'"
 							style="width: 100%"
 							@change="(vals:any) => selectHandelChange(vals,val.prop)"
-							clearable
+							:clearable="!val.clearable"
 							:filterable="val.filterable"
 							:remote="val.remote"
 							:remote-show-suffix="val.remoteShowSuffix"

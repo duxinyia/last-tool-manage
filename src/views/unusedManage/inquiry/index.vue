@@ -43,8 +43,10 @@
 				<IdleNoDetailDialog :isDialog="true" :IdleNoRef="IdleNoRef" />
 				<template #footer v-if="dilogTitle == '详情'">
 					<span class="dialog-footer">
-						<el-button size="default" auto-insert-space @click="reportInquiryDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" auto-insert-space @click="onSend" :loading="loadingBtn"> 送 簽 </el-button>
+						<el-button size="default" auto-insert-space @click="detaildialogVisible = false">取消</el-button>
+						<el-button size="default" type="primary" auto-insert-space @click="onSend" :loading="loadingBtn" :disabled="sendDisabled">
+							送 簽
+						</el-button>
 					</span>
 				</template>
 			</el-dialog>
@@ -64,6 +66,7 @@ const IdleNoDetailDialog = defineAsyncComponent(() => import('/@/views/link/idle
 
 // 定义变量内容
 const reportInquiryDialogVisible = ref(false);
+const sendDisabled = ref(false);
 const { t } = useI18n();
 const tableRef = ref<RefType>();
 const reportInquiryDialogRef = ref();
@@ -110,6 +113,7 @@ const state = reactive<TableDemoState>({
 				prop: 'signStatus',
 				required: false,
 				type: 'select',
+				clearable: true,
 				options: [
 					{ value: 0, label: '未送签', text: '未送签', selected: true },
 					{ value: 1, label: '签核中', text: '签核中', selected: false },
@@ -194,6 +198,7 @@ const openDetailDialog = (scope: EmptyObjectType) => {
 	// getDetailData(scope.row.idleno);
 	detaildialogVisible.value = true;
 	dilogTitle.value = '详情';
+	sendDisabled.value = scope.row.signStatus1 ? true : false;
 };
 // 单元格字体颜色
 const changeToStyle = (indList: number[]) => {
@@ -235,6 +240,7 @@ const getTableData = async () => {
 	};
 	const res = await IdleQueryPageListApi(data);
 	res.data.data.forEach((item: any) => {
+		item.signStatus1 = item.signStatus;
 		item.signStatus = signStatusMap[item.signStatus];
 	});
 	state.tableData.data = res.data.data;

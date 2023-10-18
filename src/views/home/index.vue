@@ -58,6 +58,10 @@
 								size="large"
 								:timestamp="activity.generateTime"
 							>
+								<span>{{ activity.no }}</span>
+								<span class="cursor-pointer" style="color: #1890ff; font-weight: 700" title="点击跳转页面" @click="routePage(activity.type)">{{
+									activity.keyNo
+								}}</span>
 								<span>{{ activity.content }}</span>
 								<el-icon color="#1890ff" title="点击复制该单号" class="ml10" @click="copyText(activity.keyNo)"><ele-CopyDocument /></el-icon>
 							</el-timeline-item>
@@ -110,10 +114,11 @@ import { CountUp } from 'countup.js';
 import { getTodosApi } from '/@/api/home/index';
 import { ElMessage } from 'element-plus';
 import commonFunction from '/@/utils/commonFunction';
-
+import { useRouter } from 'vue-router';
 // 定义变量内容
 const { copyText } = commonFunction();
 // 定义变量内容
+const router = useRouter();
 const homeLineRef = ref();
 const homePieRef = ref();
 const homeBarRef = ref();
@@ -122,7 +127,7 @@ const storesThemeConfig = useThemeConfig();
 const { themeConfig } = storeToRefs(storesThemeConfig);
 const { isTagsViewCurrenFull } = storeToRefs(storesTagsViewRoutes);
 const topCardItemRefs = ref<RefType[]>([]);
-const activities = ref([{ generateTime: '', content: '', keyNo: '' }]);
+const activities = ref([{ generateTime: '', content: '', keyNo: '', no: '', type: 0 }]);
 const odd = ref();
 const state = reactive({
 	global: {
@@ -322,6 +327,16 @@ const initNumCountUp = () => {
 		});
 	});
 };
+// 点击单号跳转到相应的页面
+const routePage = (type: number) => {
+	const routeTypeMap: EmptyObjectType = {
+		0: '/partno/sampleRequirement',
+		1: '/partno/acceptance',
+		2: '/requistManage/arrivalAcceptance',
+		3: '/maintenanceManage/maintenanceCheck',
+	};
+	router.push(routeTypeMap[type]);
+};
 // 得到待办信息
 const getTodos = async () => {
 	const res = await getTodosApi();
@@ -346,9 +361,11 @@ const getTodos = async () => {
 	};
 	res.data.forEach((item: any) => {
 		let type = item.todoType;
+		item['type'] = `${item.todoType}`;
 		item.todoType = todoTypeMap[item.todoType];
-
-		item['content'] = `${noTypeMap[type]}：${item.keyNo}${item.todoType}`;
+		item['no'] = `${noTypeMap[type]}：`;
+		item['keyNo'] = `${item.keyNo}`;
+		item['content'] = `${item.todoType}`;
 	});
 	activities.value = res.data;
 };

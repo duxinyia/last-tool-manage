@@ -42,8 +42,10 @@
 				<UselessNoDetailDialog :isDialog="true" :UselessNoRef="UselessNoRef" />
 				<template #footer v-if="dilogTitle == '詳情'">
 					<span class="dialog-footer">
-						<el-button size="default" auto-insert-space @click="reportInquiryDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" auto-insert-space @click="onSend"> 送 簽 </el-button>
+						<el-button size="default" auto-insert-space @click="detaildialogVisible = false">取消</el-button>
+						<el-button :disabled="sendDisabled" size="default" type="primary" auto-insert-space @click="onSend" :loading="loadingBtn">
+							送 簽
+						</el-button>
 					</span>
 				</template>
 			</el-dialog>
@@ -69,6 +71,8 @@ const { t } = useI18n();
 const tableRef = ref<RefType>();
 const reportInquiryDialogRef = ref();
 const detaildialogVisible = ref(false);
+const sendDisabled = ref(false);
+const loadingBtn = ref(false);
 const UselessNoRef = ref();
 // 单元格样式
 const cellStyle = ref();
@@ -110,6 +114,7 @@ const state = reactive<TableDemoState>({
 				prop: 'signStatus',
 				required: false,
 				type: 'select',
+				clearable: true,
 				options: [
 					{ value: 0, label: '未簽核', text: '未簽核', selected: true },
 					{ value: 1, label: '簽核中', text: '簽核中', selected: false },
@@ -236,6 +241,7 @@ const getTableData = async () => {
 	delete data.uselessdate;
 	const res = await getQueryExitPageApi(data);
 	res.data.data.forEach((item: any) => {
+		item.signStatus1 = item.signStatus;
 		item.signStatus = signStatusMap[item.signStatus];
 	});
 	state.tableData.data = res.data.data;
@@ -260,6 +266,7 @@ const openDetailDialog = (scope: EmptyObjectType) => {
 	// getDetailData(scope.row.uselessno);
 	detaildialogVisible.value = true;
 	dilogTitle.value = '詳情';
+	sendDisabled.value = scope.row.signStatus1 ? true : false;
 };
 // 点击申请单号
 const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
@@ -270,12 +277,14 @@ const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 };
 // 送簽
 const onSend = async () => {
+	loadingBtn.value = true;
 	const res = await getUselessSubmitSignApi(UselessNoRef.value);
 	if (res.status) {
 		ElMessage.success(t('送簽成功'));
 		detaildialogVisible.value = false;
 		getTableData();
 	}
+	loadingBtn.value = false;
 };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {

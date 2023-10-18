@@ -62,7 +62,7 @@
 				<template #footer>
 					<span class="dialog-footer">
 						<el-button size="default" auto-insert-space @click="presentationDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)"> 确定 </el-button>
+						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn"> 确定 </el-button>
 					</span>
 				</template>
 			</el-dialog>
@@ -96,6 +96,7 @@ const { t } = useI18n();
 const tableFormRef = ref();
 const matnoDetailDialogRef = ref();
 const inventoryDialogRef = ref();
+const loadingBtn = ref(false);
 const tableRef = ref<RefType>();
 const dialogtableRef = ref<RefType>();
 const presentationDialogRef = ref();
@@ -315,6 +316,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
 		if (!dialogState.tableData.form['uselessdate']) return ElMessage.warning(t('请填写报废时间'));
+		loadingBtn.value = true;
 		let allData: EmptyObjectType = {};
 		let exitstoreid: EmptyArrayType = [];
 		let data = dialogState.tableData.data;
@@ -329,6 +331,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 			presentationDialogVisible.value = false;
 			getTableData();
 		}
+		loadingBtn.value = false;
 	});
 };
 // 搜索点击时表单回调

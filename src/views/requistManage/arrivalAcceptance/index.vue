@@ -104,8 +104,10 @@
 			<checkNoDetailDialog :isDialog="true" :checkNoRef="checkNoRef" />
 			<template #footer v-if="dilogTitle == '詳情'">
 				<span class="dialog-footer">
-					<el-button size="default" auto-insert-space @click="arriveJobDialogVisible = false">取消</el-button>
-					<el-button size="default" type="primary" auto-insert-space @click="onSend" :loading="loadingBtn"> 送 簽 </el-button>
+					<el-button size="default" auto-insert-space @click="detaildialogVisible = false">取消</el-button>
+					<el-button size="default" type="primary" auto-insert-space @click="onSend" :loading="loadingBtn" :disabled="sendDisabled">
+						送 簽
+					</el-button>
 				</span>
 			</template>
 		</el-dialog>
@@ -142,6 +144,7 @@ const inputuploadRefs = ref<UploadInstance>();
 const inputuploadForm = ref();
 const arriveJobDialogVisible = ref(false);
 const isSendBtn = ref(false);
+const sendDisabled = ref(false);
 const detaildialogVisible = ref(false);
 const checkNoRef = ref();
 const loadingBtn = ref(false);
@@ -281,6 +284,7 @@ const secondState = reactive<TableDemoState>({
 				label: '签核状态',
 				prop: 'signStatus',
 				required: false,
+				clearable: true,
 				type: 'select',
 				options: [
 					{ value: 0, label: '未送签', text: '未送签', selected: true },
@@ -400,6 +404,7 @@ const getTableData = async () => {
 		};
 		const res = await getQueryCheckPageApi(data2);
 		res.data.data.forEach((item: any) => {
+			item.signstatus1 = item.signstatus;
 			item.signstatus = signStatusMap[item.signstatus];
 		});
 		secondState.tableData.data = res.data.data;
@@ -449,6 +454,9 @@ const openDetailDialog = (scope: EmptyObjectType) => {
 	detaildialogVisible.value = true;
 	// isSendBtn.value = scope.row.signstatus === '未送签' ? true : false;
 	dilogTitle.value = '詳情';
+	sendDisabled.value = scope.row.signstatus1 ? true : false;
+	console.log(scope.row.signstatus);
+
 	// dialogState.tableData.form = scope.row;
 	// changeStatus(header2.value, 300, false);
 	// let data = { checkNo: scope.row.checkno };
