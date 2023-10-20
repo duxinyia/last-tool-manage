@@ -1,7 +1,7 @@
 <template>
 	<div class="system-menu-dialog-container">
 		<el-dialog draggable :title="state.dialog.title" v-model="state.dialog.isShowDialog" :width="dialogWidth">
-			<el-form v-if="state.dialog.type !== 'imp'" ref="dialogFormRef" :model="state.formData" size="default" label-width="100px">
+			<el-form v-if="state.dialog.type !== 'imp'" ref="dialogFormRef" :model="state.formData" size="default" :label-width="labelWidth || '100px'">
 				<el-row :gutter="35">
 					<el-col
 						:xs="item.xs || 24"
@@ -30,7 +30,14 @@
 								style="width: 100%"
 							/>
 							<!-- 数字输入框 -->
-							<el-input-number v-if="item.type === 'number'" v-model="state.formData[item.prop]" :min="item.min || 0" :max="item.max" size="small" />
+							<el-input-number
+								v-if="item.type === 'number'"
+								v-model="state.formData[item.prop]"
+								:min="item.min || 0"
+								:max="item.max"
+								size="small"
+								@change="(value:number)=>handleNumberInputChange(value)"
+							/>
 							<!-- @change=" (val:any) => commonInputHandleChange(val,item.prop)" -->
 
 							<!-- <el-input :width="224" v-if="item.type === 'tagtextarea'" v-model="state.formData[item.prop]">
@@ -58,7 +65,7 @@
 									</el-upload></template
 								>
 								<template #append v-if="state.formData[item.prop]"
-									><el-button @click="inputsubmitUpload(item.prop)" type="primary" class="ml1">上传文件</el-button>
+									><el-button @click="inputsubmitUpload(item.prop, item.key)" type="primary" class="ml1">上传文件</el-button>
 									<el-button v-if="state.formData['drawPath'].includes('/')" class="look-file" @click="lookUpload(item.prop)">查看文件</el-button>
 								</template>
 							</el-input>
@@ -89,6 +96,7 @@
 									<el-button v-if="state.formData['draw3dPath'].includes('/')" class="look-file" @click="lookUpload(item.prop)">查看文件</el-button>
 								</template>
 							</el-input>
+
 							<!-- 上传图片 -->
 							<el-upload
 								ref="imageuploadRefs"
@@ -130,9 +138,10 @@
 							<el-select
 								v-model="state.formData[item.prop]"
 								:placeholder="$t(item.placeholder)"
+								:clearable="item.clearable"
 								v-if="item.type === 'select'"
 								style="width: 100%"
-								:disabled="state.dialog.isdisable"
+								:disabled="state.dialog.isdisable || state.formData[`${item.prop}disabled`]"
 								@change="(val:any) => selectHandelChange(val,item.prop)"
 								:filterable="item.filterable"
 								:remote="item.remote"
@@ -161,7 +170,7 @@
 								v-model="state.formData[item.prop]"
 								type="textarea"
 								:placeholder="$t(item.placeholder)"
-								:maxlength="item.maxlength || 300"
+								:maxlength="item.maxlength || 500"
 							></el-input>
 							<span v-if="item.type === 'text'" style="width: 100%; font-weight: 700; color: #1890ff">
 								{{ state.formData[item.prop] }}
@@ -169,7 +178,9 @@
 						</el-form-item>
 
 						<span v-else>
-							<el-button type="primary" plain v-if="item.type === 'button'" @click="dailogFormButton">{{ item.label }}</el-button>
+							<el-button type="primary" style="margin-left: 20px" plain v-if="item.type === 'button'" @click="dailogFormButton">{{
+								item.label
+							}}</el-button>
 						</span>
 					</el-col>
 				</el-row>
@@ -291,6 +302,7 @@ const emit = defineEmits([
 	'openInnerDialog',
 	'editDialog',
 	'remoteMethod',
+	'handleNumberInputChange',
 ]);
 // 定义父组件传过来的值
 const props = defineProps({
@@ -322,6 +334,10 @@ const props = defineProps({
 	loadingBtn: {
 		type: Boolean,
 		default: () => false,
+	},
+	labelWidth: {
+		type: String,
+		default: () => '100px',
 	},
 });
 const { t } = useI18n();
@@ -367,7 +383,11 @@ const ondownloadTemp = () => {
 	emit('downloadTemp');
 };
 const dailogFormButton = () => {
-	emit('dailogFormButton');
+	emit('dailogFormButton', state.formData);
+};
+// 改变number的值
+const handleNumberInputChange = (value: number) => {
+	emit('handleNumberInputChange', value, state.formData);
 };
 // 校验表单
 const validatePass = (rule: any, value: any, callback: any, item: EmptyObjectType) => {
@@ -557,9 +577,18 @@ const inputHandleExceed: UploadProps['onExceed'] = (files) => {
 };
 
 // 上传文件
-const inputsubmitUpload = async (prop: string) => {
+const inputsubmitUpload = async (prop: string, key?: string) => {
 	let value = prop == 'drawPath' ? inputuploadForm.value.raw : input3duploadForm.value.raw;
-	let funcType = prop == 'drawPath' ? 0 : 1;
+	let funcType = 0;
+	if (key === 'accepreporturl') {
+		funcType = 2;
+	} else {
+		const typeMap: EmptyObjectType = {
+			drawPath: 0,
+			draw3dPath: 1,
+		};
+		funcType = typeMap[prop];
+	}
 	const res = await getUploadFileApi(funcType, value);
 	state.formData[prop] = res.data;
 	res.status && ElMessage.success(`上传成功`);

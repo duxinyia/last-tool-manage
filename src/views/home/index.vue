@@ -356,8 +356,8 @@ const getTodos = async () => {
 	const noTypeMap: EmptyObjectType = {
 		0: '送样单',
 		1: '送样单',
-		2: '请购单',
-		3: '维修单',
+		2: '申请单',
+		3: '维修收货单',
 	};
 	res.data.forEach((item: any) => {
 		let type = item.todoType;

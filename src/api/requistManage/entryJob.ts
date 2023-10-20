@@ -2,7 +2,8 @@ import request from '/@/utils/request';
 // 查询待入庫列表
 export function GetTStockInputPageListApi(data: Object) {
 	return request({
-		url: '/api/TStockInput/GetCheckDetailPageList',
+		url:'/api/ToolApply/QueryStorableApplyCheck',
+		// url: '/api/TStockInput/GetCheckDetailPageList',
 		method: 'POST',
 		data: data,
 	});
@@ -20,7 +21,8 @@ export function GetUserManagedStoreHouseApi() {
 
 export function GetTStockAddApi(data: Object) {
 	return request({
-		url: '/api/TStockInput/TStockAdd',
+		url:'/api/ToolApply/PutStorage',
+		// url: '/api/TStockInput/TStockAdd',
 		method: 'POST',
 		data: data,
 	});

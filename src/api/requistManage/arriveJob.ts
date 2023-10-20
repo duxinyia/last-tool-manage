@@ -2,7 +2,7 @@ import request from '/@/utils/request';
 // 查询
 export function getGetWaitRecievePageListApi(data:Object) {
   return request({
-    url: '/api/ToolReceive/GetWaitRecievePageList',
+    url: '/api/ToolApply/QueryReceivableApplyDetails',
     method: 'POST',
   	data:data
   });
@@ -10,7 +10,8 @@ export function getGetWaitRecievePageListApi(data:Object) {
 // 收货
 export function getAddReceiveApi(data:Object) {
   return request({
-    url: '/api/ToolReceive/AddReceive',
+    url:'/api/ToolApply/Receive',
+    // url: '/api/ToolReceive/AddReceive',
     method: 'POST',
   	data:data
   });

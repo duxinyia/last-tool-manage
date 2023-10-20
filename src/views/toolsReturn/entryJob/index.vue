@@ -1,7 +1,12 @@
 <template>
 	<div class="table-container layout-padding">
 		<div class="table-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
+			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" @remoteMethod="remoteMethod">
+				<template #optionSearchFat="{ row }">
+					<span style="float: left; margin-right: 35px">{{ row.value }}</span>
+					<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
+				</template>
+			</TableSearch>
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
@@ -28,7 +33,7 @@
 				:loadingBtn="loadingBtn"
 			>
 				<template #optionFat="{ row }">
-					<span style="float: left; margin-right: 35px">{{ row.text }}</span>
+					<span style="float: left; margin-right: 10px">{{ row.text }}</span>
 					<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
 				</template>
 			</Dialog>
@@ -46,7 +51,7 @@ import { useI18n } from 'vue-i18n';
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
 const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
-
+import { getEngieerGroupApi } from '/@/api/global/index';
 // 定义变量内容
 const { t } = useI18n();
 const loadingBtn = ref(false);
@@ -78,17 +83,18 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'checkno', colWidth: '', title: '验收单号', type: 'text', isCheck: true },
-			{ key: 'receiptno', colWidth: '', title: '收货单号', type: 'text', isCheck: true },
-			// { key: 'reqno', colWidth: '', title: '申请单号', type: 'text', isCheck: true },
-			{ key: 'matno', colWidth: '', title: '料号', type: 'text', isCheck: true },
-			// { key: 'namech', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
-			// { key: 'nameen', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'checkqty', colWidth: '', title: '验收数量', type: 'text', isCheck: true },
-			{ key: 'passqty', colWidth: '', title: '合格数量', type: 'text', isCheck: true },
-			{ key: 'failqty', colWidth: '', title: '不合格数量', type: 'text', isCheck: true },
-			// { key: 'runstatus', colWidth: '', title: '状态', type: 'status', isCheck: true },
-			// { key: 'isstorage', colWidth: '', title: '是否入库', type: 'text', isCheck: true },
+			{ key: 'applyCheckId', colWidth: '', title: '验收单号', type: 'text', isCheck: true },
+			{ key: 'reqNo', colWidth: '', title: '申请单号', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '', title: '料号', type: 'text', isCheck: true },
+			{ key: 'reqMatNo', colWidth: '', title: '请购料号', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			{ key: 'checkDate', colWidth: '', title: '验收日期', type: 'text', isCheck: true },
+			{ key: 'checkQty', colWidth: '', title: '验收数量', type: 'text', isCheck: true },
+			{ key: 'passQty', colWidth: '', title: '合格数量', type: 'text', isCheck: true },
+			{ key: 'failQty', colWidth: '', title: '不合格数量', type: 'text', isCheck: true },
+			// { key: 'describe', colWidth: '', title: '描述说明', type: 'text', isCheck: true },
+			{ key: 'checker', colWidth: '', title: '验收人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -104,15 +110,33 @@ const state = reactive<TableDemoState>({
 			isPage: true, //是否有分页
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-		search: [{ label: '验收单号', prop: 'checkno', required: false, type: 'input' }],
+		search: [
+			{ label: '申请单号', prop: 'reqNo', required: false, type: 'input' },
+			{ label: '料号', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
+			{ label: '请购料号', prop: 'reqMatNo', required: false, type: 'input' },
+			{ label: '品名', prop: 'name', required: false, type: 'input' },
+			{
+				label: '验收人',
+				prop: 'checker',
+				required: false,
+				type: 'select',
+				placeholder: '请输入选择验收人',
+				options: [],
+				loading: true,
+				filterable: true,
+				remote: true,
+				remoteShowSuffix: true,
+			},
+			{ label: '验收日期', prop: 'checkDate', required: false, type: 'dateRange' },
+		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
 		btnConfig: [{ type: 'sendReceive', name: '入库', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
 		// 给后端的数据
 		form: {
-			reqNo: '',
-			prNo: '',
+			// reqNo: '',
+			// prNo: '',
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -123,39 +147,28 @@ const state = reactive<TableDemoState>({
 		printName: '表格打印演示',
 		//入库弹窗
 		dialogConfig: [
-			// { label: '入库单号:', prop: 'putno', placeholder: '请输入入库单号', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
-			{ label: '验收单号:', prop: 'checkno', placeholder: '请输入验收单号', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 8, xl: 8 },
+			{ label: '申请单号:', prop: 'reqNo', placeholder: '', required: false, type: 'text' },
+			{ label: '料号:', prop: 'matNo', placeholder: '', required: false, type: 'text' },
+			{ label: '请购料号:', prop: 'reqMatNo', placeholder: '', required: false, type: 'text' },
+			{ label: '品名-中文:', prop: 'nameCh', placeholder: '', required: false, type: 'text' },
+			{ label: '品名-英文:', prop: 'nameEn', placeholder: '', required: false, type: 'text' },
+			{ label: '验收日期:', prop: 'checkDate', placeholder: '', required: false, type: 'text' },
+			{ label: '验收数量:', prop: 'checkQty', placeholder: '', required: false, type: 'text' },
+			{ label: '合格数量:', prop: 'passQty', placeholder: '', required: false, type: 'text' },
+			{ label: '不合格数量:', prop: 'failQty', placeholder: '', required: false, type: 'text' },
 			//这个字段待定
-			{ label: '验收人:', prop: 'creator', placeholder: '请输入验收人', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 8, xl: 8 },
-			{ label: '料号:', prop: 'matno', placeholder: '请输入料号', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 8, xl: 8 },
-			{ label: '品名-中文:', prop: 'namech', placeholder: '请输入品名-中文', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 8, xl: 8 },
-			{ label: '品名-英文:', prop: 'nameen', placeholder: '请输入品名-英文', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 8, xl: 8 },
-			// { label: '厂商代码:', prop: 'vendorcode', placeholder: '请输入厂商代码', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 8, xl: 8 },
-			// {
-			// 	label: '厂商名称:',
-			// 	prop: 'vendorname',
-			// 	placeholder: '请输入厂商名称',
-			// 	required: false,
-			// 	type: 'text',
-			// 	xs: 24,
-			// 	sm: 12,
-			// 	md: 12,
-			// 	lg: 8,
-			// 	xl: 8,
-			// },
-			{ label: '验收数量:', prop: 'checkqty', placeholder: '请输入验收数量', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
-			// 这个字段待定
+			{ label: '验收人:', prop: 'checker', placeholder: '', required: false, type: 'text' },
 			{
-				label: '验收时间:',
-				prop: 'checkdate',
-				placeholder: '请输入验收时间',
-				required: false,
 				type: 'text',
+				label: '验收描述说明:',
+				placeholder: '',
+				prop: 'describe',
+				required: false,
 				xs: 24,
 				sm: 24,
 				md: 24,
-				lg: 8,
-				xl: 8,
+				lg: 24,
+				xl: 24,
 			},
 			{
 				label: '入库数量:',
@@ -177,11 +190,11 @@ const state = reactive<TableDemoState>({
 				placeholder: '请输入入库数量',
 				required: false,
 				type: 'button',
-				xs: 6,
-				sm: 6,
-				md: 6,
-				lg: 6,
-				xl: 6,
+				xs: 4,
+				sm: 4,
+				md: 4,
+				lg: 4,
+				xl: 4,
 			},
 			{
 				label: '收货仓库:',
@@ -190,11 +203,18 @@ const state = reactive<TableDemoState>({
 				required: true,
 				type: 'select',
 				options: [],
+			},
+			{
+				type: 'textarea',
+				label: '描述说明:',
+				placeholder: '请输入描述说明',
+				prop: 'entryDescribe',
+				required: false,
 				xs: 24,
-				sm: 12,
-				md: 8,
-				lg: 8,
-				xl: 8,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
 			},
 		],
 		innerDialogConfig: [
@@ -263,13 +283,34 @@ const getOptionsData = async () => {
 		});
 	}
 };
+const remoteMethod = (query: string) => {
+	if (query) {
+		state.tableData.search[4].loading = true;
+		setTimeout(async () => {
+			const res = await getEngieerGroupApi(query);
+			state.tableData.search[4].loading = false;
+			let options = res.data.map((item: EmptyObjectType) => {
+				return { value: `${item.userid}`, label: `${item.username}` };
+			});
+			state.tableData.search[4].options = options.filter((item: EmptyObjectType) => {
+				return item.label.toLowerCase().includes(query.toLowerCase()) || item.value.toLowerCase().includes(query.toLowerCase());
+			});
+		}, 500);
+	} else {
+		state.tableData.search[4].options = [];
+	}
+};
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;
 	let data = {
-		checkno: form.checkno,
+		...form,
+		checkDate: form.checkDate,
+		startCheckDate: form.checkDate && form.checkDate[0],
+		endCheckDate: form.checkDate && form.checkDate[1],
 		page: state.tableData.page,
 	};
+	delete data.checkDate;
 	const res = await GetTStockInputPageListApi(data);
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
@@ -332,7 +373,7 @@ const handleTagClose = (tag: any, state: EmptyObjectType) => {
 };
 // 打开入库弹窗
 const openEntryDialog = async (scope: any) => {
-	entryJobDialogRef.value.openDialog('entry', scope.row);
+	entryJobDialogRef.value.openDialog('entry', scope.row, '入库');
 };
 const scanCodeEntry = () => {
 	entryJobDialogRef.value.openInnerDialog('扫码录入');
@@ -355,25 +396,27 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 
 	obj.codeList = formInnerData.codeList;
 	let submitData = {
-		runId: obj.runid,
-		checkno: obj.checkno,
-		creator: obj.creator,
-		matno: obj.matno,
-		namech: obj.namech,
-		nameen: obj.nameen,
-		checkqty: obj.checkqty,
-		stockqty: obj.stockqty,
-		stockcode: obj.stockcode,
+		applyCheckId: obj.applyCheckId,
 		storageId: obj.storageId,
-		sLocation: obj.sLocation,
-		storeType: obj.storeType,
-		codeList: obj.codeList,
+		describe: obj.entryDescribe,
+		codes: obj.codeList,
+		// runId: obj.runid,
+		// checkno: obj.checkno,
+		// creator: obj.creator,
+		// matno: obj.matno,
+		// namech: obj.nameCh,
+		// nameen: obj.nameEn,
+		// checkqty: obj.checkQty,
+		// stockqty: obj.stockqty,
+		// stockcode: obj.stockcode,
+		// sLocation: obj.sLocation,
+		// storeType: obj.storeType,
 	};
-	if (submitData.stockqty > submitData.checkqty) {
+	if (obj.stockqty > obj.checkQty) {
 		ElMessage.error(`入库数量大于验收数量`);
-	} else if (submitData.codeList && submitData.stockqty < submitData.codeList.length) {
+	} else if (obj.codes && obj.stockqty < obj.codes.length) {
 		ElMessage.error(`入库数量小于扫码数量`);
-	} else if (submitData.stockqty != submitData.checkqty) {
+	} else if (obj.stockqty != obj.checkQty) {
 		ElMessageBox.confirm('入库数量与验收数量不一致，是否继续提交', '提示', {
 			confirmButtonText: '确认',
 			cancelButtonText: '取消',

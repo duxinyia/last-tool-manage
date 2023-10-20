@@ -94,7 +94,7 @@ declare type EmptyObjectType<T = any> = {
 
 // 申明 select option下拉
 declare type SelectOptionType = {
-	value: string | number;
+	value: string | number|boolean;
 	label: string | number;
 	selected?: boolean;
 	text?: string;

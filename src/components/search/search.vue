@@ -62,7 +62,9 @@
 							:collapse-tags="val.collapseTags"
 							:collapse-tags-tooltip="val.collapseTagsTooltip"
 						>
-							<el-option v-for="item in val.options" :key="item.label" :label="item.text" :value="item.value"> </el-option>
+							<el-option v-for="item in val.options" :key="item.label" :label="item.text" :value="item.value">
+								<slot name="optionSearchFat" :row="item"></slot>
+							</el-option>
 						</el-select>
 						<span v-else style="width: 100%; font-weight: 700; color: #1890ff">
 							{{ state.form[val.prop] }}

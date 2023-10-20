@@ -8,81 +8,21 @@
 				class="table"
 				@pageChange="onTablePageChange"
 				@sortHeader="onSortHeader"
-				@cellclick="reqNoClick"
-				:cellStyle="cellStyle"
 				@onOpenOtherDialog="openArriveJobDialog"
 			/>
-			<el-dialog ref="arriveJobDialogRef" v-model="arriveJobDialogVisible" :title="dilogTitle" width="85%">
-				<el-row v-if="dilogTitle == '收货'">
-					<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb10" v-for="(val, key) in dialogState.tableData.search" :key="key">
-						<div v-if="val.type === 'text'">
-							{{ val.label }}：<span style="color: red" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
-						</div>
-						<div v-if="val.type === 'time'">
-							<span v-if="val.isRequired" class="color-danger mr5">*</span>
-							<span style="width: 96px" class="mr10">{{ val.label }}</span>
-							<el-date-picker
-								value-format="YYYY-MM-DD"
-								v-model="dialogState.tableData.form[val.prop]"
-								type="date"
-								placeholder="请选择"
-								style="height: 30px; max-width: 167px"
-							/>
-						</div>
-						<!-- 自动补全输入框 -->
-						<!-- <el-autocomplete
-							:debounce="500"
-							clearable
-							style="width: 100%"
-							v-else-if="val.type === 'autocomplete'"
-							v-model="dialogState.tableData.form[val.prop]"
-							:fetch-suggestions="querySearchAsync"
-							placeholder="请输入"
-						/> -->
-						<div v-if="val.type === 'select'">
-							<span v-if="val.isRequired" class="color-danger mr5">*</span>
-							<span style="width: 96px" class="mr10">{{ val.label }}</span>
-							<el-select
-								size="default"
-								v-model="dialogState.tableData.form[val.prop]"
-								filterable
-								remote
-								:reserve-keyword="false"
-								placeholder="请选择工程验收人"
-								remote-show-suffix
-								:remote-method="selectChange"
-								:loading="loading"
-							>
-								<el-option v-for="item in val.options" :key="item.label" :label="item.value" :value="item.value">
-									<span style="float: left">{{ item.label }}</span>
-									<span style="float: right; color: var(--el-text-color-secondary)">{{ item.value }}</span>
-								</el-option>
-							</el-select>
-						</div>
-					</el-col>
-				</el-row>
-
-				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
-					<Table v-bind="dialogState.tableData" class="table" @delRow="onDelRow" @handleNumberInputChange="changeInput" :cellStyle="cellStyle" />
-				</el-form>
-				<div class="describe" v-if="dilogTitle == '收货'">
-					<span>描述说明：</span>
-					<el-input
-						class="input-textarea"
-						show-word-limit
-						v-model="dialogState.tableData.form['describe']"
-						type="textarea"
-						placeholder="请输入"
-						maxlength="150"
-					></el-input>
-				</div>
-				<template #footer v-if="dilogTitle == '收货'">
-					<span class="dialog-footer">
-						<el-button size="default" auto-insert-space @click="arriveJobDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn"> 确定 </el-button>
-					</span>
+			<Dialog
+				ref="arriveJobDialogRef"
+				:dialogConfig="state.tableData.dialogConfig"
+				@addData="onSubmit"
+				@remoteMethod="remoteMethod"
+				:loadingBtn="loadingBtn"
+				@handleNumberInputChange="changeInput"
+			>
+				<template #optionFat="{ row }">
+					<span style="float: left">{{ row.label }}</span>
+					<span style="float: right; color: var(--el-text-color-secondary)">{{ row.value }}</span>
 				</template>
-			</el-dialog>
+			</Dialog>
 		</div>
 	</div>
 </template>
@@ -90,15 +30,14 @@
 <script setup lang="ts" name="/requistManage/arriveJob">
 import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
 import { ElMessage, FormInstance } from 'element-plus';
-const arriveJobDialogVisible = ref(false);
 // 引入接口
-import { getreqNoApi } from '/@/api/requistManage/reportingInquiry';
 import { getGetWaitRecievePageListApi, getAddReceiveApi } from '/@/api/requistManage/arriveJob';
 import { getEngieerGroupApi } from '/@/api/global/index';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
+const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 
 // 定义变量内容
 const { t } = useI18n();
@@ -107,42 +46,6 @@ const tableRef = ref<RefType>();
 const arriveJobDialogRef = ref();
 const loading = ref(false);
 const loadingBtn = ref(false);
-// 单元格样式
-const cellStyle = ref();
-
-// 弹窗标题
-const dilogTitle = ref();
-const header = ref([
-	{ key: 'matNo', colWidth: '250', title: 'message.pages.matNo', type: 'text', isCheck: true },
-	// { key: 'machinetype', colWidth: '', title: '机种', type: 'text', isCheck: true },
-	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
-	// { key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-	// { key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-	// { key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
-	{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
-	{ key: 'receiveQty', colWidth: '', title: '已收货数量', type: 'text', isCheck: true },
-	{ key: 'reqDate', colWidth: '', title: '需求时间', type: 'text', isCheck: true },
-	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'number', isCheck: true, isRequired: true },
-	{ key: 'receiptDate', colWidth: '150', title: '收货时间', type: 'time', isCheck: true, isRequired: true },
-]);
-const header1 = ref([
-	{
-		key: 'matNo',
-		colWidth: '250',
-		title: 'message.pages.matNo',
-		type: 'text',
-		isCheck: true,
-	},
-	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
-	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-	// { key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-	// { key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-	{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
-	{ key: 'reqDate', colWidth: '150', title: '需求时间', type: 'text', isCheck: true },
-	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
-	{ key: 'describe', colWidth: '', title: '描述说明', type: 'text', isCheck: true },
-]);
 const state = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
@@ -151,6 +54,13 @@ const state = reactive<TableDemoState>({
 		header: [
 			{ key: 'reqNo', colWidth: '', title: '申请单号', type: 'text', isCheck: true },
 			{ key: 'prNo', colWidth: '', title: 'PR单号', type: 'text', isCheck: true },
+			{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '', title: '料号', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
+			{ key: 'receiveQty', colWidth: '', title: '已收货数量', type: 'text', isCheck: true },
+			{ key: 'reqDate', colWidth: '', title: '需求日期', type: 'text', isCheck: true },
 			{ key: 'creator', colWidth: '', title: '提报人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -170,6 +80,9 @@ const state = reactive<TableDemoState>({
 		search: [
 			{ label: '申请单号', prop: 'reqNo', required: false, type: 'input' },
 			{ label: 'PR单号', prop: 'prNo', required: false, type: 'input' },
+			{ label: '料号', prop: 'matNo', required: false, type: 'input' },
+			{ label: '品名', prop: 'name', required: false, type: 'input' },
+			{ label: '需求日期', prop: 'reqDate', required: false, type: 'dateRange', lg: 4, xl: 4 },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -177,9 +90,47 @@ const state = reactive<TableDemoState>({
 		btnConfig: [{ type: 'sendReceive', name: '收货', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
 		// 给后端的数据
 		form: {
-			reqNo: '',
-			prNo: '',
+			// reqNo: '',
+			// prNo: '',
 		},
+		dialogConfig: [
+			// { type: 'text', label: '收货单号', placeholder: '', prop: 'sendNo', required: false },
+			{ type: 'text', label: '申请单号', placeholder: '', prop: 'reqNo', required: false },
+			{ type: 'text', label: 'PR单号', placeholder: '', prop: 'prNo', required: false },
+			{ type: 'text', label: 'PR项次', placeholder: '', prop: 'prItemNo', required: false },
+			{ type: 'text', label: 'message.pages.matNo', placeholder: '', prop: 'matNo', required: false },
+			{ type: 'text', label: '品名-中文', placeholder: '', prop: 'nameCh', required: false },
+			{ type: 'text', label: '品名-英文', placeholder: '', prop: 'nameEn', required: false },
+			{ type: 'text', label: '需求数量', placeholder: '', prop: 'reqQty', required: false },
+			{ type: 'text', label: '已收货数量', placeholder: '', prop: 'receiveQty', required: false },
+			{ type: 'text', label: '需求日期', placeholder: '', prop: 'reqDate', required: false },
+			{
+				label: '工程验收人',
+				prop: 'engineer',
+				placeholder: '请输入工程验收人',
+				required: true,
+				type: 'select',
+				options: [],
+				loading: true,
+				filterable: true,
+				remote: true,
+				remoteShowSuffix: true,
+			},
+			{ type: 'number', label: '收货数量', placeholder: '', prop: 'receiptQty', required: true, min: 1 },
+			{ type: 'date', label: '收货时间', placeholder: '', prop: 'receiveDate', required: true },
+			{
+				type: 'textarea',
+				label: '描述说明',
+				placeholder: '请输入描述说明',
+				prop: 'describe',
+				required: false,
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
+			},
+		],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
 			pageNum: 1,
@@ -189,55 +140,67 @@ const state = reactive<TableDemoState>({
 		printName: '表格打印演示',
 	},
 });
-const dialogState = reactive<TableDemoState>({
-	tableData: {
-		// 列表数据（必传）
-		data: [],
-		// 表头内容（必传，注意格式）
-		header: [],
-		// 配置项（必传）
-		config: {
-			total: 0, // 列表总数
-			loading: true, // loading 加载
-			isBorder: false, // 是否显示表格边框
-			isSerialNo: true, // 是否显示表格序号
-			isSelection: false, // 是否显示表格多选
-			isOperate: false, // 是否显示表格操作栏
-			isButton: false, //是否显示表格上面的新增删除按钮
-			isInlineEditing: false, //是否是行内编辑
-			isTopTool: false, //是否有表格右上角工具
-			isPage: false, //是否有分页
-			isDialogTab: true, //是否是弹窗里面的表格
-			height: 500,
-		},
-		// 给后端的数据
-		form: {},
-		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-		search: [
-			{ label: '收货单号', prop: 'sendNo', required: false, type: 'text' },
-			{ label: '申请单号', prop: 'reqNo', required: false, type: 'text' },
-			{ label: 'PR单号', prop: 'prNo', required: false, type: 'text' },
-			{ label: '工程验收人', prop: 'engineer', required: false, type: 'select', options: [], isRequired: true },
-			// { label: '收货时间', prop: 'sendTime', required: false, type: 'time', isRequired: true },
-		],
-		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: true }],
-		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
-		page: {
-			pageNum: 1,
-			pageSize: 10,
-		},
-	},
-});
-const changeInput = (val: Number, i: number) => {
-	const data = dialogState.tableData.data[i];
-	data.receiptQtymin = 0;
-	data.receiptQtymax = data.reqQty - data.receiveQty;
-	if (data.receiptQty > data.reqQty - data.receiveQty) {
-		data.receiptQty = data.reqQty - data.receiveQty;
+// const dialogState = reactive<TableDemoState>({
+// 	tableData: {
+// 		// 列表数据（必传）
+// 		data: [],
+// 		// 表头内容（必传，注意格式）
+// 		header: [],
+// 		// 配置项（必传）
+// 		config: {
+// 			total: 0, // 列表总数
+// 			loading: true, // loading 加载
+// 			isBorder: false, // 是否显示表格边框
+// 			isSerialNo: true, // 是否显示表格序号
+// 			isSelection: false, // 是否显示表格多选
+// 			isOperate: false, // 是否显示表格操作栏
+// 			isButton: false, //是否显示表格上面的新增删除按钮
+// 			isInlineEditing: false, //是否是行内编辑
+// 			isTopTool: false, //是否有表格右上角工具
+// 			isPage: false, //是否有分页
+// 			isDialogTab: true, //是否是弹窗里面的表格
+// 			height: 500,
+// 		},
+// 		// 给后端的数据
+// 		form: {},
+// 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
+// 		search: [
+// 			{ label: '收货单号', prop: 'sendNo', required: false, type: 'text' },
+// 			{ label: '申请单号', prop: 'reqNo', required: false, type: 'text' },
+// 			{ label: 'PR单号', prop: 'prNo', required: false, type: 'text' },
+// 			{ label: '工程验收人', prop: 'engineer', required: false, type: 'select', options: [], isRequired: true },
+// 			// { label: '收货时间', prop: 'sendTime', required: false, type: 'time', isRequired: true },
+// 		],
+// 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: true }],
+// 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
+// 		page: {
+// 			pageNum: 1,
+// 			pageSize: 10,
+// 		},
+// 	},
+// });
+// 点击收货弹窗
+const currentData = ref<EmptyObjectType>([]);
+const openArriveJobDialog = (scope: EmptyObjectType) => {
+	arriveJobDialogRef.value.openDialog('samp', scope.row, '收货');
+	currentData.value = scope.row;
+};
+const changeInput = (val: number, formData: EmptyObjectType) => {
+	const dialogData = currentData.value;
+	if (state.tableData.dialogConfig) {
+		state.tableData.dialogConfig[10].max = dialogData.reqQty - dialogData.receiveQty;
+		if (val > dialogData.reqQty - dialogData.receiveQty) {
+			formData.receiptQty = dialogData.reqQty - dialogData.receiveQty;
+		}
 	}
 };
+
 // 搜索下拉选择
-const selectChange = (query: string) => {
+const remoteMethod = (query: string) => {
+	let dialogConfig = state.tableData.dialogConfig;
+	dialogConfig?.forEach((item) => {
+		if (item.prop === 'engineer') item.loading = true;
+	});
 	if (query) {
 		loading.value = true;
 		setTimeout(async () => {
@@ -246,35 +209,31 @@ const selectChange = (query: string) => {
 			let options = res.data.map((item: EmptyObjectType) => {
 				return { value: `${item.userid}`, label: `${item.username}` };
 			});
-			dialogState.tableData.search[3].options = options.filter((item: EmptyObjectType) => {
-				return item.label.toLowerCase().includes(query.toLowerCase()) || item.value.toLowerCase().includes(query.toLowerCase());
+			dialogConfig?.forEach((item) => {
+				if (item.prop === 'engineer') item.loading = false;
+				item.options = options.filter((item: EmptyObjectType) => {
+					return item.value.toLowerCase().includes(query.toLowerCase()) || item.label.toLowerCase().includes(query.toLowerCase());
+				});
 			});
 		}, 500);
 	} else {
-		dialogState.tableData.search[3].options = [];
+		dialogConfig?.forEach((item) => {
+			if (item.prop === 'engineer') item.options = [];
+		});
 	}
 };
-// 单元格字体颜色
-const changeToStyle = (indList: number[]) => {
-	return ({ columnIndex, column }: any) => {
-		for (let j = 0; j < indList.length; j++) {
-			let ind = indList[j];
-			if (columnIndex === ind && column.property === 'reqNo') {
-				return { color: 'var(--el-color-primary)', cursor: 'pointer' };
-			} else if (column.property === 'receiveQty') {
-				return { color: 'red' };
-			}
-		}
-	};
-};
-cellStyle.value = changeToStyle([1, 7]);
+
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;
 	let data = {
-		putno: form.putno,
+		...form,
+		reqDate: form.reqDate,
+		startReqDate: form.reqDate && form.reqDate[0],
+		endReqDate: form.reqDate && form.reqDate[1],
 		page: state.tableData.page,
 	};
+	delete data.reqDate;
 	const res = await getGetWaitRecievePageListApi(data);
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
@@ -282,67 +241,31 @@ const getTableData = async () => {
 		state.tableData.config.loading = false;
 	}
 };
-//删除
-const onDelRow = (row: EmptyObjectType, i: number) => {
-	dialogState.tableData.data.splice(i, 1);
-};
-// 点击收货弹窗
-const openArriveJobDialog = (scope: EmptyObjectType) => {
-	let data = { reqNo: scope.row.reqNo };
-	dialogState.tableData.form = scope.row;
-	getDetailData(data);
-	dilogTitle.value = '收货';
-	changeStatus(header.value, 300, true);
-};
-// 点击申请单号
-const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
-	if (column.property === 'reqNo') {
-		dilogTitle.value = '单号:' + row.reqNo;
-		changeStatus(header1.value, 500, false);
-		let data = { reqNo: row.reqNo };
-		getDetailData(data);
-	}
-};
-// 详情接口
-const getDetailData = async (data: Object) => {
-	const res = await getreqNoApi(data);
-	dialogState.tableData.data = res.data.applyDetails;
-	arriveJobDialogVisible.value = true;
-	if (res.status) {
-		dialogState.tableData.config.loading = false;
-	}
-};
-// 根据弹出窗不一样展现的配置不一样
-const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) => {
-	let tableData = dialogState.tableData;
-	let config = tableData.config;
-	tableData.header = header;
-	config.height = height;
-	config.isOperate = isShow;
-	config.isInlineEditing = isShow;
-};
+
 // 提交
-const onSubmit = async (formEl: FormInstance | undefined) => {
-	if (!formEl) return;
-	await formEl.validate(async (valid: boolean) => {
-		if (!valid) return ElMessage.warning(t('表格项必填未填'));
-		if (!dialogState.tableData.form['engineer']) return ElMessage.warning(t('请选择工程验收人'));
-		loadingBtn.value = true;
-		let allData: EmptyObjectType = {};
-		allData = { ...dialogState.tableData.form };
-		let data = dialogState.tableData.data;
-		data = data.map((item) => {
-			return { reqDetailId: item.runId, matNo: item.matNo, receiptQty: item.receiptQty, receiptDate: item.receiptDate, describe: item.describe };
-		});
-		allData['details'] = data;
-		const res = await getAddReceiveApi(allData);
-		if (res.status) {
-			ElMessage.success(t('收货成功'));
-			arriveJobDialogVisible.value = false;
-			getTableData();
-		}
-		loadingBtn.value = false;
-	});
+const onSubmit = async (formData: any) => {
+	loadingBtn.value = true;
+	const getData = {
+		applyDetailId: formData.applyDetailId,
+		receiveQty: formData.receiptQty,
+		receiveDate: formData.receiveDate,
+		engineer: formData.engineer,
+		describe: formData.describe,
+	};
+	// options.forEach((item) => {
+	// 	if (item.value === formData.purchaserName) {
+	// 		getData['purchaser'] = item.label;
+	// 		getData['purchaserName'] = item.text;
+	// 	}
+	// });
+	const res = await getAddReceiveApi(getData);
+	if (res.status) {
+		ElMessage.success(t('收货成功'));
+
+		arriveJobDialogRef.value.closeDialog();
+		getTableData();
+	}
+	loadingBtn.value = false;
 };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
@@ -360,10 +283,10 @@ const onTablePageChange = (page: TableDemoPageType) => {
 const onSortHeader = (data: TableHeaderType[]) => {
 	state.tableData.header = data;
 };
-if (dialogState.tableData.btnConfig)
-	dialogState.tableData.btnConfig[0].disabled = computed(() => {
-		return dialogState.tableData.data.length <= 1 ? true : false;
-	});
+// if (dialogState.tableData.btnConfig)
+// 	dialogState.tableData.btnConfig[0].disabled = computed(() => {
+// 		return dialogState.tableData.data.length <= 1 ? true : false;
+// 	});
 // 页面加载时
 onMounted(() => {
 	getTableData();
