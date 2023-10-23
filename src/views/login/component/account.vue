@@ -153,7 +153,7 @@ const onSignIn = (formEl: EmptyObjectType | undefined) => {
 // 在路由里面所有的meta里面加上isKeepAlive字段(是否缓存组件状态)
 const addIsKeepAlive = (datas: EmptyArrayType) => {
 	datas.forEach((item) => {
-		item.meta['isKeepAlive'] = false;
+		item.meta['isKeepAlive'] = true;
 		item.children &&
 			item.children.forEach((c: any) => {
 				let reg = new RegExp('/', 'g');

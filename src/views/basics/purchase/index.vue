@@ -16,7 +16,7 @@
 	</div>
 </template>
 
-<script setup lang="ts" name="/basics/purchase">
+<script setup lang="ts" name="basicsobject">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 // 接口

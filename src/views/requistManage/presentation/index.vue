@@ -52,7 +52,7 @@
 	</div>
 </template>
 
-<script setup lang="ts" name="/requistManage/presentation">
+<script setup lang="ts" name="requistManagepresentation">
 import { defineAsyncComponent, reactive, ref, onMounted, watch, nextTick } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useI18n } from 'vue-i18n';
