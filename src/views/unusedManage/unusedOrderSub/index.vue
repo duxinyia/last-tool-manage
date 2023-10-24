@@ -341,8 +341,9 @@ const onSearch = (data: EmptyObjectType) => {
 
 // 分页改变时回调
 const onTablePageChange = (page: TableDemoPageType) => {
-	state.tableData.page.pageNum = page.pageNum;
-	state.tableData.page.pageSize = page.pageSize;
+	const pages = state.tableData.page;
+	pages.pageNum = page.pageNum;
+	pages.pageSize = page.pageSize;
 	getTableData();
 };
 // 拖动显示列排序回调

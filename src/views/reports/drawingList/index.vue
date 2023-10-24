@@ -101,9 +101,11 @@ const getTableData = async () => {
 };
 // 点击查看图纸
 const drawPathClick = async (drawPath: string) => {
-	// if (drawPath.includes('/')) {
-	window.open(`${import.meta.env.VITE_API_URL}${drawPath}`, '_blank');
-	// }
+	if (drawPath) {
+		window.open(`${import.meta.env.VITE_API_URL}${drawPath}`, '_blank');
+	} else {
+		ElMessage.warning(t('没有图纸'));
+	}
 };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {

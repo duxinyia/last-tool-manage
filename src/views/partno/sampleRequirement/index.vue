@@ -32,6 +32,11 @@
 							<span v-if="val.isRequired" class="color-danger mr5">*</span>
 							<span style="width: 96px" class="mr10">{{ val.label }}</span>
 						</div>
+						<div v-if="val.type === 'button'">
+							<el-button class="buttonBorder" type="primary" size="default" @click="downLoadFile(val.prop)"
+								><el-icon><ele-Download /></el-icon>{{ val.label }}
+							</el-button>
+						</div>
 					</el-col>
 				</el-row>
 
@@ -167,6 +172,8 @@ const dialogState = reactive<TableDemoState>({
 			// { label: '规格', prop: 'specs', required: false, type: 'text' },
 			{ label: '需求数量', prop: 'needsQty', required: false, type: 'text' },
 			{ label: '需求时间', prop: 'needsDate', required: false, type: 'text' },
+			{ label: '下载查看图纸', prop: 'drawPathProp', required: false, type: 'button' },
+			{ label: '下载查看3d图纸', prop: 'draw3dPathProp', required: false, type: 'button' },
 		],
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
@@ -232,7 +239,7 @@ const onDelRow = (row: EmptyObjectType, i: number) => {
 const onAddrow = () => {
 	dialogState.tableData.data.push({ needsQtymin: 1, vendorCodedisabled: false, vendorNamedisabled: false });
 };
-// 点击收货弹窗
+// 点击送样按钮弹窗
 const openArriveJobDialog = async (scope: EmptyObjectType) => {
 	const res = await getSampleDetailsForTakeSampleApi(scope.row.sampleNo);
 	res.data.forEach((item: any) => {
@@ -243,6 +250,20 @@ const openArriveJobDialog = async (scope: EmptyObjectType) => {
 	deliveryDialogVisible.value = true;
 	dilogTitle.value = '料号送样';
 	changeStatus(header.value, 200, true);
+};
+// 查看图纸
+const downLoadFile = (prop: string) => {
+	const drawPath = dialogState.tableData.form.drawPath;
+	const draw3dPath = dialogState.tableData.form.draw3dPath;
+	const drawMap: EmptyObjectType = {
+		drawPathProp: drawPath,
+		draw3dPathProp: draw3dPath,
+	};
+	if (drawMap[prop]) {
+		window.open(`${import.meta.env.VITE_API_URL}${drawMap[prop]}`, '_blank');
+	} else {
+		prop === 'drawPathProp' ? ElMessage.warning(t('没有图纸')) : ElMessage.warning(t('没有3d图纸'));
+	}
 };
 // 点击申请单号
 const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
@@ -271,6 +292,7 @@ const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) =
 	config.isOperate = isShow;
 	config.isInlineEditing = isShow;
 };
+
 // 提交
 const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
@@ -328,5 +350,8 @@ onMounted(() => {
 			overflow: hidden;
 		}
 	}
+}
+.buttonBorder {
+	border: 0px !important;
 }
 </style>

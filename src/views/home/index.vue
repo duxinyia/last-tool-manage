@@ -462,7 +462,7 @@ $homeNavLengh: 8;
 		.home-card-item {
 			background-image: linear-gradient(164.2deg, rgb(196, 224, 250) 0.5%, rgb(254, 254, 254) 24.8%);
 			// height: 400px;
-			height: 767px;
+			height: 758px;
 			width: 100%;
 			overflow: hidden;
 			.home-monitor {
