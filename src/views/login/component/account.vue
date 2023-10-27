@@ -18,12 +18,16 @@
 					<el-icon class="el-input__icon" :size="20"><ele-Unlock /></el-icon>
 				</template>
 				<template #suffix>
-					<i
+					<el-icon @click="state.isShowPassword = !state.isShowPassword" class="login-content-password">
+						<ele-Hide v-if="state.isShowPassword" />
+						<ele-View v-else />
+					</el-icon>
+					<!-- <i
 						class="iconfont el-input__icon login-content-password"
 						:class="state.isShowPassword ? 'icon-yincangmima' : 'icon-xianshimima'"
 						@click="state.isShowPassword = !state.isShowPassword"
 					>
-					</i>
+					</i> -->
 				</template>
 			</el-input>
 		</el-form-item>

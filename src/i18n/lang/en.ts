@@ -15,6 +15,7 @@ export default {
 		presentation: 'tool requisition operation',
 		arrivejob: 'arrival operation',
 		entryjob: 'please purchase for storage',
+		issueMaterials:'issue materials',
 		toolsReturn: 'return the tools',
 		report: 'report',
 		matNo: 'materialNo manage',

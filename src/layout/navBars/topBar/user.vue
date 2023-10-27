@@ -13,11 +13,13 @@
 			</template>
 		</el-dropdown> -->
 		<div class="layout-navbars-breadcrumb-user-icon" @click="onSearchClick">
-			<i class="iconfont icon-chaxun" :title="$t('message.user.title2')"></i>
+			<el-icon :size="17" :title="$t('message.user.title2')"><ele-Search /></el-icon>
+			<!-- <i class="iconfont icon-chaxun" :title="$t('message.user.title2')"></i> -->
 		</div>
 		<el-dropdown :show-timeout="70" :hide-timeout="50" trigger="click" @command="onLanguageChange">
-			<div class="layout-navbars-breadcrumb-user-icon">
-				<i class="iconfont" :class="state.disabledI18n === 'en' ? 'icon-fuhao-yingwen' : 'icon-zhongwen'" :title="$t('message.user.title1')"></i>
+			<div class="layout-navbars-breadcrumb-user-icon" :title="$t('message.user.title1')">
+				<SvgIcon class="svgIcon" :size="0" color="'#fff'" :name="state.disabledI18n === 'en' ? 'icon-yingwen' : 'icon-zhongwen'" />
+				<!-- <i class="iconfont" :class="state.disabledI18n === 'en' ? 'icon-fuhao-yingwen' : 'icon-zhongwen'" :title="$t('message.user.title1')"></i> -->
 			</div>
 			<template #dropdown>
 				<el-dropdown-menu>
@@ -37,14 +39,30 @@
 					<ele-Bell />
 				</el-icon>
 			</el-badge>
-		</div> -->
-
-		<div class="layout-navbars-breadcrumb-user-icon" @click="onScreenfullClick">
-			<i
+		</div>
+		<el-popover
+			ref="userNewsRef"
+			:virtual-ref="userNewsBadgeRef"
+			placement="bottom"
+			trigger="click"
+			transition="el-zoom-in-top"
+			virtual-triggering
+			:width="300"
+			:persistent="false"
+		>
+			<UserNews />
+		</el-popover> -->
+		<div
+			class="layout-navbars-breadcrumb-user-icon"
+			@click="onScreenfullClick"
+			:title="state.isScreenfull ? $t('message.user.title6') : $t('message.user.title5')"
+		>
+			<SvgIcon :size="0" class="svgIcon" :name="!state.isScreenfull ? 'icon-quanping' : 'icon-tuichuquanping'" />
+			<!-- <i
 				class="iconfont"
 				:title="state.isScreenfull ? $t('message.user.title6') : $t('message.user.title5')"
 				:class="!state.isScreenfull ? 'icon-quanping' : 'icon-tuichuquanping'"
-			></i>
+			></i> -->
 		</div>
 		<div class="layout-navbars-breadcrumb-user-icon mr10">
 			<span class="layout-navbars-breadcrumb-user-link">{{ currentTime }}</span>
@@ -52,7 +70,8 @@
 		<el-dropdown :show-timeout="70" :hide-timeout="50" @command="onHandleCommandClick">
 			<span class="layout-navbars-breadcrumb-user-link">
 				{{ userInfos.userName === '' ? 'admin' : userInfos.userId + ' ' + userInfos.userName }}
-				<i class="iconfont icon-user-s userH"></i>
+				<el-icon class="userH"><ele-UserFilled /></el-icon>
+				<!-- <i class="iconfont icon-user-s userH"></i> -->
 				<!-- <el-icon class="el-icon--right">
 					<i class="iconfont icon-user-s userH"></i>
 				</el-icon> -->
@@ -60,7 +79,7 @@
 			<template #dropdown>
 				<el-dropdown-menu>
 					<el-dropdown-item command="/home">{{ $t('message.user.dropdown1') }}</el-dropdown-item>
-					<el-dropdown-item command="/404">{{ $t('message.user.dropdown3') }}</el-dropdown-item>
+					<!-- <el-dropdown-item command="/404">{{ $t('message.user.dropdown3') }}</el-dropdown-item> -->
 					<!-- <el-dropdown-item command="/401">{{ $t('message.user.dropdown4') }}</el-dropdown-item> -->
 					<el-dropdown-item divided command="logOut">{{ $t('message.user.dropdown5') }}</el-dropdown-item>
 				</el-dropdown-menu>
@@ -83,6 +102,7 @@ import other from '/@/utils/other';
 import mittBus from '/@/utils/mitt';
 import { Session, Local } from '/@/utils/storage';
 import { formatDate } from '/@/utils/formatTime';
+import { color } from 'echarts';
 
 // 引入组件
 const UserNews = defineAsyncComponent(() => import('/@/layout/navBars/topBar/userNews.vue'));
@@ -250,8 +270,13 @@ onBeforeUnmount(() => {
 				display: inline-block;
 				animation: logoAnimation 0.3s ease-in-out;
 			}
+			.svgIcon {
+				display: inline-block;
+				animation: logoAnimation 0.3s ease-in-out;
+			}
 		}
 	}
+
 	:deep(.el-dropdown) {
 		color: var(--next-bg-topBarColor);
 	}
@@ -265,7 +290,7 @@ onBeforeUnmount(() => {
 		top: 12px;
 	}
 	.userH {
-		font-size: 24px !important;
+		font-size: 22px !important;
 	}
 }
 </style>

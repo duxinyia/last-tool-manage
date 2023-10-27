@@ -153,9 +153,9 @@ const state = reactive<TableDemoState>({
 			{ label: '品名-中文:', prop: 'nameCh', placeholder: '', required: false, type: 'text' },
 			{ label: '品名-英文:', prop: 'nameEn', placeholder: '', required: false, type: 'text' },
 			{ label: '验收日期:', prop: 'checkDate', placeholder: '', required: false, type: 'text' },
-			{ label: '验收数量:', prop: 'checkQty', placeholder: '', required: false, type: 'text' },
-			{ label: '合格数量:', prop: 'passQty', placeholder: '', required: false, type: 'text' },
-			{ label: '不合格数量:', prop: 'failQty', placeholder: '', required: false, type: 'text' },
+			// { label: '验收数量:', prop: 'checkQty', placeholder: '', required: false, type: 'text' },
+			{ label: '验收合格数量:', prop: 'passQty', placeholder: '', required: false, type: 'text' },
+			// { label: '不合格数量:', prop: 'failQty', placeholder: '', required: false, type: 'text' },
 			//这个字段待定
 			{ label: '验收人:', prop: 'checker', placeholder: '', required: false, type: 'text' },
 			{
@@ -170,14 +170,14 @@ const state = reactive<TableDemoState>({
 				lg: 24,
 				xl: 24,
 			},
+			// validateForm: 'number',
+			// message: '请输入正整数',
 			{
-				label: '入库数量:',
+				label: '有码数量:',
 				prop: 'stockqty',
-				placeholder: '请输入入库数量',
-				required: true,
-				type: 'input',
-				validateForm: 'number',
-				message: '请输入正整数',
+				required: false,
+				type: 'text',
+				placeholder: '',
 				xs: 24,
 				sm: 12,
 				md: 8,
@@ -313,6 +313,9 @@ const getTableData = async () => {
 	delete data.checkDate;
 	const res = await GetTStockInputPageListApi(data);
 	state.tableData.data = res.data.data;
+	state.tableData.data.forEach((item) => {
+		item.stockqty = 0;
+	});
 	state.tableData.config.total = res.data.total;
 	if (res.status) {
 		state.tableData.config.loading = false;
@@ -322,8 +325,8 @@ const getTableData = async () => {
 const change = (val: any, prop: string, state: any) => {
 	let { formInnerData, formData } = state;
 	if (prop == 'sacnstockqty') {
-		if (formInnerData.codeList.length + 1 > formData.checkqty) {
-			ElMessage.error(`扫码数量超过验收数量，请勿继续扫码`);
+		if (formInnerData.codeList.length + 1 > formData.passQty) {
+			ElMessage.error(`扫码数量超过合格验收数量，请勿继续扫码`);
 			formInnerData['sacnstockqty'] = null;
 		} else if (formInnerData.codeList.includes(val)) {
 			ElMessage.warning(`该条码已存在，请勿重复扫码`);
@@ -412,32 +415,35 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 		// sLocation: obj.sLocation,
 		// storeType: obj.storeType,
 	};
-	if (obj.stockqty > obj.checkQty) {
-		ElMessage.error(`入库数量大于验收数量`);
-	} else if (obj.codes && obj.stockqty < obj.codes.length) {
-		ElMessage.error(`入库数量小于扫码数量`);
-	} else if (obj.stockqty != obj.checkQty) {
-		ElMessageBox.confirm('入库数量与验收数量不一致，是否继续提交', '提示', {
-			confirmButtonText: '确认',
-			cancelButtonText: '取消',
-			type: 'warning',
-			buttonSize: 'default',
-		})
-			.then(async () => {
-				const res = await GetTStockAddApi(submitData);
-				if (res.status) {
-					ElMessage.success(`入库成功`);
-					entryJobDialogRef.value.closeDialog();
-					getTableData();
-				}
-			})
-			.catch(() => {
-				// ElMessage({
-				// 	type: 'info',
-				// 	message: 'Delete canceled',
-				// });
-			});
-	} else {
+	if (obj.stockqty > obj.passQty) {
+		ElMessage.error(`有码数量大于验收合格数量`);
+	}
+	// else if (obj.codes && obj.stockqty < obj.codes.length) {
+	// 	ElMessage.error(`有码数量小于扫码数量`);
+	// }
+	// else if (obj.stockqty != obj.checkQty) {
+	// ElMessageBox.confirm('入库数量与验收数量不一致，是否继续提交', '提示', {
+	// 	confirmButtonText: '确认',
+	// 	cancelButtonText: '取消',
+	// 	type: 'warning',
+	// 	buttonSize: 'default',
+	// })
+	// 	.then(async () => {
+	// 		const res = await GetTStockAddApi(submitData);
+	// 		if (res.status) {
+	// 			ElMessage.success(`入库成功`);
+	// 			entryJobDialogRef.value.closeDialog();
+	// 			getTableData();
+	// 		}
+	// 	})
+	// 	.catch(() => {
+	// 		// ElMessage({
+	// 		// 	type: 'info',
+	// 		// 	message: 'Delete canceled',
+	// 		// });
+	// 	});
+	// }
+	else {
 		const res = await GetTStockAddApi(submitData);
 		if (res.status) {
 			ElMessage.success(`入库成功`);

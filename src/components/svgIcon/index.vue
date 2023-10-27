@@ -2,13 +2,13 @@
 	<i v-if="isShowIconSvg" class="el-icon" :style="setIconSvgStyle" :title="title">
 		<component :is="getIconName" />
 	</i>
-	<div v-else-if="isShowIconImg" :style="setIconImgOutStyle">
+	<div v-else-if="isShowIconImg" :style="setIconImgOutStyle" :title="title">
 		<img :src="getIconName" :style="setIconSvgInsStyle" />
 	</div>
-	<svg v-else-if="isShowLocalIconSvg" aria-hidden="true" :style="svgiconStyle" :width="width" :height="height">
+	<svg v-else-if="isShowLocalIconSvg" aria-hidden="true" :style="svgiconStyle" :width="width" :height="height" :title="title">
 		<use :xlink:href="`#${name}`" :fill="color" />
 	</svg>
-	<i v-else :class="getIconName" :style="setIconSvgStyle" />
+	<i v-else :class="getIconName" :style="setIconSvgStyle" :title="title" />
 </template>
 
 <script setup lang="ts" name="svgIcon">
@@ -73,7 +73,7 @@ const setIconImgOutStyle = computed(() => {
 });
 // svg图标样式
 const svgiconStyle = computed(() => {
-	return `margin-right:10px;`;
+	return `margin-right: ${props.size};color: ${props.color}!important;`;
 });
 // 设置图片样式
 const setIconSvgInsStyle = computed(() => {

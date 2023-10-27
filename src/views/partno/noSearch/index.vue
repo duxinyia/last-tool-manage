@@ -312,20 +312,11 @@ const onSearch = (data: EmptyObjectType) => {
 const editDialog = async (formData: EmptyObjectType) => {
 	const res = await getMachineTypesOfMatApi(formData.matNo);
 	formData.machineTypes = res.data;
+	formData.picture = '/' + formData.picture.split('/').slice(3).join('/');
 };
 // 打开弹窗
 const openDialog = async (type: string, row: EmptyObjectType) => {
 	noSearchDialogRef.value.openDialog(type, row);
-	// if (type === 'add') {
-	// 	let arr = ['bu', 'projectCode', 'machineType', 'stage'];
-	// 	if (state.tableData.dialogConfig) {
-	// 		state.tableData.dialogConfig.forEach((item) => {
-	// 			if (arr.includes(item.prop)) {
-	// 				item.options = [];
-	// 			}
-	// 		});
-	// 	}
-	// }
 };
 // 新增数据  修改数据
 const addData = async (ruleForm: EmptyObjectType, type: string) => {

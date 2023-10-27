@@ -64,11 +64,15 @@
 						</el-input>
 					</div>
 					<div class="describe">
+						<span>收货描述说明：</span>
+						<div style="font-weight: 700; color: #1890ff">{{ dialogState.tableData.form['describe'] }}</div>
+					</div>
+					<div class="describe">
 						<span>描述说明：</span>
 						<el-input
 							class="input-textarea"
 							show-word-limit
-							v-model="dialogState.tableData.form['describe']"
+							v-model="dialogState.tableData.form['describe1']"
 							type="textarea"
 							placeholder="请输入"
 							maxlength="150"
@@ -130,7 +134,7 @@ const header = ref<EmptyArrayType>([
 	// { key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'text', isCheck: true },
 	{ key: 'receiptDate', colWidth: '', title: '收货时间', type: 'text', isCheck: true },
-	{ key: 'checkQty', colWidth: '100', title: '验收数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
+	{ key: 'checkQty', colWidth: '100', title: '验收数量', type: 'text', isCheck: true, isRequired: false, min: 0 },
 	{ key: 'passQty', colWidth: '100', title: '合格数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
 	{ key: 'failqty', colWidth: '', title: '不合格数量', type: 'text', isCheck: true, isRequired: true },
 	{ key: 'failReasonIds', colWidth: '180', title: '验收不合格原因', type: 'multipleSelect', isCheck: true, options: [] },
@@ -332,6 +336,9 @@ const getDetailData = async (data: string) => {
 	const res = await getRepariReceiveDetailsForCheckApi(data);
 	dialogState.tableData.form = res.data.head;
 	dialogState.tableData.data = res.data.details;
+	dialogState.tableData.data.forEach((item) => {
+		item.checkQty = item.receiptQty;
+	});
 	if (res.status) {
 		dialogState.tableData.config.loading = false;
 		isSureDisabled.value = false;
@@ -358,28 +365,28 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
-		loadingBtn.value = true;
 		let allData: EmptyObjectType = {};
 		const form = dialogState.tableData.form;
-		allData = { repairReceiveNo: form.repairReceiveNo, accepReportUrl: form.accepReportUrl || '', headDescribe: form.describe || '' };
+		allData = { repairReceiveNo: form.repairReceiveNo, accepReportUrl: form.accepReportUrl || '', headDescribe: form.describe1 || '' };
 		let data = dialogState.tableData.data;
 		data = data.map((item) => {
 			return {
 				repairReceiveDetailId: item.repairReceiveDetailId,
-				checkQty: item.checkQty,
+				// checkQty: item.checkQty,
 				passQty: item.passQty,
 				checkDate: item.checkDate,
 				failReasonIds: item.failReasonIds,
 			};
 		});
 		allData['details'] = data;
+		loadingBtn.value = true;
 		const res = await getCheckApi(allData);
 		if (res.status) {
 			ElMessage.success(t('验收成功'));
 			maintenanceCheckDialogVisible.value = false;
 			getTableData();
 		}
-		loadingBtn.value = fasle;
+		loadingBtn.value = false;
 	});
 };
 // 搜索点击时表单回调

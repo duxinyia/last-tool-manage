@@ -71,6 +71,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'repairReceiveNo', colWidth: '', title: '维修收货单号', type: 'text', isCheck: true },
 			// { key: 'reqno', colWidth: '', title: '申请单号', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料号', type: 'text', isCheck: true },
+			{ key: 'repairNo', colWidth: '', title: '维修单号', type: 'text', isCheck: true },
 			// { key: 'namech', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			// { key: 'nameen', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'checkQty', colWidth: '', title: '验收数量', type: 'text', isCheck: true },
@@ -93,7 +94,12 @@ const state = reactive<TableDemoState>({
 			isPage: true, //是否有分页
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-		search: [{ label: '维修验收单号', prop: 'repairCheckNo', required: false, type: 'input' }],
+		search: [
+			{ label: '维修单号', prop: 'repairNo', required: false, type: 'input' },
+			{ label: '料号', prop: 'matNo', required: false, type: 'input', lg: 5, xl: 5 },
+			{ label: '维修验收单号', prop: 'repairCheckNo', required: false, type: 'input' },
+			{ label: '维修收货单号', prop: 'repairReceiveNo', required: false, type: 'input' },
+		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
@@ -118,17 +124,12 @@ const state = reactive<TableDemoState>({
 				placeholder: '请输入验收单号',
 				required: false,
 				type: 'text',
-				xs: 24,
-				sm: 12,
-				md: 12,
-				lg: 8,
-				xl: 8,
 			},
 			//这个字段待定
-			{ label: '验收人:', prop: 'checker', placeholder: '请输入验收人', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
-			{ label: '料号:', prop: 'matNo', placeholder: '请输入料号', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 8, xl: 8 },
-			{ label: '品名-中文:', prop: 'nameCh', placeholder: '请输入品名-中文', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
-			{ label: '品名-英文:', prop: 'nameEn', placeholder: '请输入品名-英文', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
+			{ label: '验收人:', prop: 'checker', placeholder: '请输入验收人', required: false, type: 'text' },
+			{ label: '料号:', prop: 'matNo', placeholder: '请输入料号', required: false, type: 'text' },
+			{ label: '品名-中文:', prop: 'nameCh', placeholder: '请输入品名-中文', required: false, type: 'text' },
+			{ label: '品名-英文:', prop: 'nameEn', placeholder: '请输入品名-英文', required: false, type: 'text' },
 			// { label: '厂商代码:', prop: 'vendorCode', placeholder: '请输入厂商代码', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
 			// {
 			// 	label: '厂商名称:',
@@ -142,7 +143,7 @@ const state = reactive<TableDemoState>({
 			// 	lg: 16,
 			// 	xl: 16,
 			// },
-			{ label: '验收数量:', prop: 'checkQty', placeholder: '请输入验收数量', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
+			{ label: '验收合格数量:', prop: 'passQty', placeholder: '', required: false, type: 'text' },
 			// 这个字段待定
 			{
 				label: '验收时间:',
@@ -151,24 +152,24 @@ const state = reactive<TableDemoState>({
 				required: false,
 				type: 'text',
 				xs: 24,
-				sm: 8,
-				md: 8,
-				lg: 16,
-				xl: 16,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
 			},
+			// validateForm: 'number',
+			// 	message: '请输入正整数',
 			{
-				label: '入库数量:',
+				label: '有码数量:',
 				prop: 'stockqty',
-				placeholder: '请输入入库数量',
-				required: true,
-				type: 'input',
-				validateForm: 'number',
-				message: '请输入正整数',
+				placeholder: '',
+				required: false,
+				type: 'text',
 				xs: 24,
 				sm: 12,
-				md: 9,
-				lg: 9,
-				xl: 9,
+				md: 8,
+				lg: 8,
+				xl: 8,
 			},
 			{
 				label: '扫码录入',
@@ -176,11 +177,11 @@ const state = reactive<TableDemoState>({
 				placeholder: '请输入入库数量',
 				required: false,
 				type: 'button',
-				xs: 6,
-				sm: 6,
-				md: 6,
-				lg: 6,
-				xl: 6,
+				xs: 4,
+				sm: 4,
+				md: 4,
+				lg: 4,
+				xl: 4,
 			},
 			{
 				label: '收货仓库:',
@@ -189,11 +190,6 @@ const state = reactive<TableDemoState>({
 				required: true,
 				type: 'select',
 				options: [],
-				xs: 24,
-				sm: 12,
-				md: 8,
-				lg: 8,
-				xl: 8,
 			},
 		],
 		innerDialogConfig: [
@@ -266,11 +262,14 @@ const getOptionsData = async () => {
 const getTableData = async () => {
 	const form = state.tableData.form;
 	let data = {
-		repairCheckNo: form.repairCheckNo,
+		...form,
 		page: state.tableData.page,
 	};
 	const res = await GetQueryStorableRepairCheckDetailsApi(data);
 	state.tableData.data = res.data.data;
+	state.tableData.data.forEach((item) => {
+		item.stockqty = 0;
+	});
 	state.tableData.config.total = res.data.total;
 	if (res.status) {
 		state.tableData.config.loading = false;
@@ -280,8 +279,8 @@ const getTableData = async () => {
 const change = (val: any, prop: string, state: any) => {
 	let { formInnerData, formData } = state;
 	if (prop == 'sacnstockqty') {
-		if (formInnerData.codeList.length + 1 > formData.checkqty) {
-			ElMessage.error(`扫码数量超过验收数量，请勿继续扫码`);
+		if (formInnerData.codeList.length + 1 > formData.passQty) {
+			ElMessage.error(`扫码数量超过验收合格数量，请勿继续扫码`);
 			formInnerData['sacnstockqty'] = null;
 		} else if (formInnerData.codeList.includes(val)) {
 			ElMessage.warning(`该条码已存在，请勿重复扫码`);
@@ -355,48 +354,50 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 
 	let submitData = {
 		repairCheckDetailId: obj.repairCheckDetailId,
-		runId: obj.runid,
-		checkno: obj.checkno,
-		creator: obj.creator,
-		matno: obj.matno,
-		namech: obj.namech,
-		nameen: obj.nameen,
-		vendorcode: obj.vendorcode,
-		vendorname: obj.vendorname,
-		checkqty: obj.checkQty,
-		putQty: obj.stockqty,
-		stockcode: obj.stockcode,
+		// runId: obj.runid,
 		storageId: obj.storageId,
-		storeType: obj.storeType,
-		sLocation: obj.sLocation,
-		Codes: obj.codeList,
+		codes: obj.codeList,
+		// checkno: obj.checkno,
+		// creator: obj.creator,
+		// matno: obj.matno,
+		// namech: obj.namech,
+		// nameen: obj.nameen,
+		// vendorcode: obj.vendorcode,
+		// vendorname: obj.vendorname,
+		// checkqty: obj.checkQty,
+		// putQty: obj.stockqty,
+		// stockcode: obj.stockcode,
+		// storeType: obj.storeType,
+		// sLocation: obj.sLocation,
 	};
-	if (submitData.putQty > submitData.checkqty) {
-		ElMessage.error(`入库数量大于验收数量`);
-	} else if (submitData.Codes && submitData.putQty < submitData.Codes.length) {
-		ElMessage.error(`入库数量小于扫码数量`);
-	} else if (submitData.putQty != submitData.checkqty) {
-		ElMessageBox.confirm('入库数量与验收数量不一致，是否继续提交', '提示', {
-			confirmButtonText: '确认',
-			cancelButtonText: '取消',
-			type: 'warning',
-			buttonSize: 'default',
-		})
-			.then(async () => {
-				const res = await GetPutStorageApi(submitData);
-				if (res.status) {
-					ElMessage.success(`入库成功`);
-					entryJobDialogRef.value.closeDialog();
-					getTableData();
-				}
-			})
-			.catch(() => {
-				// ElMessage({
-				// 	type: 'info',
-				// 	message: 'Delete canceled',
-				// });
-			});
-	} else {
+	if (obj.stockqty > obj.passQty) {
+		ElMessage.error(`有码数量大于验收合格数量`);
+	}
+	// else if (submitData.Codes && submitData.putQty < submitData.Codes.length) {
+	// 	ElMessage.error(`有码数量小于扫码数量`);
+	// } else if (submitData.putQty != submitData.checkqty) {
+	// 	ElMessageBox.confirm('入库数量与验收数量不一致，是否继续提交', '提示', {
+	// 		confirmButtonText: '确认',
+	// 		cancelButtonText: '取消',
+	// 		type: 'warning',
+	// 		buttonSize: 'default',
+	// 	})
+	// 		.then(async () => {
+	// 			const res = await GetPutStorageApi(submitData);
+	// 			if (res.status) {
+	// 				ElMessage.success(`入库成功`);
+	// 				entryJobDialogRef.value.closeDialog();
+	// 				getTableData();
+	// 			}
+	// 		})
+	// 		.catch(() => {
+	// 			// ElMessage({
+	// 			// 	type: 'info',
+	// 			// 	message: 'Delete canceled',
+	// 			// });
+	// 		});
+	// }
+	else {
 		const res = await GetPutStorageApi(submitData);
 		if (res.status) {
 			ElMessage.success(`入库成功`);

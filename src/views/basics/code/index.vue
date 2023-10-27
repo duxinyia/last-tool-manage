@@ -77,9 +77,54 @@ const state = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{
+				label: '厂区',
+				prop: 'area',
+				placeholder: '请选择厂区',
+				required: false,
+				type: 'select',
+				options: [
+					{ value: 'LH', label: 'LH', text: 'LH' },
+					{ value: 'JC', label: 'JC', text: 'JC' },
+					{ value: 'FS', label: 'FS', text: 'FS' },
+				],
+			},
+			{
+				label: 'BU',
+				prop: 'bu',
+				placeholder: '请选择BU',
+				required: false,
+				type: 'select',
+				options: [
+					{ value: 'CMA', label: 'CMA', text: 'CMA' },
+					{ value: 'DP', label: 'DP', text: 'DP' },
+					{ value: 'CMC', label: 'CMC', text: 'CMC' },
+				],
+			},
+			{
 				label: '专案代码',
 				prop: 'projectcode',
 				placeholder: '请输入专案代码',
+				required: false,
+				type: 'input',
+			},
+			{
+				label: '阶段',
+				prop: 'stage',
+				placeholder: '请选择阶段',
+				required: false,
+				type: 'select',
+				options: [
+					{ value: 'C6', label: 'C6', text: 'C6' },
+					{ value: 'C5', label: 'C5', text: 'C5' },
+					{ value: 'C4', label: 'C4', text: 'C4' },
+					{ value: 'C3', label: 'C3', text: 'C3' },
+					{ value: 'MP', label: 'MP', text: 'MP' },
+				],
+			},
+			{
+				label: '机种',
+				prop: 'machinetype',
+				placeholder: '请输入机种',
 				required: false,
 				type: 'input',
 			},
@@ -89,7 +134,7 @@ const state = reactive<TableDemoState>({
 		},
 		// 给后端的数据
 		form: {
-			projectcode: '',
+			// projectcode: '',
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -100,10 +145,45 @@ const state = reactive<TableDemoState>({
 		printName: '表格打印演示',
 		// 弹窗表单
 		dialogConfig: [
-			{ label: '厂区', prop: 'area', placeholder: '请输入厂区', required: true, type: 'input' },
-			{ label: 'BU', prop: 'bu', placeholder: '请输入BU', required: true, type: 'input' },
+			{
+				label: '厂区',
+				prop: 'area',
+				placeholder: '请输入厂区',
+				required: true,
+				type: 'select',
+				options: [
+					{ value: 'LH', label: 'LH', text: 'LH' },
+					{ value: 'JC', label: 'JC', text: 'JC' },
+					{ value: 'FS', label: 'FS', text: 'FS' },
+				],
+			},
+			{
+				label: 'BU',
+				prop: 'bu',
+				placeholder: '请输入BU',
+				required: true,
+				type: 'select',
+				options: [
+					{ value: 'CMA', label: 'CMA', text: 'CMA' },
+					{ value: 'DP', label: 'DP', text: 'DP' },
+					{ value: 'CMC', label: 'CMC', text: 'CMC' },
+				],
+			},
 			{ label: '专案代码', prop: 'projectcode', placeholder: '请输入专案代码', required: true, type: 'input' },
-			{ label: '阶段', prop: 'stage', placeholder: '请输入阶段', required: true, type: 'input' },
+			{
+				label: '阶段',
+				prop: 'stage',
+				placeholder: '请输入阶段',
+				required: true,
+				type: 'select',
+				options: [
+					{ value: 'C6', label: 'C6', text: 'C6' },
+					{ value: 'C5', label: 'C5', text: 'C5' },
+					{ value: 'C4', label: 'C4', text: 'C4' },
+					{ value: 'C3', label: 'C3', text: 'C3' },
+					{ value: 'MP', label: 'MP', text: 'MP' },
+				],
+			},
 			{ label: '机种', prop: 'machinetype', placeholder: '请输入机种', required: true, type: 'input' },
 		],
 	},
@@ -114,7 +194,8 @@ const getTableData = async () => {
 	state.tableData.config.loading = true;
 	const form = state.tableData.form;
 	let data = {
-		projectcode: form.projectcode,
+		// projectcode: form.projectcode,
+		...form,
 		page: state.tableData.page,
 	};
 	const res = await getSearchBaseMachine(data);
@@ -128,7 +209,7 @@ const getTableData = async () => {
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
-	tableRef.value.pageReset();
+	tableRef.value?.pageReset();
 };
 // 打开弹窗
 const openDialog = (type: string, row: Object) => {

@@ -15,6 +15,7 @@ export default {
 		presentation: '治工具请购作业',
 		arrivejob: '到货作业',
 		entryjob: '请购入库',
+		issueMaterials:'请购发料',
 		toolsReturn: '治工具退库',
 		report: '报表管理',
 		matNo: '料号管理',

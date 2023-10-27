@@ -238,9 +238,9 @@ const dialogState = reactive<TableDemoState>({
 		},
 		//退库弹窗
 		dialogConfig: [
-			{ label: '料号', prop: 'matno', placeholder: '', required: false, type: 'text', xs: 24, sm: 24, md: 12, lg: 8, xl: 8 },
-			{ label: '品名-中文', prop: 'nameCh', placeholder: '', required: false, type: 'text', xs: 24, sm: 8, md: 12, lg: 8, xl: 8 },
-			{ label: '品名-英文', prop: 'nameEn', placeholder: '', required: false, type: 'text', xs: 24, sm: 8, md: 12, lg: 8, xl: 8 },
+			{ label: '料号', prop: 'matno', placeholder: '', required: false, type: 'text', xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
+			{ label: '品名-中文', prop: 'nameCh', placeholder: '', required: false, type: 'text' },
+			{ label: '品名-英文', prop: 'nameEn', placeholder: '', required: false, type: 'text' },
 			// { label: '厂商代码', prop: 'vendorcode', placeholder: '', required: false, type: 'text', xs: 24, sm: 8, md: 12, lg: 8, xl: 8 },
 			// { label: '厂商名称', prop: 'vendorname', placeholder: '', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 12, xl: 12 },
 			{
@@ -256,11 +256,6 @@ const dialogState = reactive<TableDemoState>({
 					{ value: 2, label: '闲置', text: '闲置' },
 					{ value: 3, label: '报废', text: '报废' },
 				],
-				xs: 24,
-				sm: 12,
-				md: 12,
-				lg: 8,
-				xl: 8,
 			},
 			{
 				label: '退库原因',
@@ -269,11 +264,6 @@ const dialogState = reactive<TableDemoState>({
 				required: true,
 				type: 'select',
 				options: [],
-				xs: 24,
-				sm: 16,
-				md: 12,
-				lg: 9,
-				xl: 9,
 			},
 			{
 				label: '转仓仓库:',
@@ -286,11 +276,6 @@ const dialogState = reactive<TableDemoState>({
 				filterable: true,
 				remote: true,
 				remoteShowSuffix: true,
-				xs: 24,
-				sm: 12,
-				md: 8,
-				lg: 8,
-				xl: 8,
 			},
 			{
 				label: '出库日期:',
@@ -298,11 +283,6 @@ const dialogState = reactive<TableDemoState>({
 				placeholder: '请选择出库日期',
 				required: true,
 				type: 'date',
-				xs: 24,
-				sm: 12,
-				md: 8,
-				lg: 8,
-				xl: 8,
 			},
 			{
 				label: '描述说明:',
@@ -453,11 +433,12 @@ const openReturnDialog = (scope: EmptyObjectType, type: string) => {
 	if (type === 'transferStorage') {
 		dilogTitle.value = '转仓';
 		dialogConfig?.forEach((item, index) => {
-			if (item.prop == 'exitType' || item.prop == 'reasonId') {
-				deleteData = JSON.parse(JSON.stringify(dialogConfig?.splice(index, 2)));
-			} else if (item.prop === 'exitQty') {
+			if (item.prop === 'exitQty') {
 				item.label = '转仓数量';
 				item.placeholder = '请输入转仓数量';
+			}
+			if (item.prop == 'exitType' || item.prop == 'reasonId') {
+				deleteData = JSON.parse(JSON.stringify(dialogConfig?.splice(index, 2)));
 			}
 		});
 		deleteStorage.reverse().forEach((item: any) => {
@@ -467,12 +448,13 @@ const openReturnDialog = (scope: EmptyObjectType, type: string) => {
 	} else {
 		dilogTitle.value = '退库';
 		dialogConfig?.forEach((item, index) => {
-			const arr = ['storageId', 'outDate', 'describe'];
-			if (arr.includes(item.prop)) {
-				deleteStorage = JSON.parse(JSON.stringify(dialogConfig?.splice(index, 3)));
-			} else if (item.prop === 'exitQty') {
+			if (item.prop === 'exitQty') {
 				item.label = '退库数量';
 				item.placeholder = '请输入退库数量';
+			}
+			const arr = ['storageId', 'outDate', 'describe'];
+			if (arr.includes(item.prop)) {
+				deleteStorage = JSON.parse(JSON.stringify(dialogConfig?.splice(index, 2)));
 			}
 		});
 		deleteData.reverse().forEach((item: any) => {

@@ -40,8 +40,12 @@
 			<div class="table-top-tool" v-if="config.isTopTool">
 				<!-- <SvgIcon name="iconfont icon-dayinji" :size="19" title="打印" @click="onPrintTable" /> -->
 				<!-- <SvgIcon name="iconfont icon-btn-daoru" :size="22" :title="$t('message.tooltip.import')" @click="onImportTable('imp')" /> -->
-				<SvgIcon v-if="config.exportIcon" name="iconfont icon-btn-daochu" :size="22" :title="$t('message.tooltip.export')" @click="onExportTable" />
-				<SvgIcon name="iconfont icon-refresh-line" :size="23" :title="$t('message.tooltip.refresh')" @click="onRefreshTable" />
+				<el-icon v-if="config.exportIcon" name="iconfont icon-btn-daochu" :size="22" :title="$t('message.tooltip.export')" @click="onExportTable"
+					><ele-Upload
+				/></el-icon>
+				<!-- <SvgIcon v-if="config.exportIcon" name="iconfont icon-btn-daochu" :size="22" :title="$t('message.tooltip.export')" @click="onExportTable" /> -->
+				<!-- <SvgIcon name="iconfont icon-refresh-line" :size="23" :title="$t('message.tooltip.refresh')" @click="onRefreshTable" /> -->
+				<el-icon name="iconfont icon-refresh-line" :size="22" :title="$t('message.tooltip.refresh')" @click="onRefreshTable"><ele-Refresh /></el-icon>
 				<el-popover
 					placement="top-end"
 					trigger="click"
@@ -52,7 +56,8 @@
 					@show="onSetTable"
 				>
 					<template #reference>
-						<SvgIcon name="iconfont icon-shezhi" :size="20" :title="$t('message.tooltip.setting')" />
+						<el-icon name="iconfont icon-shezhi" :size="22" :title="$t('message.tooltip.setting')"><ele-Setting /></el-icon>
+						<!-- <SvgIcon name="iconfont icon-shezhi" :size="20" :title="$t('message.tooltip.setting')" /> -->
 					</template>
 					<template #default>
 						<div class="tool-box">

@@ -40,14 +40,17 @@
 			</el-col>
 			<el-col :xs="24" :sm="14" :md="14" :lg="15" :xl="15" class="home-media">
 				<div class="home-card-item">
-					<i
-						class="font16"
-						:class="'iconfont icon-daibanshixiang'"
-						:style="{
-							color: '#F72B3F',
-						}"
-					></i>
-					<span class="home-card-item-title ml10">待办事项</span>
+					<div class="home-title">
+						<el-icon
+							:style="{
+								color: '#F72B3F',
+							}"
+							:size="20"
+							><ele-Memo
+						/></el-icon>
+						<span class="home-card-item-title ml10">待办事项</span>
+					</div>
+
 					<div class="time-line pl10">
 						<el-timeline class="mt20">
 							<el-timeline-item
@@ -77,7 +80,8 @@
 							<div class="flex-warp-item" v-for="(v, k) in state.homeThree" :key="k">
 								<div class="flex-warp-item-box" :class="`home-animation${k}`" @click="downloadTemp(v.link)">
 									<div class="flex-margin">
-										<i :class="v.icon" :style="{ color: v.iconColor }"></i>
+										<!-- <i :class="v.icon" :style="{ color: v.iconColor }"></i> -->
+										<el-icon :style="{ color: v.iconColor }"><ele-Download /></el-icon>
 										<span class="pl5">{{ v.label }}</span>
 										<div class="mt10">{{ v.value }}</div>
 									</div>
@@ -105,7 +109,7 @@
 
 <script setup lang="ts" name="home">
 // markRaw
-import { reactive, onMounted, ref, watch, nextTick, onActivated,  } from 'vue';
+import { reactive, onMounted, ref, watch, nextTick, onActivated } from 'vue';
 // import * as echarts from 'echarts';
 import { storeToRefs } from 'pinia';
 import { useThemeConfig } from '/@/stores/themeConfig';
@@ -562,5 +566,8 @@ $homeNavLengh: 8;
 			cursor: pointer;
 		}
 	}
+}
+.home-title {
+	display: flex;
 }
 </style>
