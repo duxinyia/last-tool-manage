@@ -5,7 +5,7 @@
 			<Table ref="tableRef" v-bind="state.tableData" class="table" @pageChange="onTablePageChange" @sortHeader="onSortHeader">
 				<template #btn="{ row }">
 					<el-button type="primary" plain size="default" class="button buttonBorder" @click="drawPathClick(row.drawPath)">
-						{{ $t('查看图纸') }}</el-button
+						{{ $t('查看圖紙') }}</el-button
 					>
 				</template>
 			</Table>
@@ -30,13 +30,13 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'matNo', colWidth: '250', title: '料号', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '250', title: '料號', type: 'text', isCheck: true },
 			{ key: 'buCode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
 			// { key: 'machineType', colWidth: '', title: '机种', type: 'text', isCheck: true },
-			{ key: 'projectCode', colWidth: '', title: '专案代码', type: 'text', isCheck: true },
+			{ key: 'projectCode', colWidth: '', title: '專案代碼', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'drawNo', colWidth: '', title: '图纸编号', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			// { key: 'drawPath', colWidth: '', title: '图纸路径', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -55,12 +55,12 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '料号', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
+			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
 			{ label: 'BU', prop: 'buCode', required: false, type: 'input' },
 			// { label: '机种', prop: 'machineType', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			// { label: '品名-英文', prop: 'nameEn', required: false, type: 'input' },
-			{ label: '图纸编号', prop: 'drawNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -104,7 +104,7 @@ const drawPathClick = async (drawPath: string) => {
 	if (drawPath) {
 		window.open(`${import.meta.env.VITE_API_URL}${drawPath}`, '_blank');
 	} else {
-		ElMessage.warning(t('没有图纸'));
+		ElMessage.warning(t('沒有圖紙'));
 	}
 };
 // 搜索点击时表单回调

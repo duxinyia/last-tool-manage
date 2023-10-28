@@ -13,7 +13,7 @@
 					plain
 					><el-icon><ele-Plus /></el-icon>{{ $t('message.allButton.addBtn') }}</el-button
 				>
-				<el-popconfirm v-else-if="topbtn.type === 'bulkDel'" :title="$t('确定删除选中项吗？')" @confirm="onBulkDeletion">
+				<el-popconfirm v-else-if="topbtn.type === 'bulkDel'" :title="$t('確定刪除選中項嗎？')" @confirm="onBulkDeletion">
 					<template #reference>
 						<el-button size="default" :disabled="state.selectlist.length <= 0" class="ml10 buttonBorder" color="#D33939" plain
 							><el-icon><ele-Delete /></el-icon>{{ $t('message.allButton.bulkDeletionBtn') }}</el-button
@@ -124,7 +124,7 @@
 					<el-form-item
 						v-if="config.isInlineEditing"
 						:prop="`data.${scope.$index}.${item.key}`"
-						:rules="[{ required: item.isRequired, message: '不能为空', trigger: item.type === 'input' || item.type === 'time' ? 'blur' : 'change' }]"
+						:rules="[{ required: item.isRequired, message: '不能為空', trigger: item.type === 'input' || item.type === 'time' ? 'blur' : 'change' }]"
 					>
 						<!-- 输入框 :disabled="route.path == '/basics/warehouseManage' ? (data[scope.$index].disabled === false ? false : true) : false"-->
 						<el-input
@@ -133,7 +133,7 @@
 							v-if="item.type === 'input'"
 							style="height: 30px"
 							v-model="data[scope.$index][item.key]"
-							placeholder="请输入"
+							placeholder="請輸入"
 							clearable
 							@change="changedata(scope.$index, item.key)"
 							@input="inputdata"
@@ -158,7 +158,7 @@
 							v-else-if="item.type === 'autocomplete'"
 							v-model="data[scope.$index][item.key]"
 							:fetch-suggestions="querySearchAsync"
-							placeholder="请输入"
+							placeholder="請輸入"
 							@change="changeData(scope.$index)"
 							@select="(item:any) => handleSelect(scope.$index, item)"
 						/>
@@ -168,7 +168,7 @@
 							:clearable="item.clearable"
 							v-model="data[scope.$index][item.key]"
 							:filterable="item.isfilterable"
-							placeholder="请选择"
+							placeholder="請選擇"
 							remote
 							:reserve-keyword="false"
 							@change="(item:any) => changeSelect(scope.$index, item)"
@@ -196,7 +196,7 @@
 							multiple
 							collapse-tags
 							collapse-tags-tooltip
-							placeholder="请选择"
+							placeholder="請選擇"
 						>
 							<el-option v-for="i in item.options" :key="i.value" :label="i.label" :value="i.value" />
 						</el-select>
@@ -220,7 +220,7 @@
 							value-format="YYYY-MM-DD"
 							v-model="data[scope.$index][item.key]"
 							type="date"
-							placeholder="请选择"
+							placeholder="請選擇"
 							style="height: 30px; max-width: 167px"
 						/>
 
@@ -230,7 +230,7 @@
 					</el-form-item>
 					<!-- 不能行内编辑 -->
 					<template v-if="item.type === 'status'" style="text-align: center; width: 100%">
-						<el-tag type="success" v-if="scope.row.runstatus === 1">启用</el-tag>
+						<el-tag type="success" v-if="scope.row.runstatus === 1">啟用</el-tag>
 						<el-tag type="info" v-else>禁用</el-tag>
 					</template>
 					<!-- 图片 -->
@@ -598,7 +598,7 @@ const onPrintTable = () => {
 };
 // 导出
 const onExportTable = () => {
-	if (state.selectlist.length <= 0) return ElMessage.warning('请先选择要导出的数据');
+	if (state.selectlist.length <= 0) return ElMessage.warning('請先選擇要導出的數據');
 	props.header.forEach((item) => {
 		item.title = t(item.title);
 	});

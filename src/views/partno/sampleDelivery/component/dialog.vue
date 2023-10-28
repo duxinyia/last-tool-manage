@@ -24,7 +24,7 @@
 							filterable
 							remote
 							:reserve-keyword="false"
-							placeholder="请选择工程验收人"
+							placeholder="請選擇工程驗收人"
 							remote-show-suffix
 							:remote-method="selectChange"
 							:loading="loading"
@@ -42,7 +42,7 @@
 				</el-col>
 			</el-row>
 			<el-button
-				v-if="state.dialog.num === 1 && state.dialog.title == '送样'"
+				v-if="state.dialog.num === 1 && state.dialog.title == '送樣'"
 				size="default"
 				class="buttonBorder mb12"
 				@click="onAddRow"
@@ -82,14 +82,14 @@
 							<el-form-item
 								:prop="`vendors.${scope.$index}.${item.key}`"
 								:rules="[
-									{ required: item.isRequired, message: '不能为空', trigger: item.type === 'input' || item.type === 'time' ? 'blur' : 'change' },
+									{ required: item.isRequired, message: '不能為空', trigger: item.type === 'input' || item.type === 'time' ? 'blur' : 'change' },
 								]"
 							>
 								<el-input
 									v-if="item.type === 'input'"
 									style="height: 30px"
 									v-model="state.vendors[scope.$index][item.key]"
-									placeholder="请输入"
+									placeholder="請輸入"
 									clearable
 								></el-input>
 								<el-date-picker
@@ -97,7 +97,7 @@
 									value-format="YYYY-MM-DD"
 									v-model="state.vendors[scope.$index][item.key]"
 									type="date"
-									placeholder="请选择时间"
+									placeholder="請選擇時間"
 									style="height: 30px"
 								/>
 
@@ -116,7 +116,7 @@
 								color="#D33939"
 								@click="onDelRow(scope.$index)"
 								plain
-								><el-icon><ele-Delete /></el-icon> 删除
+								><el-icon><ele-Delete /></el-icon> 刪除
 							</el-button>
 						</template>
 					</el-table-column>
@@ -129,7 +129,7 @@
 			<template #footer v-if="state.dialog.num === 1">
 				<span class="dialog-footer">
 					<el-button @click="onCancel" size="default">取 消</el-button>
-					<el-button type="primary" @click="onSubmit(tableSampleRef)" size="default" :loading="loadingBtn">确定</el-button>
+					<el-button type="primary" @click="onSubmit(tableSampleRef)" size="default" :loading="loadingBtn">確定</el-button>
 				</span>
 			</template>
 		</el-dialog>
@@ -253,7 +253,7 @@ const openDialog = (scope: EmptyObjectType, n: number, tit: string, data: EmptyA
 		// 打开弹窗时还原数据
 		nextTick(() => {
 			//如果打开的是送样弹窗
-			if (props.operation == '送样') {
+			if (props.operation == '送樣') {
 				state.vendors = [{ vendorCode: '', vendorName: '', needsQty: '' }];
 			}
 			//如果打开的是收货弹窗
@@ -280,7 +280,7 @@ const onCancel = () => {
 const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
-		if (!valid) return ElMessage.warning('表格项必填未填');
+		if (!valid) return ElMessage.warning('表格項必填未填');
 		let sampleData: EmptyObjectType = {};
 		props.dialogForm.forEach((item) => {
 			sampleData[item.prop] = state.formData[item.prop];
@@ -289,14 +289,14 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 		sampleData.vendors.forEach((item: EmptyObjectType) => {
 			delete item.sampleQty;
 		});
-		if (props.operation == '送样') {
+		if (props.operation == '送樣') {
 			const res = await getTakeSampleApi(sampleData);
 			if (res.status) {
 				closeDialog();
-				ElMessage.success('送样成功');
+				ElMessage.success('送樣成功');
 				emit('sampleSuccess');
 			}
-		} else if (props.operation == '收货') {
+		} else if (props.operation == '收貨') {
 			let receiveData: EmptyObjectType = {};
 			props.dialogForm.forEach((item) => {
 				if (item.prop == 'engineerNo') {
@@ -306,7 +306,7 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 					receiveData[item.prop] = state.formData[item.prop];
 				}
 			});
-			if (!receiveData['engineer']) return ElMessage.warning('请选择工程验收人');
+			if (!receiveData['engineer']) return ElMessage.warning('請選擇工程驗收人');
 			loadingBtn.value = true;
 			receiveData['recieveDetails'] = state.vendors.map((item) => {
 				let obj = {
@@ -319,8 +319,7 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 			const res: any = await SampleRecieveApi(receiveData);
 			if (res.status) {
 				closeDialog();
-
-				ElMessage.success('收货成功');
+				ElMessage.success('收貨成功');
 				emit('sampleSuccess');
 			}
 		}

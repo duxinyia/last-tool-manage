@@ -1,7 +1,7 @@
 <template>
 	<div class="main" :style="!isDialog ? 'height: 330px' : ''">
 		<div class="table-container" :class="{ 'link-width': !isDialog }">
-			<nav v-if="!isDialog" class="pb10">報廢單详情</nav>
+			<nav v-if="!isDialog" class="pb10">報廢單詳情</nav>
 			<el-form v-if="state.tableData.form" ref="tableSearchRef" :model="state.tableData.form" size="default" label-width="100px" class="table-form">
 				<el-row>
 					<el-col
@@ -22,11 +22,11 @@
 				</el-row>
 				<Table v-bind="state.tableData" class="table" />
 				<div class="describe">
-					<span>描述说明：</span>
+					<span>描述說明：</span>
 					<span style="width: 100%; font-weight: 700; color: #1890ff">{{ state.tableData.form['describe'] }}</span>
 				</div>
 			</el-form>
-			<el-empty v-else description="数据出错" />
+			<el-empty v-else description="數據出錯" />
 		</div>
 	</div>
 </template>
@@ -66,13 +66,13 @@ const state = reactive<TableDemoState>({
 				type: 'text',
 				isCheck: true,
 			},
-			{ key: 'qty', colWidth: '', title: '报废数量', type: 'text', isCheck: true },
-			{ key: 'reason', colWidth: '', title: '报废原因', type: 'text', isCheck: true },
+			{ key: 'qty', colWidth: '', title: '報廢數量', type: 'text', isCheck: true },
+			{ key: 'reason', colWidth: '', title: '報廢原因', type: 'text', isCheck: true },
 			{ key: 'state', colWidth: '', title: '站位', type: 'text', isCheck: true },
-			{ key: 'stage', colWidth: '', title: '阶段', type: 'text', isCheck: true },
+			{ key: 'stage', colWidth: '', title: '階段', type: 'text', isCheck: true },
 			{ key: 'classes', colWidth: '', title: '班次', type: 'text', isCheck: true },
-			{ key: 'me', colWidth: '', title: 'ME负责人', type: 'text', isCheck: true },
-			{ key: 'pm', colWidth: '', title: 'PM确认人', type: 'text', isCheck: true },
+			{ key: 'me', colWidth: '', title: 'ME負責人', type: 'text', isCheck: true },
+			{ key: 'pm', colWidth: '', title: 'PM確認人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -93,9 +93,9 @@ const state = reactive<TableDemoState>({
 		form: {},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '报废单号:', prop: 'uselessno', type: 'text', required: false },
-			{ label: '报废时间:', prop: 'uselessDate', type: 'text', required: false },
-			{ label: '班别:', prop: 'classes', type: 'text', required: false },
+			{ label: '報廢單號:', prop: 'uselessno', type: 'text', required: false },
+			{ label: '報廢時間:', prop: 'uselessDate', type: 'text', required: false },
+			{ label: '班別:', prop: 'classes', type: 'text', required: false },
 			{ label: '站位:', prop: 'state', type: 'text', required: false },
 		],
 		btnConfig: [],

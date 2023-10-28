@@ -67,16 +67,16 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'repairCheckNo', colWidth: '', title: '维修验收单号', type: 'text', isCheck: true },
-			{ key: 'repairReceiveNo', colWidth: '', title: '维修收货单号', type: 'text', isCheck: true },
+			{ key: 'repairCheckNo', colWidth: '', title: '維修驗收單號', type: 'text', isCheck: true },
+			{ key: 'repairReceiveNo', colWidth: '', title: '維修收貨單號', type: 'text', isCheck: true },
 			// { key: 'reqno', colWidth: '', title: '申请单号', type: 'text', isCheck: true },
-			{ key: 'matNo', colWidth: '', title: '料号', type: 'text', isCheck: true },
-			{ key: 'repairNo', colWidth: '', title: '维修单号', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'repairNo', colWidth: '', title: '維修單號', type: 'text', isCheck: true },
 			// { key: 'namech', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			// { key: 'nameen', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'checkQty', colWidth: '', title: '验收数量', type: 'text', isCheck: true },
-			{ key: 'passQty', colWidth: '', title: '合格数量', type: 'text', isCheck: true },
-			{ key: 'failQty', colWidth: '', title: '不合格数量', type: 'text', isCheck: true },
+			{ key: 'checkQty', colWidth: '', title: '驗收數量', type: 'text', isCheck: true },
+			{ key: 'passQty', colWidth: '', title: '合格數量', type: 'text', isCheck: true },
+			{ key: 'failQty', colWidth: '', title: '不合格數量', type: 'text', isCheck: true },
 			// { key: 'runstatus', colWidth: '', title: '状态', type: 'status', isCheck: true },
 			// { key: 'isstorage', colWidth: '', title: '是否入库', type: 'text', isCheck: true },
 		],
@@ -95,15 +95,15 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '维修单号', prop: 'repairNo', required: false, type: 'input' },
-			{ label: '料号', prop: 'matNo', required: false, type: 'input', lg: 5, xl: 5 },
-			{ label: '维修验收单号', prop: 'repairCheckNo', required: false, type: 'input' },
-			{ label: '维修收货单号', prop: 'repairReceiveNo', required: false, type: 'input' },
+			{ label: '維修單號', prop: 'repairNo', required: false, type: 'input' },
+			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 5, xl: 5 },
+			{ label: '維修驗收單號', prop: 'repairCheckNo', required: false, type: 'input' },
+			{ label: '維修收貨單號', prop: 'repairReceiveNo', required: false, type: 'input' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [{ type: 'sendReceive', name: '入库', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
+		btnConfig: [{ type: 'sendReceive', name: '入庫', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
 		// 给后端的数据
 		form: {
 			repairCheckNo: '',
@@ -119,17 +119,17 @@ const state = reactive<TableDemoState>({
 		dialogConfig: [
 			// { label: '入库单号:', prop: 'putno', placeholder: '请输入入库单号', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
 			{
-				label: '验收单号:',
+				label: '驗收單號:',
 				prop: 'repairCheckNo',
-				placeholder: '请输入验收单号',
+				placeholder: '請輸入驗收單號',
 				required: false,
 				type: 'text',
 			},
 			//这个字段待定
-			{ label: '验收人:', prop: 'checker', placeholder: '请输入验收人', required: false, type: 'text' },
-			{ label: '料号:', prop: 'matNo', placeholder: '请输入料号', required: false, type: 'text' },
-			{ label: '品名-中文:', prop: 'nameCh', placeholder: '请输入品名-中文', required: false, type: 'text' },
-			{ label: '品名-英文:', prop: 'nameEn', placeholder: '请输入品名-英文', required: false, type: 'text' },
+			{ label: '驗收人:', prop: 'checker', placeholder: '請輸入驗收人', required: false, type: 'text' },
+			{ label: '料號:', prop: 'matNo', placeholder: '請輸入料號', required: false, type: 'text' },
+			{ label: '品名-中文:', prop: 'nameCh', placeholder: '請輸入品名-中文', required: false, type: 'text' },
+			{ label: '品名-英文:', prop: 'nameEn', placeholder: '請輸入品名-英文', required: false, type: 'text' },
 			// { label: '厂商代码:', prop: 'vendorCode', placeholder: '请输入厂商代码', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
 			// {
 			// 	label: '厂商名称:',
@@ -143,12 +143,12 @@ const state = reactive<TableDemoState>({
 			// 	lg: 16,
 			// 	xl: 16,
 			// },
-			{ label: '验收合格数量:', prop: 'passQty', placeholder: '', required: false, type: 'text' },
+			{ label: '驗收合格數量:', prop: 'passQty', placeholder: '', required: false, type: 'text' },
 			// 这个字段待定
 			{
-				label: '验收时间:',
+				label: '驗收時間:',
 				prop: 'checkTime',
-				placeholder: '请输入验收时间',
+				placeholder: '請輸入驗收時間',
 				required: false,
 				type: 'text',
 				xs: 24,
@@ -160,7 +160,7 @@ const state = reactive<TableDemoState>({
 			// validateForm: 'number',
 			// 	message: '请输入正整数',
 			{
-				label: '有码数量:',
+				label: '有碼數量:',
 				prop: 'stockqty',
 				placeholder: '',
 				required: false,
@@ -172,9 +172,9 @@ const state = reactive<TableDemoState>({
 				xl: 8,
 			},
 			{
-				label: '扫码录入',
+				label: '掃碼錄入',
 				prop: 'scan',
-				placeholder: '请输入入库数量',
+				placeholder: '',
 				required: false,
 				type: 'button',
 				xs: 4,
@@ -184,9 +184,9 @@ const state = reactive<TableDemoState>({
 				xl: 4,
 			},
 			{
-				label: '收货仓库:',
+				label: '收貨倉庫:',
 				prop: 'storageId',
-				placeholder: '请选择收货仓库',
+				placeholder: '請選擇收貨倉庫',
 				required: true,
 				type: 'select',
 				options: [],
@@ -194,9 +194,9 @@ const state = reactive<TableDemoState>({
 		],
 		innerDialogConfig: [
 			{
-				label: '扫码入库:',
+				label: '掃碼入庫:',
 				prop: 'sacnstockqty',
-				placeholder: '请将光标放到此处扫码',
+				placeholder: '請將光標放到此處掃碼',
 				required: false,
 				type: 'input',
 				xs: 12,
@@ -206,9 +206,9 @@ const state = reactive<TableDemoState>({
 				xl: 12,
 			},
 			{
-				label: '扫码数量:',
+				label: '掃碼數量:',
 				prop: 'stockqty',
-				placeholder: '1',
+				placeholder: '',
 				required: false,
 				type: 'text',
 				xs: 12,
@@ -218,9 +218,9 @@ const state = reactive<TableDemoState>({
 				xl: 12,
 			},
 			{
-				label: '扫码信息:',
+				label: '掃碼信息:',
 				prop: 'codeList',
-				placeholder: '请输入扫码信息',
+				placeholder: '請輸入掃碼信息',
 				required: false,
 				type: 'tagsarea',
 				tag: true,
@@ -280,10 +280,10 @@ const change = (val: any, prop: string, state: any) => {
 	let { formInnerData, formData } = state;
 	if (prop == 'sacnstockqty') {
 		if (formInnerData.codeList.length + 1 > formData.passQty) {
-			ElMessage.error(`扫码数量超过验收合格数量，请勿继续扫码`);
+			ElMessage.error(`掃碼數量超過驗收合格數量，請勿繼續掃碼`);
 			formInnerData['sacnstockqty'] = null;
 		} else if (formInnerData.codeList.includes(val)) {
-			ElMessage.warning(`该条码已存在，请勿重复扫码`);
+			ElMessage.warning(`該條碼已存在，請勿重複掃碼`);
 			formInnerData['sacnstockqty'] = null;
 		} else {
 			formInnerData.codeList.push(val);
@@ -333,7 +333,7 @@ const openEntryDialog = async (scope: any) => {
 	entryJobDialogRef.value.openDialog('entry', scope.row);
 };
 const scanCodeEntry = () => {
-	entryJobDialogRef.value.openInnerDialog('扫码录入');
+	entryJobDialogRef.value.openInnerDialog('掃碼錄入');
 };
 //点击确认入库
 const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyObjectType) => {
@@ -371,7 +371,7 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 		// sLocation: obj.sLocation,
 	};
 	if (obj.stockqty > obj.passQty) {
-		ElMessage.error(`有码数量大于验收合格数量`);
+		ElMessage.error(`有碼數量大於驗收合格數量`);
 	}
 	// else if (submitData.Codes && submitData.putQty < submitData.Codes.length) {
 	// 	ElMessage.error(`有码数量小于扫码数量`);
@@ -400,7 +400,7 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 	else {
 		const res = await GetPutStorageApi(submitData);
 		if (res.status) {
-			ElMessage.success(`入库成功`);
+			ElMessage.success(`入庫成功`);
 			entryJobDialogRef.value.closeDialog();
 			getTableData();
 		}
@@ -429,7 +429,7 @@ const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 // const onSubmit = async (formEl: FormInstance | undefined) => {
 // 	if (!formEl) return;
 // 	await formEl.validate(async (valid: boolean) => {
-// 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
+// 		if (!valid) return ElMessage.warning(t('表格項必填未填'));
 // 		// if (!dialogState.tableData.form['sendTime']) return ElMessage.warning(t('请填写收货时间'));
 // 		let allData: EmptyObjectType = {};
 // 		allData = { ...dialogState.tableData.form };

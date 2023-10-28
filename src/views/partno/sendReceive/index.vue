@@ -62,9 +62,9 @@ const state = reactive<TableDemoState>({
 			height: 750,
 		},
 
-		btnConfig: [{ type: 'sendReceive', name: '收货', color: '#D3C333', isSure: false }],
+		btnConfig: [{ type: 'sendReceive', name: '收貨', color: '#D3C333', isSure: false }],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-		search: [{ label: '送样单号', prop: 'simpleNo', placeholder: '请输入送样单号', required: false, type: 'input' }],
+		search: [{ label: '送樣單號', prop: 'simpleNo', placeholder: '請輸入送樣單號', required: false, type: 'input' }],
 		searchConfig: {
 			isSearchBtn: true,
 		},
@@ -84,25 +84,25 @@ const cellStyle = ref();
 const dialogData = reactive({
 	// 点击收货表格数据
 	otherHeaderData: [
-		{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-		{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+		{ key: 'vendorCode', colWidth: '', title: '廠商代碼', type: 'text', isCheck: true },
+		{ key: 'vendorName', colWidth: '', title: '廠商名稱', type: 'text', isCheck: true },
 		// { key: 'needsTime', colWidth: '', title: '需求送样时间', type: 'text', isCheck: true },
-		{ key: 'needsQty', colWidth: '', title: '送样数量', type: 'text', isCheck: true },
-		{ key: 'receiveTime', colWidth: '', title: '收货时间', type: 'time', isCheck: true, isRequired: true },
-		{ key: 'receiveQty', colWidth: '', title: '收货数量', type: 'input', isCheck: true, isRequired: true },
+		{ key: 'needsQty', colWidth: '', title: '送樣數量', type: 'text', isCheck: true },
+		{ key: 'receiveTime', colWidth: '', title: '收貨時間', type: 'time', isCheck: true, isRequired: true },
+		{ key: 'receiveQty', colWidth: '', title: '收貨數量', type: 'input', isCheck: true, isRequired: true },
 	],
 	// 收货弹窗数据
 	dialogForm: [
-		{ type: 'text', label: '料号', prop: 'matNo', value: '' },
-		{ type: 'text', label: '送样单号', prop: 'sampleNo', value: '', xs: 10, sm: 11, md: 11, lg: 11, xl: 11 },
+		{ type: 'text', label: '料號', prop: 'matNo', value: '' },
+		{ type: 'text', label: '送樣單號', prop: 'sampleNo', value: '', xs: 10, sm: 11, md: 11, lg: 11, xl: 11 },
 		{ type: 'text', label: '品名-中文', prop: 'nameCh', value: '' },
 		{ type: 'text', label: '品名-英文', prop: 'nameEn', value: '' },
-		{ type: 'select', label: '工程验收人', prop: 'engineerNo', value: '', options: [], isRequired: true },
-		{ type: 'text', label: '送样时间', prop: 'needsDate', value: '' },
-		{ type: 'text', label: '送样数量', prop: 'needsQty', value: '' },
+		{ type: 'select', label: '工程驗收人', prop: 'engineerNo', value: '', options: [], isRequired: true },
+		{ type: 'text', label: '送樣時間', prop: 'needsDate', value: '' },
+		{ type: 'text', label: '送樣數量', prop: 'needsQty', value: '' },
 	],
 	//进行送样、收货还是验收操作
-	operation: '收货',
+	operation: '收貨',
 });
 
 // 初始化列表数据
@@ -137,7 +137,7 @@ const onTablePageChange = (page: TableDemoPageType) => {
 // 打开收货弹窗 1
 const openReceiveDialog = async (scope: any) => {
 	const res = await GetSampleDetailApi(scope.row.sampleNo);
-	sendReceiveDialogRef.value.openDialog(scope, 1, '收货', res.data.vendorDetails);
+	sendReceiveDialogRef.value.openDialog(scope, 1, '收貨', res.data.vendorDetails);
 };
 // 搜索下拉选择
 const selectChange = (query: string) => {

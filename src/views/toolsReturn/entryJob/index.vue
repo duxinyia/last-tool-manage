@@ -66,16 +66,16 @@ const cellStyle = ref();
 const dilogTitle = ref();
 const header = ref([
 	{ key: 'matNo', colWidth: '250', title: 'message.pages.matNo', type: 'text', isCheck: true },
-	{ key: 'machinetype', colWidth: '', title: '机种', type: 'text', isCheck: true },
+	{ key: 'machinetype', colWidth: '', title: '機種', type: 'text', isCheck: true },
 	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-	{ key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-	{ key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
-	{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
-	{ key: 'reqDate', colWidth: '', title: '需求时间', type: 'text', isCheck: true },
-	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'input', isCheck: true, isRequired: true },
-	{ key: 'receiptDate', colWidth: '150', title: '收货时间', type: 'time', isCheck: true, isRequired: true },
+	{ key: 'vendorcode', colWidth: '', title: '廠商代碼', type: 'text', isCheck: true },
+	{ key: 'vendorname', colWidth: '', title: '廠商名稱', type: 'text', isCheck: true },
+	{ key: 'prItemNo', colWidth: '', title: 'PR項次', type: 'text', isCheck: true },
+	{ key: 'reqQty', colWidth: '', title: '需求數量', type: 'text', isCheck: true },
+	{ key: 'reqDate', colWidth: '', title: '需求時間', type: 'text', isCheck: true },
+	{ key: 'receiptQty', colWidth: '', title: '收貨數量', type: 'input', isCheck: true, isRequired: true },
+	{ key: 'receiptDate', colWidth: '150', title: '收貨時間', type: 'time', isCheck: true, isRequired: true },
 ]);
 const state = reactive<TableDemoState>({
 	tableData: {
@@ -83,18 +83,18 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'applyCheckId', colWidth: '', title: '验收单号', type: 'text', isCheck: true },
-			{ key: 'reqNo', colWidth: '', title: '申请单号', type: 'text', isCheck: true },
-			{ key: 'matNo', colWidth: '', title: '料号', type: 'text', isCheck: true },
-			{ key: 'reqMatNo', colWidth: '', title: '请购料号', type: 'text', isCheck: true },
+			{ key: 'applyCheckId', colWidth: '', title: '驗收單號', type: 'text', isCheck: true },
+			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'reqMatNo', colWidth: '', title: '請購料號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'checkDate', colWidth: '', title: '验收日期', type: 'text', isCheck: true },
-			{ key: 'checkQty', colWidth: '', title: '验收数量', type: 'text', isCheck: true },
-			{ key: 'passQty', colWidth: '', title: '合格数量', type: 'text', isCheck: true },
-			{ key: 'failQty', colWidth: '', title: '不合格数量', type: 'text', isCheck: true },
+			{ key: 'checkDate', colWidth: '', title: '驗收日期', type: 'text', isCheck: true },
+			{ key: 'checkQty', colWidth: '', title: '驗收數量', type: 'text', isCheck: true },
+			{ key: 'passQty', colWidth: '', title: '合格數量', type: 'text', isCheck: true },
+			{ key: 'failQty', colWidth: '', title: '不合格數量', type: 'text', isCheck: true },
 			// { key: 'describe', colWidth: '', title: '描述说明', type: 'text', isCheck: true },
-			{ key: 'checker', colWidth: '', title: '验收人', type: 'text', isCheck: true },
+			{ key: 'checker', colWidth: '', title: '驗收人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -111,28 +111,28 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '申请单号', prop: 'reqNo', required: false, type: 'input' },
-			{ label: '料号', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
-			{ label: '请购料号', prop: 'reqMatNo', required: false, type: 'input' },
+			{ label: '申請單號', prop: 'reqNo', required: false, type: 'input' },
+			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
+			{ label: '請購料號', prop: 'reqMatNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{
-				label: '验收人',
+				label: '驗收人',
 				prop: 'checker',
 				required: false,
 				type: 'select',
-				placeholder: '请输入选择验收人',
+				placeholder: '請輸入選擇驗收人',
 				options: [],
 				loading: true,
 				filterable: true,
 				remote: true,
 				remoteShowSuffix: true,
 			},
-			{ label: '验收日期', prop: 'checkDate', required: false, type: 'dateRange' },
+			{ label: '驗收日期', prop: 'checkDate', required: false, type: 'dateRange' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [{ type: 'sendReceive', name: '入库', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
+		btnConfig: [{ type: 'sendReceive', name: '入庫', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
 		// 给后端的数据
 		form: {
 			// reqNo: '',
@@ -147,20 +147,20 @@ const state = reactive<TableDemoState>({
 		printName: '表格打印演示',
 		//入库弹窗
 		dialogConfig: [
-			{ label: '申请单号:', prop: 'reqNo', placeholder: '', required: false, type: 'text' },
-			{ label: '料号:', prop: 'matNo', placeholder: '', required: false, type: 'text' },
-			{ label: '请购料号:', prop: 'reqMatNo', placeholder: '', required: false, type: 'text' },
+			{ label: '申請單號:', prop: 'reqNo', placeholder: '', required: false, type: 'text' },
+			{ label: '料號:', prop: 'matNo', placeholder: '', required: false, type: 'text' },
+			{ label: '請購料號:', prop: 'reqMatNo', placeholder: '', required: false, type: 'text' },
 			{ label: '品名-中文:', prop: 'nameCh', placeholder: '', required: false, type: 'text' },
 			{ label: '品名-英文:', prop: 'nameEn', placeholder: '', required: false, type: 'text' },
-			{ label: '验收日期:', prop: 'checkDate', placeholder: '', required: false, type: 'text' },
+			{ label: '驗收日期:', prop: 'checkDate', placeholder: '', required: false, type: 'text' },
 			// { label: '验收数量:', prop: 'checkQty', placeholder: '', required: false, type: 'text' },
-			{ label: '验收合格数量:', prop: 'passQty', placeholder: '', required: false, type: 'text' },
+			{ label: '驗收合格數量:', prop: 'passQty', placeholder: '', required: false, type: 'text' },
 			// { label: '不合格数量:', prop: 'failQty', placeholder: '', required: false, type: 'text' },
 			//这个字段待定
-			{ label: '验收人:', prop: 'checker', placeholder: '', required: false, type: 'text' },
+			{ label: '驗收人:', prop: 'checker', placeholder: '', required: false, type: 'text' },
 			{
 				type: 'text',
-				label: '验收描述说明:',
+				label: '驗收描述說明:',
 				placeholder: '',
 				prop: 'describe',
 				required: false,
@@ -173,7 +173,7 @@ const state = reactive<TableDemoState>({
 			// validateForm: 'number',
 			// message: '请输入正整数',
 			{
-				label: '有码数量:',
+				label: '有碼數量:',
 				prop: 'stockqty',
 				required: false,
 				type: 'text',
@@ -185,9 +185,9 @@ const state = reactive<TableDemoState>({
 				xl: 8,
 			},
 			{
-				label: '扫码录入',
+				label: '掃碼錄入',
 				prop: 'scan',
-				placeholder: '请输入入库数量',
+				placeholder: '',
 				required: false,
 				type: 'button',
 				xs: 4,
@@ -197,17 +197,17 @@ const state = reactive<TableDemoState>({
 				xl: 4,
 			},
 			{
-				label: '收货仓库:',
+				label: '收貨倉庫:',
 				prop: 'storageId',
-				placeholder: '请选择收货仓库',
+				placeholder: '請選擇收貨倉庫',
 				required: true,
 				type: 'select',
 				options: [],
 			},
 			{
 				type: 'textarea',
-				label: '描述说明:',
-				placeholder: '请输入描述说明',
+				label: '描述說明:',
+				placeholder: '請輸入描述說明',
 				prop: 'entryDescribe',
 				required: false,
 				xs: 24,
@@ -219,9 +219,9 @@ const state = reactive<TableDemoState>({
 		],
 		innerDialogConfig: [
 			{
-				label: '扫码入库:',
+				label: '掃碼入庫:',
 				prop: 'sacnstockqty',
-				placeholder: '请将光标放到此处扫码',
+				placeholder: '請將光標放到此處掃碼',
 				required: false,
 				type: 'input',
 				xs: 12,
@@ -231,7 +231,7 @@ const state = reactive<TableDemoState>({
 				xl: 12,
 			},
 			{
-				label: '扫码数量:',
+				label: '掃碼數量:',
 				prop: 'stockqty',
 				placeholder: '1',
 				required: false,
@@ -243,9 +243,9 @@ const state = reactive<TableDemoState>({
 				xl: 12,
 			},
 			{
-				label: '扫码信息:',
+				label: '掃碼信息:',
 				prop: 'codeList',
-				placeholder: '请输入扫码信息',
+				placeholder: '請輸入掃碼信息',
 				required: false,
 				type: 'tagsarea',
 				tag: true,
@@ -326,10 +326,10 @@ const change = (val: any, prop: string, state: any) => {
 	let { formInnerData, formData } = state;
 	if (prop == 'sacnstockqty') {
 		if (formInnerData.codeList.length + 1 > formData.passQty) {
-			ElMessage.error(`扫码数量超过合格验收数量，请勿继续扫码`);
+			ElMessage.error(`掃碼數量超過驗收合格數量，請勿繼續掃碼`);
 			formInnerData['sacnstockqty'] = null;
 		} else if (formInnerData.codeList.includes(val)) {
-			ElMessage.warning(`该条码已存在，请勿重复扫码`);
+			ElMessage.warning(`該條碼已存在，請勿重複掃碼`);
 			formInnerData['sacnstockqty'] = null;
 		} else {
 			formInnerData.codeList.push(val);
@@ -376,10 +376,10 @@ const handleTagClose = (tag: any, state: EmptyObjectType) => {
 };
 // 打开入库弹窗
 const openEntryDialog = async (scope: any) => {
-	entryJobDialogRef.value.openDialog('entry', scope.row, '入库');
+	entryJobDialogRef.value.openDialog('entry', scope.row, '入庫');
 };
 const scanCodeEntry = () => {
-	entryJobDialogRef.value.openInnerDialog('扫码录入');
+	entryJobDialogRef.value.openInnerDialog('掃碼錄入');
 };
 //点击确认入库
 const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyObjectType) => {
@@ -416,7 +416,7 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 		// storeType: obj.storeType,
 	};
 	if (obj.stockqty > obj.passQty) {
-		ElMessage.error(`有码数量大于验收合格数量`);
+		ElMessage.error(`有碼數量大於驗收合格數據`);
 	}
 	// else if (obj.codes && obj.stockqty < obj.codes.length) {
 	// 	ElMessage.error(`有码数量小于扫码数量`);
@@ -446,7 +446,7 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 	else {
 		const res = await GetTStockAddApi(submitData);
 		if (res.status) {
-			ElMessage.success(`入库成功`);
+			ElMessage.success(`入庫成功`);
 			entryJobDialogRef.value.closeDialog();
 			getTableData();
 		}
@@ -475,7 +475,7 @@ const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 // const onSubmit = async (formEl: FormInstance | undefined) => {
 // 	if (!formEl) return;
 // 	await formEl.validate(async (valid: boolean) => {
-// 		if (!valid) return ElMessage.warning(t('表格项必填未填'));
+// 		if (!valid) return ElMessage.warning(t('表格項必填未填'));
 // 		// if (!dialogState.tableData.form['sendTime']) return ElMessage.warning(t('请填写收货时间'));
 // 		let allData: EmptyObjectType = {};
 // 		allData = { ...dialogState.tableData.form };

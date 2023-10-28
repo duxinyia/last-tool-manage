@@ -1,7 +1,7 @@
 <template>
 	<div class="table-container layout-padding">
 		<div class="table-padding layout-padding-view layout-padding-auto">
-			<div class="title">需求请购单</div>
+			<div class="title">需求請購單</div>
 			<el-form ref="tableSearchRef" size="default" label-width="auto" class="table-form">
 				<el-row>
 					<el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4" class="mb20 mr20" v-for="(val, key) in state.tableData.search" :key="key">
@@ -9,7 +9,7 @@
 							<el-input
 								:maxlength="val.maxlength"
 								v-model="state.tableData.form[val.prop]"
-								:placeholder="`请输入${$t(val.label)}`"
+								:placeholder="`請輸入${$t(val.label)}`"
 								clearable
 								v-if="val.type === 'input'"
 								style="width: 150px"
@@ -34,13 +34,13 @@
 				/>
 			</el-form>
 			<div class="describe">
-				<span>描述说明：</span>
+				<span>描述說明：</span>
 				<el-input
 					class="input-textarea"
 					show-word-limit
 					v-model="state.tableData.form['describe']"
 					type="textarea"
-					placeholder="请输入"
+					placeholder="請輸入"
 					maxlength="150"
 				></el-input>
 			</div>
@@ -112,10 +112,10 @@ const state = reactive<EmptyObjectType>({
 				option: [],
 				isfilterable: true,
 			},
-			{ key: 'reqMatNo', colWidth: '', title: '请购料号', type: 'text', isCheck: true, isRequired: false },
+			{ key: 'reqMatNo', colWidth: '', title: '請購料號', type: 'text', isCheck: true, isRequired: false },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true, isRequired: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true, isRequired: true },
-			{ key: 'drawNo', colWidth: '', title: '图纸编号', type: 'text', isCheck: true, isRequired: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true, isRequired: true },
 			{
 				key: 'machineType',
 				colWidth: '150',
@@ -131,9 +131,9 @@ const state = reactive<EmptyObjectType>({
 			{ key: 'line', colWidth: '', title: '線體', type: 'input', isCheck: true, isRequired: true },
 			// { key: 'vendorCode', colWidth: '250', title: '厂商代码', type: 'input', isCheck: true, isRequired: true },
 			// { key: 'vendorName', colWidth: '300', title: '厂商名称', type: 'input', isCheck: true, isRequired: true },
-			{ key: 'reqQty', colWidth: '150', title: 'PR数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
-			{ key: 'reqDate', colWidth: '150', title: '需求时间', type: 'time', isCheck: true, isRequired: true },
-			{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'input', isCheck: true, isRequired: false, maxlength: 20 },
+			{ key: 'reqQty', colWidth: '150', title: 'PR數量', type: 'number', isCheck: true, isRequired: true, min: 0 },
+			{ key: 'reqDate', colWidth: '150', title: '需求時間', type: 'time', isCheck: true, isRequired: true },
+			{ key: 'prItemNo', colWidth: '', title: 'PR項次', type: 'input', isCheck: true, isRequired: false, maxlength: 20 },
 		],
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
@@ -141,8 +141,8 @@ const state = reactive<EmptyObjectType>({
 			isSearchBtn: false, //搜索框
 		},
 		search: [
-			{ label: '申请单号：', prop: 'reqNo', placeholder: '请输入料号', type: 'text' },
-			{ label: 'PR单号', prop: 'prNo', placeholder: '请输入PR单号', type: 'input', maxlength: 20 },
+			{ label: '申請單號：', prop: 'reqNo', placeholder: '', type: 'text' },
+			{ label: 'PR單號', prop: 'prNo', placeholder: '请输入PR單號', type: 'input', maxlength: 20 },
 		],
 		// 给后端的数据
 		form: {
@@ -239,13 +239,13 @@ const onDelRow = (row: EmptyObjectType, i: number) => {
 const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
-		if (!valid) return ElMessage.warning(t('表格项必填未填'));
+		if (!valid) return ElMessage.warning(t('表格項必填未填'));
 		subLoading.value = true;
 		let allData: EmptyObjectType = {};
 		allData = { ...state.tableData.form };
 		allData['details'] = state.tableData.data;
 		if (state.tableData.data.length <= 0) {
-			ElMessage.warning(t('提交数据为空，请新增数据'));
+			ElMessage.warning(t('提交數據為空，請新增數據'));
 			subLoading.value = false;
 		} else {
 			const res = await getToolApplyInsertApi(allData);

@@ -11,7 +11,7 @@
 				:cellStyle="cellStyle"
 			/>
 			<!-- <Dialog ref="sendReceiveDialogRef" v-bind="dialogData" /> -->
-			<el-dialog v-model="dialogData.dialogVisible" title="验收" width="80%">
+			<el-dialog v-model="dialogData.dialogVisible" title="驗收" width="80%">
 				<el-row :gutter="10">
 					<el-col
 						v-for="item in dialogData.dialogForm"
@@ -45,11 +45,11 @@
 							:on-exceed="inputHandleExceed"
 							:on-change="inputHandleChange"
 						>
-							<el-button type="primary" class="ml1">上传验收报告</el-button>
+							<el-button type="primary" class="ml1">上傳驗收報告</el-button>
 						</el-upload></template
 					>
 					<template #append v-if="dialogData.fileInfo.name"
-						><el-button @click="inputsubmitUpload" type="primary" class="ml1">上传文件</el-button>
+						><el-button @click="inputsubmitUpload" type="primary" class="ml1">上傳文件</el-button>
 						<el-button v-if="dialogData.fileInfo['drawPath'].includes('/')" class="look-file" @click="lookUpload">查看文件</el-button>
 					</template>
 				</el-input>
@@ -59,14 +59,14 @@
 						show-word-limit
 						v-model="dialogData.describe"
 						type="textarea"
-						placeholder="请输入备注"
+						placeholder="請輸入備註"
 						maxlength="150"
 					></el-input>
 				</div>
 				<template #footer>
 					<span class="dialog-footer">
 						<el-button @click="dialogData.dialogVisible = false" size="default">取 消</el-button>
-						<el-button type="primary" @click="onSubmit(dialogTableFormRef)" size="default" :loading="loadingBtn">确定</el-button>
+						<el-button type="primary" @click="onSubmit(dialogTableFormRef)" size="default" :loading="loadingBtn">確定</el-button>
 					</span>
 				</template>
 			</el-dialog>
@@ -129,9 +129,9 @@ const state = reactive<TableDemoState>({
 			height: 750,
 		},
 
-		btnConfig: [{ type: 'acceptance', name: '验收', color: '#D3C333', isSure: false }],
+		btnConfig: [{ type: 'acceptance', name: '驗收', color: '#D3C333', isSure: false }],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-		search: [{ label: '送样单号', prop: 'simpleNo', placeholder: '请输入送样单号', required: false, type: 'input' }],
+		search: [{ label: '送樣單號', prop: 'simpleNo', placeholder: '請輸入送樣單號', required: false, type: 'input' }],
 		searchConfig: {
 			isSearchBtn: true,
 		},
@@ -152,17 +152,17 @@ const dialogState = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-			{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
+			{ key: 'vendorCode', colWidth: '', title: '廠商代碼', type: 'text', isCheck: true },
+			{ key: 'vendorName', colWidth: '', title: '廠商名稱', type: 'text', isCheck: true },
 			// { key: 'needsTime', colWidth: '', title: '需求送样时间', type: 'text', isCheck: true },
 			// { key: 'needsQty', colWidth: '', title: '需求送样数量', type: 'text', isCheck: true },
-			{ key: 'sampleTime', colWidth: '', title: '实际送样时间', type: 'text', isCheck: true },
-			{ key: 'sampleQty', colWidth: '', title: '实际送样数量', type: 'text', isCheck: true },
-			{ key: 'checkTime', colWidth: '', title: '验收时间', type: 'time', isCheck: true, isRequired: true },
-			{ key: 'checkQty', colWidth: '', title: '验收数量', type: 'input', isCheck: true, isRequired: true },
-			{ key: 'isPass', colWidth: '', title: '是否验收通过', type: 'status1', isCheck: true, isRequired: true },
-			{ key: 'failReasonIds', colWidth: '180', title: '验收失败原因', type: 'multipleSelect', isCheck: true, options: [] },
-			{ key: 'isStorage', colWidth: '', title: '是否入库', type: 'status1', isCheck: true, isRequired: true },
+			{ key: 'sampleTime', colWidth: '', title: '實際送樣時間', type: 'text', isCheck: true },
+			{ key: 'sampleQty', colWidth: '', title: '實際送樣數量', type: 'text', isCheck: true },
+			{ key: 'checkTime', colWidth: '', title: '驗收時間', type: 'time', isCheck: true, isRequired: true },
+			{ key: 'checkQty', colWidth: '', title: '驗收數量', type: 'input', isCheck: true, isRequired: true },
+			{ key: 'isPass', colWidth: '', title: '是否驗收通過', type: 'status1', isCheck: true, isRequired: true },
+			{ key: 'failReasonIds', colWidth: '180', title: '驗收失敗原因', type: 'multipleSelect', isCheck: true, options: [] },
+			{ key: 'isStorage', colWidth: '', title: '是否入庫', type: 'status1', isCheck: true, isRequired: true },
 			{ key: 'isResubmit', colWidth: '', title: '是否重送', type: 'status1', isCheck: true, isRequired: false },
 		],
 		// 表格配置项（必传）
@@ -202,30 +202,30 @@ const cellStyle = ref();
 const dialogData = reactive<EmptyObjectType>({
 	// 点击收货弹窗表格数据
 	otherHeaderData: [
-		{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-		{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-		{ key: 'needsTime', colWidth: '', title: '需求送样时间', type: 'text', isCheck: true },
-		{ key: 'needsQty', colWidth: '', title: '需求送样数量', type: 'input', isCheck: true },
-		{ key: 'sampleTime', colWidth: '', title: '实际送样时间', type: 'text', isCheck: true },
-		{ key: 'sampleQty', colWidth: '', title: '实际送样数量', type: 'input', isCheck: true },
-		{ key: 'checkTime', colWidth: '', title: '验收时间', type: 'time', isCheck: true, isRequired: true },
-		{ key: 'checkQty', colWidth: '', title: '验收数量', type: 'input', isCheck: true, isRequired: true },
-		{ key: 'isPass', colWidth: '', title: '是否验收通过', type: 'input', isCheck: true, isRequired: true },
-		{ key: 'isStorage', colWidth: '', title: '是否入库', type: 'input', isCheck: true, isRequired: true },
+		{ key: 'vendorCode', colWidth: '', title: '廠商代碼', type: 'text', isCheck: true },
+		{ key: 'vendorName', colWidth: '', title: '廠商名稱', type: 'text', isCheck: true },
+		{ key: 'needsTime', colWidth: '', title: '需求送樣時間', type: 'text', isCheck: true },
+		{ key: 'needsQty', colWidth: '', title: '需求送樣數量', type: 'input', isCheck: true },
+		{ key: 'sampleTime', colWidth: '', title: '實際送樣時間', type: 'text', isCheck: true },
+		{ key: 'sampleQty', colWidth: '', title: '實際送樣數量', type: 'input', isCheck: true },
+		{ key: 'checkTime', colWidth: '', title: '驗收時間', type: 'time', isCheck: true, isRequired: true },
+		{ key: 'checkQty', colWidth: '', title: '驗收數量', type: 'input', isCheck: true, isRequired: true },
+		{ key: 'isPass', colWidth: '', title: '是否驗收通過', type: 'input', isCheck: true, isRequired: true },
+		{ key: 'isStorage', colWidth: '', title: '是否入庫', type: 'input', isCheck: true, isRequired: true },
 	],
 	// 收货弹窗表格顶部数据
 	dialogForm: [
-		{ type: 'text', label: '验收单号', prop: 'checkNo', value: '' },
-		{ type: 'text', label: '送样单号', prop: 'sampleNo', value: '' },
-		{ type: 'text', label: '验收人', prop: 'engineerName', value: '', xs: 8, sm: 8, md: 8, lg: 8, xl: 8 },
-		{ type: 'text', label: '料号', prop: 'matNo', value: '' },
+		{ type: 'text', label: '驗收單號', prop: 'checkNo', value: '' },
+		{ type: 'text', label: '送樣單號', prop: 'sampleNo', value: '' },
+		{ type: 'text', label: '驗收人', prop: 'engineerName', value: '', xs: 8, sm: 8, md: 8, lg: 8, xl: 8 },
+		{ type: 'text', label: '料號', prop: 'matNo', value: '' },
 		{ type: 'text', label: '品名-中文', prop: 'nameCh', value: '' },
 		{ type: 'text', label: '品名-英文', prop: 'nameEn', value: '' },
 	],
 	//
 	formData: {},
 	//进行送样、收货还是验收操作
-	operation: '验收',
+	operation: '驗收',
 	//弹窗开关
 	dialogVisible: false,
 	//上传的文件
@@ -353,7 +353,7 @@ const inputHandleExceed: UploadProps['onExceed'] = (files) => {
 const inputsubmitUpload = async () => {
 	const res = await getUploadFileApi(4, inputuploadForm.value.raw);
 	dialogData.fileInfo['drawPath'] = res.data;
-	res.status && ElMessage.success(`上传成功`);
+	res.status && ElMessage.success(`上傳成功`);
 };
 // 查看上传的文件
 const lookUpload = () => {
@@ -363,7 +363,7 @@ const lookUpload = () => {
 const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
-		if (!valid) return ElMessage.warning(t('表格项必填未填'));
+		if (!valid) return ElMessage.warning(t('表格項必填未填'));
 		loadingBtn.value = true;
 		let checkDetails = dialogState.tableData.data.filter((item) => {
 			delete item.needsQty;
@@ -384,7 +384,7 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 		let res = await SampleCheckApi(submitparams);
 		if (res.status) {
 			dialogData.dialogVisible = false;
-			ElMessage.success('验收成功');
+			ElMessage.success('驗收成功');
 			getTableData();
 		}
 		loadingBtn.value = false;

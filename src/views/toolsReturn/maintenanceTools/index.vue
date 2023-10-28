@@ -30,7 +30,7 @@
 				@remoteMethod="remoteMethod"
 				:loadingBtn="loadingBtn"
 			>
-				<template #optionFat="{ row }" v-if="dilogTitle === '转仓'">
+				<template #optionFat="{ row }" v-if="dilogTitle === '轉倉'">
 					<span style="float: left">{{ row.text }}</span>
 					<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
 				</template>
@@ -86,16 +86,16 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'matno', colWidth: '', title: '料号', type: 'text', isCheck: true },
+			{ key: 'matno', colWidth: '', title: '料號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
 			// { key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 			// { key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 			{ key: 'storageType', colWidth: '', title: '倉庫類型', type: 'text', isCheck: true },
 			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
-			{ key: 'stockqty', colWidth: '', title: '库存总量', type: 'text', isCheck: true },
-			{ key: 'qrstockqty', colWidth: '', title: '有码库存量', type: 'text', isCheck: true },
-			{ key: 'notqrstockqty', colWidth: '', title: '无码库存量', type: 'text', isCheck: true },
+			{ key: 'stockqty', colWidth: '', title: '庫存總量', type: 'text', isCheck: true },
+			{ key: 'qrstockqty', colWidth: '', title: '有碼庫存量', type: 'text', isCheck: true },
+			{ key: 'notqrstockqty', colWidth: '', title: '無碼庫存量', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 
@@ -114,17 +114,17 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '料号', prop: 'matNo', required: false, type: 'input' },
+			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'matName', required: false, type: 'input' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
 		btnConfig: [
-			{ type: 'transferStorage', name: '转仓', color: '#36C78B', isSure: false, icon: 'ele-Position' },
+			{ type: 'transferStorage', name: '轉倉', color: '#36C78B', isSure: false, icon: 'ele-Position' },
 			{
 				type: 'sendReceive',
-				name: '退库',
+				name: '退庫',
 				color: '#D3C333',
 				isSure: false,
 				icon: 'ele-EditPen',
@@ -238,37 +238,37 @@ const dialogState = reactive<TableDemoState>({
 		},
 		//退库弹窗
 		dialogConfig: [
-			{ label: '料号', prop: 'matno', placeholder: '', required: false, type: 'text', xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
+			{ label: '料號', prop: 'matno', placeholder: '', required: false, type: 'text', xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
 			{ label: '品名-中文', prop: 'nameCh', placeholder: '', required: false, type: 'text' },
 			{ label: '品名-英文', prop: 'nameEn', placeholder: '', required: false, type: 'text' },
 			// { label: '厂商代码', prop: 'vendorcode', placeholder: '', required: false, type: 'text', xs: 24, sm: 8, md: 12, lg: 8, xl: 8 },
 			// { label: '厂商名称', prop: 'vendorname', placeholder: '', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 12, xl: 12 },
 			{
-				label: '退库类型',
+				label: '退庫類型',
 				prop: 'exitType',
-				placeholder: '请选择退库类型',
+				placeholder: '請選擇退庫類型',
 				required: true,
 				bindOthers: 'reasonId',
 				type: 'select',
 
 				options: [
-					{ value: 1, label: '维修', text: '维修' },
-					{ value: 2, label: '闲置', text: '闲置' },
-					{ value: 3, label: '报废', text: '报废' },
+					{ value: 1, label: '維修', text: '維修' },
+					{ value: 2, label: '閒置', text: '閒置' },
+					{ value: 3, label: '報廢', text: '報廢' },
 				],
 			},
 			{
-				label: '退库原因',
+				label: '退庫原因',
 				prop: 'reasonId',
-				placeholder: '请选择退库原因',
+				placeholder: '請選擇退庫原因',
 				required: true,
 				type: 'select',
 				options: [],
 			},
 			{
-				label: '转仓仓库:',
+				label: '轉倉倉庫:',
 				prop: 'storageId',
-				placeholder: '请选择转仓仓库',
+				placeholder: '請選擇轉倉倉庫',
 				required: true,
 				type: 'select',
 				options: [],
@@ -278,16 +278,16 @@ const dialogState = reactive<TableDemoState>({
 				remoteShowSuffix: true,
 			},
 			{
-				label: '出库日期:',
+				label: '出庫日期:',
 				prop: 'outDate',
-				placeholder: '请选择出库日期',
+				placeholder: '請選擇出庫日期',
 				required: true,
 				type: 'date',
 			},
 			{
-				label: '描述说明:',
+				label: '描述說明:',
 				prop: 'describe',
-				placeholder: '请输入描述说明',
+				placeholder: '請輸入描述說明',
 				required: false,
 				type: 'textarea',
 				xs: 24,
@@ -297,11 +297,11 @@ const dialogState = reactive<TableDemoState>({
 				xl: 24,
 			},
 			{
-				label: '退库数量',
+				label: '退庫數量',
 				prop: 'exitQty',
-				placeholder: '请输入退库数量',
+				placeholder: '請輸入退庫數量',
 				validateForm: 'number',
-				message: '请输入正整数',
+				message: '請輸入正整數',
 				required: true,
 				type: 'input',
 				xs: 24,
@@ -311,9 +311,9 @@ const dialogState = reactive<TableDemoState>({
 				xl: 8,
 			},
 			{
-				label: '扫码录入',
+				label: '掃碼錄入',
 				prop: 'scan',
-				placeholder: '请输入入库数量',
+				placeholder: '',
 				required: false,
 				type: 'button',
 				xs: 4,
@@ -325,9 +325,9 @@ const dialogState = reactive<TableDemoState>({
 		],
 		innerDialogConfig: [
 			{
-				label: '扫码退库:',
+				label: '掃碼退庫:',
 				prop: 'sacnexitqty',
-				placeholder: '请将光标放到此处扫码',
+				placeholder: '請將光標放到此處掃碼',
 				required: false,
 				type: 'input',
 				xs: 12,
@@ -337,7 +337,7 @@ const dialogState = reactive<TableDemoState>({
 				xl: 12,
 			},
 			{
-				label: '扫码数量:',
+				label: '掃碼數量:',
 				prop: 'exitQty',
 				placeholder: '1',
 				required: false,
@@ -349,9 +349,9 @@ const dialogState = reactive<TableDemoState>({
 				xl: 12,
 			},
 			{
-				label: '扫码信息:',
+				label: '掃碼信息:',
 				prop: 'codeList',
-				placeholder: '请输入扫码信息',
+				placeholder: '請輸入掃碼信息',
 				required: false,
 				type: 'tagsarea',
 				tag: true,
@@ -431,11 +431,11 @@ const openReturnDialog = (scope: EmptyObjectType, type: string) => {
 	let dialogConfig = dialogState.tableData.dialogConfig;
 	// 转仓
 	if (type === 'transferStorage') {
-		dilogTitle.value = '转仓';
+		dilogTitle.value = '轉倉';
 		dialogConfig?.forEach((item, index) => {
 			if (item.prop === 'exitQty') {
-				item.label = '转仓数量';
-				item.placeholder = '请输入转仓数量';
+				item.label = '轉倉數量';
+				item.placeholder = '請輸入轉倉數量';
 			}
 			if (item.prop == 'exitType' || item.prop == 'reasonId') {
 				deleteData = JSON.parse(JSON.stringify(dialogConfig?.splice(index, 2)));
@@ -446,11 +446,11 @@ const openReturnDialog = (scope: EmptyObjectType, type: string) => {
 		});
 		deleteStorage = [];
 	} else {
-		dilogTitle.value = '退库';
+		dilogTitle.value = '退庫';
 		dialogConfig?.forEach((item, index) => {
 			if (item.prop === 'exitQty') {
-				item.label = '退库数量';
-				item.placeholder = '请输入退库数量';
+				item.label = '退庫數量';
+				item.placeholder = '請輸入退庫數量';
 			}
 			const arr = ['storageId', 'outDate', 'describe'];
 			if (arr.includes(item.prop)) {
@@ -491,7 +491,7 @@ const remoteMethod = (query: string) => {
 	}
 };
 const scanCodeEntry = () => {
-	repairReturnDialogRef.value.openInnerDialog('扫码录入');
+	repairReturnDialogRef.value.openInnerDialog('掃碼錄入');
 };
 // 嵌套弹窗提交
 const innnerDialogSubmit = (formInnerData: any, formData: any) => {
@@ -528,10 +528,10 @@ const change = (val: any, prop: string, state: any) => {
 	let { formInnerData, formData } = state;
 	if (prop == 'sacnexitqty') {
 		if (formInnerData.codeList.length + 1 > formData.stockqty) {
-			ElMessage.error(`扫码数量超过库存总量，请勿继续扫码`);
+			ElMessage.error(`掃碼數量超過庫存總量，請勿繼續掃碼`);
 			formInnerData['sacnexitqty'] = null;
 		} else if (formInnerData.codeList.includes(val)) {
-			ElMessage.warning(`该条码已存在，请勿重复扫码`);
+			ElMessage.warning(`該條碼已存在，請勿重複掃碼`);
 			formInnerData['sacnexitqty'] = null;
 		} else {
 			formInnerData.codeList.push(val);
@@ -580,16 +580,16 @@ const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerDa
 		codeList: formInnerData.codeList,
 	};
 	if (submitData.exitQty > ruleForm.stockqty) {
-		ElMessage.error(`退库数量大于库存总量`);
+		ElMessage.error(`退庫數量大於庫存總量`);
 	} else if (submitData.exitQty < submitData.codeList.length) {
-		ElMessage.error(`退库数量小于扫码数量`);
+		ElMessage.error(`退庫數量小於掃碼數量`);
 	} else {
 		// 转仓提交
 		if (ruleForm.storageId) {
 			delete submitData.exitQty;
 			const res = await getTransferStorageApi(submitData);
 			if (res.status) {
-				ElMessage.success(t('转仓成功'));
+				ElMessage.success(t('轉倉成功'));
 				getTableData();
 				repairReturnDialogRef.value.closeDialog();
 			}
@@ -598,7 +598,7 @@ const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerDa
 			delete submitData.transferQty;
 			const res = await ExitStoreApi(submitData);
 			if (res.status) {
-				ElMessage.success(t('退库成功'));
+				ElMessage.success(t('退庫成功'));
 				getTableData();
 				repairReturnDialogRef.value.closeDialog();
 			}

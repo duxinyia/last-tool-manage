@@ -24,7 +24,7 @@
 						<div v-if="val.type === 'input'">
 							<span v-if="val.isRequired" class="color-danger mr5">*</span>
 							<span style="width: 96px" class="mr10">{{ val.label }}:</span>
-							<el-input size="default" v-model="dialogState.tableData.form[val.prop]" :placeholder="$t('请输入')" clearable style="width: 250px">
+							<el-input size="default" v-model="dialogState.tableData.form[val.prop]" :placeholder="$t('請輸入')" clearable style="width: 250px">
 							</el-input>
 						</div>
 					</el-col>
@@ -41,20 +41,20 @@
 					/>
 				</el-form>
 				<div class="describe" v-if="dilogTitle == '修改'">
-					<span>描述说明：</span>
+					<span>描述說明：</span>
 					<el-input
 						class="input-textarea"
 						show-word-limit
 						v-model="dialogState.tableData.form['describe']"
 						type="textarea"
-						placeholder="请输入"
+						placeholder="請輸入"
 						maxlength="300"
 					></el-input>
 				</div>
 				<template #footer v-if="dilogTitle == '修改'">
 					<span class="dialog-footer">
 						<el-button size="default" auto-insert-space @click="reportInquiryDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn"> 确定 </el-button>
+						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn"> 確定 </el-button>
 					</span>
 				</template>
 			</el-dialog>
@@ -98,9 +98,9 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'reqNo', colWidth: '', title: '申请单号', type: 'text', isCheck: true },
-			{ key: 'prNo', colWidth: '', title: 'PR单号', type: 'text', isCheck: true },
-			{ key: 'creator', colWidth: '', title: '提报人', type: 'text', isCheck: true },
+			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
+			{ key: 'prNo', colWidth: '', title: 'PR單號', type: 'text', isCheck: true },
+			{ key: 'creator', colWidth: '', title: '提報人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -118,8 +118,8 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '申请单号', prop: 'reqNo', required: false, type: 'input' },
-			{ label: 'PR单号', prop: 'prNo', required: false, type: 'input' },
+			{ label: '申請單號', prop: 'reqNo', required: false, type: 'input' },
+			{ label: 'PR單號', prop: 'prNo', required: false, type: 'input' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -151,9 +151,9 @@ const header = ref<deliveryDialogHeader>([
 	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 	// { key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 	// { key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-	{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
-	{ key: 'reqDate', colWidth: '150', title: '需求时间', type: 'text', isCheck: true },
-	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
+	{ key: 'reqQty', colWidth: '', title: '需求數量', type: 'text', isCheck: true },
+	{ key: 'reqDate', colWidth: '150', title: '需求時間', type: 'text', isCheck: true },
+	{ key: 'prItemNo', colWidth: '', title: 'PR項次', type: 'text', isCheck: true },
 	// { key: 'describe', colWidth: '150', title: '描述说明', type: 'text', isCheck: true },
 ]);
 const header1 = ref<deliveryDialogHeader>([
@@ -168,7 +168,7 @@ const header1 = ref<deliveryDialogHeader>([
 		option: [],
 		isfilterable: true,
 	},
-	{ key: 'reqMatNo', colWidth: '', title: '请购料号', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'reqMatNo', colWidth: '', title: '請購料號', type: 'text', isCheck: true, isRequired: false },
 	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 	{
@@ -184,9 +184,9 @@ const header1 = ref<deliveryDialogHeader>([
 		clearable: true,
 	},
 	{ key: 'line', colWidth: '', title: '線體', type: 'input', isCheck: true, isRequired: true },
-	{ key: 'reqQty', colWidth: '100', title: '需求数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
-	{ key: 'reqDate', colWidth: '150', title: '需求时间', type: 'time', isCheck: true, isRequired: true },
-	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'input', isCheck: true, isRequired: false, maxlength: 20 },
+	{ key: 'reqQty', colWidth: '100', title: '需求數量', type: 'number', isCheck: true, isRequired: true, min: 0 },
+	{ key: 'reqDate', colWidth: '150', title: '需求時間', type: 'time', isCheck: true, isRequired: true },
+	{ key: 'prItemNo', colWidth: '', title: 'PR項次', type: 'input', isCheck: true, isRequired: false, maxlength: 20 },
 	// { key: 'describe', colWidth: '150', title: '描述说明', type: 'text', isCheck: true },
 ]);
 const dialogState = reactive<TableDemoState>({
@@ -216,8 +216,8 @@ const dialogState = reactive<TableDemoState>({
 		form: {},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '申请单号', prop: 'reqNo', required: false, type: 'text' },
-			{ label: 'PR单号', prop: 'prNo', required: false, type: 'input' },
+			{ label: '申請單號', prop: 'reqNo', required: false, type: 'text' },
+			{ label: 'PR單號', prop: 'prNo', required: false, type: 'input' },
 		],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -266,7 +266,7 @@ const openDialog = async (type: string, row: EmptyObjectType) => {
 // 点击申请单号
 const reqNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'reqNo') {
-		dilogTitle.value = '单号:' + row.reqNo;
+		dilogTitle.value = '單號:' + row.reqNo;
 		let data = { reqNo: row.reqNo };
 		changeStatus(header.value, 500, false);
 		getDetailData(data);
@@ -373,7 +373,7 @@ watch(
 const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
-		if (!valid) return ElMessage.warning(t('表格项必填未填'));
+		if (!valid) return ElMessage.warning(t('表格項必填未填'));
 		loadingBtn.value = true;
 		let allData: EmptyObjectType = {};
 		let form = dialogState.tableData.form;

@@ -86,14 +86,14 @@ const state = reactive<TableDemoState>({
 		],
 		topBtnConfig: [
 			{ type: 'add', name: '新增', defaultColor: 'primary', isSure: true, disabled: true },
-			{ type: 'bulkDel', name: '批量删除', color: '#D33939', isSure: true, disabled: true },
+			{ type: 'bulkDel', name: '批量刪除', color: '#D33939', isSure: true, disabled: true },
 		],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{
-				label: '类别',
+				label: '類別',
 				prop: 'parentid',
-				placeholder: '请输入类别',
+				placeholder: '請輸入類別',
 				required: false,
 				type: 'select',
 				options: [],
@@ -119,18 +119,18 @@ const state = reactive<TableDemoState>({
 		// 弹窗表单
 		dialogConfig: [
 			{
-				label: '类别',
+				label: '類別',
 				prop: 'parentid',
-				placeholder: '请输入分类',
+				placeholder: '請選擇類別',
 				required: true,
 				type: 'select',
 				options: [],
 				editDisable: true,
 			},
 			{
-				label: '名称',
+				label: '名稱',
 				prop: 'dataname',
-				placeholder: '请输入名称',
+				placeholder: '請輸入名稱',
 				required: true,
 				type: 'input',
 			},
@@ -255,7 +255,7 @@ const ondownloadTemp = async () => {
 const onImportTable = async (raw: EmptyObjectType) => {
 	const res = await getImportDataApi(raw.raw);
 	if (res.status) {
-		ElMessage.success('导入数据成功！');
+		ElMessage.success('導入數據成功！');
 		getTableData();
 		basicDialogRef.value.closeDialog();
 	}

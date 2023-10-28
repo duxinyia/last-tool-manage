@@ -50,9 +50,9 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'repairNo', colWidth: '', title: '维修单号', type: 'text', isCheck: true },
-			{ key: 'prNo', colWidth: '', title: 'PR单号', type: 'text', isCheck: true },
-			{ key: 'creator', colWidth: '', title: '提报人', type: 'text', isCheck: true },
+			{ key: 'repairNo', colWidth: '', title: '維修單號', type: 'text', isCheck: true },
+			{ key: 'prNo', colWidth: '', title: 'PR單號', type: 'text', isCheck: true },
+			{ key: 'creator', colWidth: '', title: '提報人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -70,8 +70,8 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '维修单号', prop: 'repairNo', required: false, type: 'input' },
-			{ label: 'PR单号', prop: 'prNo', required: false, type: 'input' },
+			{ label: '維修單號', prop: 'repairNo', required: false, type: 'input' },
+			{ label: 'PR單號', prop: 'prNo', required: false, type: 'input' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -97,14 +97,14 @@ const dialogState = reactive<TableDemoState>({
 		// 表头内容（必传，注意格式）
 		header: [
 			{ key: 'matNo', colWidth: '250', title: 'message.pages.matNo', type: 'text', isCheck: true },
-			{ key: 'machinetype', colWidth: '', title: '机种', type: 'text', isCheck: true },
+			{ key: 'machinetype', colWidth: '', title: '機種', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			// { key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 			// { key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-			{ key: 'qty', colWidth: '', title: '维修数量', type: 'text', isCheck: true },
-			{ key: 'reason', colWidth: '150', title: '维修原因', type: 'text', isCheck: true },
-			{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
+			{ key: 'qty', colWidth: '', title: '維修數量', type: 'text', isCheck: true },
+			{ key: 'reason', colWidth: '150', title: '維修原因', type: 'text', isCheck: true },
+			{ key: 'prItemNo', colWidth: '', title: 'PR項次', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -125,9 +125,9 @@ const dialogState = reactive<TableDemoState>({
 		form: {},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '维修单号：', prop: 'repairNo', type: 'text', required: false },
-			{ label: 'PR单号:', prop: 'prNo', type: 'text', required: false },
-			{ label: '送修时间:', prop: 'sendRepairDate', type: 'text', required: false },
+			{ label: '維修單號', prop: 'repairNo', type: 'text', required: false },
+			{ label: 'PR單號:', prop: 'prNo', type: 'text', required: false },
+			{ label: '送修時間:', prop: 'sendRepairDate', type: 'text', required: false },
 		],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -167,7 +167,7 @@ const getTableData = async () => {
 // 点击申请单号
 const reqNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'repairNo') {
-		dilogTitle.value = '详情';
+		dilogTitle.value = '詳情';
 		const res = await getRepairDetailsApi(row.repairNo);
 		dialogState.tableData.data = res.data.details;
 		dialogState.tableData.form = res.data.head;
@@ -192,7 +192,7 @@ const onExportTableData = async (row: EmptyObjectType) => {
 	});
 	const link = document.createElement('a');
 	link.href = window.URL.createObjectURL(blob);
-	link.download = `${t('维修单')} ${new Date().toLocaleString()}.xlsx`; // 在前端也可以设置文件名字
+	link.download = `${t('維修單')} ${new Date().toLocaleString()}.xlsx`; // 在前端也可以设置文件名字
 	link.click();
 	//释放内存
 	window.URL.revokeObjectURL(link.href);

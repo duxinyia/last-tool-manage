@@ -52,16 +52,16 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'reqNo', colWidth: '', title: '申请单号', type: 'text', isCheck: true },
-			{ key: 'prNo', colWidth: '', title: 'PR单号', type: 'text', isCheck: true },
-			{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
-			{ key: 'matNo', colWidth: '', title: '料号', type: 'text', isCheck: true },
+			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
+			{ key: 'prNo', colWidth: '', title: 'PR單號', type: 'text', isCheck: true },
+			{ key: 'prItemNo', colWidth: '', title: 'PR項次', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'reqQty', colWidth: '', title: '需求数量', type: 'text', isCheck: true },
-			{ key: 'receiveQty', colWidth: '', title: '已收货数量', type: 'text', isCheck: true },
+			{ key: 'reqQty', colWidth: '', title: '需求數量', type: 'text', isCheck: true },
+			{ key: 'receiveQty', colWidth: '', title: '已收貨數量', type: 'text', isCheck: true },
 			{ key: 'reqDate', colWidth: '', title: '需求日期', type: 'text', isCheck: true },
-			{ key: 'creator', colWidth: '', title: '提报人', type: 'text', isCheck: true },
+			{ key: 'creator', colWidth: '', title: '提報人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -78,16 +78,16 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '申请单号', prop: 'reqNo', required: false, type: 'input' },
-			{ label: 'PR单号', prop: 'prNo', required: false, type: 'input' },
-			{ label: '料号', prop: 'matNo', required: false, type: 'input' },
+			{ label: '申請單號', prop: 'reqNo', required: false, type: 'input' },
+			{ label: 'PR單號', prop: 'prNo', required: false, type: 'input' },
+			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{ label: '需求日期', prop: 'reqDate', required: false, type: 'dateRange', lg: 4, xl: 4 },
 		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [{ type: 'sendReceive', name: '收货', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
+		btnConfig: [{ type: 'sendReceive', name: '收貨', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
 		// 给后端的数据
 		form: {
 			// reqNo: '',
@@ -95,19 +95,19 @@ const state = reactive<TableDemoState>({
 		},
 		dialogConfig: [
 			// { type: 'text', label: '收货单号', placeholder: '', prop: 'sendNo', required: false },
-			{ type: 'text', label: '申请单号', placeholder: '', prop: 'reqNo', required: false },
-			{ type: 'text', label: 'PR单号', placeholder: '', prop: 'prNo', required: false },
-			{ type: 'text', label: 'PR项次', placeholder: '', prop: 'prItemNo', required: false },
+			{ type: 'text', label: '申請單號', placeholder: '', prop: 'reqNo', required: false },
+			{ type: 'text', label: 'PR單號', placeholder: '', prop: 'prNo', required: false },
+			{ type: 'text', label: 'PR項次', placeholder: '', prop: 'prItemNo', required: false },
 			{ type: 'text', label: 'message.pages.matNo', placeholder: '', prop: 'matNo', required: false },
 			{ type: 'text', label: '品名-中文', placeholder: '', prop: 'nameCh', required: false },
 			{ type: 'text', label: '品名-英文', placeholder: '', prop: 'nameEn', required: false },
-			{ type: 'text', label: '需求数量', placeholder: '', prop: 'reqQty', required: false },
-			{ type: 'text', label: '已收货数量', placeholder: '', prop: 'receiveQty', required: false },
+			{ type: 'text', label: '需求數量', placeholder: '', prop: 'reqQty', required: false },
+			{ type: 'text', label: '已收貨數量', placeholder: '', prop: 'receiveQty', required: false },
 			{ type: 'text', label: '需求日期', placeholder: '', prop: 'reqDate', required: false },
 			{
-				label: '工程验收人',
+				label: '工程驗收人',
 				prop: 'engineer',
-				placeholder: '请输入工程验收人',
+				placeholder: '請輸入選擇工程驗收人',
 				required: true,
 				type: 'select',
 				options: [],
@@ -116,12 +116,12 @@ const state = reactive<TableDemoState>({
 				remote: true,
 				remoteShowSuffix: true,
 			},
-			{ type: 'number', label: '收货数量', placeholder: '', prop: 'receiptQty', required: true, min: 1 },
-			{ type: 'date', label: '收货时间', placeholder: '', prop: 'receiveDate', required: true },
+			{ type: 'number', label: '收貨數量', placeholder: '', prop: 'receiptQty', required: true, min: 1 },
+			{ type: 'date', label: '收貨時間', placeholder: '', prop: 'receiveDate', required: true },
 			{
 				type: 'textarea',
-				label: '描述说明',
-				placeholder: '请输入描述说明',
+				label: '描述說明',
+				placeholder: '請輸入描述說明',
 				prop: 'describe',
 				required: false,
 				xs: 24,
@@ -182,7 +182,7 @@ const state = reactive<TableDemoState>({
 // 点击收货弹窗
 const currentData = ref<EmptyObjectType>([]);
 const openArriveJobDialog = (scope: EmptyObjectType) => {
-	arriveJobDialogRef.value.openDialog('samp', scope.row, '收货');
+	arriveJobDialogRef.value.openDialog('samp', scope.row, '收貨');
 	currentData.value = scope.row;
 };
 const changeInput = (val: number, formData: EmptyObjectType) => {
@@ -260,7 +260,7 @@ const onSubmit = async (formData: any) => {
 	// });
 	const res = await getAddReceiveApi(getData);
 	if (res.status) {
-		ElMessage.success(t('收货成功'));
+		ElMessage.success(t('收貨成功'));
 
 		arriveJobDialogRef.value.closeDialog();
 		getTableData();

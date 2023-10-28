@@ -1,7 +1,7 @@
 <template>
 	<div class="main" :style="!isDialog ? 'height: 330px' : ''">
 		<div class="table-container" :class="{ 'link-width': !isDialog }">
-			<nav v-if="!isDialog" class="pb10">閒置單详情</nav>
+			<nav v-if="!isDialog" class="pb10">閒置單詳情</nav>
 			<el-form v-if="state.tableData.form" ref="tableSearchRef" :model="state.tableData.form" size="default" label-width="100px" class="table-form">
 				<el-row>
 					<el-col
@@ -22,11 +22,11 @@
 				</el-row>
 				<Table v-bind="state.tableData" class="table" />
 				<div class="describe">
-					<span>描述说明：</span>
+					<span>描述說明：</span>
 					<span style="width: 100%; font-weight: 700; color: #1890ff">{{ state.tableData.form['describe'] }}</span>
 				</div>
 			</el-form>
-			<el-empty v-else description="数据出错" />
+			<el-empty v-else description="數據出錯" />
 		</div>
 	</div>
 </template>
@@ -66,8 +66,8 @@ const state = reactive<TableDemoState>({
 				type: 'text',
 				isCheck: true,
 			},
-			{ key: 'qty', colWidth: '', title: '闲置数量', type: 'text', isCheck: true },
-			{ key: 'idlereason', colWidth: '150', title: '闲置原因', type: 'text', isCheck: true },
+			{ key: 'qty', colWidth: '', title: '閒置數量', type: 'text', isCheck: true },
+			{ key: 'idlereason', colWidth: '150', title: '閒置原因', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -88,10 +88,10 @@ const state = reactive<TableDemoState>({
 		form: {},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '闲置单号:', prop: 'idleno', type: 'text', required: false },
-			{ label: '闲置时间:', prop: 'idleDate', type: 'text', required: false },
-			{ label: '班别:', prop: 'classes', type: 'text', required: false },
-			{ label: '规划存放位置:', prop: 'position', type: 'text', required: false },
+			{ label: '閒置單號:', prop: 'idleno', type: 'text', required: false },
+			{ label: '閒置時間:', prop: 'idleDate', type: 'text', required: false },
+			{ label: '班別:', prop: 'classes', type: 'text', required: false },
+			{ label: '規劃存放位置:', prop: 'position', type: 'text', required: false },
 		],
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: true }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）

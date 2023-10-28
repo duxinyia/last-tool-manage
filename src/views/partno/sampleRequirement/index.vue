@@ -12,7 +12,7 @@
 				@onOpenOtherDialog="openArriveJobDialog"
 			/>
 			<el-dialog v-model="deliveryDialogVisible" :title="dilogTitle" width="40%">
-				<el-row v-if="dilogTitle == '料号送样'">
+				<el-row v-if="dilogTitle == '料號送樣'">
 					<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb20" v-for="(val, key) in dialogState.tableData.search" :key="key">
 						<div v-if="val.type === 'text'">
 							{{ val.label }}：<span style="color: red" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
@@ -24,7 +24,7 @@
 								value-format="YYYY-MM-DD"
 								v-model="dialogState.tableData.form[val.prop]"
 								type="date"
-								placeholder="请选择"
+								placeholder="請選擇"
 								style="height: 30px; max-width: 167px"
 							/>
 						</div>
@@ -51,10 +51,10 @@
 						:cellStyle="cellStyle"
 					/>
 				</el-form>
-				<template #footer v-if="dilogTitle == '料号送样'">
+				<template #footer v-if="dilogTitle == '料號送樣'">
 					<span class="dialog-footer">
 						<el-button size="default" auto-insert-space @click="deliveryDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn"> 确定 </el-button>
+						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn"> 確定 </el-button>
 					</span>
 				</template>
 			</el-dialog>
@@ -86,9 +86,9 @@ const cellStyle = ref();
 // 弹窗标题
 const dilogTitle = ref();
 const header = ref<deliveryDialogHeader>([
-	{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'input', isCheck: true, isRequired: true },
-	{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'input', isCheck: true, isRequired: true },
-	{ key: 'needsQty', colWidth: '', title: '数量', type: 'number', isCheck: true, isRequired: true },
+	{ key: 'vendorCode', colWidth: '', title: '廠商代碼', type: 'input', isCheck: true, isRequired: true },
+	{ key: 'vendorName', colWidth: '', title: '廠商名稱', type: 'input', isCheck: true, isRequired: true },
+	{ key: 'needsQty', colWidth: '', title: '數量', type: 'number', isCheck: true, isRequired: true },
 ]);
 const state = reactive<TableDemoState>({
 	tableData: {
@@ -96,14 +96,14 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'matNo', colWidth: '200', title: '料号', type: 'text', isCheck: true },
-			{ key: 'sampleNo', colWidth: '180', title: '送样单号', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '200', title: '料號', type: 'text', isCheck: true },
+			{ key: 'sampleNo', colWidth: '180', title: '送樣單號', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
-			{ key: 'runStatus', colWidth: '', title: '状态', type: 'text', isCheck: true },
+			{ key: 'runStatus', colWidth: '', title: '狀態', type: 'text', isCheck: true },
 			{ key: 'needsQty', colWidth: '', title: '需求數量', type: 'text', isCheck: true },
 			{ key: 'needor', colWidth: '', title: '需求人', type: 'text', isCheck: true },
-			{ key: 'needorTel', colWidth: '', title: '需求人电话', type: 'text', isCheck: true },
+			{ key: 'needorTel', colWidth: '', title: '需求人電話', type: 'text', isCheck: true },
 			{ key: 'needsDate', colWidth: '', title: '需求日期', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -120,11 +120,11 @@ const state = reactive<TableDemoState>({
 			isPage: false, //是否有分页
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-		search: [{ label: '料号', prop: 'MatNo', required: false, type: 'input', lg: 6, xl: 6 }],
+		search: [{ label: '料號', prop: 'MatNo', required: false, type: 'input', lg: 6, xl: 6 }],
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [{ type: 'sendReceive', name: '送样', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
+		btnConfig: [{ type: 'sendReceive', name: '送樣', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
 		// 给后端的数据
 		form: {
 			MatNo: '',
@@ -164,16 +164,16 @@ const dialogState = reactive<TableDemoState>({
 		form: {},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '送样单号', prop: 'sampleNo', required: false, type: 'text' },
-			{ label: '料号', prop: 'matNo', required: false, type: 'text' },
+			{ label: '送樣單號', prop: 'sampleNo', required: false, type: 'text' },
+			{ label: '料號', prop: 'matNo', required: false, type: 'text' },
 			{ label: '品名-英文', prop: 'nameEn', required: false, type: 'text' },
 			{ label: '品名-中文', prop: 'nameCh', required: false, type: 'text' },
 			// { label: '图纸编号', prop: 'drawNo', required: false, type: 'text' },
 			// { label: '规格', prop: 'specs', required: false, type: 'text' },
-			{ label: '需求数量', prop: 'needsQty', required: false, type: 'text' },
-			{ label: '需求时间', prop: 'needsDate', required: false, type: 'text' },
-			{ label: '下载查看图纸', prop: 'drawPathProp', required: false, type: 'button' },
-			{ label: '下载查看3d图纸', prop: 'draw3dPathProp', required: false, type: 'button' },
+			{ label: '需求數量', prop: 'needsQty', required: false, type: 'text' },
+			{ label: '需求時間', prop: 'needsDate', required: false, type: 'text' },
+			{ label: '下載查看圖紙', prop: 'drawPathProp', required: false, type: 'button' },
+			{ label: '下載查看3d圖紙', prop: 'draw3dPathProp', required: false, type: 'button' },
 		],
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
@@ -230,7 +230,7 @@ watch(
 //删除一行
 const onDelRow = (row: EmptyObjectType, i: number) => {
 	if (row.runId) {
-		ElMessage.error(t('不能删除已有的厂商信息'));
+		ElMessage.error(t('不能刪除已有的廠商信息'));
 	} else {
 		dialogState.tableData.data.splice(i, 1);
 	}
@@ -248,7 +248,7 @@ const openArriveJobDialog = async (scope: EmptyObjectType) => {
 	dialogState.tableData.data = res.data;
 	dialogState.tableData.form = scope.row;
 	deliveryDialogVisible.value = true;
-	dilogTitle.value = '料号送样';
+	dilogTitle.value = '料號送樣';
 	changeStatus(header.value, 200, true);
 };
 // 查看图纸
@@ -262,7 +262,7 @@ const downLoadFile = (prop: string) => {
 	if (drawMap[prop]) {
 		window.open(`${import.meta.env.VITE_API_URL}${drawMap[prop]}`, '_blank');
 	} else {
-		prop === 'drawPathProp' ? ElMessage.warning(t('没有图纸')) : ElMessage.warning(t('没有3d图纸'));
+		prop === 'drawPathProp' ? ElMessage.warning(t('沒有圖紙')) : ElMessage.warning(t('沒有3d圖紙'));
 	}
 };
 // 点击申请单号
@@ -297,7 +297,7 @@ const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) =
 const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
-		if (!valid) return ElMessage.warning(t('表格项必填未填'));
+		if (!valid) return ElMessage.warning(t('表格項必填未填'));
 		loadingBtn.value = true;
 		let allData: EmptyObjectType = {};
 		let form = dialogState.tableData.form;
@@ -313,11 +313,11 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 		});
 		allData['vendors'] = data;
 		if (allData['vendors'].length <= 0) {
-			ElMessage.warning(t('请新增厂商数据'));
+			ElMessage.warning(t('請新增廠商數據'));
 		} else {
 			const res = await getTakeSampleApi(allData);
 			if (res.status) {
-				ElMessage.success(t('送样成功'));
+				ElMessage.success(t('送樣成功'));
 				deliveryDialogVisible.value = false;
 				getTableData();
 			}

@@ -15,11 +15,11 @@
 			>
 				<template #btn="{ row }">
 					<el-button type="primary" plain size="default" class="button buttonBorder" @click="onSign(row.stockId)">
-						{{ $t('查看二维码编号') }}</el-button
+						{{ $t('查看二維碼編號') }}</el-button
 					>
 				</template>
 			</Table>
-			<el-dialog v-model="onNumberListDialogRef" title="二维码编号" width="30%" draggable>
+			<el-dialog v-model="onNumberListDialogRef" title="二維碼編號" width="30%" draggable>
 				<el-tag v-for="tag in tags" :key="tag.code" class="mr10 mb10">
 					{{ tag }}
 				</el-tag>
@@ -65,16 +65,16 @@ const state = reactive<TableDemoState>({
 			},
 			{ key: 'buCode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
 			// { key: 'machineType', colWidth: '', title: '机种', type: 'text', isCheck: true },
-			{ key: 'projectCode', colWidth: '', title: '专案代码', type: 'text', isCheck: true },
+			{ key: 'projectCode', colWidth: '', title: '專案代碼', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'applyQty', colWidth: '', title: '请购总数', type: 'text', isCheck: true },
-			{ key: 'uselessQty', colWidth: '', title: '报废总数', type: 'text', isCheck: true },
-			{ key: 'repairQty', colWidth: '', title: '维修总数', type: 'text', isCheck: true },
-			{ key: 'idleQty', colWidth: '', title: '闲置总数', type: 'text', isCheck: true },
-			{ key: 'storedQty', colWidth: '', title: '库存总数', type: 'text', isCheck: true },
-			{ key: 'storeLocation', colWidth: '', title: '仓库位置', type: 'text', isCheck: true },
-			{ key: 'stockQty', colWidth: '', title: '库存数量', type: 'text', isCheck: true },
+			{ key: 'applyQty', colWidth: '', title: '請購總數', type: 'text', isCheck: true },
+			{ key: 'uselessQty', colWidth: '', title: '報廢總數', type: 'text', isCheck: true },
+			{ key: 'repairQty', colWidth: '', title: '維修總數', type: 'text', isCheck: true },
+			{ key: 'idleQty', colWidth: '', title: '閒置總數', type: 'text', isCheck: true },
+			{ key: 'storedQty', colWidth: '', title: '庫存總數', type: 'text', isCheck: true },
+			{ key: 'storeLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
+			{ key: 'stockQty', colWidth: '', title: '庫存數量', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -184,7 +184,7 @@ const onSign = async (stockId: string) => {
 	const res = await getCodesByStockIdApi(stockId);
 	if (res.data) {
 		if (!res.data.length) {
-			ElMessage.error('暂无二维码编号');
+			ElMessage.error('暫無二維碼編碼');
 		} else {
 			onNumberListDialogRef.value = true;
 			tags.value = res.data;

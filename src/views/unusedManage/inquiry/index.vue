@@ -34,14 +34,14 @@
 
 				<div class="describe">
 					<div style="line-height: 30px">
-						描述说明：<span style="color: red" class="ml10">{{ dialogState.tableData.form['describe'] }}</span>
+						描述說明：<span style="color: red" class="ml10">{{ dialogState.tableData.form['describe'] }}</span>
 					</div>
 				</div>
 			</el-dialog>
 			<!-- 閒置詳情彈窗 -->
 			<el-dialog v-model="detaildialogVisible" :title="dilogTitle" width="50%">
 				<IdleNoDetailDialog :isDialog="true" :IdleNoRef="IdleNoRef" />
-				<template #footer v-if="dilogTitle == '详情'">
+				<template #footer v-if="dilogTitle == '詳情'">
 					<span class="dialog-footer">
 						<el-button size="default" auto-insert-space @click="detaildialogVisible = false">取消</el-button>
 						<el-button size="default" type="primary" auto-insert-space @click="onSend" :loading="loadingBtn" :disabled="sendDisabled">
@@ -83,11 +83,11 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'idleno', colWidth: '', title: '闲置单号', type: 'text', isCheck: true },
-			{ key: 'idledate', colWidth: '', title: '闲置时间', type: 'text', isCheck: true },
+			{ key: 'idleno', colWidth: '', title: '閒置單號', type: 'text', isCheck: true },
+			{ key: 'idledate', colWidth: '', title: '閒置時間', type: 'text', isCheck: true },
 			{ key: 'classes', colWidth: '', title: '班次', type: 'text', isCheck: true },
-			{ key: 'position', colWidth: '', title: '规划存放位置', type: 'text', isCheck: true },
-			{ key: 'signStatus', colWidth: '', title: '签核状态', type: 'text', isCheck: true },
+			{ key: 'position', colWidth: '', title: '規劃存放位置', type: 'text', isCheck: true },
+			{ key: 'signStatus', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
 			{ key: 'creator', colWidth: '', title: '操作人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -106,27 +106,27 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '闲置单号', prop: 'idleNo', required: false, type: 'input' },
-			{ label: '闲置时间', prop: 'idleDate', required: false, type: 'dateRange' },
+			{ label: '閒置單號', prop: 'idleNo', required: false, type: 'input' },
+			{ label: '閒置時間', prop: 'idleDate', required: false, type: 'dateRange' },
 			{
-				label: '签核状态',
+				label: '簽核狀態',
 				prop: 'signStatus',
 				required: false,
 				type: 'select',
 				clearable: true,
 				options: [
-					{ value: 0, label: '未送签', text: '未送签', selected: true },
-					{ value: 1, label: '签核中', text: '签核中', selected: false },
-					{ value: 2, label: '签核完成', text: '签核完成', selected: false },
+					{ value: 0, label: '未送簽', text: '未送簽', selected: true },
+					{ value: 1, label: '簽核中', text: '簽核中', selected: false },
+					{ value: 2, label: '簽核完成', text: '簽核完成', selected: false },
 				],
 			},
 			{ label: '班次', prop: 'classes', type: 'input', required: false },
-			{ label: '规划存放位置', prop: 'position', type: 'input', required: false },
+			{ label: '規劃存放位置', prop: 'position', type: 'input', required: false },
 		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [{ type: 'detail', name: '详情', color: '#1890ff', isSure: false, icon: 'ele-View' }],
+		btnConfig: [{ type: 'detail', name: '詳情', color: '#1890ff', isSure: false, icon: 'ele-View' }],
 		// 给后端的数据
 		form: {
 			// idleNo: '',
@@ -157,8 +157,8 @@ const dialogState = reactive<TableDemoState>({
 			},
 			// { key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 			// { key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-			{ key: 'qty', colWidth: '', title: '闲置数量', type: 'text', isCheck: true },
-			{ key: 'idlereason', colWidth: '150', title: '闲置原因', type: 'text', isCheck: true },
+			{ key: 'qty', colWidth: '', title: '閒置數量', type: 'text', isCheck: true },
+			{ key: 'idlereason', colWidth: '150', title: '閒置原因', type: 'text', isCheck: true },
 			// { key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -180,10 +180,10 @@ const dialogState = reactive<TableDemoState>({
 		form: {},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '闲置单号:', prop: 'idlepno', type: 'text', required: false },
-			{ label: '闲置时间:', prop: 'idleDate', type: 'text', required: false },
-			{ label: '班别:', prop: 'classes', type: 'text', required: false },
-			{ label: '规划存放位置:', prop: 'position', type: 'text', required: false },
+			{ label: '閒置單號:', prop: 'idlepno', type: 'text', required: false },
+			{ label: '閒置時間:', prop: 'idleDate', type: 'text', required: false },
+			{ label: '班別:', prop: 'classes', type: 'text', required: false },
+			{ label: '規劃存放位置:', prop: 'position', type: 'text', required: false },
 		],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -197,7 +197,7 @@ const openDetailDialog = (scope: EmptyObjectType) => {
 	IdleNoRef.value = scope.row.idleno;
 	// getDetailData(scope.row.idleno);
 	detaildialogVisible.value = true;
-	dilogTitle.value = '详情';
+	dilogTitle.value = '詳情';
 	sendDisabled.value = scope.row.signStatus1 ? true : false;
 };
 // 单元格字体颜色
@@ -234,9 +234,9 @@ const getTableData = async () => {
 	}
 	delete data.idleDate;
 	const signStatusMap: EmptyObjectType = {
-		0: '未送签',
-		1: '签核中',
-		2: '签核完成',
+		0: '未送簽',
+		1: '簽核中',
+		2: '簽核完成',
 	};
 	const res = await IdleQueryPageListApi(data);
 	res.data.data.forEach((item: any) => {
@@ -252,7 +252,7 @@ const getTableData = async () => {
 // 点击闲置单号
 const idleNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'idleno') {
-		dilogTitle.value = '闲置单号:' + row.idleno;
+		dilogTitle.value = '閒置單號:' + row.idleno;
 		getDetailData(row.idleno);
 	}
 };
@@ -271,7 +271,7 @@ const onSend = async () => {
 	loadingBtn.value = true;
 	const res = await getIdleSubmitSignApi(IdleNoRef.value);
 	if (res.status) {
-		ElMessage.success(t('送签成功'));
+		ElMessage.success(t('送簽成功'));
 		detaildialogVisible.value = false;
 		getTableData();
 	}

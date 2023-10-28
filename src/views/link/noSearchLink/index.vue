@@ -1,6 +1,6 @@
 <template>
 	<div class="main" :style="!isDialog ? 'height: 330px' : ''">
-		<nav v-if="!isDialog" class="pb10">料号详情</nav>
+		<nav v-if="!isDialog" class="pb10">料號詳情</nav>
 		<div class="table-container">
 			<!-- <el-card :class="isDialog ? '' : 'box-card'"> -->
 			<el-form v-if="state.form" ref="tableSearchRef" :model="state.form" size="default" label-width="auto" class="table-form">
@@ -20,7 +20,7 @@
 								<span v-if="val.type === 'text'" style="width: 100%; font-weight: 700; color: #1890ff">
 									{{ state.form[val.prop] }}
 								</span>
-								<el-button type="primary" class="ml20" v-if="val.type === 'btn'" @click="clickLink(val.prop)">查看图纸</el-button>
+								<el-button type="primary" class="ml20" v-if="val.type === 'btn'" @click="clickLink(val.prop)">查看圖紙</el-button>
 								<div v-if="val.type == 'tagsarea'">
 									<el-tag v-for="tag in state.form[val.prop]" :key="tag" class="mr10">
 										{{ tag }}
@@ -31,7 +31,7 @@
 					</el-col>
 				</el-row>
 			</el-form>
-			<el-empty v-else description="数据出错" />
+			<el-empty v-else description="數據出錯" />
 
 			<!-- </el-card> -->
 		</div>
@@ -60,19 +60,19 @@ const props = defineProps({
 });
 const state = reactive<LinkState>({
 	search: [
-		{ label: '料号：', prop: 'matNo', type: 'text', xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
+		{ label: '料號：', prop: 'matNo', type: 'text', xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
 		{ label: '中文：', prop: 'nameCh', type: 'text' },
 		{ label: '英文：', prop: 'nameEn', type: 'text' },
-		{ label: '图纸编号：', prop: 'drawNo', type: 'text' },
+		{ label: '圖紙編號：', prop: 'drawNo', type: 'text' },
 		// { label: '规格：', prop: 'specs', type: 'text' },
 		// { label: '厂区：', prop: 'area', type: 'text' },
 		// { label: 'BU：', prop: 'bu', type: 'text' },
 		// { label: '专案代码：', prop: 'projectCode', type: 'text' },
-		{ label: '阶段：', prop: 'stage', type: 'text' },
-		{ label: '部门：', prop: 'depart', type: 'text' },
-		{ label: '机种：', prop: 'machineType', type: 'tagsarea', xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
+		{ label: '階段：', prop: 'stage', type: 'text' },
+		{ label: '部門：', prop: 'depart', type: 'text' },
+		{ label: '機種：', prop: 'machineType', type: 'tagsarea', xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
 		{
-			label: '图纸文件：',
+			label: '圖紙文件：',
 			prop: 'drawPath',
 			type: 'btn',
 			xs: 24,
@@ -92,7 +92,7 @@ const state = reactive<LinkState>({
 		// 	xl: 24,
 		// },
 		{
-			label: '备注：',
+			label: '備註：',
 			prop: 'describe',
 			placeholder: 'message.pages.placeDescribe',
 			required: false,
@@ -129,6 +129,8 @@ const getDetailData = async () => {
 const clickLink = (prop: string) => {
 	if (prop === 'drawPath') {
 		window.open(`${import.meta.env.VITE_API_URL}${state.form[prop]}`, '_blank');
+	} else {
+		ElMessage.warning('暫無圖紙文件');
 	}
 };
 // 页面加载时

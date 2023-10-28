@@ -21,14 +21,14 @@
 			<!-- 新增编辑弹窗 -->
 			<Dialog ref="warehouseDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="addData" :loadingBtn="loadingBtn" />
 			<!-- 管理员设定弹窗 -->
-			<el-dialog ref="warehouseAdminDialogRef" v-model="warehouseDialogVisible" title="管理员设定" width="50%">
+			<el-dialog ref="warehouseAdminDialogRef" v-model="warehouseDialogVisible" title="管理員設定" width="50%">
 				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
 					<Table ref="dialogTableRef" v-bind="dialogState.tableData" class="table-dialog" @delRow="onDelRow" @addrow="onAddrow" />
 				</el-form>
 				<template #footer>
 					<span class="dialog-footer">
 						<el-button size="default" auto-insert-space @click="warehouseDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn"> 确定 </el-button>
+						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn"> 確定 </el-button>
 					</span>
 				</template>
 			</el-dialog>
@@ -69,7 +69,7 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'storeType', colWidth: '', title: '倉庫类型', type: 'text', isCheck: true },
+			{ key: 'storeType', colWidth: '', title: '倉庫類型', type: 'text', isCheck: true },
 			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
 			// { key: 'runstatus', colWidth: '', title: 'message.pages.state', type: 'status', isCheck: true },
 		],
@@ -90,25 +90,25 @@ const state = reactive<TableDemoState>({
 		},
 		topBtnConfig: [{ type: 'add', name: '新增', defaultColor: 'primary', isSure: true, disabled: true }],
 		btnConfig: [
-			{ type: 'admin', name: '管理员设定', color: '#438df5', isSure: false, icon: 'ele-Setting' },
+			{ type: 'admin', name: '管理員設定', color: '#438df5', isSure: false, icon: 'ele-Setting' },
 			{ type: 'edit', name: 'message.allButton.editBtn', color: '#39D339', isSure: false, icon: 'ele-Edit' },
 			{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true },
 		],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{
-				label: '仓库类型',
+				label: '倉庫類型',
 				prop: 'storeType',
 				required: false,
 				type: 'select',
 				options: [],
 			},
 			{
-				label: '仓库位置',
+				label: '倉庫位置',
 				prop: 'sLocation',
 				required: false,
 				type: 'select',
-				placeholder: '请输入选择仓库位置',
+				placeholder: '請輸入選擇倉庫位置',
 				options: [],
 				loading: true,
 				filterable: true,
@@ -133,8 +133,8 @@ const state = reactive<TableDemoState>({
 		printName: '表格打印演示',
 		// 弹窗表单
 		dialogConfig: [
-			{ label: '倉庫类型', prop: 'storeType', placeholder: '请选择倉庫类型', required: true, type: 'select', options: [] },
-			{ label: '倉庫位置', prop: 'sLocation', placeholder: '请输入倉庫位置', required: true, type: 'input' },
+			{ label: '倉庫類型', prop: 'storeType', placeholder: '请選擇倉庫類型', required: true, type: 'select', options: [] },
+			{ label: '倉庫位置', prop: 'sLocation', placeholder: '請輸入倉庫位置', required: true, type: 'input' },
 		],
 	},
 });
@@ -145,7 +145,7 @@ const dialogState = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'userId', colWidth: '250', title: '工号', type: 'input', isCheck: true, isRequired: true },
+			{ key: 'userId', colWidth: '250', title: '工號', type: 'input', isCheck: true, isRequired: true },
 			{ key: 'username', colWidth: '', title: '姓名', type: 'text', isCheck: true, isRequired: false },
 		],
 		// 配置项（必传）
@@ -166,10 +166,7 @@ const dialogState = reactive<TableDemoState>({
 		// 给后端的数据
 		form: {},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-		search: [
-			{ label: '验收单号', prop: 'checkno', required: false, type: 'text' },
-			{ label: '收货单号', prop: 'receiptno', required: false, type: 'text' },
-		],
+		search: [],
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -234,7 +231,7 @@ const onAddrow = () => {
 const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
-		if (!valid) return ElMessage.warning(t('表格项必填未填'));
+		if (!valid) return ElMessage.warning(t('表格項必填未填'));
 		loadingBtn.value = true;
 		let allData: EmptyObjectType = {};
 		let userIdsArr: EmptyArrayType = [];
@@ -246,7 +243,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 			adminUserInfos: userIdsArr,
 		};
 		if (allData.adminUserInfos.length <= 0) {
-			ElMessage.warning(t('表格数据为0条,请新增数据'));
+			ElMessage.warning(t('表格數據為0條,請新增數據'));
 		} else {
 			const res = await getAddAdminsToStoreHouseApi(allData);
 			if (res.status) {

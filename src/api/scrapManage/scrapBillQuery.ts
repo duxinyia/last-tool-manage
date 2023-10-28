@@ -1,3 +1,4 @@
+import { LocationQueryValue } from 'vue-router';
 import request from '/@/utils/request';
 // 查询接口
 export function getQueryExitPageApi(data: Object) {
@@ -9,7 +10,7 @@ export function getQueryExitPageApi(data: Object) {
 }
 // 详情接口
 
-export function getUselessDetailApi(UselessNo: string) {
+export function getUselessDetailApi(UselessNo:  string|LocationQueryValue | LocationQueryValue[]) {
 	return request({
 		url: '/api/Useless/GetUselessDetail/UselessNo',
 		method: 'GET',

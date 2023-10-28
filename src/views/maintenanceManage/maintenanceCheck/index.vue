@@ -13,7 +13,7 @@
 				@onOpenOtherDialog="openArriveJobDialog"
 			/>
 			<el-dialog v-model="maintenanceCheckDialogVisible" :title="dilogTitle" width="85%">
-				<el-row v-if="dilogTitle == '验收'">
+				<el-row v-if="dilogTitle == '驗收'">
 					<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb10" v-for="(val, key) in dialogState.tableData.search" :key="key">
 						<div v-if="val.type === 'text'">
 							{{ val.label }}：<span style="color: red" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
@@ -35,9 +35,9 @@
 				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
 					<Table v-bind="dialogState.tableData" class="table" @delRow="onDelRow" @handleNumberInputChange="changeInput" />
 				</el-form>
-				<template v-if="dilogTitle == '验收'">
+				<template v-if="dilogTitle == '驗收'">
 					<div class="describe up-file">
-						<span>收货报告url：</span>
+						<span>收貨報告url：</span>
 						<el-input disabled v-model="dialogState.tableData.form['accepReportUrl']" clearable>
 							<template #prepend
 								><el-upload
@@ -52,11 +52,11 @@
 									:on-exceed="inputHandleExceed"
 									:on-change="inputHandleChange"
 								>
-									<el-button type="primary" class="btn ml1">浏览文件</el-button>
+									<el-button type="primary" class="btn ml1">瀏覽文件</el-button>
 								</el-upload></template
 							>
 							<template #append v-if="dialogState.tableData.form['accepReportUrl']"
-								><el-button @click="inputsubmitUpload" type="primary" class="ml1">上传文件</el-button>
+								><el-button @click="inputsubmitUpload" type="primary" class="ml1">上傳文件</el-button>
 								<el-button v-if="dialogState.tableData.form['accepReportUrl'].includes('/')" class="look-file" @click="lookUpload"
 									>查看文件</el-button
 								>
@@ -64,23 +64,23 @@
 						</el-input>
 					</div>
 					<div class="describe">
-						<span>收货描述说明：</span>
+						<span>收貨描述說明：</span>
 						<div style="font-weight: 700; color: #1890ff">{{ dialogState.tableData.form['describe'] }}</div>
 					</div>
 					<div class="describe">
-						<span>描述说明：</span>
+						<span>描述說明：</span>
 						<el-input
 							class="input-textarea"
 							show-word-limit
 							v-model="dialogState.tableData.form['describe1']"
 							type="textarea"
-							placeholder="请输入"
+							placeholder="請輸入"
 							maxlength="150"
 						></el-input>
 					</div>
 				</template>
 
-				<template #footer v-if="dilogTitle == '验收'">
+				<template #footer v-if="dilogTitle == '驗收'">
 					<span class="dialog-footer">
 						<el-button size="default" auto-insert-space @click="maintenanceCheckDialogVisible = false">取消</el-button>
 						<el-button
@@ -91,7 +91,7 @@
 							@click="onSubmit(tableFormRef)"
 							:loading="loadingBtn"
 						>
-							确定
+							確定
 						</el-button>
 					</span>
 				</template>
@@ -132,13 +132,13 @@ const header = ref<EmptyArrayType>([
 	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	// { key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 	// { key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'text', isCheck: true },
-	{ key: 'receiptDate', colWidth: '', title: '收货时间', type: 'text', isCheck: true },
-	{ key: 'checkQty', colWidth: '100', title: '验收数量', type: 'text', isCheck: true, isRequired: false, min: 0 },
-	{ key: 'passQty', colWidth: '100', title: '合格数量', type: 'number', isCheck: true, isRequired: true, min: 0 },
-	{ key: 'failqty', colWidth: '', title: '不合格数量', type: 'text', isCheck: true, isRequired: true },
-	{ key: 'failReasonIds', colWidth: '180', title: '验收不合格原因', type: 'multipleSelect', isCheck: true, options: [] },
-	{ key: 'checkDate', colWidth: '150', title: '验收时间', type: 'time', isCheck: true, isRequired: true },
+	{ key: 'receiptQty', colWidth: '', title: '收貨數量', type: 'text', isCheck: true },
+	{ key: 'receiptDate', colWidth: '', title: '收貨時間', type: 'text', isCheck: true },
+	{ key: 'checkQty', colWidth: '100', title: '驗收數量', type: 'text', isCheck: true, isRequired: false, min: 0 },
+	{ key: 'passQty', colWidth: '100', title: '合格數量', type: 'number', isCheck: true, isRequired: true, min: 0 },
+	{ key: 'failqty', colWidth: '', title: '不合格數量', type: 'text', isCheck: true, isRequired: true },
+	{ key: 'failReasonIds', colWidth: '180', title: '驗收不合格原因', type: 'multipleSelect', isCheck: true, options: [] },
+	{ key: 'checkDate', colWidth: '150', title: '驗收時間', type: 'time', isCheck: true, isRequired: true },
 ]);
 const header1 = ref([
 	{
@@ -152,8 +152,8 @@ const header1 = ref([
 	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 	// { key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 	// { key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-	{ key: 'receiptQty', colWidth: '', title: '收货数量', type: 'text', isCheck: true },
-	{ key: 'receiptDate', colWidth: '150', title: '收货时间', type: 'text', isCheck: true },
+	{ key: 'receiptQty', colWidth: '', title: '收貨數量', type: 'text', isCheck: true },
+	{ key: 'receiptDate', colWidth: '150', title: '收貨時間', type: 'text', isCheck: true },
 ]);
 const state = reactive<TableDemoState>({
 	tableData: {
@@ -161,10 +161,10 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'repairReceiveNo', colWidth: '', title: '收货单号', type: 'text', isCheck: true },
-			{ key: 'repairNo', colWidth: '', title: '维修单号', type: 'text', isCheck: true },
-			{ key: 'creator', colWidth: '', title: '收货人', type: 'text', isCheck: true },
-			{ key: 'receiptTime', colWidth: '', title: '收货时间', type: 'text', isCheck: true },
+			{ key: 'repairReceiveNo', colWidth: '', title: '收貨單號', type: 'text', isCheck: true },
+			{ key: 'repairNo', colWidth: '', title: '維修單號', type: 'text', isCheck: true },
+			{ key: 'creator', colWidth: '', title: '收貨人', type: 'text', isCheck: true },
+			{ key: 'receiptTime', colWidth: '', title: '收貨時間', type: 'text', isCheck: true },
 			// { key: 'runstatus', colWidth: '', title: '状态', type: 'status', isCheck: true },
 			{ key: 'companyId', colWidth: '', title: '法人', type: 'text', isCheck: true },
 			{ key: 'buCode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
@@ -188,13 +188,13 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '收货单号', prop: 'repairReceiveNo', required: false, type: 'input' },
-			{ label: '维修单号', prop: 'repairNo', required: false, type: 'input' },
+			{ label: '收貨單號', prop: 'repairReceiveNo', required: false, type: 'input' },
+			{ label: '維修單號', prop: 'repairNo', required: false, type: 'input' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [{ type: 'sendReceive', name: '验收', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
+		btnConfig: [{ type: 'sendReceive', name: '驗收', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
 		// 给后端的数据
 		form: {
 			repairReceiveNo: '',
@@ -234,8 +234,8 @@ const dialogState = reactive<TableDemoState>({
 		form: {},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '验收单号', prop: 'checkno', required: false, type: 'text' },
-			{ label: '收货单号', prop: 'repairReceiveNo', required: false, type: 'text' },
+			{ label: '驗收單號', prop: 'checkno', required: false, type: 'text' },
+			{ label: '收貨單號', prop: 'repairReceiveNo', required: false, type: 'text' },
 		],
 		// btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: true }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
@@ -303,7 +303,7 @@ const inputHandleExceed: UploadProps['onExceed'] = (files) => {
 const inputsubmitUpload = async () => {
 	const res = await getUploadFileApi(3, inputuploadForm.value.raw);
 	dialogState.tableData.form['accepReportUrl'] = res.data;
-	res.status && ElMessage.success(`上传成功`);
+	res.status && ElMessage.success(`上傳成功`);
 };
 // 查看上传的文件
 const lookUpload = () => {
@@ -318,13 +318,13 @@ const openArriveJobDialog = (scope: EmptyObjectType) => {
 	dialogState.tableData.form = scope.row;
 	getDetailData(scope.row.repairReceiveNo);
 	isSureDisabled.value = true;
-	dilogTitle.value = '验收';
+	dilogTitle.value = '驗收';
 	changeStatus(header.value, 300, true);
 };
 // 点击收货单号
 const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'repairReceiveNo') {
-		dilogTitle.value = '收货单号:' + row.repairReceiveNo;
+		dilogTitle.value = '收貨單號:' + row.repairReceiveNo;
 		changeStatus(header1.value, 500, false);
 		getDetailData(row.repairReceiveNo);
 	}
@@ -364,7 +364,7 @@ const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) =
 const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
-		if (!valid) return ElMessage.warning(t('表格项必填未填'));
+		if (!valid) return ElMessage.warning(t('表格項必填未填'));
 		let allData: EmptyObjectType = {};
 		const form = dialogState.tableData.form;
 		allData = { repairReceiveNo: form.repairReceiveNo, accepReportUrl: form.accepReportUrl || '', headDescribe: form.describe1 || '' };
@@ -382,7 +382,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 		loadingBtn.value = true;
 		const res = await getCheckApi(allData);
 		if (res.status) {
-			ElMessage.success(t('验收成功'));
+			ElMessage.success(t('驗收成功'));
 			maintenanceCheckDialogVisible.value = false;
 			getTableData();
 		}

@@ -5,11 +5,11 @@
 			<Table ref="tableRef" v-bind="state.tableData" class="table" @pageChange="onTablePageChange" @sortHeader="onSortHeader" @cellclick="reqNoClick">
 				<template #btn="{ row }">
 					<el-button type="primary" plain size="default" class="button buttonBorder" @click="onSign(row.exitStoreId)">
-						{{ $t('查看二维码编码') }}</el-button
+						{{ $t('查看二維碼編碼') }}</el-button
 					>
 				</template>
 			</Table>
-			<el-dialog v-model="maintenanceListDialogRef" title="二维码编码" width="30%" draggable>
+			<el-dialog v-model="maintenanceListDialogRef" title="二維碼編碼" width="30%" draggable>
 				<el-tag v-for="tag in tags" :key="tag.code" class="mr10 mb10">
 					{{ tag.code }}
 				</el-tag>
@@ -51,17 +51,17 @@ const state = reactive<TableDemoState>({
 			},
 			{ key: 'buCode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
 			// { key: 'machineType', colWidth: '', title: '机种', type: 'text', isCheck: true },
-			{ key: 'projectCode', colWidth: '', title: '专案代码', type: 'text', isCheck: true },
+			{ key: 'projectCode', colWidth: '', title: '專案代碼', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			// { key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 			// { key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-			{ key: 'uselessDate', colWidth: '', title: '报废日期', type: 'text', isCheck: true },
+			{ key: 'uselessDate', colWidth: '', title: '報廢日期', type: 'text', isCheck: true },
 			{ key: 'classes', colWidth: '', title: '班次', type: 'text', isCheck: true },
-			{ key: 'sLocation', colWidth: '', title: '仓库位置', type: 'text', isCheck: true },
-			{ key: 'reason', colWidth: '', title: '报废原因', type: 'text', isCheck: true },
-			{ key: 'qty', colWidth: '', title: '报废数量', type: 'text', isCheck: true },
-			{ key: 'uselessno', colWidth: '', title: '报废单号', type: 'text', isCheck: true },
+			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
+			{ key: 'reason', colWidth: '', title: '報廢原因', type: 'text', isCheck: true },
+			{ key: 'qty', colWidth: '', title: '報廢數量', type: 'text', isCheck: true },
+			{ key: 'uselessno', colWidth: '', title: '報廢單號', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -79,13 +79,13 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '料号', prop: 'matNo', required: false, type: 'input' },
+			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
 			{ label: 'BU', prop: 'buCode', required: false, type: 'input' },
 			// { label: '机种', prop: 'machineType', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			// { label: '品名-中文', prop: 'nameCh', required: false, type: 'input' },
 			// { label: '品名-英文', prop: 'nameEn', required: false, type: 'input' },
-			{ label: '报废日期', prop: 'scrapDate', required: false, type: 'dateRange', lg: 4, xl: 4 },
+			{ label: '報廢日期', prop: 'scrapDate', required: false, type: 'dateRange', lg: 4, xl: 4 },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -110,7 +110,7 @@ const onSign = async (exitStoreId: string) => {
 	const res = await GetExitStoreQrCodeListApi(exitStoreId);
 	if (res.data) {
 		if (!res.data.length) {
-			ElMessage.error('暂无二维码编码');
+			ElMessage.error('暫無二維碼編碼');
 		} else {
 			maintenanceListDialogRef.value = true;
 			tags.value = res.data;

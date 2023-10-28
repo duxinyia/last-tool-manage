@@ -1,7 +1,7 @@
 <template>
 	<div class="main" :style="!isDialog ? 'height: 330px' : ''">
 		<div class="table-container" :class="{ 'link-width': !isDialog }">
-			<nav v-if="!isDialog" class="pb10">驗收單详情</nav>
+			<nav v-if="!isDialog" class="pb10">驗收單詳情</nav>
 			<el-form v-if="state.tableData.form" ref="tableSearchRef" :model="state.tableData.form" size="default" label-width="auto" class="table-form">
 				<el-row>
 					<el-col
@@ -22,11 +22,11 @@
 				<Table v-bind="state.tableData" class="table" />
 				<el-button type="primary" class="mt10" @click="clickLink">查看驗收報告單</el-button>
 				<div class="describe">
-					<span>描述说明：</span>
+					<span>描述說明：</span>
 					<span style="width: 100%; font-weight: 700; color: #1890ff">{{ state.tableData.form['describe'] }}</span>
 				</div>
 			</el-form>
-			<el-empty v-else description="数据出错" />
+			<el-empty v-else description="數據出錯" />
 		</div>
 	</div>
 </template>
@@ -61,10 +61,10 @@ const state = reactive<TableDemoState>({
 		header: [
 			{ key: 'matno', colWidth: '250', title: 'message.pages.matNo', type: 'text', isCheck: true },
 			{ key: 'namech', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
-			{ key: 'checkqty', colWidth: '100', title: '验收数量', type: 'number', isCheck: true, isRequired: true },
-			{ key: 'passqty', colWidth: '100', title: '合格数量', type: 'text', isCheck: true, isRequired: true },
-			{ key: 'failqty', colWidth: '', title: '不合格数量', type: 'text', isCheck: true, isRequired: true },
-			{ key: 'checkdate', colWidth: '150', title: '验收时间', type: 'text', isCheck: true, isRequired: true },
+			{ key: 'checkqty', colWidth: '100', title: '驗收數量', type: 'number', isCheck: true, isRequired: true },
+			{ key: 'passqty', colWidth: '100', title: '合格數量', type: 'text', isCheck: true, isRequired: true },
+			{ key: 'failqty', colWidth: '', title: '不合格數量', type: 'text', isCheck: true, isRequired: true },
+			{ key: 'checkdate', colWidth: '150', title: '驗收時間', type: 'text', isCheck: true, isRequired: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -85,8 +85,8 @@ const state = reactive<TableDemoState>({
 		form: {},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '验收单号', prop: 'checkno', required: false, type: 'text' },
-			{ label: '收货单号', prop: 'receiptno', required: false, type: 'text' },
+			{ label: '驗收單號', prop: 'checkno', required: false, type: 'text' },
+			{ label: '收貨單號', prop: 'receiptno', required: false, type: 'text' },
 		],
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: true }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）

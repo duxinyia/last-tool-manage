@@ -4,10 +4,10 @@
 			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
 			<Table ref="tableRef" v-bind="state.tableData" class="table" @pageChange="onTablePageChange" @sortHeader="onSortHeader" @cellclick="reqNoClick">
 				<template #btn="{ row }">
-					<el-button type="primary" plain size="default" class="button buttonBorder" @click="onSign(row.matNo)"> {{ $t('查看详情') }}</el-button>
+					<el-button type="primary" plain size="default" class="button buttonBorder" @click="onSign(row.matNo)"> {{ $t('查看詳情') }}</el-button>
 				</template>
 			</Table>
-			<el-dialog v-model="sampleDeliveryListDialogRef" title="详情" width="50%" draggable>
+			<el-dialog v-model="sampleDeliveryListDialogRef" title="詳情" width="50%" draggable>
 				<Table v-bind="dialogState.tableData" class="table" />
 			</el-dialog>
 		</div>
@@ -35,13 +35,13 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'matNo', colWidth: '', title: '料号', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
 			{ key: 'buCode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
 			// { key: 'machineType', colWidth: '', title: '机种', type: 'text', isCheck: true },
-			{ key: 'projectCode', colWidth: '', title: '专案代码', type: 'text', isCheck: true },
+			{ key: 'projectCode', colWidth: '', title: '專案代碼', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'checkTotal', colWidth: '', title: '验收总数量', type: 'text', isCheck: true },
+			{ key: 'checkTotal', colWidth: '', title: '驗收總數量', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -59,7 +59,7 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '料号', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
+			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
 			{ label: 'BU', prop: 'buCode', required: false, type: 'input' },
 			// { label: '机种', prop: 'machineType', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
@@ -87,9 +87,9 @@ const dialogState = reactive({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'reqNo', colWidth: '', title: '申请单号', type: 'text', isCheck: true },
-			{ key: 'passQty', colWidth: '', title: '合格数量', type: 'text', isCheck: true },
-			{ key: 'failQty', colWidth: '', title: '不合格数量', type: 'text', isCheck: true },
+			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
+			{ key: 'passQty', colWidth: '', title: '合格數量', type: 'text', isCheck: true },
+			{ key: 'failQty', colWidth: '', title: '不合格數量', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -112,7 +112,7 @@ const onSign = async (matNo: string) => {
 	const res = await getCheckDetailsOfMatApi(matNo);
 	if (res.data) {
 		if (!res.data.length) {
-			ElMessage.error('暂无详情信息');
+			ElMessage.error('暫無詳情信息');
 		} else {
 			sampleDeliveryListDialogRef.value = true;
 			dialogState.tableData.data = res.data;

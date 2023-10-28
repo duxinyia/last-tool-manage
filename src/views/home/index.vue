@@ -34,7 +34,7 @@
 						<!-- <span>{{ state.time.txt }}</span> -->
 					</div>
 					<div class="up-center">
-						<span>治工具系统</span>
+						<span>治工具系統</span>
 					</div>
 				</div>
 			</el-col>
@@ -48,7 +48,7 @@
 							:size="20"
 							><ele-Memo
 						/></el-icon>
-						<span class="home-card-item-title ml10">待办事项</span>
+						<span class="home-card-item-title ml10">待辦事項</span>
 					</div>
 
 					<div class="time-line pl10">
@@ -62,11 +62,11 @@
 								:timestamp="activity.generateTime"
 							>
 								<span>{{ activity.no }}</span>
-								<span class="cursor-pointer" style="color: #1890ff; font-weight: 700" title="点击跳转页面" @click="routePage(activity.type)">{{
+								<span class="cursor-pointer" style="color: #1890ff; font-weight: 700" title="點擊跳轉頁面" @click="routePage(activity.type)">{{
 									activity.keyNo
 								}}</span>
 								<span>{{ activity.content }}</span>
-								<el-icon color="#1890ff" title="点击复制该单号" class="ml10" @click="copyText(activity.keyNo)"><ele-CopyDocument /></el-icon>
+								<el-icon color="#1890ff" title="點擊複製該單號" class="ml10" @click="copyText(activity.keyNo)"><ele-CopyDocument /></el-icon>
 							</el-timeline-item>
 						</el-timeline>
 					</div>
@@ -74,7 +74,7 @@
 			</el-col>
 			<el-col :xs="24" :sm="10" :md="10" :lg="9" :xl="9">
 				<div class="home-card-item">
-					<span class="home-card-item-title">模版下载</span>
+					<span class="home-card-item-title">模板下載</span>
 					<div class="home-monitor">
 						<div class="flex-warp">
 							<div class="flex-warp-item" v-for="(v, k) in state.homeThree" :key="k">
@@ -153,7 +153,7 @@ const state = reactive({
 		// },
 		{
 			num1: '20',
-			num3: '待维修数量',
+			num3: '待維修數量',
 			num4: 'iconfont icon-weixiu',
 			color1: '#6690F9',
 			color2: '--next-color-danger-lighter',
@@ -161,7 +161,7 @@ const state = reactive({
 		},
 		{
 			num1: '800',
-			num3: '库存数量',
+			num3: '庫存數量',
 			num4: 'iconfont icon-kucun',
 			color1: '#6690F9',
 			color2: '--next-color-primary-lighter',
@@ -169,7 +169,7 @@ const state = reactive({
 		},
 		{
 			num1: '10',
-			num3: '闲置数量',
+			num3: '閒置數量',
 			num4: 'iconfont icon-lie-b',
 			color1: '#6690F9',
 			color2: '--next-color-warning-lighter',
@@ -177,7 +177,7 @@ const state = reactive({
 		},
 		{
 			num1: '200',
-			num3: '报废数量',
+			num3: '報廢數量',
 			num4: 'iconfont icon-baofeishebei',
 			color1: '#6690F9',
 			color2: '--next-color-success-lighter',
@@ -187,22 +187,22 @@ const state = reactive({
 	homeThree: [
 		{
 			icon: 'iconfont icon-btn-daoru',
-			label: '模版下载',
-			value: '料号导入',
+			label: '模板下載',
+			value: '料號導入',
 			iconColor: '#F72B3F',
 			link: '',
 		},
 		{
 			icon: 'iconfont icon-btn-daoru',
-			label: '模版下载',
-			value: '机种专案导入',
+			label: '模板下載',
+			value: '機種專案導入',
 			iconColor: '#91BFF8',
 			link: '',
 		},
 		{
 			icon: 'iconfont icon-btn-daoru',
-			label: '模版下载',
-			value: '验收报告',
+			label: '模板下載',
+			value: '驗收報告',
 			iconColor: '#88D565',
 			link: '/Template/ToolCheckReport.pptx',
 		},
@@ -320,7 +320,7 @@ const downloadTemp = (link: string) => {
 	if (link) {
 		window.open(`${import.meta.env.VITE_API_URL}${link}`, '_blank');
 	} else {
-		ElMessage.warning('暂时没有下载的模版');
+		ElMessage.warning('暫時沒有下載的模板');
 	}
 };
 // 初始化数字滚动
@@ -353,16 +353,16 @@ const getTodos = async () => {
 	// 	icon: MoreFilled,
 	// },
 	const todoTypeMap: EmptyObjectType = {
-		0: '待采购送样',
-		1: '待验收',
-		2: '待验收',
-		3: '待验收',
+		0: '待採購送樣',
+		1: '待驗收',
+		2: '待驗收',
+		3: '待驗收',
 	};
 	const noTypeMap: EmptyObjectType = {
-		0: '送样单',
-		1: '送样单',
-		2: '申请单',
-		3: '维修收货单',
+		0: '送樣單',
+		1: '送樣單',
+		2: '申請單',
+		3: '維修收貨單',
 	};
 	res.data.forEach((item: any) => {
 		let type = item.todoType;

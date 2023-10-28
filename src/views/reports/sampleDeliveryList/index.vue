@@ -4,10 +4,10 @@
 			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
 			<Table ref="tableRef" v-bind="state.tableData" class="table" @pageChange="onTablePageChange" @sortHeader="onSortHeader" @cellclick="reqNoClick">
 				<template #btn="{ row }">
-					<el-button type="primary" plain size="default" class="button buttonBorder" @click="onSign(row.sampleNo)"> {{ $t('查看详情') }}</el-button>
+					<el-button type="primary" plain size="default" class="button buttonBorder" @click="onSign(row.sampleNo)"> {{ $t('查看詳情') }}</el-button>
 				</template>
 			</Table>
-			<el-dialog v-model="sampleDeliveryListDialogRef" title="详情" width="50%" draggable>
+			<el-dialog v-model="sampleDeliveryListDialogRef" title="詳情" width="50%" draggable>
 				<Table v-bind="dialogState.tableData" class="table" />
 			</el-dialog>
 		</div>
@@ -36,15 +36,15 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'sampleNo', colWidth: '', title: '送样单号', type: 'text', isCheck: true },
-			{ key: 'matNo', colWidth: '', title: '料号', type: 'text', isCheck: true },
+			{ key: 'sampleNo', colWidth: '', title: '送樣單號', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
 			{ key: 'buCode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
 			// { key: 'machineType', colWidth: '', title: '机种', type: 'text', isCheck: true },
-			{ key: 'projectCode', colWidth: '', title: '专案代码', type: 'text', isCheck: true },
+			{ key: 'projectCode', colWidth: '', title: '專案代碼', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'needsTotal', colWidth: '', title: '需求送样数量', type: 'text', isCheck: true },
-			{ key: 'drawNo', colWidth: '', title: '图纸编号', type: 'text', isCheck: true },
+			{ key: 'needsTotal', colWidth: '', title: '需求送樣數量', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'engineer', colWidth: '', title: '工程窗口', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -63,8 +63,8 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '料号', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
-			{ label: '送样单号', prop: 'sampleNo', required: false, type: 'input' },
+			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
+			{ label: '送樣單號', prop: 'sampleNo', required: false, type: 'input' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -89,13 +89,13 @@ const dialogState = reactive({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'sampleTime', colWidth: '', title: '送样时间', type: 'text', isCheck: true },
-			{ key: 'sampleQty', colWidth: '', title: '送样数量', type: 'text', isCheck: true },
-			{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-			{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-			{ key: 'checkTime', colWidth: '', title: '验证时间', type: 'text', isCheck: true },
-			{ key: 'isPassed', colWidth: '', title: '是否通过', type: 'text', isCheck: true },
-			{ key: 'checkFailReason', colWidth: '', title: '问题点', type: 'text', isCheck: true },
+			{ key: 'sampleTime', colWidth: '', title: '送樣時間', type: 'text', isCheck: true },
+			{ key: 'sampleQty', colWidth: '', title: '送樣數量', type: 'text', isCheck: true },
+			{ key: 'vendorCode', colWidth: '', title: '廠商代碼', type: 'text', isCheck: true },
+			{ key: 'vendorName', colWidth: '', title: '廠商名稱', type: 'text', isCheck: true },
+			{ key: 'checkTime', colWidth: '', title: '驗證時間', type: 'text', isCheck: true },
+			{ key: 'isPassed', colWidth: '', title: '是否通過', type: 'text', isCheck: true },
+			{ key: 'checkFailReason', colWidth: '', title: '問題點', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -118,7 +118,7 @@ const onSign = async (sampleNo: string) => {
 	const res = await getMatSampleDetailsBySampleNoApi(sampleNo);
 	if (res.data) {
 		if (!res.data.length) {
-			ElMessage.error('暂无详情信息');
+			ElMessage.error('暫無詳情信息');
 		} else {
 			sampleDeliveryListDialogRef.value = true;
 			dialogState.tableData.data = res.data;

@@ -44,11 +44,11 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'area', colWidth: '', title: '厂区', type: 'text', isCheck: true },
+			{ key: 'area', colWidth: '', title: '廠區', type: 'text', isCheck: true },
 			{ key: 'bu', colWidth: '', title: 'BU', type: 'text', isCheck: true },
-			{ key: 'projectcode', colWidth: '', title: '专案代码', type: 'text', isCheck: true },
-			{ key: 'stage', colWidth: '', title: '阶段', type: 'text', isCheck: true },
-			{ key: 'machinetype', colWidth: '', title: '机种', type: 'text', isCheck: true },
+			{ key: 'projectcode', colWidth: '', title: '專案代碼', type: 'text', isCheck: true },
+			{ key: 'stage', colWidth: '', title: '階段', type: 'text', isCheck: true },
+			{ key: 'machinetype', colWidth: '', title: '機種', type: 'text', isCheck: true },
 			// { key: 'creator', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
 			// { key: 'createtime', title: 'message.pages.creationTime', type: 'text', isCheck: true },
 		],
@@ -72,14 +72,14 @@ const state = reactive<TableDemoState>({
 		],
 		topBtnConfig: [
 			{ type: 'add', name: '新增', defaultColor: 'primary', isSure: true, disabled: true },
-			{ type: 'bulkDel', name: '批量删除', color: '#D33939', isSure: true, disabled: true },
+			{ type: 'bulkDel', name: '批量刪除', color: '#D33939', isSure: true, disabled: true },
 		],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{
-				label: '厂区',
+				label: '廠區',
 				prop: 'area',
-				placeholder: '请选择厂区',
+				placeholder: '請選擇廠區',
 				required: false,
 				type: 'select',
 				options: [
@@ -91,7 +91,7 @@ const state = reactive<TableDemoState>({
 			{
 				label: 'BU',
 				prop: 'bu',
-				placeholder: '请选择BU',
+				placeholder: '請選擇BU',
 				required: false,
 				type: 'select',
 				options: [
@@ -101,16 +101,16 @@ const state = reactive<TableDemoState>({
 				],
 			},
 			{
-				label: '专案代码',
+				label: '專案代碼',
 				prop: 'projectcode',
-				placeholder: '请输入专案代码',
+				placeholder: '請輸入專案代碼',
 				required: false,
 				type: 'input',
 			},
 			{
-				label: '阶段',
+				label: '階段',
 				prop: 'stage',
-				placeholder: '请选择阶段',
+				placeholder: '請選擇階段',
 				required: false,
 				type: 'select',
 				options: [
@@ -122,9 +122,9 @@ const state = reactive<TableDemoState>({
 				],
 			},
 			{
-				label: '机种',
+				label: '機種',
 				prop: 'machinetype',
-				placeholder: '请输入机种',
+				placeholder: '請輸入機種',
 				required: false,
 				type: 'input',
 			},
@@ -146,9 +146,9 @@ const state = reactive<TableDemoState>({
 		// 弹窗表单
 		dialogConfig: [
 			{
-				label: '厂区',
+				label: '廠區',
 				prop: 'area',
-				placeholder: '请输入厂区',
+				placeholder: '請選擇廠區',
 				required: true,
 				type: 'select',
 				options: [
@@ -160,7 +160,7 @@ const state = reactive<TableDemoState>({
 			{
 				label: 'BU',
 				prop: 'bu',
-				placeholder: '请输入BU',
+				placeholder: '請選擇BU',
 				required: true,
 				type: 'select',
 				options: [
@@ -169,11 +169,11 @@ const state = reactive<TableDemoState>({
 					{ value: 'CMC', label: 'CMC', text: 'CMC' },
 				],
 			},
-			{ label: '专案代码', prop: 'projectcode', placeholder: '请输入专案代码', required: true, type: 'input' },
+			{ label: '專案代碼', prop: 'projectcode', placeholder: '請輸入專案代碼', required: true, type: 'input' },
 			{
-				label: '阶段',
+				label: '階段',
 				prop: 'stage',
-				placeholder: '请输入阶段',
+				placeholder: '請選擇階段',
 				required: true,
 				type: 'select',
 				options: [
@@ -184,7 +184,7 @@ const state = reactive<TableDemoState>({
 					{ value: 'MP', label: 'MP', text: 'MP' },
 				],
 			},
-			{ label: '机种', prop: 'machinetype', placeholder: '请输入机种', required: true, type: 'input' },
+			{ label: '機種', prop: 'machinetype', placeholder: '請輸入機種', required: true, type: 'input' },
 		],
 	},
 });

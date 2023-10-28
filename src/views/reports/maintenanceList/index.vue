@@ -5,11 +5,11 @@
 			<Table ref="tableRef" v-bind="state.tableData" class="table" @pageChange="onTablePageChange" @sortHeader="onSortHeader" @cellclick="reqNoClick">
 				<template #btn="{ row }">
 					<el-button type="primary" plain size="default" class="button buttonBorder" @click="onSign(row.exitStoreId)">
-						{{ $t('查看二维码编号') }}</el-button
+						{{ $t('查看二維碼編號') }}</el-button
 					>
 				</template>
 			</Table>
-			<el-dialog v-model="maintenanceListDialogRef" title="二维码编号" width="30%" draggable>
+			<el-dialog v-model="maintenanceListDialogRef" title="二維碼編號" width="30%" draggable>
 				<el-tag v-for="tag in tags" :key="tag.code" class="mr10 mb10">
 					{{ tag.code }}
 				</el-tag>
@@ -51,13 +51,13 @@ const state = reactive<TableDemoState>({
 			},
 			{ key: 'buCode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
 			// { key: 'machineType', colWidth: '', title: '机种', type: 'text', isCheck: true },
-			{ key: 'projectCode', colWidth: '', title: '专案代码', type: 'text', isCheck: true },
+			{ key: 'projectCode', colWidth: '', title: '專案代碼', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'repairReason', colWidth: '', title: '维修原因', type: 'text', isCheck: true },
-			{ key: 'repairQty', colWidth: '', title: '维修数量', type: 'text', isCheck: true },
-			{ key: 'sendRepairDate', colWidth: '', title: '维修日期', type: 'text', isCheck: true },
-			{ key: 'repairNo', colWidth: '', title: '维修单号', type: 'text', isCheck: true },
+			{ key: 'repairReason', colWidth: '', title: '維修原因', type: 'text', isCheck: true },
+			{ key: 'repairQty', colWidth: '', title: '維修數量', type: 'text', isCheck: true },
+			{ key: 'sendRepairDate', colWidth: '', title: '維修日期', type: 'text', isCheck: true },
+			{ key: 'repairNo', colWidth: '', title: '維修單號', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -75,11 +75,11 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '料号', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
+			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
 			// { label: '机种', prop: 'machineType', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			// { label: '品名-英文', prop: 'nameEn', required: false, type: 'input' },
-			{ label: '维修日期', prop: 'sendRepairDate', required: false, type: 'dateRange', lg: 6, xl: 6 },
+			{ label: '維修日期', prop: 'sendRepairDate', required: false, type: 'dateRange', lg: 6, xl: 6 },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -103,7 +103,7 @@ const onSign = async (exitStoreId: string) => {
 	const res = await GetExitStoreQrCodeListApi(exitStoreId);
 	if (res.data) {
 		if (!res.data.length) {
-			ElMessage.error('暂无二维码编号');
+			ElMessage.error('暫無二維碼編碼');
 		} else {
 			maintenanceListDialogRef.value = true;
 			tags.value = res.data;

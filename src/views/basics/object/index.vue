@@ -62,7 +62,7 @@ const state = reactive<TableDemoState>({
 		},
 		topBtnConfig: [
 			{ type: 'add', name: '新增', defaultColor: 'primary', isSure: true, disabled: true },
-			{ type: 'bulkDel', name: '批量删除', color: '#D33939', isSure: true, disabled: true },
+			{ type: 'bulkDel', name: '批量刪除', color: '#D33939', isSure: true, disabled: true },
 		],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
@@ -86,7 +86,7 @@ const state = reactive<TableDemoState>({
 		// 打印标题
 		printName: '表格打印演示',
 		// 弹窗表单
-		dialogConfig: [{ label: '工号', prop: 'UserId', placeholder: '请输入工号', required: true, type: 'input', md: 20, lg: 20, xl: 20 }],
+		dialogConfig: [{ label: '工號', prop: 'UserId', placeholder: '請輸入工號', required: true, type: 'input', md: 20, lg: 20, xl: 20 }],
 	},
 });
 

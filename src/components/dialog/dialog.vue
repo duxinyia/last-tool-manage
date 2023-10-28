@@ -61,11 +61,11 @@
 										:on-exceed="inputHandleExceed"
 										:on-change="inputHandleChange"
 									>
-										<el-button type="primary" class="ml1">浏览文件</el-button>
+										<el-button type="primary" class="ml1">瀏覽文件</el-button>
 									</el-upload></template
 								>
 								<template #append v-if="state.formData[item.prop]"
-									><el-button @click="inputsubmitUpload(item.prop, item.key)" type="primary" class="ml1">上传文件</el-button>
+									><el-button @click="inputsubmitUpload(item.prop, item.key)" type="primary" class="ml1">上傳文件</el-button>
 									<el-button v-if="state.formData['drawPath'].includes('/')" class="look-file" @click="lookUpload(item.prop)">查看文件</el-button>
 								</template>
 							</el-input>
@@ -88,11 +88,11 @@
 										:on-exceed="input3dHandleExceed"
 										:on-change="input3dHandleChange"
 									>
-										<el-button type="primary" class="ml1">浏览文件</el-button>
+										<el-button type="primary" class="ml1">瀏覽文件</el-button>
 									</el-upload></template
 								>
 								<template #append v-if="state.formData[item.prop]"
-									><el-button @click="inputsubmitUpload(item.prop)" type="primary" class="ml1">上传文件</el-button>
+									><el-button @click="inputsubmitUpload(item.prop)" type="primary" class="ml1">上傳文件</el-button>
 									<el-button v-if="state.formData['draw3dPath'].includes('/')" class="look-file" @click="lookUpload(item.prop)">查看文件</el-button>
 								</template>
 							</el-input>
@@ -187,9 +187,9 @@
 			</el-form>
 
 			<el-form v-if="state.dialog.type === 'imp'" class="drawer-multiColumn-form" label-width="100px">
-				<el-button size="default" class="buttonBorder mb10" @click="ondownloadTemp" type="primary" plain>{{ $t('下载模版') }}</el-button>
+				<el-button size="default" class="buttonBorder mb10" @click="ondownloadTemp" type="primary" plain>{{ $t('下載模板') }}</el-button>
 				<div class="download-form">
-					<el-input v-model="fileListName" placeholder="请点击浏览文件按钮" />
+					<el-input v-model="fileListName" placeholder="請點擊瀏覽文件按鈕" />
 					<el-upload
 						v-model:file-list="fileList"
 						:auto-upload="false"
@@ -203,7 +203,7 @@
 						:on-exceed="handleExceed"
 						:on-change="handleChange"
 					>
-						<el-button type="primary" size="default" class="ml10 buttonBorder bottonDownload" plain>浏览文件</el-button>
+						<el-button type="primary" size="default" class="ml10 buttonBorder bottonDownload" plain>瀏覽文件</el-button>
 					</el-upload>
 					<el-button
 						:disabled="fileListName ? false : true"
@@ -212,13 +212,13 @@
 						type="primary"
 						plain
 						@click="submitUpload"
-						>{{ $t('开始上传') }}</el-button
+						>{{ $t('開始上傳') }}</el-button
 					>
 				</div>
 			</el-form>
 			<!-- 嵌套图片弹窗 -->
 			<template>
-				<el-dialog v-model="dialogVisible" width="50%" title="大图展示" append-to-body
+				<el-dialog v-model="dialogVisible" width="50%" title="大圖展示" append-to-body
 					><el-image fit="contain" :src="dialogImageUrl" alt="Preview Image"
 				/></el-dialog>
 			</template>
@@ -393,7 +393,7 @@ const handleNumberInputChange = (value: number) => {
 const validatePass = (rule: any, value: any, callback: any, item: EmptyObjectType) => {
 	const validateForm = item.validateForm;
 	if (value === '') {
-		callback(new Error(`${t(item.label)}不能为空`));
+		callback(new Error(`${t(item.label)}不能為空`));
 	} else if (
 		(validateForm && validateForm === 'phone' && !verifyPhone(value) && !verifyTelPhone(value)) ||
 		(validateForm === 'email' && !verifyEmail(value)) ||
@@ -409,7 +409,7 @@ const allRules = (item: EmptyObjectType) => {
 		default: [
 			{
 				required: item.required,
-				message: `${t(item.label)}不能为空`,
+				message: `${t(item.label)}不能為空`,
 				trigger: item.type === 'input' || item.type === 'inputFile' || item.type === 'textarea' ? 'blur' : 'change',
 				// type:'number',
 			},
@@ -460,11 +460,11 @@ const openDialog = (type: string, row?: any, title?: string) => {
 		});
 	} else if (type === 'imp') {
 		fileListName.value = '';
-		state.dialog.title = '上传文件';
-		state.dialog.submitTxt = '开始上传';
+		state.dialog.title = '上傳文件';
+		state.dialog.submitTxt = '開始上傳';
 	} else {
 		state.dialog.title = title;
-		state.dialog.submitTxt = '确 定';
+		state.dialog.submitTxt = '確 定';
 		nextTick(() => {
 			state.formData = JSON.parse(JSON.stringify(row));
 			dialogFormRef.value && dialogFormRef.value.resetFields();
@@ -591,7 +591,7 @@ const inputsubmitUpload = async (prop: string, key?: string) => {
 	}
 	const res = await getUploadFileApi(funcType, value);
 	state.formData[prop] = res.data;
-	res.status && ElMessage.success(`上传成功`);
+	res.status && ElMessage.success(`上傳成功`);
 };
 // 查看上传的文件
 const lookUpload = (prop: string) => {
@@ -659,7 +659,7 @@ const imageHandleChange: UploadProps['onChange'] = async (uploadFile, uploadFile
 //可以在选中时自动替换上一个文件
 const imageHandleExceed: UploadProps['onExceed'] = async (files, uploadFiles) => {
 	if (files[0].type !== 'image/jpeg' && files[0].type !== 'image/png') {
-		ElMessage.error('图片必须是JPG或者PNG格式!');
+		ElMessage.error('圖片必須是JPG或者PNG格式!');
 	} else {
 		let upload_list: any = imageuploadRefs.value;
 		upload_list[0]!.clearFiles();
@@ -687,7 +687,7 @@ const httpRequest = async () => {
 };
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
 	if (rawFile.type !== 'image/jpeg' && rawFile.type !== 'image/png') {
-		ElMessage.error('图片必须是JPG或者PNG格式!');
+		ElMessage.error('圖片必須是JPG或者PNG格式!!');
 	}
 	//  else if (rawFile.size / 1024 / 1024 > 2) {
 	// 	ElMessage.error('图片大小不能超过2MB!');

@@ -86,7 +86,7 @@ const state = reactive<TableDemoState>({
 		// 打印标题
 		printName: '表格打印演示',
 		// 弹窗表单
-		dialogConfig: [{ label: '工号', prop: 'UserId', placeholder: '请输入工号', required: true, type: 'input', md: 20, lg: 20, xl: 20 }],
+		dialogConfig: [{ label: '工號', prop: 'UserId', placeholder: '請輸入工號', required: true, type: 'input', md: 20, lg: 20, xl: 20 }],
 	},
 });
 
@@ -102,7 +102,7 @@ const getTableData = async () => {
 	};
 	const res = await getGroupListApi(data);
 	res.data.data.forEach((item: EmptyObjectType) => {
-		item.grouptype = '采购';
+		item.grouptype = '採購';
 	});
 	state.tableData.data = res.data.data;
 

@@ -42,7 +42,7 @@
 				@remoteMethod="remoteMethod"
 				:loadingBtn="loadingBtn"
 			/>
-			<el-dialog v-model="matNoDetaildialogVisible" title="料号详情" width="50%">
+			<el-dialog v-model="matNoDetaildialogVisible" title="料號詳情" width="50%">
 				<matNoDetailDialog :isDialog="true" :matNoRef="matNoRef"
 			/></el-dialog>
 		</div>
@@ -91,15 +91,15 @@ const state = reactive<TableDemoState>({
 		// 表头内容（必传，注意格式）
 		header: [
 			{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'text', isCheck: true },
-			{ key: 'reqMatNo', colWidth: '', title: '请购料号', type: 'text', isCheck: true },
-			{ key: 'depart', colWidth: '', title: '部门', type: 'text', isCheck: true },
+			{ key: 'reqMatNo', colWidth: '', title: '請購料號', type: 'text', isCheck: true },
+			{ key: 'depart', colWidth: '', title: '部門', type: 'text', isCheck: true },
 			{ key: 'bu', colWidth: '', title: 'BU', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
 			{ key: 'drawNo', colWidth: '', title: 'message.pages.drawNo', type: 'text', isCheck: true },
 			// { key: 'specs', colWidth: '', title: 'message.pages.specs', type: 'text', isCheck: true },
 			{ key: 'signStatusStr', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
-			{ key: 'picture', colWidth: '', title: '图片', width: '70', height: '40', type: 'uploadImage', isCheck: true },
+			{ key: 'picture', colWidth: '', title: '圖片', width: '70', height: '40', type: 'uploadImage', isCheck: true },
 			// { key: 'creator', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
 			// { key: 'createtime', title: 'message.pages.creationTime', type: 'text', isCheck: true },
 		],
@@ -131,11 +131,11 @@ const state = reactive<TableDemoState>({
 		],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '料号', prop: 'matNo', placeholder: '请输入料号', required: false, type: 'input' },
+			{ label: '料號', prop: 'matNo', placeholder: '請輸入料號', required: false, type: 'input' },
 			{ label: 'BU', prop: 'bu', placeholder: '', required: false, type: 'input' },
-			{ label: '部门', prop: 'depart', placeholder: '', required: false, type: 'input' },
+			{ label: '部門', prop: 'depart', placeholder: '', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', placeholder: '', required: false, type: 'input' },
-			{ label: '图纸编号', prop: 'drawNo', placeholder: '', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', placeholder: '', required: false, type: 'input' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -162,13 +162,13 @@ const state = reactive<TableDemoState>({
 			{ label: 'message.pages.nameEn', prop: 'nameEn', placeholder: 'message.pages.placeNameEn', required: true, type: 'input' },
 			{ label: 'message.pages.drawNo', prop: 'drawNo', placeholder: 'message.pages.placeDrawNo', required: true, type: 'input' },
 			// { label: 'message.pages.specs', prop: 'specs', placeholder: 'message.pages.placeSpecs', required: true, type: 'input' },
-			{ label: '阶段', prop: 'stage', placeholder: '请输入阶段', required: false, type: 'input' },
-			{ label: '部门', prop: 'depart', placeholder: '请输入部门', required: false, type: 'input' },
-			{ label: '请购料号', prop: 'reqMatNo', placeholder: '请输入购料号', required: false, type: 'input' },
+			{ label: '階段', prop: 'stage', placeholder: '請輸入階段', required: false, type: 'input' },
+			{ label: '部門', prop: 'depart', placeholder: '請輸入部門', required: false, type: 'input' },
+			{ label: '請購料號', prop: 'reqMatNo', placeholder: '請輸入請購料號', required: false, type: 'input' },
 			{
-				label: '机种',
+				label: '機種',
 				prop: 'machineTypes',
-				placeholder: '请输入查询机种',
+				placeholder: '請輸入選擇機種',
 				required: false,
 				type: 'select',
 				options: [],
@@ -223,7 +223,7 @@ const state = reactive<TableDemoState>({
 				lg: 24,
 				xl: 24,
 			},
-			{ label: '图片', prop: 'picture', placeholder: '', required: true, type: 'uploadImage' },
+			{ label: '圖片', prop: 'picture', placeholder: '', required: true, type: 'uploadImage' },
 		],
 	},
 });
@@ -329,7 +329,7 @@ const addData = async (ruleForm: EmptyObjectType, type: string) => {
 			getTableData();
 		}
 	} else {
-		ElMessage.error(`新增失败,请点击上传文件按钮进行上传`);
+		ElMessage.error(`新增失敗,請點擊上傳文件按鈕進行上傳`);
 	}
 	loadingBtn.value = false;
 };
@@ -383,7 +383,7 @@ const onTableDelRow = async (row: EmptyObjectType, type: string) => {
 	const res = await getInvalidMaterialApi(rows);
 	if (res.status) {
 		type === 'bulkDel'
-			? ElMessage.success(`批量删除成功`)
+			? ElMessage.success(`批量刪除成功`)
 			: ElMessage.success(`${t('message.allButton.deleteBtn')}${row.matNo}${t('message.hint.success')}`);
 		getTableData();
 	}

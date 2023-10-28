@@ -98,16 +98,16 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'applyReceiveId', colWidth: '', title: '单号', type: 'text', isCheck: true },
-			{ key: 'reqNo', colWidth: '', title: '申请单号', type: 'text', isCheck: true },
+			{ key: 'applyReceiveId', colWidth: '', title: '單號', type: 'text', isCheck: true },
+			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
 			{ key: 'matNo', title: 'message.pages.matNo', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'companyId', colWidth: '', title: '法人', type: 'text', isCheck: true },
 			{ key: 'buCode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
-			{ key: 'qty', colWidth: '', title: '收货数量', type: 'text', isCheck: true },
-			{ key: 'receiver', colWidth: '', title: '收货人', type: 'text', isCheck: true },
-			{ key: 'receiveDate', colWidth: '', title: '收货日期', type: 'text', isCheck: true },
+			{ key: 'qty', colWidth: '', title: '收貨數量', type: 'text', isCheck: true },
+			{ key: 'receiver', colWidth: '', title: '收貨人', type: 'text', isCheck: true },
+			{ key: 'receiveDate', colWidth: '', title: '收貨日期', type: 'text', isCheck: true },
 			// { key: 'describe', colWidth: '', title: '描述说明', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -125,35 +125,35 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '申请单号', prop: 'reqNo', required: false, type: 'input' },
-			{ label: '料号', prop: 'matNo', required: false, type: 'input', lg: 5, xl: 5 },
+			{ label: '申請單號', prop: 'reqNo', required: false, type: 'input' },
+			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 5, xl: 5 },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
-			{ label: '收货日期', prop: 'receiveDate', required: false, type: 'dateRange', lg: 4, xl: 4 },
+			{ label: '收貨日期', prop: 'receiveDate', required: false, type: 'dateRange', lg: 4, xl: 4 },
 		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [{ type: 'sendReceive', name: '验收', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
+		btnConfig: [{ type: 'sendReceive', name: '驗收', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
 		// 给后端的数据
 		form: {
 			// reqNo: '',
 			// prNo: '',
 		},
 		dialogConfig: [
-			{ type: 'text', label: '申请单号', placeholder: '', prop: 'reqNo', required: false },
+			{ type: 'text', label: '申請單號', placeholder: '', prop: 'reqNo', required: false },
 			{ type: 'text', label: 'message.pages.matNo', placeholder: '', prop: 'matNo', required: false },
 			{ type: 'text', label: '品名-中文', placeholder: '', prop: 'nameCh', required: false },
 			{ type: 'text', label: '品名-英文', placeholder: '', prop: 'nameEn', required: false },
-			{ type: 'text', label: '收货数量', placeholder: '', prop: 'qty', required: false },
-			{ type: 'text', label: '收货日期', placeholder: '', prop: 'receiveDate', required: false },
+			{ type: 'text', label: '收貨數量', placeholder: '', prop: 'qty', required: false },
+			{ type: 'text', label: '收貨日期', placeholder: '', prop: 'receiveDate', required: false },
 
-			{ type: 'text', label: '验收数量', placeholder: '', prop: 'checkqty', required: true },
-			{ type: 'number', label: '合格数量', placeholder: '', prop: 'passqty', required: true },
-			{ type: 'text', label: '不合格数量', placeholder: '', prop: 'failqty', required: true },
+			{ type: 'text', label: '驗收數量', placeholder: '', prop: 'checkqty', required: true },
+			{ type: 'number', label: '合格數量', placeholder: '', prop: 'passqty', required: true },
+			{ type: 'text', label: '不合格數量', placeholder: '', prop: 'failqty', required: true },
 			{
-				label: '验收不合格原因',
+				label: '驗收不合格原因',
 				prop: 'failReasonIds',
-				placeholder: '请选择验收不合格原因',
+				placeholder: '請選擇驗收不合格原因',
 				required: false,
 				type: 'select',
 				options: [],
@@ -163,9 +163,9 @@ const state = reactive<TableDemoState>({
 				disabled: false,
 				clearable: true,
 			},
-			{ type: 'date', label: '验收时间', placeholder: '', prop: 'checkDate', required: true },
+			{ type: 'date', label: '驗收時間', placeholder: '', prop: 'checkDate', required: true },
 			{
-				label: '验收报告',
+				label: '驗收報告',
 				prop: 'drawPath',
 				key: 'accepreporturl',
 				placeholder: 'message.pages.placeDrawPath',
@@ -179,7 +179,7 @@ const state = reactive<TableDemoState>({
 			},
 			{
 				type: 'text',
-				label: '收货描述说明',
+				label: '收貨描述說明',
 				placeholder: '',
 				prop: 'describe',
 				required: false,
@@ -191,8 +191,8 @@ const state = reactive<TableDemoState>({
 			},
 			{
 				type: 'textarea',
-				label: '描述说明',
-				placeholder: '请输入描述说明',
+				label: '描述說明',
+				placeholder: '請輸入描述說明',
 				prop: 'checkDescribe',
 				required: false,
 				xs: 24,
@@ -217,20 +217,20 @@ const secondState = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'applyCheckId', colWidth: '', title: '验收单号', type: 'text', isCheck: true },
-			{ key: 'reqNo', colWidth: '', title: '申请单号', type: 'text', isCheck: true },
-			{ key: 'applyReceiveId', colWidth: '', title: '收货单号', type: 'text', isCheck: true },
-			{ key: 'matNo', colWidth: '', title: '料号', type: 'text', isCheck: true },
-			{ key: 'reqMatNo', colWidth: '', title: '申请料号', type: 'text', isCheck: true },
+			{ key: 'applyCheckId', colWidth: '', title: '驗收單號', type: 'text', isCheck: true },
+			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
+			{ key: 'applyReceiveId', colWidth: '', title: '收貨單號', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'reqMatNo', colWidth: '', title: '申請料號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'checkDate', colWidth: '', title: '验收日期', type: 'text', isCheck: true },
+			{ key: 'checkDate', colWidth: '', title: '驗收日期', type: 'text', isCheck: true },
 			// { key: 'checkQty', colWidth: '', title: '验收数量', type: 'text', isCheck: true },
 			// { key: 'passQty', colWidth: '', title: '合格数量', type: 'text', isCheck: true },
 			// { key: 'failQty', colWidth: '120', title: '不合格数量', type: 'text', isCheck: true },
 			// { key: 'checker', colWidth: '', title: '验收人', type: 'text', isCheck: true },
 			// { key: 'createTime', colWidth: '120', title: '实际提交日期', type: 'text', isCheck: true },
-			{ key: 'isStored', colWidth: '120', title: '是否已入库', type: 'text', isCheck: true },
+			{ key: 'isStored', colWidth: '120', title: '是否已入庫', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -247,12 +247,12 @@ const secondState = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '申请单号', prop: 'reqNo', required: false, type: 'input' },
-			{ label: '料号', prop: 'matNo', required: false, type: 'input', lg: 5, xl: 5 },
-			{ label: '申请料号', prop: 'reqMatNo', required: false, type: 'input' },
+			{ label: '申請單號', prop: 'reqNo', required: false, type: 'input' },
+			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 5, xl: 5 },
+			{ label: '申請料號', prop: 'reqMatNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{
-				label: '是否已入库',
+				label: '是否已入庫',
 				prop: 'isStored',
 				required: false,
 				clearable: false,
@@ -262,7 +262,7 @@ const secondState = reactive<TableDemoState>({
 					{ value: false, label: '否', text: '否' },
 				],
 			},
-			{ label: '验收日期', prop: 'checkDate', required: false, type: 'dateRange' },
+			{ label: '驗收日期', prop: 'checkDate', required: false, type: 'dateRange' },
 
 			// {
 			// 	label: '签核状态',
@@ -280,29 +280,29 @@ const secondState = reactive<TableDemoState>({
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [{ type: 'sendReceive', name: '查看详情', color: '#1890ff', isSure: false, icon: 'ele-View' }],
+		btnConfig: [{ type: 'sendReceive', name: '查看詳情', color: '#1890ff', isSure: false, icon: 'ele-View' }],
 		// 给后端的数据
 		form: {
 			// checkNo: '',
 			// signStatus: 0,
 		},
 		dialogConfig: [
-			{ type: 'text', label: '验收单号', placeholder: '', prop: 'applyCheckId', required: false },
-			{ type: 'text', label: '申请单号', placeholder: '', prop: 'reqNo', required: false },
-			{ type: 'text', label: '收货单号', placeholder: '', prop: 'applyReceiveId', required: false },
+			{ type: 'text', label: '驗收單號', placeholder: '', prop: 'applyCheckId', required: false },
+			{ type: 'text', label: '申請單號', placeholder: '', prop: 'reqNo', required: false },
+			{ type: 'text', label: '收貨單號', placeholder: '', prop: 'applyReceiveId', required: false },
 			{ type: 'text', label: 'message.pages.matNo', placeholder: '', prop: 'matNo', required: false },
-			{ type: 'text', label: '申请料号', placeholder: '', prop: 'reqMatNo', required: false },
+			{ type: 'text', label: '申請單號', placeholder: '', prop: 'reqMatNo', required: false },
 			{ type: 'text', label: '品名-中文', placeholder: '', prop: 'nameCh', required: false },
 			{ type: 'text', label: '品名-英文', placeholder: '', prop: 'nameEn', required: false },
-			{ type: 'text', label: '验收日期', placeholder: '', prop: 'checkDate', required: false },
-			{ type: 'text', label: '验收数量', placeholder: '', prop: 'checkQty', required: false },
-			{ type: 'text', label: '合格数量', placeholder: '', prop: 'passQty', required: false },
-			{ type: 'text', label: '不合格数量', placeholder: '', prop: 'failQty', required: false },
-			{ type: 'text', label: '验收人', placeholder: '', prop: 'checker', required: false },
-			{ type: 'text', label: '实际提交日期', placeholder: '', prop: 'createTime', required: false },
-			{ type: 'text', label: '是否已入库', placeholder: '', prop: 'isStored', required: false },
-			{ type: 'text', label: '描述说明', placeholder: '', prop: 'describe', required: false, lg: 24, xl: 24 },
-			{ type: 'button', label: '查看验收报告单', placeholder: '', prop: 'accepReportUrl', required: false },
+			{ type: 'text', label: '驗收日期', placeholder: '', prop: 'checkDate', required: false },
+			{ type: 'text', label: '驗收數量', placeholder: '', prop: 'checkQty', required: false },
+			{ type: 'text', label: '合格數量', placeholder: '', prop: 'passQty', required: false },
+			{ type: 'text', label: '不合格數量', placeholder: '', prop: 'failQty', required: false },
+			{ type: 'text', label: '驗收人', placeholder: '', prop: 'checker', required: false },
+			{ type: 'text', label: '實際提交日期', placeholder: '', prop: 'createTime', required: false },
+			{ type: 'text', label: '是否已入庫', placeholder: '', prop: 'isStored', required: false },
+			{ type: 'text', label: '描述說明', placeholder: '', prop: 'describe', required: false, lg: 24, xl: 24 },
+			{ type: 'button', label: '查看驗收報告', placeholder: '', prop: 'accepReportUrl', required: false },
 		],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -317,7 +317,7 @@ const secondState = reactive<TableDemoState>({
 const currentData = ref<EmptyObjectType>([]);
 // 点击验收按钮
 const openArriveJobDialog = (scope: EmptyObjectType) => {
-	arriveJobDialogRef.value.openDialog('samp', scope.row, '验收');
+	arriveJobDialogRef.value.openDialog('samp', scope.row, '驗收');
 	scope.row.checkqty = scope.row.qty;
 	state.tableData.dialogConfig![7].max = scope.row.qty;
 	currentData.value = scope.row;
@@ -389,7 +389,7 @@ const getTableData = async () => {
 
 // 点击查看详情按钮
 const openDetailDialog = (scope: EmptyObjectType) => {
-	detaildialogRef.value.openDialog('detail', scope.row, '详情');
+	detaildialogRef.value.openDialog('detail', scope.row, '詳情');
 	// checkNoRef.value = scope.row.checkno;
 	// detaildialogVisible.value = true;
 	// // isSendBtn.value = scope.row.signstatus === '未送签' ? true : false;
@@ -402,7 +402,7 @@ const arriveList = (formData: EmptyObjectType) => {
 	if (formData.accepReportUrl) {
 		window.open(`${import.meta.env.VITE_API_URL}${formData.accepReportUrl}`, '_blank');
 	} else {
-		ElMessage.warning(t('没有验收报告单'));
+		ElMessage.warning(t('沒有驗收報告單'));
 	}
 };
 // 送簽
@@ -429,7 +429,7 @@ const onSubmit = async (formData: any) => {
 	};
 	const res = await getTInsertCheckApi(getData);
 	if (res.status) {
-		ElMessage.success(t('验收成功'));
+		ElMessage.success(t('驗收成功'));
 		arriveJobDialogRef.value.closeDialog();
 		getTableData();
 	}

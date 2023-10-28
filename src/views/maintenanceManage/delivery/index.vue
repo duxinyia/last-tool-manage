@@ -13,7 +13,7 @@
 				@onOpenOtherDialog="openArriveJobDialog"
 			/>
 			<el-dialog v-model="deliveryDialogVisible" :title="dilogTitle" width="65%">
-				<el-row v-if="dilogTitle == '收货'">
+				<el-row v-if="dilogTitle == '收貨'">
 					<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb10" v-for="(val, key) in dialogState.tableData.search" :key="key">
 						<div v-if="val.type === 'text'">
 							{{ val.label }}：<span style="color: red" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
@@ -25,7 +25,7 @@
 								value-format="YYYY-MM-DD"
 								v-model="dialogState.tableData.form[val.prop]"
 								type="date"
-								placeholder="请选择"
+								placeholder="請選擇"
 								style="height: 30px; max-width: 167px"
 							/>
 						</div>
@@ -38,7 +38,7 @@
 								filterable
 								remote
 								:reserve-keyword="false"
-								placeholder="请选择工程验收人"
+								placeholder="請選擇工程驗收人"
 								remote-show-suffix
 								:remote-method="selectChange"
 								:loading="loading"
@@ -55,21 +55,21 @@
 				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
 					<Table v-bind="dialogState.tableData" class="table" @delRow="onDelRow" @handleNumberInputChange="changeInput" :cellStyle="cellStyle" />
 				</el-form>
-				<div class="describe" v-if="dilogTitle == '收货'">
-					<span>描述说明：</span>
+				<div class="describe" v-if="dilogTitle == '收貨'">
+					<span>描述說明：</span>
 					<el-input
 						class="input-textarea"
 						show-word-limit
 						v-model="dialogState.tableData.form['headDescribe']"
 						type="textarea"
-						placeholder="请输入"
+						placeholder="請輸入"
 						maxlength="150"
 					></el-input>
 				</div>
-				<template #footer v-if="dilogTitle == '收货'">
+				<template #footer v-if="dilogTitle == '收貨'">
 					<span class="dialog-footer">
 						<el-button size="default" auto-insert-space @click="deliveryDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn"> 确定 </el-button>
+						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn"> 確定 </el-button>
 					</span>
 				</template>
 			</el-dialog>
@@ -106,12 +106,12 @@ const header = ref<deliveryDialogHeader>([
 	// { key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 	// { key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 	// { key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
-	{ key: 'qty', colWidth: '', title: '维修数量', type: 'text', isCheck: true },
-	{ key: 'pendingReceiptQty', colWidth: '', title: '可收货数量', type: 'text', isCheck: true },
-	{ key: 'reason', colWidth: '', title: '维修原因', type: 'text', isCheck: true },
-	{ key: 'receiptQty', colWidth: '100', title: '收货数量', type: 'number', isCheck: true, min: 1, isRequired: true },
-	{ key: 'receiptDate', colWidth: '150', title: '收货时间', type: 'time', isCheck: true, isRequired: true },
+	{ key: 'prItemNo', colWidth: '', title: 'PR項次', type: 'text', isCheck: true },
+	{ key: 'qty', colWidth: '', title: '維修數量', type: 'text', isCheck: true },
+	{ key: 'pendingReceiptQty', colWidth: '', title: '可收貨數量', type: 'text', isCheck: true },
+	{ key: 'reason', colWidth: '', title: '維修原因', type: 'text', isCheck: true },
+	{ key: 'receiptQty', colWidth: '100', title: '收貨數量', type: 'number', isCheck: true, min: 1, isRequired: true },
+	{ key: 'receiptDate', colWidth: '150', title: '收貨時間', type: 'time', isCheck: true, isRequired: true },
 ]);
 const header1 = ref<deliveryDialogHeader>([
 	{
@@ -125,9 +125,9 @@ const header1 = ref<deliveryDialogHeader>([
 	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 	// { key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 	// { key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-	{ key: 'qty', colWidth: '', title: '维修数量', type: 'text', isCheck: true },
-	{ key: 'reason', colWidth: '150', title: '维修原因', type: 'text', isCheck: true },
-	{ key: 'prItemNo', colWidth: '', title: 'PR项次', type: 'text', isCheck: true },
+	{ key: 'qty', colWidth: '', title: '維修數量', type: 'text', isCheck: true },
+	{ key: 'reason', colWidth: '150', title: '維修原因', type: 'text', isCheck: true },
+	{ key: 'prItemNo', colWidth: '', title: 'PR項次', type: 'text', isCheck: true },
 ]);
 const state = reactive<TableDemoState>({
 	tableData: {
@@ -135,9 +135,9 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'repairNo', colWidth: '', title: '维修单号', type: 'text', isCheck: true },
-			{ key: 'prNo', colWidth: '', title: 'PR单号', type: 'text', isCheck: true },
-			{ key: 'creator', colWidth: '', title: '提报人', type: 'text', isCheck: true },
+			{ key: 'repairNo', colWidth: '', title: '維修單號', type: 'text', isCheck: true },
+			{ key: 'prNo', colWidth: '', title: 'PR單號', type: 'text', isCheck: true },
+			{ key: 'creator', colWidth: '', title: '提報人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -154,13 +154,13 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '维修单号', prop: 'repairNo', required: false, type: 'input' },
-			{ label: 'PR单号', prop: 'prNo', required: false, type: 'input' },
+			{ label: '維修單號', prop: 'repairNo', required: false, type: 'input' },
+			{ label: 'PR單號', prop: 'prNo', required: false, type: 'input' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [{ type: 'sendReceive', name: '收货', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
+		btnConfig: [{ type: 'sendReceive', name: '收貨', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
 		// 给后端的数据
 		form: {
 			repairNo: '',
@@ -200,10 +200,10 @@ const dialogState = reactive<TableDemoState>({
 		form: {},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '收货单号', prop: 'sendNo', required: false, type: 'text' },
-			{ label: '维修单号', prop: 'repairNo', required: false, type: 'text' },
-			{ label: 'PR单号', prop: 'prNo', required: false, type: 'text' },
-			{ label: '工程验收人', prop: 'engineer', required: false, type: 'select', options: [], isRequired: true },
+			{ label: '收貨單號', prop: 'sendNo', required: false, type: 'text' },
+			{ label: '維修單號', prop: 'repairNo', required: false, type: 'text' },
+			{ label: 'PR單號', prop: 'prNo', required: false, type: 'text' },
+			{ label: '工程驗收人', prop: 'engineer', required: false, type: 'select', options: [], isRequired: true },
 			// { label: '收货时间', prop: 'sendTime', required: false, type: 'time', isRequired: true },
 		],
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disable: true }],
@@ -285,13 +285,13 @@ const openArriveJobDialog = (scope: EmptyObjectType) => {
 	dialogState.tableData.form = scope.row;
 	dialogState.tableData.form['headDescribe'] = '';
 	getDetailData(scope.row.repairNo);
-	dilogTitle.value = '收货';
+	dilogTitle.value = '收貨';
 	changeStatus(header.value, 300, true);
 };
 // 点击申请单号
 const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'repairNo') {
-		dilogTitle.value = '维修单号:' + row.repairNo;
+		dilogTitle.value = '維修單號:' + row.repairNo;
 		changeStatus(header1.value, 500, false);
 		// let data = { repairNo: row.repairNo };
 		getDetailData(row.repairNo);
@@ -319,8 +319,8 @@ const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) =
 const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
-		if (!valid) return ElMessage.warning(t('表格项必填未填'));
-		if (!dialogState.tableData.form['engineer']) return ElMessage.warning(t('请选择工程验收人'));
+		if (!valid) return ElMessage.warning(t('表格項必填未填'));
+		if (!dialogState.tableData.form['engineer']) return ElMessage.warning(t('請選擇工程驗收人'));
 		loadingBtn.value = true;
 		let allData: EmptyObjectType = {};
 		allData = { ...dialogState.tableData.form };
@@ -335,11 +335,11 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 		allData['details'] = data;
 		const res = await getReceiveApi(allData);
 		if (res.status) {
-			ElMessage.success(t('收货成功'));
+			ElMessage.success(t('收貨成功'));
 			deliveryDialogVisible.value = false;
 			getTableData();
 		}
-		loadingBtn.value = fasle;
+		loadingBtn.value = false;
 	});
 };
 // 搜索点击时表单回调

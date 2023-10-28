@@ -23,7 +23,7 @@
 					<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
 				</template>
 			</Dialog>
-			<el-dialog v-model="matNoDetaildialogVisible" title="料号详情" width="50%">
+			<el-dialog v-model="matNoDetaildialogVisible" title="料號詳情" width="50%">
 				<Table v-bind="dialogState.tableData" :objectSpanMethod="objectSpanMethod" />
 			</el-dialog>
 		</div>
@@ -54,7 +54,7 @@ const state = reactive<TableDemoState>({
 		// 表头内容（必传，注意格式）
 		header: [
 			{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'text', isCheck: true },
-			{ key: 'depart', colWidth: '', title: '部门', type: 'text', isCheck: true },
+			{ key: 'depart', colWidth: '', title: '部門', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
 			{ key: 'drawNo', colWidth: '', title: 'message.pages.drawNo', type: 'text', isCheck: true },
@@ -75,31 +75,31 @@ const state = reactive<TableDemoState>({
 			operateWidth: 150,
 		},
 
-		btnConfig: [{ type: 'sample', name: '样品需求', color: '#D3C333', isSure: false }],
+		btnConfig: [{ type: 'sample', name: '樣品需求', color: '#D3C333', isSure: false }],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '料号', prop: 'matNo', placeholder: '请输入料号', required: false, type: 'input' },
+			{ label: '料號', prop: 'matNo', placeholder: '請輸入料號', required: false, type: 'input' },
 			// { label: 'BU', prop: 'bu', placeholder: '', required: false, type: 'input' },
-			{ label: '部门', prop: 'depart', placeholder: '', required: false, type: 'input' },
+			{ label: '部門', prop: 'depart', placeholder: '', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', placeholder: '', required: false, type: 'input' },
-			{ label: '图纸编号', prop: 'drawNo', placeholder: '', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', placeholder: '', required: false, type: 'input' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
 		dialogConfig: [
-			{ type: 'text', label: '送样单号', placeholder: '', prop: 'sampleNo', required: false },
-			{ type: 'text', label: '料号', prop: 'matNo', required: false, placeholder: '' },
-			{ type: 'text', label: '品名-中文', prop: 'nameCh', placeholder: '请输入专案代码', required: false },
+			{ type: 'text', label: '送樣單號', placeholder: '', prop: 'sampleNo', required: false },
+			{ type: 'text', label: '料號', prop: 'matNo', required: false, placeholder: '' },
+			{ type: 'text', label: '品名-中文', prop: 'nameCh', placeholder: '', required: false },
 			{ type: 'text', label: '品名-英文', prop: 'nameEn', required: false, placeholder: '' },
-			{ type: 'text', label: '图纸编号', prop: 'drawNo', required: false, placeholder: '' },
-			{ type: 'text', label: '规格', prop: 'specs', required: false, placeholder: '' },
-			{ type: 'number', label: '需求数量', prop: 'needsQty', required: true, placeholder: '', min: 1 },
-			{ type: 'date', label: '需求时间', prop: 'needsDate', required: true, placeholder: '' },
+			{ type: 'text', label: '圖紙編號', prop: 'drawNo', required: false, placeholder: '' },
+			{ type: 'text', label: '規格', prop: 'specs', required: false, placeholder: '' },
+			{ type: 'number', label: '需求數量', prop: 'needsQty', required: true, placeholder: '', min: 1 },
+			{ type: 'date', label: '需求時間', prop: 'needsDate', required: true, placeholder: '' },
 			{
-				label: '采购人员',
+				label: '採購人員',
 				prop: 'purchaserName',
-				placeholder: '请输入采购人员',
+				placeholder: '請輸入選擇採購人員',
 				required: true,
 				type: 'select',
 				options: [],
@@ -108,15 +108,15 @@ const state = reactive<TableDemoState>({
 				remote: true,
 				remoteShowSuffix: true,
 			},
-			{ type: 'input', label: '需求人', prop: 'needor', required: true, placeholder: '请输入需求人', maxlength: 20 },
+			{ type: 'input', label: '需求人', prop: 'needor', required: true, placeholder: '請輸入需求人', maxlength: 20 },
 			{
 				type: 'input',
-				label: '需求人电话',
+				label: '需求人電話',
 				prop: 'needorTel',
 				required: true,
-				placeholder: '请输入需求人电话',
+				placeholder: '請輸入需求人電話',
 				validateForm: 'number',
-				message: '请输入正确的电话格式',
+				message: '請輸入正確的電話格式',
 				maxlength: 20,
 			},
 		],
@@ -144,13 +144,13 @@ const dialogState = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'sampleNo', colWidth: '200', title: '送样单号', type: 'text', isCheck: true },
+			{ key: 'sampleNo', colWidth: '200', title: '送樣單號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-			{ key: 'vendorName', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-			{ key: 'needsQty', colWidth: '', title: '需求送样数量', type: 'text', isCheck: true },
-			{ key: 'needsTime', colWidth: '', title: '需求送样时间', type: 'text', isCheck: true },
+			{ key: 'vendorCode', colWidth: '', title: '廠商代碼', type: 'text', isCheck: true },
+			{ key: 'vendorName', colWidth: '', title: '廠商名稱', type: 'text', isCheck: true },
+			{ key: 'needsQty', colWidth: '', title: '需求送樣數量', type: 'text', isCheck: true },
+			{ key: 'needsTime', colWidth: '', title: '需求送樣時間', type: 'text', isCheck: true },
 		],
 		// 表格配置项（必传）
 		config: {
@@ -284,7 +284,7 @@ const onTablePageChange = (page: TableDemoPageType) => {
 
 // 打开样品需求弹窗 1
 const openSampleDialog = (scope: EmptyObjectType, type: string) => {
-	sampleDialogRef.value.openDialog('samp', scope.row, '样品需求');
+	sampleDialogRef.value.openDialog('samp', scope.row, '樣品需求');
 };
 // 点击料号 2
 const matnoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {

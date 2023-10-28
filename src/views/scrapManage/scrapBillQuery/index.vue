@@ -124,7 +124,7 @@ const state = reactive<TableDemoState>({
 			{ label: '班別', prop: 'classes', required: false, type: 'input' },
 			{ label: '站位', prop: 'state', required: false, type: 'input' },
 		],
-		btnConfig: [{ type: 'detail', name: '详情', color: '#1890ff', isSure: false, icon: 'ele-View' }],
+		btnConfig: [{ type: 'detail', name: '詳情', color: '#1890ff', isSure: false, icon: 'ele-View' }],
 		searchConfig: {
 			isSearchBtn: true,
 		},

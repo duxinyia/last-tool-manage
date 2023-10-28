@@ -18,12 +18,12 @@
 						v-if="val.type !== ''"
 						:label="$t(val.label)"
 						:prop="val.prop"
-						:rules="[{ required: val.required, message: `${val.label}不能为空`, trigger: val.type === 'input' ? 'blur' : 'change' }]"
+						:rules="[{ required: val.required, message: `${val.label}不能為空`, trigger: val.type === 'input' ? 'blur' : 'change' }]"
 					>
 						<el-input
 							:maxlength="val.maxlength"
 							v-model="state.form[val.prop]"
-							:placeholder="`请输入${$t(val.label)}`"
+							:placeholder="`請輸入${$t(val.label)}`"
 							clearable
 							v-if="val.type === 'input'"
 							style="width: 100%"
@@ -47,7 +47,7 @@
 						/>
 						<el-select
 							v-model="state.form[val.prop]"
-							:placeholder="val.placeholder || `请选择${val.label}`"
+							:placeholder="val.placeholder || `請選擇${val.label}`"
 							v-else-if="val.type === 'select'"
 							style="width: 100%"
 							@change="(vals:any) => selectHandelChange(vals,val.prop)"
@@ -75,7 +75,7 @@
 					<el-form-item class="table-form-btn" :label-width="search.length < 6 ? '20px' : '100px'">
 						<template #label v-if="search.length >= 6">
 							<div class="table-form-btn-toggle ml10" @click="state.isToggle = !state.isToggle">
-								<span>{{ state.isToggle ? '收筛选' : '展筛选' }}</span>
+								<span>{{ state.isToggle ? '收篩選' : '展篩選' }}</span>
 								<SvgIcon :name="state.isToggle ? 'ele-ArrowUp' : 'ele-ArrowDown'" />
 							</div>
 						</template>

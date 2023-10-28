@@ -23,7 +23,7 @@
 							<el-input
 								size="default"
 								v-model="dialogState.tableData.form[val.prop]"
-								:placeholder="`请输入${$t(val.label)}`"
+								:placeholder="`請輸入${$t(val.label)}`"
 								clearable
 								style="width: 100%; max-width: 167px"
 							/>
@@ -33,7 +33,7 @@
 							<span style="width: 96px" class="mr10">{{ val.label }}</span>
 							<el-date-picker
 								v-model="dialogState.tableData.form[val.prop]"
-								:placeholder="`请选择时间`"
+								:placeholder="`請選擇時間`"
 								clearable
 								value-format="YYYY-MM-DD"
 								type="date"
@@ -48,13 +48,13 @@
 					<Table ref="dialogtableRef" v-bind="dialogState.tableData" class="table" @delRow="onDelRow" />
 				</el-form>
 				<div class="describe">
-					<span>描述说明：</span>
+					<span>描述說明：</span>
 					<el-input
 						class="input-textarea"
 						show-word-limit
 						v-model="dialogState.tableData.form['describe']"
 						type="textarea"
-						placeholder="请输入"
+						placeholder="請輸入"
 						maxlength="150"
 					></el-input>
 				</div>
@@ -62,12 +62,12 @@
 				<template #footer>
 					<span class="dialog-footer">
 						<el-button size="default" auto-insert-space @click="presentationDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn"> 确定 </el-button>
+						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn"> 確定 </el-button>
 					</span>
 				</template>
 			</el-dialog>
 			<Dialog ref="matnoDetailDialogRef" :isFootBtn="false" :dialogConfig="dialogMatnoDetail" />
-			<el-dialog v-model="inventoryDialogRef" title="库存条码" width="30%" draggable>
+			<el-dialog v-model="inventoryDialogRef" title="庫存條碼" width="30%" draggable>
 				<el-tag v-for="tag in tags" :key="tag.code" class="mr10 mb10" :type="tag.runstatus === 1 ? '' : 'danger'">
 					{{ tag.code }}
 				</el-tag>
@@ -114,13 +114,13 @@ const header = ref([
 		type: 'text',
 		isCheck: true,
 	},
-	{ key: 'machine', colWidth: '', title: '机种', type: 'text', isCheck: true },
+	{ key: 'machine', colWidth: '', title: '機種', type: 'text', isCheck: true },
 	{ key: 'namech', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	{ key: 'nameen', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 	// { key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 	// { key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
-	{ key: 'exitqty', colWidth: '', title: '闲置数量', type: 'text', isCheck: true },
-	{ key: 'exitreason', colWidth: '', title: '闲置原因', type: 'text', isCheck: true },
+	{ key: 'exitqty', colWidth: '', title: '閒置數量', type: 'text', isCheck: true },
+	{ key: 'exitreason', colWidth: '', title: '閒置原因', type: 'text', isCheck: true },
 	// { key: 'prItemNo', colWidth: '', title: 'pr项次', type: 'input', isCheck: true },
 ]);
 const state = reactive<TableDemoState>({
@@ -142,8 +142,8 @@ const state = reactive<TableDemoState>({
 			// { key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 			{ key: 'storageType', colWidth: '', title: '倉庫類型', type: 'text', isCheck: true },
 			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
-			{ key: 'exitqty', colWidth: '', title: '闲置数量', type: 'text', isCheck: true },
-			{ key: 'exitreason', colWidth: '', title: '闲置原因', type: 'text', isCheck: true },
+			{ key: 'exitqty', colWidth: '', title: '閒置數量', type: 'text', isCheck: true },
+			{ key: 'exitreason', colWidth: '', title: '閒置原因', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -159,11 +159,11 @@ const state = reactive<TableDemoState>({
 			isPage: true, //是否有分页
 		},
 		topBtnConfig: [
-			{ type: 'other', name: '闲置', defaultColor: 'primary', isSure: true, disabled: true, icon: 'ele-Edit', isNoSelcetDisabled: true },
+			{ type: 'other', name: '閒置', defaultColor: 'primary', isSure: true, disabled: true, icon: 'ele-Edit', isNoSelcetDisabled: true },
 		],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '料号', prop: 'matNo', required: false, type: 'input' },
+			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'matName', required: false, type: 'input' },
 		],
 		searchConfig: {
@@ -213,10 +213,10 @@ const dialogState = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '闲置单号', prop: 'matNo', type: 'text', required: false, isRequired: false },
-			{ label: '闲置时间', prop: 'idleDate', placeholder: '请选择闲置时间', type: 'time', required: false, isRequired: true },
-			{ label: '班别', prop: 'classes', placeholder: '请输入班别', type: 'input', required: false, isRequired: false },
-			{ label: '规划存放位置', prop: 'position', placeholder: '请输入规划存放位置', type: 'input', required: false, isRequired: false },
+			{ label: '閒置單號', prop: 'matNo', type: 'text', required: false, isRequired: false },
+			{ label: '閒置時間', prop: 'idleDate', placeholder: '請選擇閒置時間', type: 'time', required: false, isRequired: true },
+			{ label: '班別', prop: 'classes', placeholder: '請輸入班別', type: 'input', required: false, isRequired: false },
+			{ label: '規劃存放位置', prop: 'position', placeholder: '請輸入規劃存放位置', type: 'input', required: false, isRequired: false },
 		],
 		// 弹窗按钮
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }],
@@ -228,15 +228,15 @@ const dialogState = reactive<TableDemoState>({
 	},
 });
 const dialogMatnoDetail = ref([
-	{ label: '料号:', prop: 'matno', type: 'text' },
+	{ label: '料號:', prop: 'matno', type: 'text' },
 	{ label: '品名-中文:', prop: 'namech', type: 'text' },
 	{ label: '品名-英文:', prop: 'nameen', type: 'text' },
 	// { label: '厂商代码:', prop: 'vendorcode', type: 'text' },
 	// { label: '厂商名称:', prop: 'vendorname', type: 'text' },
-	{ label: '退库类型:', prop: 'exittype', type: 'text' },
-	{ label: '退库原因:', prop: 'exitreason', type: 'text' },
-	{ label: '退库数量:', prop: 'exitqty', type: 'text' },
-	{ label: '描述说明:', prop: 'describe', type: 'text' },
+	{ label: '退庫類型:', prop: 'exittype', type: 'text' },
+	{ label: '退庫原因:', prop: 'exitreason', type: 'text' },
+	{ label: '退庫數量:', prop: 'exitqty', type: 'text' },
+	{ label: '描述說明:', prop: 'describe', type: 'text' },
 ]);
 const exitTypeMap: EmptyObjectType = {
 	1: '維修',
@@ -294,18 +294,18 @@ const onOpenSendRepair = (row: EmptyObjectType[]) => {
 	tableData.data = [];
 	tableData.data = row;
 	tableData.config.loading = false;
-	dilogTitle.value = '闲置单提报';
+	dilogTitle.value = '閒置單提報';
 };
 
 // 点击料号弹出详情
 const matNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'matno') {
 		row.exittype = exitTypeMap[row.exittype];
-		matnoDetailDialogRef.value.openDialog('matno', row, '退库详情');
+		matnoDetailDialogRef.value.openDialog('matno', row, '退庫詳情');
 	} else if (column.property === 'exitqty') {
 		let res = await GetExitStoreQrCodeListApi(row.runid);
 		if (res.data.length == 0) {
-			ElMessage.error('暂无条码数据');
+			ElMessage.error('暫無條碼數據');
 		} else {
 			tags = res.data;
 			inventoryDialogRef.value = true;
@@ -316,7 +316,7 @@ const matNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
 const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
-		if (!valid) return ElMessage.warning(t('表格项必填未填'));
+		if (!valid) return ElMessage.warning(t('表格項必填未填'));
 		// if (!dialogState.tableData.form['sendRepairDate']) return ElMessage.warning(t('请填写收货时间'));
 		loadingBtn.value = true;
 		let allData: EmptyObjectType = {};
@@ -327,7 +327,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 		});
 		const res = await SetExitStoreIdleApi(allData);
 		if (res.status) {
-			ElMessage.success(t('闲置成功'));
+			ElMessage.success(t('閒置成功'));
 			presentationDialogVisible.value = false;
 			getTableData();
 		}
