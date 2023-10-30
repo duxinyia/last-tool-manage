@@ -19,11 +19,12 @@
 					>
 				</template>
 			</Table>
-			<el-dialog v-model="onNumberListDialogRef" title="二維碼編號" width="30%" draggable>
+			<qrCodeDialog ref="onNumberListDialogRef" :tags="tags" />
+			<!-- <el-dialog v-model="onNumberListDialogRef" title="二維碼編號" width="30%" draggable>
 				<el-tag v-for="tag in tags" :key="tag.code" class="mr10 mb10">
 					{{ tag }}
 				</el-tag>
-			</el-dialog>
+			</el-dialog> -->
 		</div>
 	</div>
 </template>
@@ -36,12 +37,12 @@ import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
-
+const qrCodeDialog = defineAsyncComponent(() => import('/@/components/dialog/qrCodeDialog.vue'));
 // 定义变量内容
 const { t } = useI18n();
 const tableRef = ref<RefType>();
 const matNoRef = ref();
-const onNumberListDialogRef = ref(false);
+const onNumberListDialogRef = ref();
 // tags的数据
 let tags = ref<EmptyArrayType>([]);
 const matNoDetaildialogVisible = ref(false);
@@ -186,8 +187,9 @@ const onSign = async (stockId: string) => {
 		if (!res.data.length) {
 			ElMessage.error('暫無二維碼編碼');
 		} else {
-			onNumberListDialogRef.value = true;
+			// onNumberListDialogRef.value = true;
 			tags.value = res.data;
+			onNumberListDialogRef.value?.openDialog();
 		}
 	}
 };

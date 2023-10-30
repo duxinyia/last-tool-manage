@@ -452,7 +452,7 @@ const openReturnDialog = (scope: EmptyObjectType, type: string) => {
 				item.label = '退庫數量';
 				item.placeholder = '請輸入退庫數量';
 			}
-			const arr = ['storageId', 'outDate', 'describe'];
+			const arr = ['storageId', 'outDate'];
 			if (arr.includes(item.prop)) {
 				deleteStorage = JSON.parse(JSON.stringify(dialogConfig?.splice(index, 2)));
 			}

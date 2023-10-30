@@ -1,10 +1,16 @@
 <template>
 	<div class="table-container layout-padding">
 		<div class="table-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" @remoteMethod="remoteMethod">
-				<template #optionSearchFat="{ row }">
-					<span style="float: left; margin-right: 35px">{{ row.value }}</span>
-					<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
+			<TableSearch
+				:search="state.tableData.search"
+				@search="onSearch"
+				:searchConfig="state.tableData.searchConfig"
+				@remoteMethod="remoteMethod"
+				@selectChange="selectChangeStoreType"
+			>
+				<template #optionSearchFat="{ row, value }">
+					<span v-if="value.prop === 'dispatcher'" style="float: left; margin-right: 35px">{{ row.value }}</span>
+					<span v-if="value.prop === 'dispatcher'" style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
 				</template>
 			</TableSearch>
 			<Table
@@ -51,7 +57,7 @@ import { useI18n } from 'vue-i18n';
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
 const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
-import { getEngieerGroupApi } from '/@/api/global/index';
+import { getEngieerGroupApi, getLegalStoreTypesApi, getQueryStoreHouseNoPageApi } from '/@/api/global/index';
 // 定义变量内容
 const { t } = useI18n();
 const loadingBtn = ref(false);
@@ -89,12 +95,11 @@ const state = reactive<TableDemoState>({
 			{ key: 'reqMatNo', colWidth: '', title: '請購料號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'checkDate', colWidth: '', title: '驗收日期', type: 'text', isCheck: true },
-			{ key: 'checkQty', colWidth: '', title: '驗收數量', type: 'text', isCheck: true },
-			{ key: 'passQty', colWidth: '', title: '合格數量', type: 'text', isCheck: true },
-			{ key: 'failQty', colWidth: '', title: '不合格數量', type: 'text', isCheck: true },
-			// { key: 'describe', colWidth: '', title: '描述说明', type: 'text', isCheck: true },
-			{ key: 'checker', colWidth: '', title: '驗收人', type: 'text', isCheck: true },
+			{ key: 'dispatcher', colWidth: '', title: '發料人', type: 'text', isCheck: true },
+			{ key: 'dispatchTime', colWidth: '', title: '發料時間', type: 'text', isCheck: true },
+			{ key: 'qty', colWidth: '', title: '發料數量', type: 'text', isCheck: true },
+			{ key: 'receiveStorageType', colWidth: '', title: '領用倉庫類型', type: 'text', isCheck: true },
+			{ key: 'receiveSLocation', colWidth: '', title: '領用倉庫位置', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -116,18 +121,41 @@ const state = reactive<TableDemoState>({
 			{ label: '請購料號', prop: 'reqMatNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{
-				label: '驗收人',
-				prop: 'checker',
+				label: '發料人',
+				prop: 'dispatcher',
 				required: false,
 				type: 'select',
-				placeholder: '請輸入選擇驗收人',
+				placeholder: '請輸入選擇發料人',
 				options: [],
 				loading: true,
 				filterable: true,
 				remote: true,
 				remoteShowSuffix: true,
 			},
-			{ label: '驗收日期', prop: 'checkDate', required: false, type: 'dateRange' },
+			{
+				label: '領用倉庫類型',
+				prop: 'receiveStorageType',
+				required: false,
+				type: 'select',
+				options: [],
+			},
+			{
+				label: '領用倉庫位置',
+				prop: 'receiveSLocation',
+				required: false,
+				type: 'select',
+				placeholder: '請輸入選擇領用倉庫位置',
+				options: [],
+				loading: true,
+				filterable: true,
+				remote: true,
+				remoteShowSuffix: true,
+				lg: 6,
+				xl: 6,
+			},
+			{ label: '發料時間', prop: 'dispatchDate', required: false, type: 'dateRange' },
+
+			// { label: '驗收日期', prop: 'checkDate', required: false, type: 'dateRange' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -152,24 +180,12 @@ const state = reactive<TableDemoState>({
 			{ label: '請購料號:', prop: 'reqMatNo', placeholder: '', required: false, type: 'text' },
 			{ label: '品名-中文:', prop: 'nameCh', placeholder: '', required: false, type: 'text' },
 			{ label: '品名-英文:', prop: 'nameEn', placeholder: '', required: false, type: 'text' },
-			{ label: '驗收日期:', prop: 'checkDate', placeholder: '', required: false, type: 'text' },
-			// { label: '验收数量:', prop: 'checkQty', placeholder: '', required: false, type: 'text' },
-			{ label: '驗收合格數量:', prop: 'passQty', placeholder: '', required: false, type: 'text' },
-			// { label: '不合格数量:', prop: 'failQty', placeholder: '', required: false, type: 'text' },
-			//这个字段待定
-			{ label: '驗收人:', prop: 'checker', placeholder: '', required: false, type: 'text' },
-			{
-				type: 'text',
-				label: '驗收描述說明:',
-				placeholder: '',
-				prop: 'describe',
-				required: false,
-				xs: 24,
-				sm: 24,
-				md: 24,
-				lg: 24,
-				xl: 24,
-			},
+			{ label: '發料人:', prop: 'dispatcher', placeholder: '', required: false, type: 'text' },
+			{ label: '發料時間:', prop: 'dispatchTime', placeholder: '', required: false, type: 'text' },
+			{ label: '發料數量:', prop: 'qty', placeholder: '', required: false, type: 'text' },
+			{ label: '領用倉庫類型:', prop: 'receiveStorageType', placeholder: '', required: false, type: 'text' },
+			{ label: '領用倉庫位置:', prop: 'receiveSLocation', placeholder: '', required: false, type: 'text' },
+			// { label: '驗收合格數量:', prop: 'passQty', placeholder: '', required: false, type: 'text' },
 			// validateForm: 'number',
 			// message: '请输入正整数',
 			{
@@ -196,14 +212,14 @@ const state = reactive<TableDemoState>({
 				lg: 4,
 				xl: 4,
 			},
-			{
-				label: '收貨倉庫:',
-				prop: 'storageId',
-				placeholder: '請選擇收貨倉庫',
-				required: true,
-				type: 'select',
-				options: [],
-			},
+			// {
+			// 	label: '收貨倉庫:',
+			// 	prop: 'storageId',
+			// 	placeholder: '請選擇收貨倉庫',
+			// 	required: true,
+			// 	type: 'select',
+			// 	options: [],
+			// },
 			{
 				type: 'textarea',
 				label: '描述說明:',
@@ -270,47 +286,78 @@ const changeToStyle = (indList: number[]) => {
 	};
 };
 // cellStyle.value = changeToStyle([1]);
-// 下拉选项数据
-const getOptionsData = async () => {
-	let res = await GetUserManagedStoreHouseApi();
-	if (state.tableData.dialogConfig) {
-		state.tableData.dialogConfig.forEach((item) => {
-			if (item.prop == 'storageId') {
-				item.options = res.data.map((item: any) => {
-					return { label: item.storeType, text: item.sLocation, value: item.storeId };
-				});
-			}
-		});
+// 改变仓库类型下拉
+const selectChangeStoreType = (vals: string, prop: string, form: EmptyObjectType) => {
+	if (prop === 'receiveStorageType') {
+		form.receiveSLocation = '';
 	}
 };
-const remoteMethod = (query: string) => {
+// 領用倉庫類型下拉选项数据
+const getOptionsData = async () => {
+	const res = await getLegalStoreTypesApi();
+	const option = res.data.map((item: any) => {
+		return { label: item, text: item, value: item };
+	});
+	state.tableData.search[5].options = option;
+	state.tableData.dialogConfig![5].options = option;
+};
+let option: EmptyArrayType = [];
+const remoteMethod = (query: string, form: EmptyObjectType, prop: string) => {
 	if (query) {
-		state.tableData.search[4].loading = true;
+		if (prop === 'receiveSLocation') {
+			state.tableData.search[6].loading = true;
+		} else {
+			state.tableData.search[4].loading = true;
+		}
 		setTimeout(async () => {
-			const res = await getEngieerGroupApi(query);
-			state.tableData.search[4].loading = false;
-			let options = res.data.map((item: EmptyObjectType) => {
-				return { value: `${item.userid}`, label: `${item.username}` };
-			});
-			state.tableData.search[4].options = options.filter((item: EmptyObjectType) => {
-				return item.label.toLowerCase().includes(query.toLowerCase()) || item.value.toLowerCase().includes(query.toLowerCase());
-			});
+			if (prop === 'receiveSLocation') {
+				const res = await getQueryStoreHouseNoPageApi(form.storeType, query);
+				option = res.data.map((item: EmptyObjectType) => {
+					return { value: `${item.storeId}`, label: `${item.storeType}`, text: `${item.sLocation}` };
+				});
+				state.tableData.search?.forEach((item) => {
+					if (item.prop === 'receiveSLocation') {
+						item.loading = false;
+						item.options = option.filter((item: EmptyObjectType) => {
+							return item.text.toLowerCase().includes(query.toLowerCase()) || item.label.toLowerCase().includes(query.toLowerCase());
+						});
+					}
+				});
+			} else {
+				const res = await getEngieerGroupApi(query);
+				state.tableData.search[4].loading = false;
+				let options = res.data.map((item: EmptyObjectType) => {
+					return { value: `${item.userid}`, label: `${item.username}` };
+				});
+				state.tableData.search[4].options = options.filter((item: EmptyObjectType) => {
+					return item.label.toLowerCase().includes(query.toLowerCase()) || item.value.toLowerCase().includes(query.toLowerCase());
+				});
+			}
 		}, 500);
 	} else {
-		state.tableData.search[4].options = [];
+		if (prop === 'receiveSLocation') {
+			state.tableData.search[6].options = [];
+		} else {
+			state.tableData.search[4].options = [];
+		}
 	}
 };
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;
+	option.forEach((item) => {
+		if (item.value === form.receiveSLocation) {
+			form.receiveSLocation = item.text;
+		}
+	});
 	let data = {
 		...form,
-		checkDate: form.checkDate,
-		startCheckDate: form.checkDate && form.checkDate[0],
-		endCheckDate: form.checkDate && form.checkDate[1],
+		dispatchDate: form.dispatchDate,
+		startDispatchTime: form.dispatchDate && form.dispatchDate[0],
+		endDispatchTime: form.dispatchDate && form.dispatchDate[1],
 		page: state.tableData.page,
 	};
-	delete data.checkDate;
+	delete data.dispatchDate;
 	const res = await GetTStockInputPageListApi(data);
 	state.tableData.data = res.data.data;
 	state.tableData.data.forEach((item) => {
@@ -325,8 +372,8 @@ const getTableData = async () => {
 const change = (val: any, prop: string, state: any) => {
 	let { formInnerData, formData } = state;
 	if (prop == 'sacnstockqty') {
-		if (formInnerData.codeList.length + 1 > formData.passQty) {
-			ElMessage.error(`掃碼數量超過驗收合格數量，請勿繼續掃碼`);
+		if (formInnerData.codeList.length + 1 > formData.qty) {
+			ElMessage.error(`掃碼數量超過發料數量，請勿繼續掃碼`);
 			formInnerData['sacnstockqty'] = null;
 		} else if (formInnerData.codeList.includes(val)) {
 			ElMessage.warning(`該條碼已存在，請勿重複掃碼`);
@@ -415,8 +462,8 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 		// sLocation: obj.sLocation,
 		// storeType: obj.storeType,
 	};
-	if (obj.stockqty > obj.passQty) {
-		ElMessage.error(`有碼數量大於驗收合格數據`);
+	if (obj.stockqty > obj.qty) {
+		ElMessage.error(`有碼數量大於發料數量`);
 	}
 	// else if (obj.codes && obj.stockqty < obj.codes.length) {
 	// 	ElMessage.error(`有码数量小于扫码数量`);

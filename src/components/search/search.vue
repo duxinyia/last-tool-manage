@@ -55,7 +55,7 @@
 							:filterable="val.filterable"
 							:remote="val.remote"
 							:remote-show-suffix="val.remoteShowSuffix"
-							:remote-method="remoteMethod"
+							:remote-method="(vals:any) => remoteMethod(vals,val.prop)"
 							:loading="val.loading"
 							:multiple="val.multiple"
 							:max-collapse-tags="val.maxCollapseTags"
@@ -63,7 +63,7 @@
 							:collapse-tags-tooltip="val.collapseTagsTooltip"
 						>
 							<el-option v-for="item in val.options" :key="item.label" :label="item.text" :value="item.value">
-								<slot name="optionSearchFat" :row="item"></slot>
+								<slot name="optionSearchFat" :row="item" :value="val"></slot>
 							</el-option>
 						</el-select>
 						<span v-else style="width: 100%; font-weight: 700; color: #1890ff">
@@ -111,6 +111,10 @@ const props = defineProps({
 		type: Object,
 		default: () => {},
 	},
+	labelWidth: {
+		type: String,
+		default: () => '100px',
+	},
 });
 
 // 定义子组件向父组件传值/事件
@@ -140,8 +144,8 @@ const selectHandelChange = (vals: string, prop: string) => {
 	emit('selectChange', vals, prop, state.form);
 };
 // 能搜索的下拉框
-const remoteMethod = (query: string) => {
-	emit('remoteMethod', query, state.form);
+const remoteMethod = (query: string, prop?: string) => {
+	emit('remoteMethod', query, state.form, prop);
 };
 // 重置
 const onReset = (formEl: FormInstance | undefined) => {

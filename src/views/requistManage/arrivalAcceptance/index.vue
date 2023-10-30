@@ -230,7 +230,7 @@ const secondState = reactive<TableDemoState>({
 			// { key: 'failQty', colWidth: '120', title: '不合格数量', type: 'text', isCheck: true },
 			// { key: 'checker', colWidth: '', title: '验收人', type: 'text', isCheck: true },
 			// { key: 'createTime', colWidth: '120', title: '实际提交日期', type: 'text', isCheck: true },
-			{ key: 'isStored', colWidth: '120', title: '是否已入庫', type: 'text', isCheck: true },
+			{ key: 'isDispatched', colWidth: '120', title: '是否已發料', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -252,8 +252,8 @@ const secondState = reactive<TableDemoState>({
 			{ label: '申請料號', prop: 'reqMatNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{
-				label: '是否已入庫',
-				prop: 'isStored',
+				label: '是否已發料',
+				prop: 'isDispatched',
 				required: false,
 				clearable: false,
 				type: 'select',
@@ -300,7 +300,7 @@ const secondState = reactive<TableDemoState>({
 			{ type: 'text', label: '不合格數量', placeholder: '', prop: 'failQty', required: false },
 			{ type: 'text', label: '驗收人', placeholder: '', prop: 'checker', required: false },
 			{ type: 'text', label: '實際提交日期', placeholder: '', prop: 'createTime', required: false },
-			{ type: 'text', label: '是否已入庫', placeholder: '', prop: 'isStored', required: false },
+			{ type: 'text', label: '是否已發料', placeholder: '', prop: 'isDispatched', required: false },
 			{ type: 'text', label: '描述說明', placeholder: '', prop: 'describe', required: false, lg: 24, xl: 24 },
 			{ type: 'button', label: '查看驗收報告', placeholder: '', prop: 'accepReportUrl', required: false },
 		],
@@ -350,6 +350,9 @@ const getTableData = async () => {
 	};
 	delete data.receiveDate;
 	const form2 = secondState.tableData.form;
+	if (form2.isDispatched === '') {
+		form2.isDispatched = null;
+	}
 	let data2 = {
 		...form2,
 		checkDate: form2.checkDate,
@@ -377,7 +380,7 @@ const getTableData = async () => {
 		// item.signstatus = signStatusMap[item.signstatus];
 		// });
 		res.data.data.forEach((item: any) => {
-			item.isStored = item.isStored ? '是' : '否';
+			item.isDispatched = item.isDispatched ? '是' : '否';
 		});
 		secondState.tableData.data = res.data.data;
 		secondState.tableData.config.total = res.data.total;
@@ -398,7 +401,6 @@ const openDetailDialog = (scope: EmptyObjectType) => {
 };
 // 查看验收报告单
 const arriveList = (formData: EmptyObjectType) => {
-	console.log(formData.accepReportUrl);
 	if (formData.accepReportUrl) {
 		window.open(`${import.meta.env.VITE_API_URL}${formData.accepReportUrl}`, '_blank');
 	} else {

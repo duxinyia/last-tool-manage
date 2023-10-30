@@ -410,7 +410,7 @@ const allRules = (item: EmptyObjectType) => {
 			{
 				required: item.required,
 				message: `${t(item.label)}不能為空`,
-				trigger: item.type === 'input' || item.type === 'inputFile' || item.type === 'textarea' ? 'blur' : 'change',
+				trigger: item.type === 'input' || item.type === 'inputFile' || item.type === 'textarea' || item.type === 'select' ? 'blur' : 'change',
 				// type:'number',
 			},
 		],
@@ -537,7 +537,7 @@ const selectHandelChange = (val: string, prop: string) => {
 };
 // 能搜索的下拉框
 const remoteMethod = (query: string) => {
-	emit('remoteMethod', query);
+	emit('remoteMethod', query, state.formData);
 };
 // 文件input框里面的数据
 const input3dHandleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {

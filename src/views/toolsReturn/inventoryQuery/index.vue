@@ -21,11 +21,16 @@
 			<el-dialog v-model="matNoDetaildialogVisible" title="料號詳情" width="50%">
 				<matNoDetailDialog :isDialog="true" :matNoRef="matNoRef"
 			/></el-dialog>
-			<el-dialog v-model="inventoryDialogRef" title="庫存條碼" width="30%" draggable>
-				<el-tag v-for="tag in tags" :key="tag.code" class="mr10 mb10" :type="tag.runStatus === 1 ? '' : 'danger'">
-					{{ tag.code }}
-				</el-tag>
-			</el-dialog>
+			<qrCodeDialog ref="inventoryDialogRef" :tags="tags" dialogTitle="庫存條碼" />
+			<!-- <el-dialog :destroy-on-close="true" v-model="inventoryDialogRef" title="庫存條碼" width="30%" draggable>
+				<div class="infinite-list-wrapper" style="overflow: auto">
+					<ul v-infinite-scroll="load" class="list" :infinite-scroll-disabled="disabled" infinite-scroll-immediate>
+						<li v-for="i in count" :key="i.runId" class="list-item">{{ i.code }}</li>
+					</ul>
+					<p v-if="loading">數據過多，加載中...</p>
+					<p v-if="noMore && tags.length >= 20">數據加載完畢</p>
+				</div>
+			</el-dialog> -->
 		</div>
 	</div>
 </template>
@@ -33,8 +38,7 @@
 <script setup lang="ts" name="/toolsReturn/inventoryQuery">
 import { defineAsyncComponent, reactive, ref, onMounted, computed, nextTick } from 'vue';
 import type { FormInstance } from 'element-plus';
-
-import { ElMessage, ElMessageBox } from 'element-plus';
+import { ElMessage } from 'element-plus';
 // 引入接口
 import { GetStockQrListApi } from '/@/api/toolsReturn/inventoryQuery';
 import { getStockListApi, ExitStoreApi, getExitReasonApi } from '/@/api/toolsReturn/maintentanceTools';
@@ -42,9 +46,10 @@ import { getLegalStoreTypesApi, getQueryStoreHouseNoPageApi } from '/@/api/globa
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
+
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
 const matNoDetailDialog = defineAsyncComponent(() => import('/@/views/link/noSearchLink/index.vue'));
-
+const qrCodeDialog = defineAsyncComponent(() => import('/@/components/dialog/qrCodeDialog.vue'));
 // 定义变量内容
 const { t } = useI18n();
 const tableFormRef = ref();
@@ -53,8 +58,28 @@ const repairReturnDialogRef = ref();
 const inventoryDialogRef = ref();
 const matNoDetaildialogVisible = ref(false);
 const matNoRef = ref();
+const count = ref<any>([]);
+const loading = ref(false);
+
+const noMore = computed(() => count.value.length >= tags.value.length);
+const disabled = computed(() => loading.value || noMore.value);
+
 // tags的数据
 let tags = ref<EmptyArrayType>([]);
+const load = () => {
+	let num = 0;
+	loading.value = true;
+	setTimeout(() => {
+		for (let i = count.value.length; i < count.value.length + 20; i++) {
+			if (tags.value[i]?.runId) {
+				count.value.push(tags.value[i]);
+				num++;
+			}
+			if (num > 20) break;
+			loading.value = false;
+		}
+	}, 2000);
+};
 // 单元格样式
 const cellStyle = ref();
 // 弹窗标题
@@ -442,18 +467,29 @@ const innnerDialogCancel = (formData: EmptyObjectType, formInnerData: EmptyObjec
 };
 // 点击料号,暂时不做
 const matnoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
-	if (column.property === 'matno') {
-		matNoRef.value = row.matno;
-		setTimeout(() => {
-			matNoDetaildialogVisible.value = true;
-		}, 100);
-	} else if (column.property === 'qrstockqty') {
+	// if (column.property === 'matno') {
+	// 	matNoRef.value = row.matno;
+	// 	setTimeout(() => {
+	// 		matNoDetaildialogVisible.value = true;
+	// 	}, 100);
+	// } else
+
+	if (column.property === 'qrstockqty') {
 		let res = await GetStockQrListApi(row.runid);
 		if (res.data.length == 0) {
 			ElMessage.error('暫無條碼數據');
-		} else {
-			tags = res.data;
-			inventoryDialogRef.value = true;
+		} else if (res.status) {
+			tags.value = res.data;
+			inventoryDialogRef.value?.openDialog();
+			// inventoryDialogRef.value = true;
+			// tags.value = res.data;
+			// if (tags.value.length >= 20) {
+			// 	for (let i = 0; i < 20; i++) {
+			// 		count.value.push(tags.value[i]);
+			// 	}
+			// } else {
+			// 	count.value = tags.value;
+			// }
 		}
 	}
 };
@@ -538,5 +574,26 @@ onMounted(() => {
 }
 :deep(.el-dialog__body) {
 	min-height: 150px;
+}
+.infinite-list-wrapper {
+	height: 500px;
+	text-align: center;
+}
+.infinite-list-wrapper .list {
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+
+.infinite-list-wrapper .list-item {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 50px;
+	background: var(--el-color-primary-light-9);
+	color: var(--el-color-primary);
+}
+.infinite-list-wrapper .list-item + .list-item {
+	margin-top: 10px;
 }
 </style>
