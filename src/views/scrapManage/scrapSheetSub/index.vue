@@ -13,36 +13,40 @@
 				@onOpentopBtnOther="onOpenSendRepair"
 			/>
 			<el-dialog ref="presentationDialogRef" v-model="presentationDialogVisible" :title="dilogTitle" width="60%">
-				<el-row>
-					<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb20 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
-						<div v-if="val.type === 'text'">
-							{{ val.label }}<span style="color: red" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
-						</div>
-						<template v-if="val.type === 'input'">
-							<span class="mr10">{{ val.label }}</span>
-							<el-input
-								size="default"
-								v-model="dialogState.tableData.form[val.prop]"
-								:placeholder="`請輸入${$t(val.label)}`"
-								clearable
-								style="width: 100%; max-width: 167px"
-							/>
-						</template>
-						<div v-if="val.type === 'time'">
-							<span v-if="val.isRequired" class="color-danger mr5">*</span>
-							<span style="width: 96px" class="mr10">{{ val.label }}</span>
-							<el-date-picker
-								v-model="dialogState.tableData.form[val.prop]"
-								:placeholder="`請選擇時間`"
-								clearable
-								value-format="YYYY-MM-DD"
-								type="date"
-								style="height: 30px; max-width: 167px"
-							/>
-						</div>
-					</el-col>
-				</el-row>
-
+				<el-form ref="dialogFormRef" :model="dialogState.tableData" size="default" label-width="100px">
+					<el-row>
+						<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb10 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
+							<el-form-item
+								:label="$t(val.label)"
+								:prop="val.prop"
+								:rules="[{ required: val.isRequired, message: '不能為空', trigger: val.type === 'input' || val.type === 'time' ? 'blur' : 'change' }]"
+							>
+								<div v-if="val.type === 'text'">
+									<span style="color: red" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
+								</div>
+								<template v-if="val.type === 'input'">
+									<el-input
+										size="default"
+										v-model="dialogState.tableData.form[val.prop]"
+										:placeholder="`請輸入${$t(val.label)}`"
+										clearable
+										style="width: 100%; max-width: 167px"
+									/>
+								</template>
+								<div v-if="val.type === 'time'">
+									<el-date-picker
+										v-model="dialogState.tableData.form[val.prop]"
+										:placeholder="`請選擇時間`"
+										clearable
+										value-format="YYYY-MM-DD"
+										type="date"
+										style="height: 30px; max-width: 167px"
+									/>
+								</div>
+							</el-form-item>
+						</el-col>
+					</el-row>
+				</el-form>
 				<!-- 表格 -->
 				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
 					<Table ref="dialogtableRef" v-bind="dialogState.tableData" class="table" @delRow="onDelRow" />
@@ -213,7 +217,7 @@ const dialogState = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '報廢單號：', prop: 'matNo', placeholder: '請輸入報廢單號', type: 'text', required: false, isRequired: false },
+			{ label: '報廢單號', prop: 'matNo', placeholder: '請輸入報廢單號', type: 'text', required: false, isRequired: false },
 			{ label: '報廢時間', prop: 'uselessdate', type: 'time', required: false, isRequired: true },
 			{ label: '班別', prop: 'classes', type: 'input', required: false, isRequired: false },
 			{ label: '站位', prop: 'state', type: 'input', required: false, isRequired: false },

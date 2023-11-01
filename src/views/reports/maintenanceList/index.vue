@@ -102,6 +102,7 @@ const state = reactive<TableDemoState>({
 	},
 });
 const onSign = async (exitStoreId: string) => {
+	if (!exitStoreId) return ElMessage.warning('該料號沒有庫存，二維碼編碼不存在');
 	const res = await GetExitStoreQrCodeListApi(exitStoreId);
 	if (res.data) {
 		if (!res.data.length) {

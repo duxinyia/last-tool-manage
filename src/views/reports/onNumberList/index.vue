@@ -182,10 +182,11 @@ const indexMethod = (index: number) => {
 };
 // 点击按钮
 const onSign = async (stockId: string) => {
+	if (!stockId) return ElMessage.warning('該料號沒有庫存，二維碼編碼不存在');
 	const res = await getCodesByStockIdApi(stockId);
 	if (res.data) {
 		if (!res.data.length) {
-			ElMessage.error('暫無二維碼編碼');
+			ElMessage.warning('暫無二維碼編碼');
 		} else {
 			// onNumberListDialogRef.value = true;
 			tags.value = res.data;

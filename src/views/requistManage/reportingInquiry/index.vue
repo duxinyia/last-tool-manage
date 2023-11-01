@@ -311,12 +311,12 @@ const remoteMethod = (index: number, query: string) => {
 			const res = await getQueryNoPageApi(query);
 			loading = false;
 			resDataRef.value = res.data;
-			let option = res.data.map((item: EmptyObjectType) => {
-				return { value: `${item.matNo}`, label: `${item.matNo}` };
+			dialogState.tableData.header[0].option = res.data.map((item: EmptyObjectType) => {
+				return { ...item, value: `${item.matNo}`, label: `${item.matNo}` };
 			});
-			dialogState.tableData.header[0].option = option.filter((item: EmptyObjectType) => {
-				return item.label.toLowerCase().includes(query.toLowerCase());
-			});
+			// dialogState.tableData.header[0].option = option.filter((item: EmptyObjectType) => {
+			// 	return item.label.toLowerCase().includes(query.toLowerCase());
+			// });
 		}, 500);
 	} else {
 		dialogState.tableData.header[0].option = [];

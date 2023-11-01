@@ -51,8 +51,8 @@
 						<span class="home-card-item-title ml10">待辦事項</span>
 					</div>
 
-					<div class="time-line pl10">
-						<el-timeline class="mt20">
+					<div class="time-line pl10" style="display: flex; justify-content: center">
+						<el-timeline class="mt20" v-if="activities.length > 0">
 							<el-timeline-item
 								v-for="(activity, index) in activities"
 								:key="index"
@@ -69,6 +69,7 @@
 								<el-icon color="#1890ff" title="點擊複製該單號" class="ml10" @click="copyText(activity.keyNo)"><ele-CopyDocument /></el-icon>
 							</el-timeline-item>
 						</el-timeline>
+						<el-empty v-else description="暫無待辦事項" />
 					</div>
 				</div>
 			</el-col>
@@ -202,7 +203,7 @@ const state = reactive({
 		{
 			icon: 'iconfont icon-btn-daoru',
 			label: '模板下載',
-			value: '驗收報告',
+			value: '驗收報告導入',
 			iconColor: '#88D565',
 			link: '/Template/ToolCheckReport.pptx',
 		},

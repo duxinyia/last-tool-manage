@@ -3,14 +3,25 @@
 		<nav v-if="!isDialog" class="pb10">料號詳情</nav>
 		<div class="table-container">
 			<!-- <el-card :class="isDialog ? '' : 'box-card'"> -->
-			<el-form v-if="state.form" ref="tableSearchRef" :model="state.form" size="default" label-width="auto" class="table-form">
+			<el-form v-if="state.form" ref="tableSearchRef" :model="state.form" size="default" label-width="auto" class="table-form" style="display: flex">
+				<div :xs="24" :sm="12" :md="2" :lg="2" :xl="2">
+					<el-image
+						title="點擊查看大圖"
+						:style="{ width: `241px`, height: `226px` }"
+						:src="`${state.form.picture}`"
+						:preview-src-list="[state.form.picture]"
+						:zoom-rate="1.2"
+						preview-teleported
+						fit="cover"
+					/>
+				</div>
 				<el-row>
 					<el-col
 						:xs="val.xs || 24"
 						:sm="val.sm || 12"
-						:md="val.md || 10"
-						:lg="val.lg || 8"
-						:xl="val.xl || 6"
+						:md="val.md || 12"
+						:lg="val.lg || 12"
+						:xl="val.xl || 12"
 						class="mb10"
 						v-for="(val, key) in state.search"
 						:key="key"
@@ -60,7 +71,7 @@ const props = defineProps({
 });
 const state = reactive<LinkState>({
 	search: [
-		{ label: '料號：', prop: 'matNo', type: 'text', xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
+		{ label: '料號：', prop: 'matNo', type: 'text' },
 		{ label: '中文：', prop: 'nameCh', type: 'text' },
 		{ label: '英文：', prop: 'nameEn', type: 'text' },
 		{ label: '圖紙編號：', prop: 'drawNo', type: 'text' },
@@ -70,7 +81,7 @@ const state = reactive<LinkState>({
 		// { label: '专案代码：', prop: 'projectCode', type: 'text' },
 		{ label: '階段：', prop: 'stage', type: 'text' },
 		{ label: '部門：', prop: 'depart', type: 'text' },
-		{ label: '機種：', prop: 'machineType', type: 'tagsarea', xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
+		{ label: '機種：', prop: 'machineType', type: 'tagsarea' },
 		{
 			label: '圖紙文件：',
 			prop: 'drawPath',
@@ -115,10 +126,11 @@ watch(
 );
 // 详情数据
 const getDetailData = async () => {
-	// link/noSearchLink?comkey=CSG2023243-DP-56321-003
+	// link/noSearchLink?comkey=CMA23305-52-PM9423-3-001
 	let comkey = props.isDialog ? props.matNoRef : route.query.comkey;
 	const res = await getMaterialApi(comkey);
 	state.form = res.data;
+	state.form.picture = import.meta.env.VITE_API_URL + res.data.picture;
 	const res1 = await getMachineTypesOfMatApi(comkey);
 	state.form.machineType = res1.data;
 	if (!res.status && !res1.status) {

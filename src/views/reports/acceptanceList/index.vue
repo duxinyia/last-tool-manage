@@ -112,7 +112,7 @@ const onSign = async (matNo: string) => {
 	const res = await getCheckDetailsOfMatApi(matNo);
 	if (res.data) {
 		if (!res.data.length) {
-			ElMessage.error('暫無詳情信息');
+			ElMessage.warning('暫無詳情信息');
 		} else {
 			sampleDeliveryListDialogRef.value = true;
 			dialogState.tableData.data = res.data;

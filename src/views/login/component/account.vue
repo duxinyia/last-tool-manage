@@ -131,7 +131,7 @@ const onSignIn = (formEl: EmptyObjectType | undefined) => {
 				// 添加是否缓存组件状态
 				const menudatas = addIsKeepAlive(res.data.datas);
 				Local.set('datas', menudatas);
-				router.push('/home');
+				// router.push('/home');
 				if (!themeConfig.value.isRequestRoutes) {
 					// 前端控制路由，2、请注意执行顺序
 					const isNoPower = await initFrontEndControlRoutes();
