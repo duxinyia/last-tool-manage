@@ -285,7 +285,7 @@ const onSearch = (data: EmptyObjectType) => {
 		}
 	});
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
-	tableRef.value && tableRef.value.pageReset();
+	tableRef.value && tableRef.value?.pageReset();
 };
 // 导出
 const onExportTableData = async (row: EmptyObjectType) => {

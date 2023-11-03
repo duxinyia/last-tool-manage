@@ -241,6 +241,7 @@
 							:zoom-rate="1.2"
 							:preview-src-list="[scope.row[item.key]]"
 							preview-teleported
+							hide-on-click-modal
 							fit="cover"
 						/>
 					</template>

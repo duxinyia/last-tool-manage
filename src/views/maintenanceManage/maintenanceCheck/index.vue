@@ -166,7 +166,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'creator', colWidth: '', title: '收貨人', type: 'text', isCheck: true },
 			{ key: 'receiptTime', colWidth: '', title: '收貨時間', type: 'text', isCheck: true },
 			// { key: 'runstatus', colWidth: '', title: '状态', type: 'status', isCheck: true },
-			{ key: 'companyId', colWidth: '', title: '法人', type: 'text', isCheck: true },
+			// { key: 'companyId', colWidth: '', title: '法人', type: 'text', isCheck: true },
 			{ key: 'buCode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
 			// { key: 'costcode', colWidth: '', title: '费用代码', type: 'text', isCheck: true },
 			// { key: 'createtime', colWidth: '', title: '创建时间', type: 'text', isCheck: true },
@@ -392,7 +392,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
-	tableRef.value.pageReset();
+	tableRef.value?.pageReset();
 };
 
 // 分页改变时回调

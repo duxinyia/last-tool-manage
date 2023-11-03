@@ -69,7 +69,7 @@ const state = reactive<TableDemoState>({
 		header: [
 			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
 			{ key: 'reqMatNo', colWidth: '', title: '請購料號', type: 'text', isCheck: true },
-			{ key: 'companyId', colWidth: '', title: '法人', type: 'text', isCheck: true },
+			// { key: 'companyId', colWidth: '', title: '法人', type: 'text', isCheck: true },
 			{ key: 'buCode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
@@ -110,7 +110,7 @@ const state = reactive<TableDemoState>({
 		dialogConfig: [
 			{ type: 'text', label: '申請單號', placeholder: '', prop: 'reqNo', required: false },
 			{ type: 'text', label: '請購料號', placeholder: '', prop: 'reqMatNo', required: false },
-			{ type: 'text', label: '法人', placeholder: '', prop: 'companyId', required: false },
+			// { type: 'text', label: '法人', placeholder: '', prop: 'companyId', required: false },
 			{ type: 'text', label: 'BU', placeholder: '', prop: 'buCode', required: false },
 			{ type: 'text', label: 'message.pages.matNo', placeholder: '', prop: 'matNo', required: false },
 			{ type: 'text', label: '品名-中文', placeholder: '', prop: 'nameCh', required: false },
@@ -438,11 +438,11 @@ const onSubmit = async (formData: any) => {
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
-	tableRef.value.pageReset();
+	tableRef.value?.pageReset();
 };
 const onSearch2 = (data: EmptyObjectType) => {
 	secondState.tableData.form = Object.assign({}, secondState.tableData.form, { ...data });
-	tableRef2.value && tableRef2.value.pageReset();
+	tableRef2.value && tableRef2.value?.pageReset();
 };
 
 // 分页改变时回调

@@ -272,7 +272,7 @@ const onSubmit = async (formData: any) => {
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
-	tableRef.value.pageReset();
+	tableRef.value?.pageReset();
 };
 
 // 分页改变时回调

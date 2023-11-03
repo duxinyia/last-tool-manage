@@ -66,20 +66,20 @@ const disabled = computed(() => loading.value || noMore.value);
 
 // tags的数据
 let tags = ref<EmptyArrayType>([]);
-const load = () => {
-	let num = 0;
-	loading.value = true;
-	setTimeout(() => {
-		for (let i = count.value.length; i < count.value.length + 20; i++) {
-			if (tags.value[i]?.runId) {
-				count.value.push(tags.value[i]);
-				num++;
-			}
-			if (num > 20) break;
-			loading.value = false;
-		}
-	}, 2000);
-};
+// const load = () => {
+// 	let num = 0;
+// 	loading.value = true;
+// 	setTimeout(() => {
+// 		for (let i = count.value.length; i < count.value.length + 20; i++) {
+// 			if (tags.value[i]?.runId) {
+// 				count.value.push(tags.value[i]);
+// 				num++;
+// 			}
+// 			if (num > 20) break;
+// 			loading.value = false;
+// 		}
+// 	}, 2000);
+// };
 // 单元格样式
 const cellStyle = ref();
 // 弹窗标题
@@ -524,7 +524,7 @@ const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerDa
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
-	tableRef.value.pageReset();
+	tableRef.value?.pageReset();
 };
 
 // 分页改变时回调

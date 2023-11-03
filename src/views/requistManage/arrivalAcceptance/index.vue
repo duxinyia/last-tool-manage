@@ -103,7 +103,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'matNo', title: 'message.pages.matNo', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'companyId', colWidth: '', title: '法人', type: 'text', isCheck: true },
+			// { key: 'companyId', colWidth: '', title: '法人', type: 'text', isCheck: true },
 			{ key: 'buCode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
 			{ key: 'qty', colWidth: '', title: '收貨數量', type: 'text', isCheck: true },
 			{ key: 'receiver', colWidth: '', title: '收貨人', type: 'text', isCheck: true },
@@ -440,7 +440,7 @@ const onSubmit = async (formData: any) => {
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
-	tableRef.value && tableRef.value.pageReset();
+	tableRef.value && tableRef.value?.pageReset();
 };
 const onSearch2 = (data: EmptyObjectType) => {
 	// secondState.tableData.search[1].options?.forEach((item) => {
@@ -449,7 +449,7 @@ const onSearch2 = (data: EmptyObjectType) => {
 	// 	}
 	// });
 	secondState.tableData.form = Object.assign({}, secondState.tableData.form, { ...data });
-	tableRef2.value && tableRef2.value.pageReset();
+	tableRef2.value && tableRef2.value?.pageReset();
 };
 
 // 分页改变时回调

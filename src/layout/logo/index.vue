@@ -1,5 +1,5 @@
 <template>
-	<div class="layout-logo" v-if="!themeConfig.isCollapse" @click="onThemeConfigChange">
+	<div class="layout-logo" v-if="setShowLogo" @click="onThemeConfigChange">
 		<img :src="logoMini" class="layout-logo-medium-img" />
 
 		<!-- <span>{{ themeConfig.globalTitle }}</span> -->

@@ -7,11 +7,12 @@
 				<div :xs="24" :sm="12" :md="2" :lg="2" :xl="2">
 					<el-image
 						title="點擊查看大圖"
-						:style="{ width: `241px`, height: `226px` }"
+						:style="{ width: `241px`, height: `277px` }"
 						:src="`${state.form.picture}`"
 						:preview-src-list="[state.form.picture]"
 						:zoom-rate="1.2"
 						preview-teleported
+						hide-on-click-modal
 						fit="cover"
 					/>
 				</div>
@@ -72,6 +73,8 @@ const props = defineProps({
 const state = reactive<LinkState>({
 	search: [
 		{ label: '料號：', prop: 'matNo', type: 'text' },
+		{ label: '請購料號：', prop: 'reqMatNo', type: 'text' },
+		{ label: 'BU：', prop: 'bu', type: 'text' },
 		{ label: '中文：', prop: 'nameCh', type: 'text' },
 		{ label: '英文：', prop: 'nameEn', type: 'text' },
 		{ label: '圖紙編號：', prop: 'drawNo', type: 'text' },

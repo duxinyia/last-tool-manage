@@ -312,7 +312,7 @@ const getTableData = async () => {
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
-	tableRef.value.pageReset();
+	tableRef.value?.pageReset();
 };
 // 打开修改弹窗
 const editDialog = async (formData: EmptyObjectType) => {

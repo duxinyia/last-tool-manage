@@ -13,7 +13,10 @@
 
 <script setup lang="ts" name="svgIcon">
 import { computed } from 'vue';
-
+import { storeToRefs } from 'pinia';
+import { useThemeConfig } from '/@/stores/themeConfig';
+const storesThemeConfig = useThemeConfig();
+const { themeConfig } = storeToRefs(storesThemeConfig);
 // 定义父组件传过来的值
 const props = defineProps({
 	// svg 图标组件名字
@@ -73,7 +76,10 @@ const setIconImgOutStyle = computed(() => {
 });
 // svg图标样式
 const svgiconStyle = computed(() => {
-	return `margin-right: ${props.size};color: ${props.color}!important;`;
+	let { isCollapse, layout } = themeConfig.value;
+	return `margin-right: ${!isCollapse || layout === 'classic' || document.body.clientWidth < 1000 ? props.size : '0px'};color: ${
+		props.color
+	}!important;`;
 });
 // 设置图片样式
 const setIconSvgInsStyle = computed(() => {
