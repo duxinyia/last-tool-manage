@@ -23,7 +23,7 @@
 					<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
 				</template>
 			</Dialog>
-			<el-dialog v-model="matNoDetaildialogVisible" title="料號詳情" width="50%">
+			<el-dialog draggable :close-on-click-modal="false" v-model="matNoDetaildialogVisible" title="料號詳情" width="50%">
 				<Table v-bind="dialogState.tableData" :objectSpanMethod="objectSpanMethod" />
 			</el-dialog>
 		</div>

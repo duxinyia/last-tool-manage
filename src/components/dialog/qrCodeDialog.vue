@@ -1,5 +1,5 @@
 <template>
-	<el-dialog :destroy-on-close="true" draggable :title="dialogTitle" v-model="isShowDialog" :width="dialogWidth">
+	<el-dialog :destroy-on-close="true" draggable :close-on-click-modal="false" :title="dialogTitle" v-model="isShowDialog" :width="dialogWidth">
 		<div style="margin-bottom: 5px; font-weight: 700; color: red; display: flex; justify-content: center">共有{{ tags.length }}條二維碼編碼</div>
 		<div class="infinite-list-wrapper" style="overflow: auto">
 			<ul v-infinite-scroll="load" class="list" :infinite-scroll-disabled="disabled">

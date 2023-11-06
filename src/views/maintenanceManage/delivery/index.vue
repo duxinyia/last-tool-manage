@@ -12,7 +12,7 @@
 				:cellStyle="cellStyle"
 				@onOpenOtherDialog="openArriveJobDialog"
 			/>
-			<el-dialog v-model="deliveryDialogVisible" :title="dilogTitle" width="65%">
+			<el-dialog draggable :close-on-click-modal="false" v-model="deliveryDialogVisible" :title="dilogTitle" width="65%">
 				<el-row v-if="dilogTitle == '收貨'">
 					<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb10" v-for="(val, key) in dialogState.tableData.search" :key="key">
 						<div v-if="val.type === 'text'">

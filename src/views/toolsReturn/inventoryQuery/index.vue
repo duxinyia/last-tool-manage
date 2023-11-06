@@ -18,7 +18,7 @@
 				:cellStyle="cellStyle"
 				@onOpenOtherDialog="openReturnDialog"
 			/>
-			<el-dialog v-model="matNoDetaildialogVisible" title="料號詳情" width="50%">
+			<el-dialog draggable :close-on-click-modal="false" v-model="matNoDetaildialogVisible" title="料號詳情" width="50%">
 				<matNoDetailDialog :isDialog="true" :matNoRef="matNoRef"
 			/></el-dialog>
 			<qrCodeDialog ref="inventoryDialogRef" :tags="tags" dialogTitle="庫存條碼" />

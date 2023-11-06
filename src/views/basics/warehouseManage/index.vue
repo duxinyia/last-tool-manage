@@ -21,7 +21,14 @@
 			<!-- 新增编辑弹窗 -->
 			<Dialog ref="warehouseDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="addData" :loadingBtn="loadingBtn" />
 			<!-- 管理员设定弹窗 -->
-			<el-dialog ref="warehouseAdminDialogRef" v-model="warehouseDialogVisible" title="管理員設定" width="50%">
+			<el-dialog
+				draggable
+				:close-on-click-modal="false"
+				ref="warehouseAdminDialogRef"
+				v-model="warehouseDialogVisible"
+				title="管理員設定"
+				width="50%"
+			>
 				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
 					<Table ref="dialogTableRef" v-bind="dialogState.tableData" class="table-dialog" @delRow="onDelRow" @addrow="onAddrow" />
 				</el-form>

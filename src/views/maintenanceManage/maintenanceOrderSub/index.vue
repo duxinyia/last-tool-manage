@@ -12,7 +12,14 @@
 				:cellStyle="cellStyle"
 				@onOpentopBtnOther="onOpenSendRepair"
 			/>
-			<el-dialog ref="presentationDialogRef" v-model="presentationDialogVisible" :title="dilogTitle" width="60%">
+			<el-dialog
+				draggable
+				:close-on-click-modal="false"
+				ref="presentationDialogRef"
+				v-model="presentationDialogVisible"
+				:title="dilogTitle"
+				width="60%"
+			>
 				<el-row>
 					<el-col :xs="24" :sm="12" :md="6" :lg="6" :xl="6" class="mb10 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
 						<div v-if="val.type === 'text'">

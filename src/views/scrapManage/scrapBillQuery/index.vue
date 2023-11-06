@@ -18,7 +18,14 @@
 				@onOpenOtherDialog="openDetailDialog"
 				@importTable="onExportTableData"
 			/>
-			<el-dialog ref="reportInquiryDialogRef" v-model="reportInquiryDialogVisible" :title="dilogTitle" width="70%">
+			<el-dialog
+				draggable
+				:close-on-click-modal="false"
+				ref="reportInquiryDialogRef"
+				v-model="reportInquiryDialogVisible"
+				:title="dilogTitle"
+				width="70%"
+			>
 				<el-form ref="dialogFormRef" :model="dialogState.tableData" size="default" label-width="100px">
 					<el-row>
 						<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb5" v-for="(val, key) in dialogState.tableData.search" :key="key">
@@ -38,7 +45,7 @@
 				</div>
 			</el-dialog>
 			<!-- 閒置詳情彈窗 -->
-			<el-dialog v-model="detaildialogVisible" :title="dilogTitle" width="50%">
+			<el-dialog draggable :close-on-click-modal="false" v-model="detaildialogVisible" :title="dilogTitle" width="50%">
 				<UselessNoDetailDialog :isDialog="true" :UselessNoRef="UselessNoRef" />
 				<template #footer v-if="dilogTitle == '詳情'">
 					<span class="dialog-footer">

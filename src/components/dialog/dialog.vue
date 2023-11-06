@@ -1,6 +1,6 @@
 <template>
 	<div class="system-menu-dialog-container">
-		<el-dialog draggable :title="state.dialog.title" v-model="state.dialog.isShowDialog" :width="dialogWidth">
+		<el-dialog draggable :close-on-click-modal="false" :title="state.dialog.title" v-model="state.dialog.isShowDialog" :width="dialogWidth">
 			<el-form v-if="state.dialog.type !== 'imp'" ref="dialogFormRef" :model="state.formData" size="default" :label-width="labelWidth || '100px'">
 				<el-row :gutter="35">
 					<el-col
@@ -224,7 +224,14 @@
 			</template>
 			<!-- 嵌套弹窗 -->
 			<template v-if="dialogType == 'nestDialogConfig'">
-				<el-dialog :title="state.innerdialog.title" v-model="state.innerdialog.isShowInnerDialog" width="40%" append-to-body>
+				<el-dialog
+					draggable
+					:close-on-click-modal="false"
+					:title="state.innerdialog.title"
+					v-model="state.innerdialog.isShowInnerDialog"
+					width="40%"
+					append-to-body
+				>
 					<el-form ref="innnerDialogFormRef" :model="state.formInnerData" size="default">
 						<el-row :gutter="35">
 							<el-col

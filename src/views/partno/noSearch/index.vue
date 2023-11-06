@@ -42,7 +42,7 @@
 				@remoteMethod="remoteMethod"
 				:loadingBtn="loadingBtn"
 			/>
-			<el-dialog v-model="matNoDetaildialogVisible" title="料號詳情" width="50%">
+			<el-dialog draggable :close-on-click-modal="false" v-model="matNoDetaildialogVisible" title="料號詳情" width="50%">
 				<matNoDetailDialog :isDialog="true" :matNoRef="matNoRef"
 			/></el-dialog>
 		</div>

@@ -12,7 +12,13 @@
 				:cellStyle="cellStyle"
 				@onOpenOtherDialog="openArriveJobDialog"
 			/>
-			<el-dialog v-model="maintenanceCheckDialogVisible" :title="dilogTitle" width="85%">
+			<el-dialog
+				draggable
+				:close-on-click-modal="false"
+				v-model="maintenanceCheckDialogVisible"
+				:title="dilogTitle"
+				:width="dilogTitle == '驗收' ? '69%' : '50%'"
+			>
 				<el-row v-if="dilogTitle == '驗收'">
 					<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb10" v-for="(val, key) in dialogState.tableData.search" :key="key">
 						<div v-if="val.type === 'text'">
@@ -37,7 +43,7 @@
 				</el-form>
 				<template v-if="dilogTitle == '驗收'">
 					<div class="describe up-file">
-						<span>收貨報告url：</span>
+						<span>驗收報告：</span>
 						<el-input disabled v-model="dialogState.tableData.form['accepReportUrl']" clearable>
 							<template #prepend
 								><el-upload

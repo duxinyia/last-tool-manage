@@ -12,7 +12,14 @@
 				:cellStyle="cellStyle"
 				@importTable="onExportTableData"
 			/>
-			<el-dialog ref="reportInquiryDialogRef" v-model="reportInquiryDialogVisible" :title="dilogTitle" width="80%">
+			<el-dialog
+				draggable
+				:close-on-click-modal="false"
+				ref="reportInquiryDialogRef"
+				v-model="reportInquiryDialogVisible"
+				:title="dilogTitle"
+				width="60%"
+			>
 				<el-row>
 					<el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4" class="mb20 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
 						<div v-if="val.type === 'text'">

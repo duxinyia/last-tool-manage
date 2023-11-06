@@ -12,7 +12,14 @@
 				:cellStyle="cellStyle"
 				@onOpentopBtnOther="onOpenSendRepair"
 			/>
-			<el-dialog ref="presentationDialogRef" v-model="presentationDialogVisible" :title="dilogTitle" width="70%">
+			<el-dialog
+				ref="presentationDialogRef"
+				v-model="presentationDialogVisible"
+				:title="dilogTitle"
+				width="70%"
+				draggable
+				:close-on-click-modal="false"
+			>
 				<el-form ref="dialogFormRef" :model="dialogState.tableData" size="default" label-width="100px">
 					<el-row>
 						<el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4" class="mb10 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
@@ -65,7 +72,7 @@
 				</template>
 			</el-dialog>
 			<Dialog ref="matnoDetailDialogRef" :isFootBtn="false" :dialogConfig="dialogMatnoDetail" />
-			<el-dialog v-model="inventoryDialogRef" title="庫存條碼" width="30%" draggable>
+			<el-dialog v-model="inventoryDialogRef" title="庫存條碼" width="30%" draggable :close-on-click-modal="false">
 				<el-tag v-for="tag in tags" :key="tag.code" class="mr10 mb10" :type="tag.runstatus === 1 ? '' : 'danger'">
 					{{ tag.code }}
 				</el-tag>

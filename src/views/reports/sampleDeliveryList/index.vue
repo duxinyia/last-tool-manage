@@ -7,7 +7,7 @@
 					<el-button type="primary" plain size="default" class="button buttonBorder" @click="onSign(row.sampleNo)"> {{ $t('查看詳情') }}</el-button>
 				</template>
 			</Table>
-			<el-dialog v-model="sampleDeliveryListDialogRef" title="詳情" width="50%" draggable>
+			<el-dialog v-model="sampleDeliveryListDialogRef" title="詳情" width="50%" draggable :close-on-click-modal="false">
 				<Table v-bind="dialogState.tableData" class="table" />
 			</el-dialog>
 		</div>

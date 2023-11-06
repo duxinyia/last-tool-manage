@@ -13,7 +13,14 @@
 				@openAdd="openDialog"
 				@importTable="onExportTableData"
 			/>
-			<el-dialog ref="reportInquiryDialogRef" v-model="reportInquiryDialogVisible" :title="dilogTitle" width="60%">
+			<el-dialog
+				draggable
+				:close-on-click-modal="false"
+				ref="reportInquiryDialogRef"
+				v-model="reportInquiryDialogVisible"
+				:title="dilogTitle"
+				width="60%"
+			>
 				<el-row v-if="dilogTitle == '修改'">
 					<el-col :xs="24" :sm="12" :md="9" :lg="9" :xl="9" class="mb10" v-for="(val, key) in dialogState.tableData.search" :key="key">
 						<div v-if="val.type === 'text'">
