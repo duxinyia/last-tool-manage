@@ -78,8 +78,6 @@ const tableRef = ref<RefType>();
 const noSearchDialogRef = ref();
 const matNoRef = ref();
 const matNoDetaildialogVisible = ref(false);
-// 单元格样式
-const cellStyle = ref();
 const buttonConfig = reactive([
 	{ name: '試產', prop: 'try', color: '#D3C333', title: '確定試產送簽嗎？' },
 	{ name: '量產', prop: 'more', color: '#27ba9b', title: '確定量產送簽嗎？' },
@@ -234,17 +232,12 @@ const state = reactive<TableDemoState>({
 	},
 });
 // 单元格字体颜色
-const changeToStyle = (indList: number[]) => {
-	return ({ columnIndex }: any) => {
-		for (let j = 0; j < indList.length; j++) {
-			let ind = indList[j];
-			if (columnIndex === ind) {
-				return { color: 'var(--el-color-primary)', cursor: 'pointer' };
-			}
-		}
-	};
+const cellStyle = ({ column }: EmptyObjectType) => {
+	const property = column.property;
+	if (property === 'matNo') {
+		return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+	}
 };
-cellStyle.value = changeToStyle([2]);
 // 点击料号弹出详情
 const matNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'matNo') {

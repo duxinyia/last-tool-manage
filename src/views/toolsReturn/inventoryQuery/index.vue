@@ -80,8 +80,6 @@ let tags = ref<EmptyArrayType>([]);
 // 		}
 // 	}, 2000);
 // };
-// 单元格样式
-const cellStyle = ref();
 // 弹窗标题
 const dilogTitle = ref();
 const header = ref([]);
@@ -303,17 +301,13 @@ const dialogState = reactive<TableDemoState>({
 	},
 });
 // 单元格字体颜色
-const changeToStyle = (indList: number[]) => {
-	return ({ columnIndex }: any) => {
-		for (let j = 0; j < indList.length; j++) {
-			let ind = indList[j];
-			if (columnIndex === ind) {
-				return { color: 'var(--el-color-primary)', cursor: 'pointer' };
-			}
-		}
-	};
+const cellStyle = ({ column }: EmptyObjectType) => {
+	const property = column.property;
+	if (property === 'qrstockqty') {
+		return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+	}
 };
-cellStyle.value = changeToStyle([1, 9]);
+
 // 下拉框数据
 const getSelect = async () => {
 	const res = await getLegalStoreTypesApi();

@@ -67,11 +67,12 @@
 				</template>
 			</el-dialog>
 			<Dialog ref="matnoDetailDialogRef" :isFootBtn="false" :dialogConfig="dialogMatnoDetail" />
-			<el-dialog v-model="inventoryDialogRef" title="庫存條碼" width="30%" draggable>
+			<qrCodeDialog ref="inventoryDialogRef" :tags="tags" dialogTitle="庫存條碼" />
+			<!-- <el-dialog v-model="inventoryDialogRef" title="庫存條碼" width="30%" draggable>
 				<el-tag v-for="tag in tags" :key="tag.code" class="mr10 mb10" :type="tag.runstatus === 1 ? '' : 'danger'">
 					{{ tag.code }}
 				</el-tag>
-			</el-dialog>
+			</el-dialog> -->
 		</div>
 	</div>
 </template>
@@ -88,6 +89,7 @@ const Table = defineAsyncComponent(() => import('/@/components/table/index.vue')
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
 // 引入组件
 const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
+const qrCodeDialog = defineAsyncComponent(() => import('/@/components/dialog/qrCodeDialog.vue'));
 
 // 定义变量内容
 const { t } = useI18n();
@@ -99,7 +101,7 @@ const tableRef = ref<RefType>();
 const dialogtableRef = ref<RefType>();
 const presentationDialogRef = ref();
 // 单元格样式
-const cellStyle = ref();
+// const cellStyle = ref();
 // tags的数据
 let tags = ref<EmptyArrayType>([]);
 
@@ -250,17 +252,12 @@ watch(
 	}
 );
 // 单元格字体颜色
-const changeToStyle = (indList: number[]) => {
-	return ({ columnIndex }: any) => {
-		for (let j = 0; j < indList.length; j++) {
-			let ind = indList[j];
-			if (columnIndex === ind) {
-				return { color: 'var(--el-color-primary)', cursor: 'pointer' };
-			}
-		}
-	};
+const cellStyle = ({ column }: EmptyObjectType) => {
+	const property = column.property;
+	if (property === 'matno' || property === 'exitqty') {
+		return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+	}
 };
-cellStyle.value = changeToStyle([2, 7]);
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;
@@ -304,8 +301,8 @@ const matNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
 		if (res.data.length == 0) {
 			ElMessage.error('暫無條碼數據');
 		} else {
-			tags = res.data;
-			inventoryDialogRef.value = true;
+			tags.value = res.data;
+			inventoryDialogRef.value?.openDialog();
 		}
 	}
 };

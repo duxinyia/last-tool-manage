@@ -40,8 +40,6 @@ const reportInquiryDialogVisible = ref(false);
 const { t } = useI18n();
 const tableRef = ref<RefType>();
 const reportInquiryDialogRef = ref();
-// 单元格样式
-const cellStyle = ref();
 // 弹窗标题
 const dilogTitle = ref();
 const state = reactive<TableDemoState>({
@@ -137,17 +135,12 @@ const dialogState = reactive<TableDemoState>({
 	},
 });
 // 单元格字体颜色
-const changeToStyle = (indList: number[]) => {
-	return ({ columnIndex }: any) => {
-		for (let j = 0; j < indList.length; j++) {
-			let ind = indList[j];
-			if (columnIndex === ind) {
-				return { color: 'var(--el-color-primary)', cursor: 'pointer' };
-			}
-		}
-	};
+const cellStyle = ({ column }: EmptyObjectType) => {
+	const property = column.property;
+	if (property === 'repairNo') {
+		return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+	}
 };
-cellStyle.value = changeToStyle([2]);
 // 初始化列表数据
 const getTableData = async () => {
 	state.tableData.config.loading = true;

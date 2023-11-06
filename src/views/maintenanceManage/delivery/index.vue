@@ -95,8 +95,6 @@ const tableFormRef = ref();
 const tableRef = ref<RefType>();
 const loading = ref(false);
 const loadingBtn = ref(false);
-// 单元格样式
-const cellStyle = ref();
 // 弹窗标题
 const dilogTitle = ref();
 const header = ref<deliveryDialogHeader>([
@@ -224,19 +222,14 @@ const changeInput = (val: number, i: number) => {
 	}
 };
 // 单元格字体颜色
-const changeToStyle = (indList: number[]) => {
-	return ({ columnIndex, column }: any) => {
-		for (let j = 0; j < indList.length; j++) {
-			let ind = indList[j];
-			if (columnIndex === ind && column.property === 'repairNo') {
-				return { color: 'var(--el-color-primary)', cursor: 'pointer' };
-			} else if (column.property === 'pendingReceiptQty') {
-				return { color: 'red' };
-			}
-		}
-	};
+const cellStyle = ({ column }: EmptyObjectType) => {
+	const property = column.property;
+	if (property === 'repairNo') {
+		return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+	} else if (property === 'pendingReceiptQty') {
+		return { color: 'red' };
+	}
 };
-cellStyle.value = changeToStyle([1, 7]);
 // 只有一行数据不允许删除
 if (dialogState.tableData.btnConfig)
 	dialogState.tableData.btnConfig[0].disabled = computed(() => {

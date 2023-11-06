@@ -97,8 +97,6 @@ const loadingBtn = ref(false);
 const tableRef = ref<RefType>();
 const dialogtableRef = ref<RefType>();
 const presentationDialogRef = ref();
-// 单元格样式
-const cellStyle = ref();
 // tags的数据
 let tags = ref<EmptyArrayType>([]);
 
@@ -251,17 +249,12 @@ watch(
 	}
 );
 // 单元格字体颜色
-const changeToStyle = (indList: number[]) => {
-	return ({ columnIndex }: any) => {
-		for (let j = 0; j < indList.length; j++) {
-			let ind = indList[j];
-			if (columnIndex === ind) {
-				return { color: 'var(--el-color-primary)', cursor: 'pointer' };
-			}
-		}
-	};
+const cellStyle = ({ column }: EmptyObjectType) => {
+	const property = column.property;
+	if (property === 'matno' || property === 'exitqty') {
+		return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+	}
 };
-cellStyle.value = changeToStyle([2, 7]);
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;

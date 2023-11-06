@@ -66,8 +66,6 @@ const tableRef = ref<RefType>();
 const entryJobDialogRef = ref();
 // tags的数据
 const tags = ref<EmptyArrayType<string>>([]);
-// 单元格样式
-const cellStyle = ref();
 // 弹窗标题
 const dilogTitle = ref();
 const header = ref([
@@ -274,18 +272,6 @@ const state = reactive<TableDemoState>({
 		],
 	},
 });
-// 单元格字体颜色
-const changeToStyle = (indList: number[]) => {
-	return ({ columnIndex }: any) => {
-		for (let j = 0; j < indList.length; j++) {
-			let ind = indList[j];
-			if (columnIndex === ind) {
-				return { color: 'var(--el-color-primary)', cursor: 'pointer' };
-			}
-		}
-	};
-};
-// cellStyle.value = changeToStyle([1]);
 // 改变仓库类型下拉
 const selectChangeStoreType = (vals: string, prop: string, form: EmptyObjectType) => {
 	if (prop === 'receiveStorageType') {

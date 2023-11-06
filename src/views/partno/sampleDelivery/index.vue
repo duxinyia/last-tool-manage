@@ -136,8 +136,6 @@ const state = reactive<TableDemoState>({
 		},
 	},
 });
-// 单元格样式
-const cellStyle = ref();
 const dialogState = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
@@ -185,18 +183,25 @@ const dialogState = reactive<TableDemoState>({
 		},
 	},
 });
-const changeToStyle = (data: any[], keyList: string[], indList: number[]) => {
-	return ({ row, column, rowIndex, columnIndex }: any) => {
-		for (let j = 0; j < keyList.length; j++) {
-			let i = keyList[j];
-			let ind = indList[j];
-			if (columnIndex === ind) {
-				return { color: 'var(--el-color-primary)', cursor: 'pointer' };
-			}
-		}
-	};
+// const changeToStyle = (data: any[], keyList: string[], indList: number[]) => {
+// 	return ({ row, column, rowIndex, columnIndex }: any) => {
+// 		for (let j = 0; j < keyList.length; j++) {
+// 			let i = keyList[j];
+// 			let ind = indList[j];
+// 			if (columnIndex === ind) {
+// 				return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+// 			}
+// 		}
+// 	};
+// };
+// cellStyle.value = changeToStyle(state.tableData.data, ['matNo'], [1]);
+// 单元格字体颜色
+const cellStyle = ({ column }: EmptyObjectType) => {
+	const property = column.property;
+	if (property === 'matNo') {
+		return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+	}
 };
-cellStyle.value = changeToStyle(state.tableData.data, ['matNo'], [1]);
 // 初始化列表数据
 const getTableData = async () => {
 	state.tableData.config.loading = true;
