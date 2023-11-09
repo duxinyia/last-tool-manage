@@ -41,8 +41,8 @@
 							v-model="state.form[val.prop]"
 							type="daterange"
 							range-separator="-"
-							start-placeholder="開始時間"
-							end-placeholder="結束時間"
+							start-placeholder="開始日期"
+							end-placeholder="結束日期"
 							style="width: 100%"
 						/>
 						<el-select
