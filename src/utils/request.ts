@@ -42,12 +42,13 @@ service.interceptors.response.use(
 		if (res.code && res.code !== 0) {
 			// `token` 过期或者账号已在别处登录
 			if (res.code === 401 || res.code === 4001) {
-				 ElMessageBox.alert('登录过期,你已被登出,请重新登录', '提示', {})
+				 ElMessageBox.alert('登錄過期,您已被登出,請重新登錄', '提示', {})
 				.then(() => {})
 				.catch(() => {});
 				Session.clear(); // 清除浏览器全部临时缓存
 				Local.clear();
-				
+				// 使用 reload 时，不需要调用 resetRoute() 重置路由
+				window.location.reload();
 			}else if(res.code===500||res.Code===500){
 				ElMessage.error(res.message||res.Message);
 			}
@@ -59,21 +60,23 @@ service.interceptors.response.use(
 	 async(error) => {
 		// 对响应错误做点什么	
 		if (error.message.indexOf('timeout') != -1) {
-			ElMessage.error('网络超时');
+			ElMessage.error('網絡超時');
 		} else if (error.message == 'Network Error') {
-			ElMessage.error('网络连接错误');
+			ElMessage.error('網絡連接錯誤');
 		} 
 		else if(error.response.data.code===401){
-			await ElMessageBox.alert('登录过期,你已被登出,请重新登录', '提示', {})
+			await ElMessageBox.alert('登錄過期,您已被登出,請重新登錄', '提示', {})
 				.then(() => {})
 				.catch(() => {});
 			Session.clear();
 			Local.clear();
-			window.location.href = '/'; // 去登录页
+			// 使用 reload 时，不需要调用 resetRoute() 重置路由
+			window.location.reload();
+			// window.location.href = '/'; // 去登录页
 		}
 		else {
 			if (error.response.data) ElMessage.error(error.response.statusText)
-			else ElMessage.error('接口路径找不到');
+			else ElMessage.error('接口路徑找不到');
 		}
 		return Promise.reject(error);
 	}
@@ -98,12 +101,14 @@ const replaceToken=async()=>{
 	if(data.data){
 		Session.set('token', data.data);	
 	}else {
-		await ElMessageBox.alert('登录过期,你已被登出,请重新登录', '提示', {})
+		await ElMessageBox.alert('登錄過期,您已被登出,請重新登錄', '提示', {})
 				.then(() => {})
 				.catch(() => {});
 		Session.clear();
 		Local.clear();
-		window.location.href = '/'; // 去登录页
+		// window.location.href = '/'; // 去登录页
+		// 使用 reload 时，不需要调用 resetRoute() 重置路由
+		window.location.reload();
 	}
 }
 // 导出 axios 实例
