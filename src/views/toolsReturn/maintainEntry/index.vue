@@ -15,7 +15,7 @@
 				ref="entryJobDialogRef"
 				:dialogConfig="state.tableData.dialogConfig"
 				:innerDialogConfig="state.tableData.innerDialogConfig"
-				dialogWidth="50%"
+				dialogWidth="40%"
 				dialogType="nestDialogConfig"
 				@addData="entrySubmit"
 				@dailogFormButton="scanCodeEntry"
@@ -330,7 +330,7 @@ const handleTagClose = (tag: any, state: EmptyObjectType) => {
 };
 // 打开入库弹窗
 const openEntryDialog = async (scope: any) => {
-	entryJobDialogRef.value.openDialog('entry', scope.row);
+	entryJobDialogRef.value.openDialog('entry', scope.row, '入庫');
 };
 const scanCodeEntry = () => {
 	entryJobDialogRef.value.openInnerDialog('掃碼錄入');

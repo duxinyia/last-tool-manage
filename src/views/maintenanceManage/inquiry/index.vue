@@ -18,10 +18,10 @@
 				ref="reportInquiryDialogRef"
 				v-model="reportInquiryDialogVisible"
 				:title="dilogTitle"
-				width="60%"
+				width="55%"
 			>
 				<el-row>
-					<el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4" class="mb20 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
+					<el-col :xs="24" :sm="12" :md="6" :lg="6" :xl="6" class="mb20 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
 						<div v-if="val.type === 'text'">
 							{{ val.label }}<span style="color: red" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
 						</div>

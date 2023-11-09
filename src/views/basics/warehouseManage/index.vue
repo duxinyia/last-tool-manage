@@ -27,7 +27,7 @@
 				ref="warehouseAdminDialogRef"
 				v-model="warehouseDialogVisible"
 				title="管理員設定"
-				width="50%"
+				width="40%"
 			>
 				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
 					<Table ref="dialogTableRef" v-bind="dialogState.tableData" class="table-dialog" @delRow="onDelRow" @addrow="onAddrow" />

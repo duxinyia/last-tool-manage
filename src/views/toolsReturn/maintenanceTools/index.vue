@@ -16,7 +16,7 @@
 				ref="repairReturnDialogRef"
 				:dialogConfig="dialogState.tableData.dialogConfig"
 				:innerDialogConfig="dialogState.tableData.innerDialogConfig"
-				dialogWidth="50%"
+				dialogWidth="40%"
 				dialogType="nestDialogConfig"
 				@addData="returnSubmit"
 				@dailogFormButton="scanCodeEntry"
@@ -266,9 +266,9 @@ const dialogState = reactive<TableDemoState>({
 				options: [],
 			},
 			{
-				label: '轉倉倉庫:',
+				label: '接收倉庫:',
 				prop: 'storageId',
-				placeholder: '請選擇轉倉倉庫',
+				placeholder: '請選擇接收倉庫',
 				required: true,
 				type: 'select',
 				options: [],
