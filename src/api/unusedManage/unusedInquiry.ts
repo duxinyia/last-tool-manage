@@ -3,7 +3,8 @@ import {LocationQueryValue} from 'vue-router'
 // 闲置查询
 export function IdleQueryPageListApi(data: Object) {
 	return request({
-		url: '/api/Idle/IdleQueryPageList',
+		url:'/api/Idle/QueryIdleRecord',
+		// url: '/api/Idle/IdleQueryPageList',
 		method: 'POST',
 		data: data,
 	});

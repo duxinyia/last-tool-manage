@@ -91,7 +91,7 @@ const state = reactive<TableDemoState>({
 			{ label: '閒置單號:', prop: 'idleno', type: 'text', required: false },
 			{ label: '閒置時間:', prop: 'idleDate', type: 'text', required: false },
 			{ label: '班別:', prop: 'classes', type: 'text', required: false },
-			{ label: '規劃存放位置:', prop: 'position', type: 'text', required: false },
+			{ label: '閒置倉庫位置:', prop: 'idleSLocation', type: 'text', required: false },
 		],
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: true }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）

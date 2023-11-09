@@ -16,34 +16,59 @@
 				ref="presentationDialogRef"
 				v-model="presentationDialogVisible"
 				:title="dilogTitle"
-				width="70%"
+				width="50%"
 				draggable
 				:close-on-click-modal="false"
+				:destroy-on-close="true"
 			>
-				<el-form ref="dialogFormRef" :model="dialogState.tableData" size="default" label-width="100px">
+				<el-form ref="dialogFormRef" :model="dialogState.tableData.form" size="default" label-width="100px">
 					<el-row>
-						<el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4" class="mb10 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
+						<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb15 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
 							<el-form-item
 								:label="$t(val.label)"
 								:prop="val.prop"
-								:rules="[{ required: val.isRequired, message: '不能為空', trigger: val.type === 'input' || val.type === 'time' ? 'blur' : 'change' }]"
+								:rules="[
+									{
+										required: val.isRequired,
+										message: `${t(val.label)}不能為空`,
+										trigger: val.type === 'input' || val.type === 'time' ? 'blur' : 'change',
+									},
+								]"
 							>
-								<div v-if="val.type === 'text'" style="line-height: 30px">
-									<span style="color: red" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
-								</div>
-								<template v-if="val.type === 'input'">
-									<el-input size="default" v-model="dialogState.tableData.form[val.prop]" :placeholder="`請輸入${$t(val.label)}`" clearable />
-								</template>
-								<div v-if="val.type === 'time'">
-									<el-date-picker
-										v-model="dialogState.tableData.form[val.prop]"
-										:placeholder="`請選擇時間`"
-										clearable
-										value-format="YYYY-MM-DD"
-										type="date"
-										style="height: 30px; max-width: 167px"
-									/>
-								</div>
+								<span v-if="val.type === 'text'" style="color: red; line-height: 30px" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
+
+								<el-input
+									v-if="val.type === 'input'"
+									size="default"
+									v-model="dialogState.tableData.form[val.prop]"
+									:placeholder="val.placeholder"
+									clearable
+									style="width: 100%; max-width: 167px"
+								/>
+
+								<el-date-picker
+									v-if="val.type === 'time'"
+									v-model="dialogState.tableData.form[val.prop]"
+									:placeholder="`請選擇日期`"
+									clearable
+									value-format="YYYY-MM-DD"
+									type="date"
+									style="height: 30px; max-width: 190px"
+								/>
+
+								<el-select
+									v-if="val.type === 'select'"
+									clearable
+									v-model="dialogState.tableData.form[val.prop]"
+									:placeholder="val.placeholder"
+									style="width: 100%"
+									:filterable="val.filterable"
+									:remote="val.remote"
+									:remote-method="(vals:any) => remoteMethod(vals,val.prop)"
+									:loading="val.loading"
+								>
+									<el-option v-for="item in val.options" :key="item.label" :label="item.text" :value="item.value"> </el-option>
+								</el-select>
 							</el-form-item>
 						</el-col>
 					</el-row>
@@ -71,7 +96,7 @@
 					</span>
 				</template>
 			</el-dialog>
-			<Dialog ref="matnoDetailDialogRef" :isFootBtn="false" :dialogConfig="dialogMatnoDetail" />
+			<Dialog ref="matnoDetailDialogRef" :isFootBtn="false" :dialogConfig="dialogMatnoDetail" dialogWidth="40%" />
 			<el-dialog v-model="inventoryDialogRef" title="庫存條碼" width="30%" draggable :close-on-click-modal="false">
 				<el-tag v-for="tag in tags" :key="tag.code" class="mr10 mb10" :type="tag.runstatus === 1 ? '' : 'danger'">
 					{{ tag.code }}
@@ -87,7 +112,8 @@ import { ElMessage, FormInstance } from 'element-plus';
 const presentationDialogVisible = ref(false);
 // 引入接口
 import { getQueryExitPageApi, GetExitStoreQrCodeListApi } from '/@/api/maintenanceManage/maintenanceOrderSub';
-import { SetExitStoreIdleApi } from '/@/api/unusedManage/unusedOrderSub';
+import { getLegalStoreTypesApi, getQueryStoreHouseNoPageApi } from '/@/api/global';
+import { postIdleSubmitApi } from '/@/api/unusedManage/unusedOrderSub';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -217,9 +243,21 @@ const dialogState = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: '閒置單號', prop: 'matNo', type: 'text', required: false, isRequired: false },
-			{ label: '閒置時間', prop: 'idleDate', placeholder: '請選擇閒置時間', type: 'time', required: false, isRequired: true },
+			{ label: '閒置日期', prop: 'idleDate', placeholder: '請選擇閒置日期', type: 'time', required: false, isRequired: true },
 			{ label: '班別', prop: 'classes', placeholder: '請輸入班別', type: 'input', required: false, isRequired: false },
-			{ label: '規劃存放位置', prop: 'position', placeholder: '請輸入規劃存放位置', type: 'input', required: false, isRequired: false },
+			{
+				label: '閒置倉庫位置',
+				prop: 'idleStorageId',
+				placeholder: '請輸入選擇閒置倉庫位置',
+				type: 'select',
+				required: false,
+				isRequired: false,
+				options: [],
+				loading: true,
+				filterable: true,
+				remote: true,
+				remoteShowSuffix: true,
+			},
 		],
 		// 弹窗按钮
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }],
@@ -255,6 +293,36 @@ watch(
 		}
 	}
 );
+// 能搜索的下拉框
+let option: EmptyArrayType = [];
+const remoteMethod = (query: string, prop: string) => {
+	let search = dialogState.tableData.search;
+	if (query) {
+		search?.forEach((item) => {
+			if (item.prop === 'idleStorageId') item.loading = true;
+		});
+		setTimeout(async () => {
+			const res = await getQueryStoreHouseNoPageApi('閒置倉', query);
+			option = res.data.map((item: EmptyObjectType) => {
+				return { value: `${item.storeId}`, label: `${item.storeType}`, text: `${item.sLocation}` };
+			});
+			search?.forEach((item) => {
+				if (item.prop === 'idleStorageId') item.loading = false;
+				item.options = option.filter((item: EmptyObjectType) => {
+					return item.value;
+				});
+			});
+
+			// state.tableData.search[1].options = option.filter((item: EmptyObjectType) => {
+			// 	return item.text.toLowerCase().includes(query.toLowerCase()) || item.label.toLowerCase().includes(query.toLowerCase());
+			// });
+		}, 500);
+	} else {
+		search?.forEach((item) => {
+			if (item.prop === 'idleStorageId') item.options = [];
+		});
+	}
+};
 // 单元格字体颜色
 const cellStyle = ({ column }: EmptyObjectType) => {
 	const property = column.property;
@@ -315,14 +383,14 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl!.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格項必填未填'));
-		if (!dialogState.tableData.form['idleDate']) return ElMessage.warning(t('請填寫閒置時間'));
+		if (!dialogState.tableData.form['idleDate']) return ElMessage.warning(t('請填寫閒置日期'));
 		loadingBtn.value = true;
 		let allData: EmptyObjectType = {};
 		allData = { ...dialogState.tableData.form };
 		allData['exitStoreIds'] = dialogState.tableData.data.map((item) => {
 			return item.runid;
 		});
-		const res = await SetExitStoreIdleApi(allData);
+		const res = await postIdleSubmitApi(allData);
 		if (res.status) {
 			ElMessage.success(t('閒置成功'));
 			presentationDialogVisible.value = false;

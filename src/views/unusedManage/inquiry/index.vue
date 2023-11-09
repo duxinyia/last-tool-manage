@@ -6,6 +6,7 @@
 				:search="state.tableData.search"
 				@search="onSearch"
 				:searchConfig="state.tableData.searchConfig"
+				@remoteMethod="remoteMethod"
 			/>
 			<Table
 				ref="tableRef"
@@ -58,6 +59,7 @@
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { IdleQueryPageListApi, GetIdleDetailApi, getIdleSubmitSignApi, getIdleDownloadApi } from '/@/api/unusedManage/unusedInquiry';
+import { getQueryStoreHouseNoPageApi } from '/@/api/global';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -84,9 +86,9 @@ const state = reactive<TableDemoState>({
 		// 表头内容（必传，注意格式）
 		header: [
 			{ key: 'idleno', colWidth: '', title: '閒置單號', type: 'text', isCheck: true },
-			{ key: 'idledate', colWidth: '', title: '閒置時間', type: 'text', isCheck: true },
-			{ key: 'classes', colWidth: '', title: '班次', type: 'text', isCheck: true },
-			{ key: 'position', colWidth: '', title: '規劃存放位置', type: 'text', isCheck: true },
+			{ key: 'idledate', colWidth: '', title: '閒置日期', type: 'text', isCheck: true },
+			{ key: 'classes', colWidth: '', title: '班別', type: 'text', isCheck: true },
+			{ key: 'idleSLocation', colWidth: '', title: '閒置倉庫位置', type: 'text', isCheck: true },
 			{ key: 'signStatus', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
 			{ key: 'creator', colWidth: '', title: '操作人', type: 'text', isCheck: true },
 		],
@@ -107,7 +109,7 @@ const state = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: '閒置單號', prop: 'idleNo', required: false, type: 'input' },
-			{ label: '閒置時間', prop: 'idleDate', required: false, type: 'dateRange' },
+			{ label: '閒置日期', prop: 'idleDate', required: false, type: 'dateRange' },
 			{
 				label: '簽核狀態',
 				prop: 'signStatus',
@@ -120,8 +122,19 @@ const state = reactive<TableDemoState>({
 					{ value: 2, label: '簽核完成', text: '簽核完成', selected: false },
 				],
 			},
-			{ label: '班次', prop: 'classes', type: 'input', required: false },
-			{ label: '規劃存放位置', prop: 'position', type: 'input', required: false },
+			{ label: '班別', prop: 'classes', type: 'input', required: false },
+			{
+				label: '閒置倉庫位置',
+				prop: 'idleSLocation',
+				type: 'select',
+				required: false,
+				placeholder: '請輸入選擇閒置倉庫位置',
+				options: [],
+				loading: true,
+				filterable: true,
+				remote: true,
+				remoteShowSuffix: true,
+			},
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -181,9 +194,9 @@ const dialogState = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: '閒置單號:', prop: 'idlepno', type: 'text', required: false },
-			{ label: '閒置時間:', prop: 'idleDate', type: 'text', required: false },
+			{ label: '閒置日期:', prop: 'idleDate', type: 'text', required: false },
 			{ label: '班別:', prop: 'classes', type: 'text', required: false },
-			{ label: '規劃存放位置:', prop: 'position', type: 'text', required: false },
+			{ label: '閒置倉庫位置:', prop: 'idleSLocation', type: 'text', required: false },
 		],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -216,22 +229,19 @@ cellStyle.value = changeToStyle([2]);
 const getTableData = async () => {
 	state.tableData.config.loading = true;
 	const form = state.tableData.form;
+	option.forEach((item) => {
+		if (item.value === form.idleSLocation) {
+			form.idleSLocation = item.text;
+		}
+	});
 	let data: EmptyObjectType = {};
-	if (form.idleDate) {
-		data = {
-			...form,
-			idleDateStart: form.idleDate[0],
-			idleDateEnd: form.idleDate[1],
-			page: state.tableData.page,
-		};
-	} else {
-		data = {
-			...form,
-			idleDateStart: '',
-			idleDateEnd: '',
-			page: state.tableData.page,
-		};
-	}
+	data = {
+		...form,
+		idleDateStart: form.idleDate && form.idleDate[0],
+		idleDateEnd: form.idleDate && form.idleDate[1],
+		page: state.tableData.page,
+	};
+
 	delete data.idleDate;
 	const signStatusMap: EmptyObjectType = {
 		0: '未送簽',
@@ -276,6 +286,33 @@ const onSend = async () => {
 		getTableData();
 	}
 	loadingBtn.value = false;
+};
+let option: EmptyArrayType = [];
+const remoteMethod = (query: string, form: EmptyObjectType, prop?: string) => {
+	let search = state.tableData.search;
+	if (query && prop === 'idleSLocation') {
+		search?.forEach((item) => {
+			if (item.prop === 'idleSLocation') item.loading = true;
+		});
+		setTimeout(async () => {
+			const res = await getQueryStoreHouseNoPageApi('閒置倉', query);
+			option = res.data.map((item: EmptyObjectType) => {
+				return { value: `${item.storeId}`, label: `${item.storeType}`, text: `${item.sLocation}` };
+			});
+			search?.forEach((item) => {
+				if (item.prop === 'idleSLocation') {
+					item.loading = false;
+					item.options = option.filter((item: EmptyObjectType) => {
+						return item.value;
+					});
+				}
+			});
+		}, 500);
+	} else {
+		search?.forEach((item) => {
+			if (item.prop === 'idleSLocation') item.options = [];
+		});
+	}
 };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
