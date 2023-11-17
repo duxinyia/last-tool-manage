@@ -34,6 +34,9 @@
 					<span style="float: left">{{ row.text }}</span>
 					<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
 				</template>
+				<template #buttonFooter="{ row, data }">
+					<el-button v-if="row.type === 'button'" type="primary" plain @click="addButton(data)">{{ row.label }}</el-button>
+				</template>
 			</Dialog>
 		</div>
 	</div>
@@ -96,6 +99,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'stockqty', colWidth: '', title: '庫存總量', type: 'text', isCheck: true },
 			{ key: 'qrstockqty', colWidth: '', title: '有碼庫存量', type: 'text', isCheck: true },
 			{ key: 'notqrstockqty', colWidth: '', title: '無碼庫存量', type: 'text', isCheck: true },
+			{ key: 'codeManageModeText', colWidth: '', title: '二維碼管理模式', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 
@@ -321,6 +325,7 @@ const dialogState = reactive<TableDemoState>({
 				md: 4,
 				lg: 4,
 				xl: 4,
+				disabled: false,
 			},
 		],
 		innerDialogConfig: [
@@ -329,12 +334,36 @@ const dialogState = reactive<TableDemoState>({
 				prop: 'sacnexitqty',
 				placeholder: '請將光標放到此處掃碼',
 				required: false,
-				type: 'input',
+				type: 'sacnstockqtyInput',
 				xs: 12,
 				sm: 12,
-				md: 12,
-				lg: 12,
-				xl: 12,
+				md: 20,
+				lg: 20,
+				xl: 20,
+			},
+			{
+				label: '手動錄入:',
+				prop: 'inputQty',
+				placeholder: '請輸入二維碼',
+				required: false,
+				type: 'sacnstockqtyInput',
+				xs: 12,
+				sm: 12,
+				md: 20,
+				lg: 20,
+				xl: 20,
+			},
+			{
+				label: '添加',
+				prop: 'add',
+				placeholder: '',
+				required: false,
+				type: 'button',
+				xs: 4,
+				sm: 4,
+				md: 4,
+				lg: 4,
+				xl: 4,
 			},
 			{
 				label: '掃碼數量:',
@@ -379,12 +408,20 @@ cellStyle.value = changeToStyle([1]);
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;
+	const codeManageModeMap: EmptyObjectType = {
+		0: '有碼管理',
+		1: '無碼管理',
+	};
 	let data = {
 		matNo: form.matNo,
 		matName: form.matName,
 		page: state.tableData.page,
 	};
 	const res = await getStockListApi(data);
+	res.data.data.forEach((item: any) => {
+		item.exitQty = item.codeManageMode === 0 ? 0 : null;
+		item.codeManageModeText = codeManageModeMap[item.codeManageMode];
+	});
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
 	if (res.status) {
@@ -427,7 +464,17 @@ const selectChange = async (val: string, name: string, formData: EmptyObjectType
 // 点击退库或者转仓按钮弹窗
 let deleteData: any = [];
 let deleteStorage: any = [];
+let btnType = '';
 const openReturnDialog = (scope: EmptyObjectType, type: string) => {
+	btnType = type === 'transferStorage' ? '轉倉' : '退庫';
+	dialogState.tableData.dialogConfig?.forEach((item) => {
+		if (item.prop === 'scan') {
+			item.disabled = scope.row.codeManageMode === 1 ? true : false;
+		} else if (item.prop === 'exitQty') {
+			item.type = scope.row.codeManageMode === 1 ? 'input' : 'text';
+			item.message = scope.row.codeManageMode === 1 ? '請輸入正整數' : `${btnType}數量不能為空或零，請掃碼錄入`;
+		}
+	});
 	let dialogConfig = dialogState.tableData.dialogConfig;
 	// 转仓
 	if (type === 'transferStorage') {
@@ -523,8 +570,25 @@ const handleTagClose = (tag: any, state: EmptyObjectType) => {
 	formInnerData['exitQty'] = formInnerData.codeList.length;
 	formData['exitQty'] = formInnerData.codeList.length;
 };
+// 手動添加碼
+const addButton = (data: EmptyObjectType) => {
+	let formInnerData = data.formInnerData;
+	let formData = data.formData;
+	if (formInnerData.codeList.length + 1 > formData.stockqty) {
+		ElMessage.error(`掃碼數量超過發料數量，請勿繼續掃碼`);
+		formInnerData['inputQty'] = null;
+	} else if (formInnerData.codeList.includes(formInnerData['inputQty'])) {
+		ElMessage.warning(`該條碼已存在，請勿重複掃碼`);
+		formInnerData['inputQty'] = null;
+	} else {
+		formInnerData.codeList.push(formInnerData['inputQty']);
+		formInnerData['inputQty'] = null;
+		formInnerData['exitQty'] = formInnerData.codeList.length;
+		formData['exitQty'] = formInnerData.codeList.length;
+	}
+};
 // change
-const change = (val: any, prop: string, state: any) => {
+const change = (val: any, prop: string, state: any, iscontu: boolean) => {
 	let { formInnerData, formData } = state;
 	if (prop == 'sacnexitqty') {
 		if (formInnerData.codeList.length + 1 > formData.stockqty) {
@@ -533,7 +597,7 @@ const change = (val: any, prop: string, state: any) => {
 		} else if (formInnerData.codeList.includes(val)) {
 			ElMessage.warning(`該條碼已存在，請勿重複掃碼`);
 			formInnerData['sacnexitqty'] = null;
-		} else {
+		} else if (iscontu) {
 			formInnerData.codeList.push(val);
 			formInnerData['sacnexitqty'] = null;
 			formInnerData['exitQty'] = formInnerData.codeList.length;
@@ -580,14 +644,22 @@ const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerDa
 		codeList: formInnerData.codeList,
 	};
 	if (submitData.exitQty > ruleForm.stockqty) {
-		ElMessage.error(`退庫數量大於庫存總量`);
+		ElMessage.error(`${btnType}數量大於庫存總量`);
 	} else if (submitData.exitQty < submitData.codeList.length) {
-		ElMessage.error(`退庫數量小於掃碼數量`);
+		ElMessage.error(`${btnType}數量小於掃碼數量`);
 	} else {
 		// 转仓提交
 		if (ruleForm.storageId) {
-			delete submitData.exitQty;
-			const res = await getTransferStorageApi(submitData);
+			let transferStorageData = {
+				receiveStorageId: submitData.receiveStorageId,
+				stockId: submitData.stockId,
+				outDate: submitData.outDate,
+				describe: submitData.describe,
+				transferQty: submitData.transferQty,
+				codeList: formInnerData.codeList,
+			};
+			// console.log('轉倉成功', transferStorageData);
+			const res = await getTransferStorageApi(transferStorageData);
 			if (res.status) {
 				ElMessage.success(t('轉倉成功'));
 				getTableData();
@@ -595,8 +667,18 @@ const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerDa
 			}
 		} else {
 			// 退库提交
-			delete submitData.transferQty;
-			const res = await ExitStoreApi(submitData);
+			// delete submitData.transferQty;
+			let exitStoreData = {
+				stockId: submitData.stockId,
+				exitType: submitData.exitType,
+				reasonId: submitData.reasonId,
+				exitReason: submitData.exitReason,
+				exitQty: submitData.exitQty,
+				describe: submitData.describe,
+				codeList: formInnerData.codeList,
+			};
+			// console.log('退庫成功', exitStoreData);
+			const res = await ExitStoreApi(exitStoreData);
 			if (res.status) {
 				ElMessage.success(t('退庫成功'));
 				getTableData();

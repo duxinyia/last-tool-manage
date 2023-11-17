@@ -112,7 +112,6 @@ const onSignIn = (formEl: EmptyObjectType | undefined) => {
 			let datapw = paw;
 			const res = await useLoginApi(ruleForm.userName.trim(), datapw);
 			// 存储 token 到浏览器缓存
-
 			if (res.status) {
 				Session.set('token', res.data.token);
 				Cookies.set('userName', res.data.userName);
@@ -139,14 +138,12 @@ const onSignIn = (formEl: EmptyObjectType | undefined) => {
 					// 模拟后端控制路由，isRequestRoutes 为 true，则开启后端控制路由
 					// 添加完动态路由，再进行 router 跳转，否则可能报错 No match found for location with path "/"（目前走的这个）
 					const isNoPower = await initBackEndControlRoutes();
-
 					// 执行完 initBackEndControlRoutes，再执行 signInSuccess
 					signInSuccess(isNoPower);
 				}
 			} else {
 				state.loading.signIn = false;
 			}
-
 			// } catch (err: any) {
 			// 	state.loading.signIn = false;
 			// }

@@ -173,7 +173,7 @@ const secondState = reactive<TableDemoState>({
 			{ key: 'applyCheckId', colWidth: '', title: '請購驗收ID', type: 'text', isCheck: true },
 			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
-			{ key: 'reqMatNo', colWidth: '', title: '申請料號', type: 'text', isCheck: true },
+			{ key: 'reqMatNo', colWidth: '', title: '請購料號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'isStored', colWidth: '', title: '是否已入庫', type: 'text', isCheck: true },
@@ -200,7 +200,7 @@ const secondState = reactive<TableDemoState>({
 		search: [
 			{ label: '申請單號', prop: 'reqNo', required: false, type: 'input' },
 			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
-			{ label: '申請料號', prop: 'reqMatNo', required: false, type: 'input' },
+			{ label: '請購料號', prop: 'reqMatNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{
 				label: '是否已入庫',

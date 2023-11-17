@@ -226,7 +226,7 @@ const dialogState = reactive<TableDemoState>({
 			{ label: '送修時間:', prop: 'sendRepairDate', placeholder: '請選擇送修時間', type: 'time', required: false, isRequired: true },
 		],
 		// 弹窗表单
-		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }],
+		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: false }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
 			pageNum: 1,
@@ -258,6 +258,10 @@ watch(
 		}
 	}
 );
+// 刪除按鈕狀態
+dialogState.tableData.btnConfig![0].disabled = computed(() => {
+	return dialogState.tableData.data.length <= 1 ? true : false;
+});
 // 单元格字体颜色
 const cellStyle = ({ column }: EmptyObjectType) => {
 	const property = column.property;

@@ -1,7 +1,7 @@
 <template>
 	<div class="table-container layout-padding">
 		<div class="table-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
+			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" labelWidth=" " />
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
@@ -41,6 +41,7 @@
 				@importTableData="onImportTable"
 				@remoteMethod="remoteMethod"
 				:loadingBtn="loadingBtn"
+				labelWidth="110px"
 			/>
 			<el-dialog draggable :close-on-click-modal="false" v-model="matNoDetaildialogVisible" title="料號詳情" width="50%">
 				<matNoDetailDialog :isDialog="true" :matNoRef="matNoRef"
@@ -97,6 +98,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'drawNo', colWidth: '', title: 'message.pages.drawNo', type: 'text', isCheck: true },
 			{ key: 'specs', colWidth: '', title: 'message.pages.specs', type: 'text', isCheck: true },
 			{ key: 'signStatusStr', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
+			{ key: 'codeManageModeText', colWidth: '', title: '二維碼管理模式', type: 'text', isCheck: true },
 			{ key: 'picture', colWidth: '', title: '圖片', width: '70', height: '40', type: 'uploadImage', isCheck: true },
 			// { key: 'creator', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
 			// { key: 'createtime', title: 'message.pages.creationTime', type: 'text', isCheck: true },
@@ -114,7 +116,7 @@ const state = reactive<TableDemoState>({
 			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
 			operateWidth: 220, //操作栏宽度，如果操作栏有几个按钮就自己定宽度
-			otherBtnOperateWidth: 150,
+			otherBtnOperateWidth: 170,
 			exportIcon: true, //是否有导出icon(导出功能)
 			isOtherBtnOperate: true, //其他按钮列
 			otherBtnOperate: '送簽選擇',
@@ -129,22 +131,19 @@ const state = reactive<TableDemoState>({
 		],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '料號', prop: 'matNo', placeholder: '請輸入料號', required: false, type: 'input' },
+			{ label: '料號', prop: 'matNo', placeholder: '請輸入料號', required: false, type: 'input', lg: 6, xl: 6 },
 			{ label: 'BU', prop: 'bu', placeholder: '', required: false, type: 'input' },
 			{ label: '部門', prop: 'depart', placeholder: '', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', placeholder: '', required: false, type: 'input' },
 			{ label: '圖紙編號', prop: 'drawNo', placeholder: '', required: false, type: 'input' },
+			{ label: '是否包含其他用戶創建的料號', prop: 'isContainsOther', placeholder: '', required: false, type: 'status', lg: 5, xl: 5 },
 		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
 		// 给后端的数据
 		form: {
-			matNo: '',
-			bu: '',
-			depart: '',
-			name: '',
-			drawNo: '',
+			isContainsOther: 0,
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -185,7 +184,7 @@ const state = reactive<TableDemoState>({
 				lg: 24,
 				xl: 24,
 			},
-
+			{ label: '二維碼管理模式', prop: 'codeManageMode', placeholder: '', required: false, type: 'radio' },
 			// { label: '厂区', prop: 'area', placeholder: '请选择厂区', required: false, type: 'select', options: [] },
 			// { label: 'BU', prop: 'bu', placeholder: '请选择BU', required: false, type: 'select', options: [] },
 			// { label: '专案代码', prop: 'projectCode', placeholder: '请选择专案代码', required: false, type: 'select', options: [] },
@@ -283,9 +282,14 @@ const getTableData = async () => {
 		page: state.tableData.page,
 		queryType: 1,
 	};
+	const codeManageModeMap: EmptyObjectType = {
+		0: '有碼管理',
+		1: '無碼管理',
+	};
 	const res = await getMaterialListApi(data);
 	res.data.data.forEach((item: any) => {
 		item.picture = `${import.meta.env.VITE_API_URL}${item.picture}`;
+		item.codeManageModeText = codeManageModeMap[item.codeManageMode];
 	});
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
@@ -496,9 +500,5 @@ onMounted(() => {
 }
 .buttonBorder {
 	border: 0px !important;
-}
-:deep(.cell) {
-	display: flex !important;
-	justify-content: center;
 }
 </style>

@@ -1,6 +1,7 @@
 <template>
 	<div class="table-search-container" v-if="props.search.length > 0">
-		<el-form ref="tableSearchRef" :model="state.form" size="default" label-width="auto" class="table-form">
+		<!-- label-width="auto" -->
+		<el-form :label-width="labelWidth" ref="tableSearchRef" :model="state.form" size="default" class="table-form">
 			<el-row>
 				<el-col
 					:xs="val.xs || 24"
@@ -66,6 +67,17 @@
 								<slot name="optionSearchFat" :row="item" :value="val"></slot>
 							</el-option>
 						</el-select>
+						<!-- 状态 -->
+						<el-switch
+							v-else-if="val.type === 'status'"
+							v-model="state.form[val.prop]"
+							:active-value="1"
+							:inactive-value="0"
+							validate-event
+							inline-prompt
+							:active-text="$t('message.allButton.statusY')"
+							:inactive-text="$t('message.allButton.statusN')"
+						></el-switch>
 						<span v-else style="width: 100%; font-weight: 700; color: #1890ff">
 							{{ state.form[val.prop] }}
 						</span>
@@ -113,7 +125,7 @@ const props = defineProps({
 	},
 	labelWidth: {
 		type: String,
-		default: () => '100px',
+		default: () => 'auto',
 	},
 });
 

@@ -38,6 +38,13 @@
 								size="small"
 								@change="(value:number)=>handleNumberInputChange(value)"
 							/>
+							<!-- 單選按鈕 -->
+							<div v-if="item.type === 'radio'" class="mb-2 flex items-center">
+								<el-radio-group v-model="state.formData[item.prop]" class="ml-4">
+									<el-radio :label="0">有碼管理</el-radio>
+									<el-radio :label="1">無碼管理</el-radio>
+								</el-radio-group>
+							</div>
 							<!-- @change=" (val:any) => commonInputHandleChange(val,item.prop)" -->
 
 							<!-- <el-input :width="224" v-if="item.type === 'tagtextarea'" v-model="state.formData[item.prop]">
@@ -153,7 +160,7 @@
 								:collapse-tags="item.collapseTags"
 								:collapse-tags-tooltip="item.collapseTagsTooltip"
 							>
-								<el-option v-for="val in item.options" :key="val.label" :label="val.text" :value="val.value">
+								<el-option v-for="val in item.options" :key="val.value || val.label" :label="val.text" :value="val.value">
 									<slot name="optionFat" :row="val"></slot>
 								</el-option>
 							</el-select>
@@ -178,9 +185,15 @@
 						</el-form-item>
 
 						<span v-else>
-							<el-button type="primary" style="margin-left: 20px" plain v-if="item.type === 'button'" @click="dailogFormButton">{{
-								item.label
-							}}</el-button>
+							<el-button
+								:disabled="item.disabled"
+								type="primary"
+								style="margin-left: 20px"
+								plain
+								v-if="item.type === 'button'"
+								@click="dailogFormButton"
+								>{{ item.label }}</el-button
+							>
 						</span>
 					</el-col>
 				</el-row>
@@ -246,12 +259,14 @@
 							>
 								<el-form-item v-if="item.type != 'button'" :label="$t(item.label)" :prop="item.prop" :rules="allRules(item)">
 									<el-input
-										v-if="item.type === 'input'"
+										v-if="item.type === 'sacnstockqtyInput'"
 										v-model="state.formInnerData[item.prop]"
 										:placeholder="$t(item.placeholder)"
 										clearable
 										@input=" (val:any) => commonInputHandleChange(val,item.prop)"
+										@keyup=" (target:any) => inputNum(target,item.prop)"
 									></el-input>
+
 									<div v-else-if="item.type == 'tagsarea'">
 										<el-tag v-for="tag in state.formInnerData[item.prop]" :key="tag" closable @close="handleTagClose(tag)" class="mr10">
 											{{ tag }}
@@ -262,6 +277,12 @@
 										{{ state.formInnerData[item.prop] }}
 									</span>
 								</el-form-item>
+								<!-- <span v-else>
+									<el-button type="primary" plain v-if="item.type === 'button'" @click="dailogFormButton">{{ item.label }}</el-button>
+								</span> -->
+								<span v-else>
+									<slot name="buttonFooter" :row="item" :data="state"></slot>
+								</span>
 							</el-col>
 						</el-row>
 					</el-form>
@@ -366,6 +387,7 @@ const input3duploadForm = ref();
 const imageUrl = ref('');
 const dialogImageUrl = ref('');
 const dialogVisible = ref(false);
+const iscontu = ref(false);
 let rules = reactive<EmptyObjectType>({});
 const state = reactive<dialogFormState>({
 	formData: {},
@@ -532,8 +554,25 @@ const initFormField = () => {
 };
 // 输入框一输入变化（不需要光标移开）
 const commonInputHandleChange = debounce((val: any, prop: string) => {
-	emit('commonInputHandleChange', val, prop, state);
+	emit('commonInputHandleChange', val, prop, state, iscontu.value);
 }, 500);
+let arr: EmptyArrayType = [];
+const inputNum = (target: EmptyObjectType, prop: string) => {
+	let timenow = target.timeStamp;
+	arr.push(timenow);
+	for (let i in arr) {
+		if (Math.ceil(arr[arr.length - 1]) - Math.ceil(arr[arr.length - 2]) >= 30) {
+			iscontu.value = false;
+		} else {
+			iscontu.value = true;
+		}
+		if (i && arr.length == parseInt(i) + 1) {
+			if (iscontu.value == true) {
+				return;
+			}
+		}
+	}
+};
 // 关闭tag标签
 const handleTagClose = (tag: any) => {
 	emit('handleTagClose', tag, state);

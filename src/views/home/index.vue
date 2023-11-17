@@ -50,26 +50,27 @@
 						/></el-icon>
 						<span class="home-card-item-title ml10">待辦事項</span>
 					</div>
-
-					<div class="time-line pl10" style="display: flex; justify-content: center">
-						<el-timeline class="mt20" v-if="activities.length > 0">
-							<el-timeline-item
-								v-for="(activity, index) in activities"
-								:key="index"
-								:icon="MoreFilled"
-								type="primary"
-								size="large"
-								:timestamp="activity.generateTime"
-							>
-								<span>{{ activity.no }}</span>
-								<span class="cursor-pointer" style="color: #1890ff; font-weight: 700" title="點擊跳轉頁面" @click="routePage(activity.type)">{{
-									activity.keyNo
-								}}</span>
-								<span>{{ activity.content }}</span>
-								<el-icon color="#1890ff" title="點擊複製該單號" class="ml10" @click="copyText(activity.keyNo)"><ele-CopyDocument /></el-icon>
-							</el-timeline-item>
-						</el-timeline>
-						<el-empty v-else description="暫無待辦事項" />
+					<div style="height: 100%; display: flex; justify-content: center">
+						<el-empty v-if="!activities.length" description="暫無待辦事項" />
+						<div class="time-line pl10" v-else>
+							<el-timeline class="mt20">
+								<el-timeline-item
+									v-for="(activity, index) in activities"
+									:key="index"
+									:icon="MoreFilled"
+									type="primary"
+									size="large"
+									:timestamp="activity.generateTime"
+								>
+									<span>{{ activity.no }}</span>
+									<span class="cursor-pointer" style="color: #1890ff; font-weight: 700" title="點擊跳轉頁面" @click="routePage(activity.type)">{{
+										activity.keyNo
+									}}</span>
+									<span>{{ activity.content }}</span>
+									<el-icon color="#1890ff" title="點擊複製該單號" class="ml10" @click="copyText(activity.keyNo)"><ele-CopyDocument /></el-icon>
+								</el-timeline-item>
+							</el-timeline>
+						</div>
 					</div>
 				</div>
 			</el-col>
@@ -108,7 +109,7 @@
 	</div>
 </template>
 
-<script setup lang="ts" name="home">
+<script setup lang="ts" name="homes">
 // markRaw
 import { reactive, onMounted, ref, watch, nextTick, onActivated } from 'vue';
 // import * as echarts from 'echarts';
@@ -186,19 +187,26 @@ const state = reactive({
 		},
 	],
 	homeThree: [
+		// {
+		// 	icon: 'iconfont icon-btn-daoru',
+		// 	label: '模板下載',
+		// 	value: '料號導入',
+		// 	iconColor: '#F72B3F',
+		// 	link: '',
+		// },
+		// {
+		// 	icon: 'iconfont icon-btn-daoru',
+		// 	label: '模板下載',
+		// 	value: '機種專案導入',
+		// 	iconColor: '#91BFF8',
+		// 	link: '',
+		// },
 		{
 			icon: 'iconfont icon-btn-daoru',
-			label: '模板下載',
-			value: '料號導入',
+			label: 'SOP',
+			value: 'SOP下載',
 			iconColor: '#F72B3F',
-			link: '',
-		},
-		{
-			icon: 'iconfont icon-btn-daoru',
-			label: '模板下載',
-			value: '機種專案導入',
-			iconColor: '#91BFF8',
-			link: '',
+			link: '/Template/治工具系統SOP-V1.pptx',
 		},
 		{
 			icon: 'iconfont icon-btn-daoru',

@@ -42,6 +42,9 @@
 					<span style="float: left; margin-right: 10px">{{ row.text }}</span>
 					<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
 				</template>
+				<template #buttonFooter="{ row, data }">
+					<el-button v-if="row.type === 'button'" type="primary" plain @click="addButton(data)">{{ row.label }}</el-button>
+				</template>
 			</Dialog>
 		</div>
 	</div>
@@ -98,6 +101,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'qty', colWidth: '', title: '發料數量', type: 'text', isCheck: true },
 			{ key: 'receiveStorageType', colWidth: '', title: '領用倉庫類型', type: 'text', isCheck: true },
 			{ key: 'receiveSLocation', colWidth: '', title: '領用倉庫位置', type: 'text', isCheck: true },
+			{ key: 'codeManageModeText', colWidth: '', title: '二維碼管理模式', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -209,6 +213,7 @@ const state = reactive<TableDemoState>({
 				md: 4,
 				lg: 4,
 				xl: 4,
+				disabled: false,
 			},
 			// {
 			// 	label: '收貨倉庫:',
@@ -237,12 +242,36 @@ const state = reactive<TableDemoState>({
 				prop: 'sacnstockqty',
 				placeholder: '請將光標放到此處掃碼',
 				required: false,
-				type: 'input',
+				type: 'sacnstockqtyInput',
 				xs: 12,
 				sm: 12,
-				md: 12,
-				lg: 12,
-				xl: 12,
+				md: 20,
+				lg: 20,
+				xl: 20,
+			},
+			{
+				label: '手動錄入:',
+				prop: 'inputQty',
+				placeholder: '請輸入二維碼',
+				required: false,
+				type: 'sacnstockqtyInput',
+				xs: 12,
+				sm: 12,
+				md: 20,
+				lg: 20,
+				xl: 20,
+			},
+			{
+				label: '添加',
+				prop: 'add',
+				placeholder: '',
+				required: false,
+				type: 'button',
+				xs: 4,
+				sm: 4,
+				md: 4,
+				lg: 4,
+				xl: 4,
 			},
 			{
 				label: '掃碼數量:',
@@ -272,6 +301,7 @@ const state = reactive<TableDemoState>({
 		],
 	},
 });
+
 // 改变仓库类型下拉
 const selectChangeStoreType = (vals: string, prop: string, form: EmptyObjectType) => {
 	if (prop === 'receiveStorageType') {
@@ -336,6 +366,10 @@ const getTableData = async () => {
 			form.receiveSLocation = item.text;
 		}
 	});
+	const codeManageModeMap: EmptyObjectType = {
+		0: '有碼管理',
+		1: '無碼管理',
+	};
 	let data = {
 		...form,
 		dispatchDate: form.dispatchDate,
@@ -348,14 +382,32 @@ const getTableData = async () => {
 	state.tableData.data = res.data.data;
 	state.tableData.data.forEach((item) => {
 		item.stockqty = 0;
+		item.codeManageModeText = codeManageModeMap[item.codeManageMode];
 	});
 	state.tableData.config.total = res.data.total;
 	if (res.status) {
 		state.tableData.config.loading = false;
 	}
 };
-// change
-const change = (val: any, prop: string, state: any) => {
+// 手動添加碼
+const addButton = (data: EmptyObjectType) => {
+	let formInnerData = data.formInnerData;
+	let formData = data.formData;
+	if (formInnerData.codeList.length + 1 > formData.qty) {
+		ElMessage.error(`掃碼數量超過發料數量，請勿繼續掃碼`);
+		formInnerData['inputQty'] = null;
+	} else if (formInnerData.codeList.includes(formInnerData['inputQty'])) {
+		ElMessage.warning(`該條碼已存在，請勿重複掃碼`);
+		formInnerData['inputQty'] = null;
+	} else {
+		formInnerData.codeList.push(formInnerData['inputQty']);
+		formInnerData['inputQty'] = null;
+		formInnerData['stockqty'] = formInnerData.codeList.length;
+		formData['stockqty'] = formInnerData.codeList.length;
+	}
+};
+// change掃碼錄入
+const change = (val: any, prop: string, state: any, iscontu: boolean) => {
 	let { formInnerData, formData } = state;
 	if (prop == 'sacnstockqty') {
 		if (formInnerData.codeList.length + 1 > formData.qty) {
@@ -364,7 +416,7 @@ const change = (val: any, prop: string, state: any) => {
 		} else if (formInnerData.codeList.includes(val)) {
 			ElMessage.warning(`該條碼已存在，請勿重複掃碼`);
 			formInnerData['sacnstockqty'] = null;
-		} else {
+		} else if (iscontu) {
 			formInnerData.codeList.push(val);
 			formInnerData['sacnstockqty'] = null;
 			formInnerData['stockqty'] = formInnerData.codeList.length;
@@ -409,6 +461,12 @@ const handleTagClose = (tag: any, state: EmptyObjectType) => {
 };
 // 打开入库弹窗
 const openEntryDialog = async (scope: any) => {
+	state.tableData.dialogConfig?.forEach((item) => {
+		if (item.prop === 'scan') {
+			item.disabled = scope.row.codeManageMode === 1 ? true : false;
+		}
+	});
+
 	entryJobDialogRef.value.openDialog('entry', scope.row, '入庫');
 };
 const scanCodeEntry = () => {
@@ -433,7 +491,7 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 	obj.codeList = formInnerData.codeList;
 	let submitData = {
 		applyCheckId: obj.applyCheckId,
-		storageId: obj.storageId,
+		// storageId: obj.storageId,
 		describe: obj.entryDescribe,
 		codes: obj.codeList,
 		// runId: obj.runid,
@@ -450,6 +508,8 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 	};
 	if (obj.stockqty > obj.qty) {
 		ElMessage.error(`有碼數量大於發料數量`);
+	} else if (obj.stockqty < obj.qty) {
+		ElMessage.error(`有碼數量小於發料數量，請繼續掃碼錄入`);
 	}
 	// else if (obj.codes && obj.stockqty < obj.codes.length) {
 	// 	ElMessage.error(`有码数量小于扫码数量`);
@@ -477,6 +537,8 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 	// 	});
 	// }
 	else {
+		// console.log(submitData);
+
 		const res = await GetTStockAddApi(submitData);
 		if (res.status) {
 			ElMessage.success(`入庫成功`);

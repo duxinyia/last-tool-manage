@@ -12,37 +12,49 @@
 				:cellStyle="cellStyle"
 				@onOpentopBtnOther="onOpenSendRepair"
 			/>
-			<el-dialog ref="presentationDialogRef" v-model="presentationDialogVisible" :title="dilogTitle" width="60%">
-				<el-form ref="dialogFormRef" :model="dialogState.tableData" size="default" label-width="100px">
+			<el-dialog
+				ref="presentationDialogRef"
+				v-model="presentationDialogVisible"
+				:title="dilogTitle"
+				width="50%"
+				:destroy-on-close="true"
+				draggable
+				:close-on-click-modal="false"
+			>
+				<el-form ref="dialogFormRef" :model="dialogState.tableData.form" size="default" label-width="100px">
 					<el-row>
-						<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb10 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
+						<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb15 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
 							<el-form-item
 								:label="$t(val.label)"
 								:prop="val.prop"
-								:rules="[{ required: val.isRequired, message: '不能為空', trigger: val.type === 'input' || val.type === 'time' ? 'blur' : 'change' }]"
+								:rules="[
+									{
+										required: val.isRequired,
+										message: `${t(val.label)}不能為空`,
+										trigger: val.type === 'input' || val.type === 'time' ? 'blur' : 'change',
+									},
+								]"
 							>
-								<div v-if="val.type === 'text'">
-									<span style="color: red" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
-								</div>
-								<template v-if="val.type === 'input'">
-									<el-input
-										size="default"
-										v-model="dialogState.tableData.form[val.prop]"
-										:placeholder="`請輸入${$t(val.label)}`"
-										clearable
-										style="width: 100%; max-width: 167px"
-									/>
-								</template>
-								<div v-if="val.type === 'time'">
-									<el-date-picker
-										v-model="dialogState.tableData.form[val.prop]"
-										:placeholder="`請選擇時間`"
-										clearable
-										value-format="YYYY-MM-DD"
-										type="date"
-										style="height: 30px; max-width: 167px"
-									/>
-								</div>
+								<span v-if="val.type === 'text'" style="color: red; line-height: 30px" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
+
+								<el-input
+									v-if="val.type === 'input'"
+									size="default"
+									v-model="dialogState.tableData.form[val.prop]"
+									:placeholder="`請輸入${$t(val.label)}`"
+									clearable
+									style="width: 100%"
+								/>
+
+								<el-date-picker
+									v-if="val.type === 'time'"
+									v-model="dialogState.tableData.form[val.prop]"
+									:placeholder="`請選擇時間`"
+									clearable
+									value-format="YYYY-MM-DD"
+									type="date"
+									style="height: 30px; width: 100%"
+								/>
 							</el-form-item>
 						</el-col>
 					</el-row>
@@ -104,8 +116,6 @@ const loadingBtn = ref(false);
 const tableRef = ref<RefType>();
 const dialogtableRef = ref<RefType>();
 const presentationDialogRef = ref();
-// 单元格样式
-const cellStyle = ref();
 // tags的数据
 let tags = ref<EmptyArrayType>([]);
 
@@ -223,7 +233,7 @@ const dialogState = reactive<TableDemoState>({
 			{ label: '站位', prop: 'state', type: 'input', required: false, isRequired: false },
 		],
 		// 弹窗表单
-		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }],
+		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: false }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
 			pageNum: 1,
@@ -255,18 +265,28 @@ watch(
 		}
 	}
 );
+// 刪除按鈕狀態
+dialogState.tableData.btnConfig![0].disabled = computed(() => {
+	return dialogState.tableData.data.length <= 1 ? true : false;
+});
 // 单元格字体颜色
-const changeToStyle = (indList: number[]) => {
-	return ({ columnIndex }: any) => {
-		for (let j = 0; j < indList.length; j++) {
-			let ind = indList[j];
-			if (columnIndex === ind) {
-				return { color: 'var(--el-color-primary)', cursor: 'pointer' };
-			}
-		}
-	};
+const cellStyle = ({ column }: EmptyObjectType) => {
+	const property = column.property;
+	if (property === 'matno' || property === 'exitqty') {
+		return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+	}
 };
-cellStyle.value = changeToStyle([2, 7]);
+// const changeToStyle = (indList: number[]) => {
+// 	return ({ columnIndex }: any) => {
+// 		for (let j = 0; j < indList.length; j++) {
+// 			let ind = indList[j];
+// 			if (columnIndex === ind) {
+// 				return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+// 			}
+// 		}
+// 	};
+// };
+// cellStyle.value = changeToStyle([2, 7]);
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;

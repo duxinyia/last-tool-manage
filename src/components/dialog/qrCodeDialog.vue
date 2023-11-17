@@ -24,10 +24,10 @@
 				class="mt15 pages"
 				v-model:current-page="state.page.pageNum"
 				v-model:page-size="state.page.pageSize"
-				:pager-count="3"
+				:pager-count="5"
 				:page-sizes="[20, 40, 60]"
-				:total="dialogConfig.length"
-				layout="total, sizes, prev, pager, next, jumper"
+				:total="dialogConfig?.length"
+				layout="total, prev, pager, next, jumper"
 				background
 				@size-change="onHandleSizeChange"
 				@current-change="onHandleCurrentChange"
@@ -110,35 +110,39 @@ watch(
 );
 // tags的数据
 // let tags = ref<EmptyArrayType>([]);
-const load = () => {
-	let num = 0;
-	loading.value = true;
-	setTimeout(() => {
-		for (let i = dialogConfig.value.length; i < dialogConfig.value.length + 20; i++) {
-			if (props.tags[i].code || props.tags[i]) {
-				dialogConfig.value.push(props.tags[i]);
-				num++;
-			}
-			if (num > 20) break;
-			loading.value = false;
-		}
-	}, 2000);
-};
+// const load = () => {
+// 	let num = 0;
+// 	loading.value = true;
+// 	setTimeout(() => {
+// 		for (let i = dialogConfig.value.length; i < dialogConfig.value.length + 20; i++) {
+// 			if (props.tags[i].code || props.tags[i]) {
+// 				dialogConfig.value.push(props.tags[i]);
+// 				num++;
+// 			}
+// 			if (num > 20) break;
+// 			loading.value = false;
+// 		}
+// 	}, 2000);
+// };
 onMounted(() => {});
 // 打开弹窗
 const openDialog = () => {
 	isShowDialog.value = true;
 };
-const noMore = computed(() => dialogConfig.value.length >= props.tags.length);
-const disabled = computed(() => loading.value || noMore.value);
+// const noMore = computed(() => dialogConfig.value.length >= props.tags.length);
+// const disabled = computed(() => loading.value || noMore.value);
 // 关闭弹窗
 const closeDialog = () => {
 	isShowDialog.value = false;
 };
 // 分页改变
-const onHandleSizeChange = (val: number) => {};
+const onHandleSizeChange = (val: number) => {
+	state.page.pageSize = val;
+};
 // 分页改变
-const onHandleCurrentChange = (val: number) => {};
+const onHandleCurrentChange = (val: number) => {
+	state.page.pageNum = val;
+};
 // 暴露变量
 defineExpose({
 	openDialog,

@@ -54,6 +54,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'notqrqty', colWidth: '', title: '無碼數量', type: 'text', isCheck: true },
 			{ key: 'describe', colWidth: '', title: '描述說明', type: 'text', isCheck: true },
 			{ key: 'runstatus', colWidth: '', title: '狀態', type: 'text', isCheck: true },
+			{ key: 'codeManageModeText', colWidth: '', title: '二維碼管理模式', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -123,6 +124,10 @@ const runstatusMap: EmptyObjectType = {
 	2: '已接收',
 	3: '退回',
 };
+const codeManageModeMap: EmptyObjectType = {
+	0: '有碼管理',
+	1: '無碼管理',
+};
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;
@@ -133,6 +138,7 @@ const getTableData = async () => {
 	const res = await getQueryTransferPageApi(data);
 	res.data.data.forEach((item: any) => {
 		item.runstatus = runstatusMap[item.runstatus];
+		item.codeManageModeText = codeManageModeMap[item.codeManageMode];
 	});
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;

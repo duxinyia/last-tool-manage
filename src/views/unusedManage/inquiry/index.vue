@@ -2,6 +2,7 @@
 	<div class="table-container layout-padding">
 		<div class="table-padding layout-padding-view layout-padding-auto">
 			<TableSearch
+				labelWidth=" "
 				v-if="state.tableData.search[2].options && state.tableData.search[2].options.length > 0"
 				:search="state.tableData.search"
 				@search="onSearch"

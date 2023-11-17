@@ -43,7 +43,7 @@
 									v-model="dialogState.tableData.form[val.prop]"
 									:placeholder="val.placeholder"
 									clearable
-									style="width: 100%; max-width: 167px"
+									style="width: 100%"
 								/>
 
 								<el-date-picker
@@ -53,7 +53,7 @@
 									clearable
 									value-format="YYYY-MM-DD"
 									type="date"
-									style="height: 30px; max-width: 190px"
+									style="height: 30px; width: 100%"
 								/>
 
 								<el-select
@@ -260,7 +260,7 @@ const dialogState = reactive<TableDemoState>({
 			},
 		],
 		// 弹窗按钮
-		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }],
+		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: false }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
 			pageNum: 1,
@@ -293,6 +293,10 @@ watch(
 		}
 	}
 );
+// 刪除按鈕狀態
+dialogState.tableData.btnConfig![0].disabled = computed(() => {
+	return dialogState.tableData.data.length <= 1 ? true : false;
+});
 // 能搜索的下拉框
 let option: EmptyArrayType = [];
 const remoteMethod = (query: string, prop: string) => {
