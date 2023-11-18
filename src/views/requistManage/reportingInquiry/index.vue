@@ -263,6 +263,7 @@ const getTableData = async () => {
 };
 // 打开修改弹窗
 const openDialog = async (type: string, row: EmptyObjectType) => {
+	loadingBtn.value = false;
 	dialogState.tableData.form = row;
 	// dialogState.tableData.form['describe'] = '';
 	let data = { reqNo: row.reqNo };

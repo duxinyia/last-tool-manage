@@ -466,6 +466,7 @@ let deleteData: any = [];
 let deleteStorage: any = [];
 let btnType = '';
 const openReturnDialog = (scope: EmptyObjectType, type: string) => {
+	loadingBtn.value = false;
 	btnType = type === 'transferStorage' ? '轉倉' : '退庫';
 	dialogState.tableData.dialogConfig?.forEach((item) => {
 		if (item.prop === 'scan') {

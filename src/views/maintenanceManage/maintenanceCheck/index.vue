@@ -359,6 +359,7 @@ const getDetailData = async (data: string) => {
 };
 // 根据弹出窗不一样展现的配置不一样
 const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) => {
+	loadingBtn.value = false;
 	let tableData = dialogState.tableData;
 	let config = tableData.config;
 	tableData.header = header;

@@ -83,7 +83,7 @@ const state = reactive<LinkState>({
 		// { label: 'BU：', prop: 'bu', type: 'text' },
 		// { label: '专案代码：', prop: 'projectCode', type: 'text' },
 		{ label: '階段：', prop: 'stage', type: 'text' },
-		{ label: '部門：', prop: 'depart', type: 'text' },
+		{ label: '段位：', prop: 'depart', type: 'text' },
 		{ label: '機種：', prop: 'machineType', type: 'tagsarea', xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
 		{
 			label: '圖紙文件：',

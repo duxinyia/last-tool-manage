@@ -1,9 +1,14 @@
 <template>
 	<el-dialog :destroy-on-close="true" draggable :close-on-click-modal="false" :title="dialogTitle" v-model="isShowDialog" :width="dialogWidth">
 		<div style="height: 400px">
-			<el-tag :type="i.runStatus || i.runstatus || i ? '' : 'danger'" class="mr10 mb10" v-for="i in dialogConfig" :key="i" style="width: 250px">{{
-				i.code || i
-			}}</el-tag>
+			<el-tag
+				:type="i.runStatus || i.runstatus || i ? '' : 'danger'"
+				class="mr10 mb10"
+				v-for="i in dialogConfig.slice((state.page.pageNum - 1) * state.page.pageSize, state.page.pageNum * state.page.pageSize)"
+				:key="i"
+				style="width: 250px"
+				>{{ i.code || i }}</el-tag
+			>
 		</div>
 
 		<!-- <div style="margin-bottom: 5px; font-weight: 700; color: red; display: flex; justify-content: center">共有{{ tags.length }}條二維碼編碼</div> -->
@@ -99,8 +104,10 @@ watch(
 		// 	for (let i = 0; i < 20; i++) {
 		// 		dialogConfig.value.push(props.tags[i]);
 		// 	}
-		// } else {
+		// } else
 		dialogConfig.value = props.tags;
+		state.page.pageNum = 1;
+		state.page.pageSize = 20;
 		// }
 	},
 	{

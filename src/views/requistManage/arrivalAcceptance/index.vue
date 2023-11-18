@@ -317,6 +317,7 @@ const secondState = reactive<TableDemoState>({
 const currentData = ref<EmptyObjectType>([]);
 // 点击验收按钮
 const openArriveJobDialog = (scope: EmptyObjectType) => {
+	loadingBtn.value = false;
 	arriveJobDialogRef.value.openDialog('samp', scope.row, '驗收');
 	scope.row.checkqty = scope.row.qty;
 	state.tableData.dialogConfig![7].max = scope.row.qty;

@@ -54,7 +54,7 @@ const state = reactive<TableDemoState>({
 		// 表头内容（必传，注意格式）
 		header: [
 			{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'text', isCheck: true },
-			{ key: 'depart', colWidth: '', title: '部門', type: 'text', isCheck: true },
+			{ key: 'depart', colWidth: '', title: '段位', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
 			{ key: 'drawNo', colWidth: '', title: 'message.pages.drawNo', type: 'text', isCheck: true },
@@ -80,7 +80,18 @@ const state = reactive<TableDemoState>({
 		search: [
 			{ label: '料號', prop: 'matNo', placeholder: '請輸入料號', required: false, type: 'input' },
 			// { label: 'BU', prop: 'bu', placeholder: '', required: false, type: 'input' },
-			{ label: '部門', prop: 'depart', placeholder: '', required: false, type: 'input' },
+			{
+				label: '段位',
+				prop: 'depart',
+				placeholder: '',
+				required: false,
+				type: 'select',
+				options: [
+					{ value: 'FOL', label: 'FOL', text: 'FOL' },
+					{ value: 'EOL', label: 'EOL', text: 'EOL' },
+					{ value: 'SMT', label: 'SMT', text: 'SMT' },
+				],
+			},
 			{ label: '品名', prop: 'name', placeholder: '', required: false, type: 'input' },
 			{ label: '圖紙編號', prop: 'drawNo', placeholder: '', required: false, type: 'input' },
 		],
@@ -289,6 +300,7 @@ const onTablePageChange = (page: TableDemoPageType) => {
 
 // 打开样品需求弹窗 1
 const openSampleDialog = (scope: EmptyObjectType, type: string) => {
+	loadingBtn.value = false;
 	sampleDialogRef.value.openDialog('samp', scope.row, '樣品需求');
 };
 // 点击料号 2

@@ -11,8 +11,6 @@ import { Session,Local } from '/@/utils/storage';
 import { staticRoutes, notFoundAndNoPower } from '/@/router/route';
 import { initFrontEndControlRoutes } from '/@/router/frontEnd';
 import { initBackEndControlRoutes } from '/@/router/backEnd';
-import { log } from 'console';
-
 /**
  * 1、前端控制路由时：isRequestRoutes 为 false，需要写 roles，需要走 setFilterRoute 方法。
  * 2、后端控制路由时：isRequestRoutes 为 true，不需要写 roles，不需要走 setFilterRoute 方法），

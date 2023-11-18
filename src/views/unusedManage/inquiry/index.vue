@@ -208,6 +208,7 @@ const dialogState = reactive<TableDemoState>({
 });
 // 点击详情按钮
 const openDetailDialog = (scope: EmptyObjectType) => {
+	loadingBtn.value = false;
 	IdleNoRef.value = scope.row.idleno;
 	// getDetailData(scope.row.idleno);
 	detaildialogVisible.value = true;

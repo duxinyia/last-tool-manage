@@ -19,7 +19,7 @@ export default {
 		toolsReturn: '治工具退库',
 		report: '报表管理',
 		matNo: '料号管理',
-		matSearch: '料号新增/查询',
+		matSearch: '料号查询',
 		matSample: '送样需求提报',
 		sampleReceive: '样品收货',
 		sampleAcceptance: '样品验收',

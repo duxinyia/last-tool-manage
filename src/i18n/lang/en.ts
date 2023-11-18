@@ -19,7 +19,7 @@ export default {
 		toolsReturn: 'return the tools',
 		report: 'report',
 		matNo: 'materialNo manage',
-		matSearch: 'material number add/search',
+		matSearch: 'material number search',
 		matSample: 'submit sample request',
 		sampleReceive: 'sample receipt',
 		sampleAcceptance: 'acceptance samples',

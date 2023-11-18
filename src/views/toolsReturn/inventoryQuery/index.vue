@@ -99,7 +99,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'matno', colWidth: '250', title: '料號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
-			{ key: 'depart', colWidth: '', title: '部門', type: 'text', isCheck: true },
+			{ key: 'depart', colWidth: '', title: '段位', type: 'text', isCheck: true },
 			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			// { key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
 			// { key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
@@ -141,7 +141,17 @@ const state = reactive<TableDemoState>({
 				remote: true,
 				remoteShowSuffix: true,
 			},
-			{ label: '部門', prop: 'depart', required: false, type: 'input' },
+			{
+				label: '段位',
+				prop: 'depart',
+				required: false,
+				type: 'select',
+				options: [
+					{ value: 'FOL', label: 'FOL', text: 'FOL' },
+					{ value: 'EOL', label: 'EOL', text: 'EOL' },
+					{ value: 'SMT', label: 'SMT', text: 'SMT' },
+				],
+			},
 			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input', lg: 6, xl: 6 },
 		],
 		searchConfig: {

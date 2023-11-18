@@ -288,6 +288,8 @@
 					</el-form>
 					<template #footer v-if="isFootBtn">
 						<span class="dialog-footer">
+							<slot name="dialogFooterBtn" :data="state"></slot>
+							<el-button type="success" plain size="default" @click="onExportQrcodeData"> 導出二維碼 </el-button>
 							<el-button @click="innnerDialogCancel" size="default">清 空</el-button>
 							<el-button type="primary" @click="innnerDialogSubmit(innnerDialogFormRef)" size="default">{{ state.dialog.submitTxt }}</el-button>
 						</span>
@@ -314,6 +316,9 @@ import { UploadFilled } from '@element-plus/icons-vue';
 import { getUploadFileApi } from '/@/api/global/index';
 import { verifyPhone, verifyTelPhone, verifyEmail, verifiyNumberInteger } from '/@/utils/toolsValidate';
 import { useI18n } from 'vue-i18n';
+import table2excel from 'js-table2excel';
+import { useRouter } from 'vue-router';
+const router = useRouter();
 // 引入组件
 const IconSelector = defineAsyncComponent(() => import('/@/components/iconSelector/index.vue'));
 const emit = defineEmits([
@@ -519,6 +524,22 @@ const closeInnerDialog = () => {
 // 取消
 const onCancel = () => {
 	closeDialog();
+};
+// 導出二維碼編碼
+const onExportQrcodeData = () => {
+	const { meta } = router.currentRoute.value;
+	let { formInnerData } = state;
+	if (formInnerData.codeList.length <= 0) return ElMessage.warning('請先錄入二維碼');
+	let codes = formInnerData.codeList.map((item: any) => {
+		return { code: item };
+	});
+	console.log(codes);
+
+	table2excel(
+		[{ key: 'code', title: '二維碼編碼', type: 'text' }],
+		codes,
+		`${meta.title}- ${state.dialog.title}二維碼 ${new Date().toLocaleString()}.xls`
+	);
 };
 const innnerDialogCancel = () => {
 	emit('innnerDialogCancel', state.formData, state.formInnerData);

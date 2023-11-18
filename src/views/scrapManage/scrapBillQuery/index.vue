@@ -269,6 +269,7 @@ const getDetailData = async (uselessno: string) => {
 };
 // 点击详情按钮
 const openDetailDialog = (scope: EmptyObjectType) => {
+	loadingBtn.value = false;
 	UselessNoRef.value = scope.row.uselessno;
 	// getDetailData(scope.row.uselessno);
 	detaildialogVisible.value = true;

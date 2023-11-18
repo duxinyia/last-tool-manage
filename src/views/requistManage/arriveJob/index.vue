@@ -182,6 +182,7 @@ const state = reactive<TableDemoState>({
 // 点击收货弹窗
 const currentData = ref<EmptyObjectType>([]);
 const openArriveJobDialog = (scope: EmptyObjectType) => {
+	loadingBtn.value = false;
 	arriveJobDialogRef.value.openDialog('samp', scope.row, '收貨');
 	currentData.value = scope.row;
 };

@@ -60,6 +60,7 @@ import { useI18n } from 'vue-i18n';
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
 const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
+
 import { getEngieerGroupApi, getLegalStoreTypesApi, getQueryStoreHouseNoPageApi } from '/@/api/global/index';
 // 定义变量内容
 const { t } = useI18n();
@@ -452,6 +453,7 @@ const openInnerDialog = (state: any) => {
 	formInnerData['stockqty'] = formInnerData.codeList.length;
 	formData['stockqty'] = formInnerData.codeList.length;
 };
+
 // 关闭tag标签
 const handleTagClose = (tag: any, state: EmptyObjectType) => {
 	let { formInnerData, formData } = state;
@@ -461,6 +463,7 @@ const handleTagClose = (tag: any, state: EmptyObjectType) => {
 };
 // 打开入库弹窗
 const openEntryDialog = async (scope: any) => {
+	loadingBtn.value = false;
 	state.tableData.dialogConfig?.forEach((item) => {
 		if (item.prop === 'scan') {
 			item.disabled = scope.row.codeManageMode === 1 ? true : false;

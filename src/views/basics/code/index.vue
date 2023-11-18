@@ -213,6 +213,7 @@ const onSearch = (data: EmptyObjectType) => {
 };
 // 打开弹窗
 const openDialog = (type: string, row: Object) => {
+	loadingBtn.value = false;
 	codeDialogRef.value.openDialog(type, row);
 };
 

@@ -194,6 +194,7 @@ const getAdminData = async (runId: string) => {
 };
 // 打开管理员设定弹窗
 const openAdminDialog = async (scope: EmptyObjectType) => {
+	loadingBtn.value = false;
 	warehouseDialogVisible.value = true;
 	getAdminData(scope.row.storeId);
 };
@@ -324,6 +325,7 @@ const onSearch = (data: EmptyObjectType) => {
 };
 // 打开弹窗
 const openDialog = (type: string, row: Object) => {
+	loadingBtn.value = false;
 	warehouseDialogRef.value.openDialog(type, row);
 };
 // 新增数据  修改数据

@@ -286,6 +286,7 @@ const onTablePageChange = (page: TableDemoPageType) => {
 
 // 打开验收弹窗 1
 const openAcceptanceDialog = async (scope: any) => {
+	loadingBtn.value = false;
 	dialogData.dialogVisible = true;
 	dialogData.formData = { ...scope.row };
 	//清空文件信息
@@ -365,12 +366,18 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格項必填未填'));
 		loadingBtn.value = true;
-		let checkDetails = dialogState.tableData.data.filter((item) => {
-			delete item.needsQty;
-			delete item.needsTime;
-			delete item.sampleQty;
-			delete item.sampleTime;
-			return item;
+		let checkDetails = dialogState.tableData.data.map((item) => {
+			return {
+				runId: item.runId,
+				vendorCode: item.vendorCode,
+				vendorName: item.vendorName,
+				checkTime: item.checkTime,
+				checkQty: item.checkQty,
+				isPass: item.isPass,
+				isStorage: item.isStorage,
+				isResubmit: item.isResubmit,
+				failReasonIds: item.failReasonIds || [],
+			};
 		});
 		let submitparams = {
 			sampleNo: dialogData.formData.sampleNo,
@@ -379,8 +386,6 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 			accepReportUrl: dialogData.fileInfo.drawPath,
 			checkDetails: checkDetails,
 		};
-		// console.log('shuju', submitparams);
-
 		let res = await SampleCheckApi(submitparams);
 		if (res.status) {
 			dialogData.dialogVisible = false;

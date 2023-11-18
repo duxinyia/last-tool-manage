@@ -241,6 +241,7 @@ const onAddrow = () => {
 };
 // 点击送样按钮弹窗
 const openArriveJobDialog = async (scope: EmptyObjectType) => {
+	loadingBtn.value = false;
 	const res = await getSampleDetailsForTakeSampleApi(scope.row.sampleNo);
 	res.data.forEach((item: any) => {
 		(item.vendorCodedisabled = true), (item.vendorNamedisabled = true);

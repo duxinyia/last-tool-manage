@@ -50,7 +50,7 @@
 	</div>
 </template>
 
-<script setup lang="ts" name="/partno/noSearch">
+<script setup lang="ts" name="/partno/noAdd">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import {

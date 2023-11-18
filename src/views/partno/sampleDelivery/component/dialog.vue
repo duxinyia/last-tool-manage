@@ -244,6 +244,7 @@ const onDelRow = (i: number) => {
 };
 // 打开弹窗
 const openDialog = (scope: EmptyObjectType, n: number, tit: string, data: EmptyArrayType) => {
+	loadingBtn.value = false;
 	state.dialog.num = n;
 	state.dialog.title = tit;
 	if (n === 1) {

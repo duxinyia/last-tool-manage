@@ -287,6 +287,7 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
 // 点击發料按鈕
 const currentData = ref<EmptyObjectType>([]);
 const openArriveJobDialog = (scope: EmptyObjectType) => {
+	loadingBtn.value = false;
 	issueMaterialsDialogRef.value.openDialog('samp', scope.row, '發料');
 	currentData.value = scope.row;
 };

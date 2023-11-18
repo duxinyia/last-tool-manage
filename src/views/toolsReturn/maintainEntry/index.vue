@@ -382,6 +382,7 @@ const handleTagClose = (tag: any, state: EmptyObjectType) => {
 };
 // 打开入库弹窗
 const openEntryDialog = async (scope: any) => {
+	loadingBtn.value = false;
 	state.tableData.dialogConfig?.forEach((item) => {
 		if (item.prop === 'scan') {
 			item.disabled = scope.row.codeManageMode === 1 ? true : false;

@@ -303,6 +303,7 @@ const getDetailData = async (data: string) => {
 const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) => {
 	let tableData = dialogState.tableData;
 	let config = tableData.config;
+	loadingBtn.value = false;
 	tableData.header = header;
 	config.height = height;
 	config.isOperate = isShow;

@@ -117,6 +117,7 @@ const onSearch = (data: EmptyObjectType) => {
 };
 // 打开弹窗
 const openDialog = (type: string, row: Object) => {
+	loadingBtn.value = false;
 	purchaseDialogRef.value.openDialog(type, row);
 };
 // 新增数据  修改数据

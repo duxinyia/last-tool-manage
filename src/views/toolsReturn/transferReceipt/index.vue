@@ -149,6 +149,7 @@ const getTableData = async () => {
 
 // 点击接收弹窗
 const openTransDialog = (scope: EmptyObjectType) => {
+	loadingBtn.value = false;
 	transDialogRef.value.openDialog('trans', scope.row, '接收');
 };
 // 点击申请单号

@@ -292,6 +292,7 @@ const onDelRow = (row: EmptyObjectType, i: number) => {
 
 // 点击送修按钮
 const onOpenSendRepair = (row: EmptyObjectType[]) => {
+	loadingBtn.value = false;
 	dialogState.tableData.form = {};
 	presentationDialogVisible.value = true;
 	let tableData = dialogState.tableData;
