@@ -1,7 +1,7 @@
 <template>
 	<el-tabs v-model="activeName" class="table-container layout-padding" @tab-click="handleClick">
 		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="到貨驗收" name="first">
-			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
+			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" labelWidth="70px" />
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
@@ -12,7 +12,7 @@
 			/>
 		</el-tab-pane>
 		<el-tab-pane label="驗收記錄" name="second" class="table-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="secondState.tableData.search" @search="onSearch2" :searchConfig="secondState.tableData.searchConfig" />
+			<TableSearch :search="secondState.tableData.search" @search="onSearch2" :searchConfig="secondState.tableData.searchConfig" labelWidth="70px" />
 			<Table
 				ref="tableRef2"
 				v-bind="secondState.tableData"
@@ -133,7 +133,7 @@ const state = reactive<TableDemoState>({
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [{ type: 'sendReceive', name: '驗收', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
+		btnConfig: [{ type: 'sendReceive', name: '驗收', color: '#e6a23c', isSure: false, icon: 'ele-EditPen' }],
 		// 给后端的数据
 		form: {
 			// reqNo: '',
@@ -359,7 +359,7 @@ const getTableData = async () => {
 		checkDate: form2.checkDate,
 		startCheckDate: form2.checkDate && form2.checkDate[0],
 		endCheckDate: form2.checkDate && form2.checkDate[1],
-		page: state.tableData.page,
+		page: secondState.tableData.page,
 	};
 	delete data2.checkDate;
 	if (activeName.value === 'first') {
@@ -455,8 +455,14 @@ const onSearch2 = (data: EmptyObjectType) => {
 
 // 分页改变时回调
 const onTablePageChange = (page: TableDemoPageType) => {
-	state.tableData.page.pageNum = page.pageNum;
-	state.tableData.page.pageSize = page.pageSize;
+	if (activeName.value === 'first') {
+		state.tableData.page.pageNum = page.pageNum;
+		state.tableData.page.pageSize = page.pageSize;
+	} else {
+		secondState.tableData.page.pageNum = page.pageNum;
+		secondState.tableData.page.pageSize = page.pageSize;
+	}
+
 	getTableData();
 };
 // 拖动显示列排序回调

@@ -131,7 +131,7 @@ const state = reactive<TableDemoState>({
 		],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '料號', prop: 'matNo', placeholder: '請輸入料號', required: false, type: 'input', lg: 6, xl: 6 },
+			{ label: '料號', prop: 'matNo', placeholder: '請輸入料號', required: false, type: 'input' },
 			{ label: 'BU', prop: 'bu', placeholder: '', required: false, type: 'input' },
 			{
 				label: '段位',
@@ -147,7 +147,7 @@ const state = reactive<TableDemoState>({
 			},
 			{ label: '品名', prop: 'name', placeholder: '', required: false, type: 'input' },
 			{ label: '圖紙編號', prop: 'drawNo', placeholder: '', required: false, type: 'input' },
-			{ label: '是否包含其他用戶創建的料號', prop: 'isContainsOther', placeholder: '', required: false, type: 'status', lg: 5, xl: 5 },
+			// { label: '是否包含其他用戶創建的料號', prop: 'isContainsOther', placeholder: '', required: false, type: 'status', lg: 5, xl: 5 },
 		],
 		searchConfig: {
 			isSearchBtn: true,

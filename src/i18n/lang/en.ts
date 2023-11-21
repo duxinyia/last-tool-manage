@@ -20,6 +20,7 @@ export default {
 		report: 'report',
 		matNo: 'materialNo manage',
 		matSearch: 'material number search',
+		matAdd: 'material number addition',
 		matSample: 'submit sample request',
 		sampleReceive: 'sample receipt',
 		sampleAcceptance: 'acceptance samples',

@@ -1,7 +1,7 @@
 <template>
 	<el-tabs v-model="currName" class="table-container layout-padding" @tab-click="handleClick">
 		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="請購發料" name="first">
-			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
+			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" labelWidth="70px" />
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
@@ -18,6 +18,7 @@
 				:searchConfig="secondState.tableData.searchConfig"
 				@remoteMethod="remoteMethod"
 				@selectChange="onChangeStoreType"
+				labelWidth="100px"
 			/>
 			<Table
 				ref="tableRef2"
@@ -393,7 +394,7 @@ const getTableData = async () => {
 		dispatchDate: form2.dispatchDate,
 		startDispatchTime: form2.dispatchDate && form2.dispatchDate[0],
 		endDispatchTime: form2.dispatchDate && form2.dispatchDate[1],
-		page: state.tableData.page,
+		page: secondState.tableData.page,
 	};
 	delete data.checkDate;
 	if (currName.value === 'first') {
@@ -448,8 +449,13 @@ const onSearch2 = (data: EmptyObjectType) => {
 
 // 分页改变时回调
 const onTablePageChange = (page: TableDemoPageType) => {
-	state.tableData.page.pageNum = page.pageNum;
-	state.tableData.page.pageSize = page.pageSize;
+	if (currName.value === 'first') {
+		state.tableData.page.pageNum = page.pageNum;
+		state.tableData.page.pageSize = page.pageSize;
+	} else {
+		secondState.tableData.page.pageNum = page.pageNum;
+		secondState.tableData.page.pageSize = page.pageSize;
+	}
 	getTableData();
 };
 // 拖动显示列排序回调

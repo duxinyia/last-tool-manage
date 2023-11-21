@@ -14,21 +14,6 @@
 				:cellStyle="cellStyle"
 				@cellclick="matNoClick"
 			>
-				<template #otherbtn="{ row }">
-					<el-popconfirm
-						v-for="btn in buttonConfig"
-						:key="btn.prop"
-						icon="ele-InfoFilled"
-						:icon-color="btn.color"
-						width="160"
-						:title="$t(btn.title)"
-						@confirm="btn.prop === 'try' ? onSubmitTrialSign(row.matNo) : onSubmitProduceSign(row.matNo)"
-					>
-						<template #reference>
-							<el-button class="button buttonBorder" :color="btn.color" plain size="default">{{ $t(btn.name) }}</el-button>
-						</template>
-					</el-popconfirm>
-				</template>
 			</Table>
 			<!-- @selectChange="selectChange"
 				@editDialog="editDialog" -->
@@ -79,10 +64,7 @@ const tableRef = ref<RefType>();
 const noSearchDialogRef = ref();
 const matNoRef = ref();
 const matNoDetaildialogVisible = ref(false);
-const buttonConfig = reactive([
-	{ name: '試產', prop: 'try', color: '#D3C333', title: '確定試產送簽嗎？' },
-	{ name: '量產', prop: 'more', color: '#27ba9b', title: '確定量產送簽嗎？' },
-]);
+
 const state = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
@@ -110,28 +92,19 @@ const state = reactive<TableDemoState>({
 			isBorder: false, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
 			isSelection: true, // 是否显示表格多选
-			isOperate: true, // 是否显示表格操作栏
-			isButton: true, //是否显示表格上面的新增删除按钮
+			isOperate: false, // 是否显示表格操作栏
+			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
 			operateWidth: 220, //操作栏宽度，如果操作栏有几个按钮就自己定宽度
-			otherBtnOperateWidth: 170,
 			exportIcon: true, //是否有导出icon(导出功能)
-			isOtherBtnOperate: true, //其他按钮列
-			otherBtnOperate: '送簽選擇',
 		},
-		topBtnConfig: [
-			{ type: 'add', name: '新增', defaultColor: 'primary', isSure: true, disabled: true },
-			{ type: 'bulkDel', name: '批量删除', color: '#D33939', isSure: true, disabled: true },
-		],
-		btnConfig: [
-			{ type: 'edit', name: 'message.allButton.editBtn', color: '#39D339', isSure: false, icon: 'ele-Edit' },
-			{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true },
-		],
+		topBtnConfig: [],
+		btnConfig: [],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '料號', prop: 'matNo', placeholder: '請輸入料號', required: false, type: 'input', lg: 6, xl: 6 },
+			{ label: '料號', prop: 'matNo', placeholder: '請輸入料號', required: false, type: 'input' },
 			{ label: 'BU', prop: 'bu', placeholder: '', required: false, type: 'input' },
 			{
 				label: '段位',
@@ -147,14 +120,13 @@ const state = reactive<TableDemoState>({
 			},
 			{ label: '品名', prop: 'name', placeholder: '', required: false, type: 'input' },
 			{ label: '圖紙編號', prop: 'drawNo', placeholder: '', required: false, type: 'input' },
-			{ label: '是否包含其他用戶創建的料號', prop: 'isContainsOther', placeholder: '', required: false, type: 'status', lg: 5, xl: 5 },
 		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
 		// 给后端的数据
 		form: {
-			isContainsOther: 0,
+			isContainsOther: 1,
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -328,14 +300,6 @@ const getTableData = async () => {
 	});
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
-
-	// let arr = [];
-	// state.tableData.data.forEach((item) => {
-	// 	if (item.signStatus == 0 || item.signStatus == 2) {
-	// 		arr.push(item.signStatus);
-	// 	}
-	// });
-	// state.tableData.config.operateWidth = !arr.length ? 220 : 330;
 	if (res.status) {
 		state.tableData.config.loading = false;
 	}

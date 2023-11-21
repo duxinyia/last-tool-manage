@@ -117,18 +117,21 @@ const state = reactive<TableDemoState>({
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
-			isPage: false, //是否有分页
+			isPage: true, //是否有分页
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-		search: [{ label: '料號', prop: 'MatNo', required: false, type: 'input', lg: 6, xl: 6 }],
+		search: [
+			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
+			{ label: '送樣單號', prop: 'sampleNo', required: false, type: 'input' },
+			{ label: '品名', prop: 'matName', required: false, type: 'input' },
+			{ label: '需求人', prop: 'needor', required: false, type: 'input' },
+		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [{ type: 'sendReceive', name: '送樣', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
+		btnConfig: [{ type: 'sendReceive', name: '送樣', color: '#e6a23c', isSure: false, icon: 'ele-EditPen' }],
 		// 给后端的数据
-		form: {
-			MatNo: '',
-		},
+		form: {},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
 			pageNum: 1,
@@ -210,8 +213,9 @@ cellStyle.value = changeToStyle([1, 7]);
 const getTableData = async () => {
 	state.tableData.config.loading = true;
 	const form = state.tableData.form;
-	const res = await getQuerySampleNeedsApi(form.MatNo);
-	state.tableData.data = res.data;
+	const data = { ...form, page: state.tableData.page, isQueryCurUser: 0 };
+	const res = await getQuerySampleNeedsApi(data);
+	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
 	if (res.status) {
 		state.tableData.config.loading = false;
@@ -299,7 +303,6 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格項必填未填'));
-		loadingBtn.value = true;
 		let allData: EmptyObjectType = {};
 		let form = dialogState.tableData.form;
 		allData = { sampleNo: form.sampleNo, matNo: form.matNo };
@@ -316,6 +319,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 		if (allData['vendors'].length <= 0) {
 			ElMessage.warning(t('請新增廠商數據'));
 		} else {
+			loadingBtn.value = true;
 			const res = await getTakeSampleApi(allData);
 			if (res.status) {
 				ElMessage.success(t('送樣成功'));

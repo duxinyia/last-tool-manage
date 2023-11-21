@@ -127,13 +127,13 @@ const state = reactive<TableDemoState>({
 				label: '發料人',
 				prop: 'dispatcher',
 				required: false,
-				type: 'select',
-				placeholder: '請輸入選擇發料人',
-				options: [],
-				loading: true,
-				filterable: true,
-				remote: true,
-				remoteShowSuffix: true,
+				type: 'input',
+				placeholder: '請輸入發料人',
+				// options: [],
+				// loading: true,
+				// filterable: true,
+				// remote: true,
+				// remoteShowSuffix: true,
 			},
 			{
 				label: '領用倉庫類型',
@@ -163,7 +163,7 @@ const state = reactive<TableDemoState>({
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [{ type: 'sendReceive', name: '入庫', color: '#D3C333', isSure: false, icon: 'ele-EditPen' }],
+		btnConfig: [{ type: 'sendReceive', name: '入庫', color: '#e6a23c', isSure: false, icon: 'ele-EditPen' }],
 		// 给后端的数据
 		form: {
 			// reqNo: '',
@@ -341,14 +341,14 @@ const remoteMethod = (query: string, form: EmptyObjectType, prop: string) => {
 					}
 				});
 			} else {
-				const res = await getEngieerGroupApi(query);
-				state.tableData.search[4].loading = false;
-				let options = res.data.map((item: EmptyObjectType) => {
-					return { value: `${item.userid}`, label: `${item.username}` };
-				});
-				state.tableData.search[4].options = options.filter((item: EmptyObjectType) => {
-					return item.label.toLowerCase().includes(query.toLowerCase()) || item.value.toLowerCase().includes(query.toLowerCase());
-				});
+				// const res = await getEngieerGroupApi(query);
+				// state.tableData.search[4].loading = false;
+				// let options = res.data.map((item: EmptyObjectType) => {
+				// 	return { value: `${item.userid}`, label: `${item.username}` };
+				// });
+				// state.tableData.search[4].options = options.filter((item: EmptyObjectType) => {
+				// 	return item.label.toLowerCase().includes(query.toLowerCase()) || item.value.toLowerCase().includes(query.toLowerCase());
+				// });
 			}
 		}, 500);
 	} else {

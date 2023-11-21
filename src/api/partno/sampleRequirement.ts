@@ -1,10 +1,10 @@
 import request from '/@/utils/request';
 // 查询
-export function getQuerySampleNeedsApi(MatNo:string) {
+export function getQuerySampleNeedsApi(data:Object) {
   return request({
     url: '/api/Material/QuerySampleNeeds',
-    method: 'GET',
-  	params:{MatNo}
+    method: 'POST',
+  	data:data
   });
 }
 // 获取送样单已有的厂商信息

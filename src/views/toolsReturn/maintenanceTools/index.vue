@@ -129,7 +129,7 @@ const state = reactive<TableDemoState>({
 			{
 				type: 'sendReceive',
 				name: '退庫',
-				color: '#D3C333',
+				color: '#e6a23c',
 				isSure: false,
 				icon: 'ele-EditPen',
 			},
@@ -190,7 +190,7 @@ const state = reactive<TableDemoState>({
 // 			{
 // 				type: 'sendReceive',
 // 				name: '送签',
-// 				color: '#D3C333',
+// 				color: '#e6a23c',
 // 				isSure: false,
 // 				icon: 'ele-EditPen',
 // 			},

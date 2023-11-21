@@ -20,6 +20,7 @@ export default {
 		report: '报表管理',
 		matNo: '料号管理',
 		matSearch: '料号查询',
+		matAdd: '料号新增',
 		matSample: '送样需求提报',
 		sampleReceive: '样品收货',
 		sampleAcceptance: '样品验收',

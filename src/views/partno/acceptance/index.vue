@@ -129,7 +129,7 @@ const state = reactive<TableDemoState>({
 			height: 750,
 		},
 
-		btnConfig: [{ type: 'acceptance', name: '驗收', color: '#D3C333', isSure: false }],
+		btnConfig: [{ type: 'acceptance', name: '驗收', color: '#e6a23c', isSure: false }],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [{ label: '送樣單號', prop: 'simpleNo', placeholder: '請輸入送樣單號', required: false, type: 'input' }],
 		searchConfig: {
@@ -365,7 +365,6 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格項必填未填'));
-		loadingBtn.value = true;
 		let checkDetails = dialogState.tableData.data.map((item) => {
 			return {
 				runId: item.runId,
@@ -386,6 +385,7 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 			accepReportUrl: dialogData.fileInfo.drawPath,
 			checkDetails: checkDetails,
 		};
+		loadingBtn.value = true;
 		let res = await SampleCheckApi(submitparams);
 		if (res.status) {
 			dialogData.dialogVisible = false;

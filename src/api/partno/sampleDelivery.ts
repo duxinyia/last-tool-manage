@@ -23,7 +23,7 @@ export function getGetSampleApi(matNo:string) {
   	params:{matNo}
   });
 }
-// 新增样品需求
+// 保存样品需求
 export function getAddSampleNeedsApi(data:Object) {
   return request({
     url: '/api/Material/AddSampleNeeds',
@@ -37,6 +37,14 @@ export function getPurchaserGroupApi(userId:string) {
     url: `/api/Group/GetPurchaserGroup`,
     method: 'GET',
     params:{userId}
+  });
+}
+// 新增樣品需求
+export function getSubmitSampleNeedsApi(data:Object) {
+  return request({
+    url: '/api/Material/SubmitSampleNeeds',
+    method: 'POST',
+  	data:data
   });
 }
 

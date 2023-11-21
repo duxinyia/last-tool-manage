@@ -62,7 +62,7 @@ const state = reactive<TableDemoState>({
 			height: 750,
 		},
 
-		btnConfig: [{ type: 'sendReceive', name: '收貨', color: '#D3C333', isSure: false }],
+		btnConfig: [{ type: 'sendReceive', name: '收貨', color: '#e6a23c', isSure: false }],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [{ label: '送樣單號', prop: 'simpleNo', placeholder: '請輸入送樣單號', required: false, type: 'input' }],
 		searchConfig: {

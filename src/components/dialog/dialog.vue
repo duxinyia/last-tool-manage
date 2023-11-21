@@ -299,7 +299,10 @@
 			<template #footer v-if="isFootBtn">
 				<span class="dialog-footer">
 					<el-button @click="onCancel" size="default">取 消</el-button>
-					<el-button :loading="loadingBtn" type="primary" @click="onSubmit(dialogFormRef)" size="default">{{ state.dialog.submitTxt }}</el-button>
+					<slot name="dialogBtn" :data="state" :ref="dialogFormRef"></slot>
+					<el-button :disabled="footBtnDisabled" :loading="loadingBtn" type="primary" @click="onSubmit(dialogFormRef)" size="default">{{
+						state.dialog.submitTxt
+					}}</el-button>
 				</span>
 			</template>
 		</el-dialog>
@@ -355,6 +358,10 @@ const props = defineProps({
 	isFootBtn: {
 		type: Boolean,
 		default: () => true,
+	},
+	footBtnDisabled: {
+		type: Boolean,
+		default: () => false,
 	},
 	dialogWidth: {
 		type: String,
