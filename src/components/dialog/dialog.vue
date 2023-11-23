@@ -13,7 +13,7 @@
 						v-for="item in dialogConfig"
 						:key="item.prop"
 					>
-						<el-form-item v-if="item.type != 'button'" :label="$t(item.label)" :prop="item.prop" :rules="allRules(item)">
+						<el-form-item v-if="item.type != 'button' && item.type != 'null'" :label="$t(item.label)" :prop="item.prop" :rules="allRules(item)">
 							<el-input
 								:maxlength="item.maxlength"
 								v-if="item.type === 'input'"
@@ -184,7 +184,7 @@
 							</span>
 						</el-form-item>
 
-						<span v-else>
+						<span v-if="item.type === 'button'">
 							<el-button
 								:disabled="item.disabled"
 								type="primary"
@@ -505,7 +505,7 @@ const openDialog = (type: string, row?: any, title?: string) => {
 		state.dialog.submitTxt = '開始上傳';
 	} else {
 		state.dialog.title = title;
-		state.dialog.submitTxt = '確 定';
+		state.dialog.submitTxt = '提 交';
 		nextTick(() => {
 			state.formData = JSON.parse(JSON.stringify(row));
 			dialogFormRef.value && dialogFormRef.value.resetFields();
@@ -540,8 +540,6 @@ const onExportQrcodeData = () => {
 	let codes = formInnerData.codeList.map((item: any) => {
 		return { code: item };
 	});
-	console.log(codes);
-
 	table2excel(
 		[{ key: 'code', title: '二維碼編碼', type: 'text' }],
 		codes,

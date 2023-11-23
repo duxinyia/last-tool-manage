@@ -124,8 +124,31 @@
 					<el-form-item
 						v-if="config.isInlineEditing"
 						:prop="`data.${scope.$index}.${item.key}`"
-						:rules="[{ required: item.isRequired, message: '不能為空', trigger: item.type === 'input' || item.type === 'time' ? 'blur' : 'change' }]"
+						:rules="[{ required: item.isRequired, message: '不能為空', trigger: item.type === 'time' ? 'blur' : 'change' }]"
 					>
+						<el-popover
+							v-if="item.type === 'textarea'"
+							effect="dark"
+							trigger="hover"
+							placement="top"
+							width="auto"
+							:disabled="data[scope.$index][item.key]?.length > 8 ? false : true"
+						>
+							<template #default>
+								<div style="font-size: 12px">{{ data[scope.$index][item.key] }}</div>
+							</template>
+							<template #reference>
+								<el-input
+									v-if="item.type === 'textarea'"
+									v-model="data[scope.$index][item.key]"
+									type="textarea"
+									placeholder="請輸入"
+									:autosize="{ minRows: 1, maxRows: 1 }"
+									:maxlength="item.maxlength || 500"
+								></el-input>
+							</template>
+						</el-popover>
+
 						<!-- 输入框 :disabled="route.path == '/basics/warehouseManage' ? (data[scope.$index].disabled === false ? false : true) : false"-->
 						<el-input
 							:disabled="data[scope.$index][`${item.key}disabled`]"
@@ -329,6 +352,7 @@ import '/@/theme/tableTool.scss';
 import { useI18n } from 'vue-i18n';
 const tableRef = ref<RefType>();
 const pagination = ref<RefType>();
+const visible = ref(false);
 // 引入组件
 // const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 

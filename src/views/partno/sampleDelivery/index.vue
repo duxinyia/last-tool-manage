@@ -47,7 +47,7 @@
 </template>
 <script setup lang="ts" name="partnoSampleDelivery">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
-import { ElMessage, TabsPaneContext } from 'element-plus';
+import { ElMessage, ElMessageBox, TabsPaneContext } from 'element-plus';
 import {
 	getMaterialListApi,
 	getGetSampleApi,
@@ -298,7 +298,6 @@ const getTableData = async () => {
 		isContainsOther: 1,
 	};
 	const form2 = secondState.tableData.form;
-
 	let data2 = {
 		...form2,
 		page: secondState.tableData.page,
@@ -380,16 +379,25 @@ const onSave = async (data: any, formEl: EmptyObjectType | undefined) => {
 	});
 };
 // 提交
-const onSubmit = async (formData: any) => {
-	loadingBtn.value = true;
+const onSubmit = (formData: any) => {
 	if (!formData.sampleNo) return ElMessage.warning(t('請按保存按鈕得到送樣單號'));
-	const res = await getSubmitSampleNeedsApi({ SampleNo: formData.sampleNo });
-	if (res.status) {
-		ElMessage.success(t('新增成功'));
-		sampleDialogRef.value.closeDialog();
-		getTableData();
-	}
-	loadingBtn.value = false;
+	ElMessageBox.confirm('確定提交嗎?', '提示', {
+		confirmButtonText: '確 定',
+		cancelButtonText: '取 消',
+		type: 'warning',
+		draggable: true,
+	})
+		.then(async () => {
+			loadingBtn.value = true;
+			const res = await getSubmitSampleNeedsApi({ SampleNo: formData.sampleNo });
+			if (res.status) {
+				ElMessage.success(t('新增成功'));
+				sampleDialogRef.value.closeDialog();
+				getTableData();
+			}
+			loadingBtn.value = false;
+		})
+		.catch(() => {});
 };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
@@ -409,7 +417,6 @@ const onTablePageChange = (page: TableDemoPageType) => {
 		secondState.tableData.page.pageNum = page.pageNum;
 		secondState.tableData.page.pageSize = page.pageSize;
 	}
-
 	getTableData();
 };
 

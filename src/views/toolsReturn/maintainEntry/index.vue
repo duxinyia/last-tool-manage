@@ -164,16 +164,24 @@ const state = reactive<TableDemoState>({
 			// validateForm: 'number',
 			// 	message: '请输入正整数',
 			{
-				label: '有碼數量:',
+				label: '收貨倉庫:',
+				prop: 'storageId',
+				placeholder: '請選擇收貨倉庫',
+				required: true,
+				type: 'select',
+				options: [],
+			},
+			{
+				label: '掃碼數量:',
 				prop: 'stockqty',
 				placeholder: '',
 				required: false,
 				type: 'text',
 				xs: 24,
 				sm: 12,
-				md: 8,
-				lg: 8,
-				xl: 8,
+				md: 6,
+				lg: 6,
+				xl: 6,
 			},
 			{
 				label: '掃碼錄入',
@@ -187,15 +195,6 @@ const state = reactive<TableDemoState>({
 				lg: 4,
 				xl: 4,
 				disabled: false,
-			},
-
-			{
-				label: '收貨倉庫:',
-				prop: 'storageId',
-				placeholder: '請選擇收貨倉庫',
-				required: true,
-				type: 'select',
-				options: [],
 			},
 		],
 		innerDialogConfig: [
@@ -384,8 +383,12 @@ const handleTagClose = (tag: any, state: EmptyObjectType) => {
 const openEntryDialog = async (scope: any) => {
 	loadingBtn.value = false;
 	state.tableData.dialogConfig?.forEach((item) => {
-		if (item.prop === 'scan') {
-			item.disabled = scope.row.codeManageMode === 1 ? true : false;
+		if (item.prop === 'stockqty' || item.prop === 'scan') {
+			if (scope.row.codeManageMode === 1) {
+				item.type = 'null';
+			} else {
+				item.type = item.prop === 'stockqty' ? 'text' : 'button';
+			}
 		}
 	});
 	entryJobDialogRef.value.openDialog('entry', scope.row, '入庫');
@@ -395,7 +398,6 @@ const scanCodeEntry = () => {
 };
 //点击确认入库
 const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyObjectType) => {
-	loadingBtn.value = true;
 	let obj: EmptyObjectType = { ...ruleForm };
 	state.tableData.dialogConfig &&
 		state.tableData.dialogConfig.forEach((option) => {
@@ -428,9 +430,9 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 		// storeType: obj.storeType,
 		// sLocation: obj.sLocation,
 	};
-	if (obj.stockqty > obj.passQty) {
+	if (obj.stockqty > obj.passQty && !obj.codeManageMode) {
 		ElMessage.error(`有碼數量大於驗收合格數量`);
-	} else if (obj.stockqty < obj.passQty) {
+	} else if (obj.stockqty < obj.passQty && !obj.codeManageMode) {
 		ElMessage.error(`有碼數量小於驗收合格數量，請繼續掃碼錄入`);
 	}
 	// else if (submitData.Codes && submitData.putQty < submitData.Codes.length) {
@@ -459,7 +461,7 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 	// }
 	else {
 		// console.log(submitData);
-
+		loadingBtn.value = true;
 		const res = await GetPutStorageApi(submitData);
 		if (res.status) {
 			ElMessage.success(`入庫成功`);

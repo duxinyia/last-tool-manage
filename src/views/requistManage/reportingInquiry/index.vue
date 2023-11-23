@@ -349,6 +349,9 @@ const changeSelect = async (i: number, query: any) => {
 // 增加一行
 const onAddrow = () => {
 	dialogState.tableData.data.push({});
+	nextTick(() => {
+		dialogTableRef.value.setScrollTop();
+	});
 };
 //删除
 const onDelRow = async (row: EmptyObjectType, i: number) => {
@@ -368,15 +371,15 @@ const onDelRow = async (row: EmptyObjectType, i: number) => {
 		dialogState.tableData.data.splice(i, 1);
 	}
 };
-watch(
-	() => dialogState.tableData.data,
-	() => {
-		nextTick(() => {
-			dialogTableRef.value.setScrollTop();
-		});
-	},
-	{ deep: true }
-);
+// watch(
+// 	() => dialogState.tableData.data,
+// 	() => {
+// 		nextTick(() => {
+// 			dialogTableRef.value.setScrollTop();
+// 		});
+// 	},
+// 	{ deep: true }
+// );
 // 提交修改
 const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;

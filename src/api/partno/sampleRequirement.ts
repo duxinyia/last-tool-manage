@@ -15,3 +15,11 @@ export function getSampleDetailsForTakeSampleApi(sampleNo:string) {
   	params:{sampleNo}
   });
 }
+// 採購送樣記錄查詢
+export function getQueryTakeSampleApi(data:Object) {
+  return request({
+    url: '/api/Material/QueryTakeSample',
+    method: 'POST',
+  	data:data
+  });
+}

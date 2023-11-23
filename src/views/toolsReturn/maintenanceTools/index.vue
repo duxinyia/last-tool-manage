@@ -49,7 +49,7 @@ import type { FormInstance } from 'element-plus';
 import { ElMessage } from 'element-plus';
 // 引入接口
 import { getStockListApi, ExitStoreApi, getExitReasonApi, getTransferStorageApi } from '/@/api/toolsReturn/maintentanceTools';
-import { getLegalStoreTypesApi, getQueryStoreHouseNoPageApi } from '/@/api/global';
+import { getQueryStoreHouseExceptIdleStoreNoPageApi } from '/@/api/global';
 
 import { useI18n } from 'vue-i18n';
 import type { TabsPaneContext } from 'element-plus';
@@ -521,7 +521,7 @@ const remoteMethod = (query: string) => {
 	});
 	if (query) {
 		setTimeout(async () => {
-			const res = await getQueryStoreHouseNoPageApi('', query);
+			const res = await getQueryStoreHouseExceptIdleStoreNoPageApi('', query);
 			options = res.data.map((item: EmptyObjectType) => {
 				return { value: `${item.storeId}`, label: `${item.storeType}`, text: `${item.sLocation}` };
 			});

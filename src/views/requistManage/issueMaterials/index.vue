@@ -47,7 +47,7 @@ import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
 import { ElMessage, FormInstance, TabsPaneContext } from 'element-plus';
 // 引入接口
 import { getQueryDispatchableApplyCheckApi, getDispatchApi, getQueryDispatchRecordApi } from '/@/api/requistManage/issueMaterials';
-import { getLegalStoreTypesApi, getQueryStoreHouseNoPageApi } from '/@/api/global';
+import { getLegalStoreTypesExceptIdleStoreApi, getQueryStoreHouseExceptIdleStoreNoPageApi } from '/@/api/global';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -317,7 +317,7 @@ const remoteMethod = (query: string, form: EmptyObjectType) => {
 			}
 		});
 		setTimeout(async () => {
-			const res = await getQueryStoreHouseNoPageApi(form.storeType, query);
+			const res = await getQueryStoreHouseExceptIdleStoreNoPageApi(form.storeType, query);
 			option = res.data.map((item: EmptyObjectType) => {
 				return { value: `${item.storeId}`, label: `${item.storeType}`, text: `${item.sLocation}` };
 			});
@@ -353,7 +353,7 @@ const remoteMethod = (query: string, form: EmptyObjectType) => {
 };
 // 下拉框数据
 const getSelect = async () => {
-	const res = await getLegalStoreTypesApi();
+	const res = await getLegalStoreTypesExceptIdleStoreApi();
 	const option = res.data.map((item: any) => {
 		return { label: item, text: item, value: item };
 	});

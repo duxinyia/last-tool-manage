@@ -11,7 +11,7 @@
 				:cellStyle="cellStyle"
 			/>
 			<!-- <Dialog ref="sendReceiveDialogRef" v-bind="dialogData" /> -->
-			<el-dialog draggable :close-on-click-modal="false" v-model="dialogData.dialogVisible" title="驗收" width="80%">
+			<el-dialog draggable :close-on-click-modal="false" v-model="dialogData.dialogVisible" title="驗收" width="70%">
 				<el-row :gutter="10">
 					<el-col
 						v-for="item in dialogData.dialogForm"
@@ -158,11 +158,11 @@ const dialogState = reactive<TableDemoState>({
 			// { key: 'needsQty', colWidth: '', title: '需求送样数量', type: 'text', isCheck: true },
 			{ key: 'sampleTime', colWidth: '', title: '實際送樣時間', type: 'text', isCheck: true },
 			{ key: 'sampleQty', colWidth: '', title: '實際送樣數量', type: 'text', isCheck: true },
-			{ key: 'checkTime', colWidth: '', title: '驗收時間', type: 'time', isCheck: true, isRequired: true },
+			{ key: 'checkTime', colWidth: '150', title: '驗收時間', type: 'time', isCheck: true, isRequired: true },
 			{ key: 'checkQty', colWidth: '', title: '驗收數量', type: 'input', isCheck: true, isRequired: true },
 			{ key: 'isPass', colWidth: '', title: '是否驗收通過', type: 'status1', isCheck: true, isRequired: true },
 			{ key: 'failReasonIds', colWidth: '180', title: '驗收失敗原因', type: 'multipleSelect', isCheck: true, options: [] },
-			{ key: 'isStorage', colWidth: '', title: '是否入庫', type: 'status1', isCheck: true, isRequired: true },
+			// { key: 'isStorage', colWidth: '', title: '是否入庫', type: 'status1', isCheck: true, isRequired: true },
 			{ key: 'isResubmit', colWidth: '', title: '是否重送', type: 'status1', isCheck: true, isRequired: false },
 		],
 		// 表格配置项（必传）
@@ -201,18 +201,7 @@ const dialogState = reactive<TableDemoState>({
 const cellStyle = ref();
 const dialogData = reactive<EmptyObjectType>({
 	// 点击收货弹窗表格数据
-	otherHeaderData: [
-		{ key: 'vendorCode', colWidth: '', title: '廠商代碼', type: 'text', isCheck: true },
-		{ key: 'vendorName', colWidth: '', title: '廠商名稱', type: 'text', isCheck: true },
-		{ key: 'needsTime', colWidth: '', title: '需求送樣時間', type: 'text', isCheck: true },
-		{ key: 'needsQty', colWidth: '', title: '需求送樣數量', type: 'input', isCheck: true },
-		{ key: 'sampleTime', colWidth: '', title: '實際送樣時間', type: 'text', isCheck: true },
-		{ key: 'sampleQty', colWidth: '', title: '實際送樣數量', type: 'input', isCheck: true },
-		{ key: 'checkTime', colWidth: '', title: '驗收時間', type: 'time', isCheck: true, isRequired: true },
-		{ key: 'checkQty', colWidth: '', title: '驗收數量', type: 'input', isCheck: true, isRequired: true },
-		{ key: 'isPass', colWidth: '', title: '是否驗收通過', type: 'input', isCheck: true, isRequired: true },
-		{ key: 'isStorage', colWidth: '', title: '是否入庫', type: 'input', isCheck: true, isRequired: true },
-	],
+	otherHeaderData: [],
 	// 收货弹窗表格顶部数据
 	dialogForm: [
 		{ type: 'text', label: '驗收單號', prop: 'checkNo', value: '' },

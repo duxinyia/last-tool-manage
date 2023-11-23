@@ -39,3 +39,19 @@ export function getQueryStoreHouseNoPageApi(storeType: string,sLocation:string) 
 		params: {storeType,sLocation},
 	});
 }
+// 仓库类型下拉框数据(不含閒置倉)
+export function getLegalStoreTypesExceptIdleStoreApi() {
+  return request({
+    url: '/api/BaseStore/GetLegalStoreTypesExceptIdleStore',
+    method: 'GET',
+  
+  });
+}
+// 不分页查询仓库位置模糊查询下拉(不含閒置倉)
+export function getQueryStoreHouseExceptIdleStoreNoPageApi(storeType: string,sLocation:string) {
+	return request({
+		url: '/api/BaseStore/QueryStoreHouseExceptIdleStoreNoPage',
+		method: 'GET',
+		params: {storeType,sLocation},
+	});
+}

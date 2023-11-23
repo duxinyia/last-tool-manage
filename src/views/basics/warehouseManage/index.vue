@@ -234,6 +234,10 @@ const onAddrow = () => {
 	// 		el.scrollTop = height;
 	// 	}
 	// }, 200);
+	// 新增的时候超过表格了跟着移动
+	nextTick(() => {
+		dialogTableRef.value.setScrollTop();
+	});
 };
 // 提交
 const onSubmit = async (formEl: FormInstance | undefined) => {
@@ -359,15 +363,15 @@ const onTablePageChange = (page: TableDemoPageType) => {
 const onSortHeader = (data: TableHeaderType[]) => {
 	state.tableData.header = data;
 };
-watch(
-	() => dialogState.tableData.data,
-	() => {
-		nextTick(() => {
-			dialogTableRef.value.setScrollTop();
-		});
-	},
-	{ deep: true }
-);
+// watch(
+// 	() => dialogState.tableData.data,
+// 	() => {
+// 		nextTick(() => {
+// 			dialogTableRef.value.setScrollTop();
+// 		});
+// 	},
+// 	{ deep: true }
+// );
 // 页面加载时
 onMounted(() => {
 	getTableData();

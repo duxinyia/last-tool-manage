@@ -7,7 +7,7 @@ export function getMaterialListApi(data:Object) {
   	data:data
   });
 }
-// 送样
+// 送样(不用了)
 export function getTakeSampleApi(data:Object) {
   return request({
     url: '/api/Material/TakeSample',
@@ -15,6 +15,23 @@ export function getTakeSampleApi(data:Object) {
   	data:data
   });
 }
+// 保存草稿
+export function getSaveTakeSampleApi(data:Object) {
+  return request({
+    url: '/api/Material/SaveTakeSample',
+    method: 'POST',
+  	data:data
+  });
+}
+// 提交送樣
+export function getSubmitTaskSampleApi(data:Object) {
+  return request({
+    url: '/api/Material/SubmitTaskSample',
+    method: 'POST',
+  	data:data
+  });
+}
+
 // 点击料号信息
 export function getGetSampleApi(matNo:string) {
   return request({

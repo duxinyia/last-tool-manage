@@ -359,8 +359,8 @@ const openDialog = async (type: string, row: EmptyObjectType) => {
 };
 // 新增数据  修改数据
 const addData = async (ruleForm: EmptyObjectType, type: string) => {
-	loadingBtn.value = true;
 	if (ruleForm.drawPath.includes('/')) {
+		loadingBtn.value = true;
 		const res = type === 'add' ? await getAddMaterialApi(ruleForm) : await getModifyMaterialApi(ruleForm);
 		if (res.status) {
 			type === 'add' ? ElMessage.success(`新增成功`) : ElMessage.success(`修改成功`);

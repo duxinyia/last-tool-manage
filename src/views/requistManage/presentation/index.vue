@@ -162,6 +162,11 @@ const remoteMethod = (index: number, query: string) => {
 			state.tableData.header[0].option = res.data.map((item: EmptyObjectType) => {
 				return { ...item, value: `${item.matNo}`, label: `${item.matNo}` };
 			});
+			if (res.data.length === 1) {
+				state.tableData.data[0].matNo = query;
+				changeSelect(0, query);
+			}
+
 			// state.tableData.header[0].option = option.filter((item: EmptyObjectType, index) => {
 			// 	return item.label.toLowerCase().includes(query.toLowerCase());
 			// });
@@ -201,7 +206,7 @@ const changeSelect = async (i: number, query: any) => {
 			data.nameEn = item.nameEn;
 			data.drawNo = item.drawNo;
 			data.reqMatNo = item.reqMatNo;
-			data.machineType = '';
+			data.machineType = item.machineType;
 			const res = await getMachineTypesOfMatApi(item.matNo);
 			state.tableData.data[i].machineTypeoption = res.data.map((item: EmptyObjectType) => {
 				return { value: `${item}`, label: `${item}` };
@@ -218,19 +223,23 @@ const onAddRow = () => {
 		drawNo: '',
 		pr: '',
 	});
+	// 新增的时候超过表格了跟着移动
+	nextTick(() => {
+		tableRef.value.setScrollTop();
+	});
 	// 对 Table 进行重新布局。 当表格可见性变化时，您可能需要调用此方法以获得正确的布局
 	// tableRef.value.doLayout();
 };
 // 新增的时候超过表格了跟着移动
-watch(
-	() => state.tableData.data,
-	() => {
-		nextTick(() => {
-			tableRef.value.setScrollTop();
-		});
-	},
-	{ deep: true }
-);
+// watch(
+// 	() => state.tableData.data,
+// 	() => {
+// 		nextTick(() => {
+// 			tableRef.value.setScrollTop();
+// 		});
+// 	},
+// 	{ deep: true }
+// );
 //删除
 const onDelRow = (row: EmptyObjectType, i: number) => {
 	state.tableData.data.splice(i, 1);

@@ -192,7 +192,19 @@ const state = reactive<TableDemoState>({
 			// validateForm: 'number',
 			// message: '请输入正整数',
 			{
-				label: '有碼數量:',
+				type: 'textarea',
+				label: '描述說明:',
+				placeholder: '請輸入描述說明',
+				prop: 'entryDescribe',
+				required: false,
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
+			},
+			{
+				label: '掃碼數量:',
 				prop: 'stockqty',
 				required: false,
 				type: 'text',
@@ -224,18 +236,6 @@ const state = reactive<TableDemoState>({
 			// 	type: 'select',
 			// 	options: [],
 			// },
-			{
-				type: 'textarea',
-				label: '描述說明:',
-				placeholder: '請輸入描述說明',
-				prop: 'entryDescribe',
-				required: false,
-				xs: 24,
-				sm: 24,
-				md: 24,
-				lg: 24,
-				xl: 24,
-			},
 		],
 		innerDialogConfig: [
 			{
@@ -341,6 +341,7 @@ const remoteMethod = (query: string, form: EmptyObjectType, prop: string) => {
 					}
 				});
 			} else {
+				// 發料人下拉
 				// const res = await getEngieerGroupApi(query);
 				// state.tableData.search[4].loading = false;
 				// let options = res.data.map((item: EmptyObjectType) => {
@@ -465,11 +466,14 @@ const handleTagClose = (tag: any, state: EmptyObjectType) => {
 const openEntryDialog = async (scope: any) => {
 	loadingBtn.value = false;
 	state.tableData.dialogConfig?.forEach((item) => {
-		if (item.prop === 'scan') {
-			item.disabled = scope.row.codeManageMode === 1 ? true : false;
+		if (item.prop === 'stockqty' || item.prop === 'scan') {
+			if (scope.row.codeManageMode === 1) {
+				item.type = 'null';
+			} else {
+				item.type = item.prop === 'stockqty' ? 'text' : 'button';
+			}
 		}
 	});
-
 	entryJobDialogRef.value.openDialog('entry', scope.row, '入庫');
 };
 const scanCodeEntry = () => {
@@ -477,7 +481,6 @@ const scanCodeEntry = () => {
 };
 //点击确认入库
 const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyObjectType) => {
-	loadingBtn.value = true;
 	let obj: EmptyObjectType = { ...ruleForm };
 	state.tableData.dialogConfig &&
 		state.tableData.dialogConfig.forEach((item) => {
@@ -509,10 +512,10 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 		// sLocation: obj.sLocation,
 		// storeType: obj.storeType,
 	};
-	if (obj.stockqty > obj.qty) {
-		ElMessage.error(`有碼數量大於發料數量`);
-	} else if (obj.stockqty < obj.qty) {
-		ElMessage.error(`有碼數量小於發料數量，請繼續掃碼錄入`);
+	if (obj.stockqty > obj.qty && !obj.codeManageMode) {
+		ElMessage.error(`掃碼數量大於發料數量`);
+	} else if (obj.stockqty < obj.qty && !obj.codeManageMode) {
+		ElMessage.error(`掃碼數量小於發料數量，請繼續掃碼錄入`);
 	}
 	// else if (obj.codes && obj.stockqty < obj.codes.length) {
 	// 	ElMessage.error(`有码数量小于扫码数量`);
@@ -541,7 +544,7 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 	// }
 	else {
 		// console.log(submitData);
-
+		loadingBtn.value = true;
 		const res = await GetTStockAddApi(submitData);
 		if (res.status) {
 			ElMessage.success(`入庫成功`);
