@@ -1,10 +1,11 @@
 import request from '/@/utils/request';
 
 // 查询（不分页，暂时无参数）
-export function GetCheckTaskApi() {
+export function GetCheckTaskApi(data: Object) {
 	return request({
 		url: '/api/Material/GetCheckTask',
-		method: 'get',
+		method: 'POST',
+		data: data,
 	});
 }
 //驗收

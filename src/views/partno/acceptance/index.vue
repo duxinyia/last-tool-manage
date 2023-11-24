@@ -9,6 +9,7 @@
 				@pageChange="onTablePageChange"
 				@onOpenOtherDialog="openAcceptanceDialog"
 				:cellStyle="cellStyle"
+				@sortHeader="onSortHeader"
 			/>
 			<!-- <Dialog ref="sendReceiveDialogRef" v-bind="dialogData" /> -->
 			<el-dialog draggable :close-on-click-modal="false" v-model="dialogData.dialogVisible" title="驗收" width="70%">
@@ -112,6 +113,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
 			{ key: 'engineer', colWidth: '', title: 'message.pages.engineer', type: 'text', isCheck: true },
 			{ key: 'engineerName', colWidth: '', title: 'message.pages.engineerName', type: 'text', isCheck: true },
+			{ key: 'needor', colWidth: '', title: '需求人', type: 'text', isCheck: true },
 			{ key: 'runStatus', colWidth: '', title: 'message.pages.state', type: 'text', isCheck: true },
 		],
 		// 表格配置项（必传）
@@ -125,13 +127,17 @@ const state = reactive<TableDemoState>({
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
-			isPage: false, //是否有分页
-			height: 750,
+			isPage: true, //是否有分页
 		},
 
 		btnConfig: [{ type: 'acceptance', name: '驗收', color: '#e6a23c', isSure: false }],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-		search: [{ label: '送樣單號', prop: 'simpleNo', placeholder: '請輸入送樣單號', required: false, type: 'input' }],
+		search: [
+			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '送樣單號', prop: 'simpleNo', placeholder: '請輸入送樣單號', required: false, type: 'input' },
+			{ label: '品名', prop: 'matName', required: false, type: 'input' },
+			{ label: '需求人', prop: 'needor', required: false, type: 'input' },
+		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
@@ -236,11 +242,12 @@ const getTableData = async () => {
 	state.tableData.config.loading = true;
 	const form = state.tableData.form;
 	let data = {
-		matNo: form.matNo,
+		...form,
 		page: state.tableData.page,
 	};
-	const res = await GetCheckTaskApi();
-	state.tableData.data = res.data;
+	const res = await GetCheckTaskApi(data);
+	state.tableData.data = res.data.data;
+	state.tableData.config.total = res.data.total;
 	if (res.status) {
 		state.tableData.config.loading = false;
 	}
@@ -271,6 +278,10 @@ const onTablePageChange = (page: TableDemoPageType) => {
 	state.tableData.page.pageNum = page.pageNum;
 	state.tableData.page.pageSize = page.pageSize;
 	getTableData();
+};
+// 拖动显示列排序回调
+const onSortHeader = (data: TableHeaderType[]) => {
+	state.tableData.header = data;
 };
 
 // 打开验收弹窗 1
@@ -347,7 +358,10 @@ const inputsubmitUpload = async () => {
 };
 // 查看上传的文件
 const lookUpload = () => {
-	window.open(`${import.meta.env.VITE_API_URL}${dialogData.fileInfo['drawPath']}`, '_blank');
+	window.open(
+		`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${dialogData.fileInfo['drawPath']}`,
+		'_blank'
+	);
 };
 // 提交
 const onSubmit = async (formEl: EmptyObjectType | undefined) => {

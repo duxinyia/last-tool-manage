@@ -373,7 +373,10 @@ const downLoadFile = (prop: string) => {
 		draw3dPathProp: draw3dPath,
 	};
 	if (drawMap[prop]) {
-		window.open(`${import.meta.env.VITE_API_URL}${drawMap[prop]}`, '_blank');
+		window.open(
+			`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${drawMap[prop]}`,
+			'_blank'
+		);
 	} else {
 		prop === 'drawPathProp' ? ElMessage.warning(t('沒有圖紙')) : ElMessage.warning(t('沒有3d圖紙'));
 	}

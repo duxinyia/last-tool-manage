@@ -291,7 +291,7 @@
 							<slot name="dialogFooterBtn" :data="state"></slot>
 							<el-button type="success" plain size="default" @click="onExportQrcodeData"> 導出二維碼 </el-button>
 							<el-button @click="innnerDialogCancel" size="default">清 空</el-button>
-							<el-button type="primary" @click="innnerDialogSubmit(innnerDialogFormRef)" size="default">{{ state.dialog.submitTxt }}</el-button>
+							<el-button type="primary" @click="innnerDialogSubmit(innnerDialogFormRef)" size="default">確 定</el-button>
 						</span>
 					</template>
 				</el-dialog>
@@ -667,7 +667,10 @@ const inputsubmitUpload = async (prop: string, key?: string) => {
 };
 // 查看上传的文件
 const lookUpload = (prop: string) => {
-	window.open(`${import.meta.env.VITE_API_URL}${state.formData[prop]}`, '_blank');
+	window.open(
+		`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${state.formData[prop]}`,
+		'_blank'
+	);
 };
 // // 上传错误提示
 // const handleError = () => {

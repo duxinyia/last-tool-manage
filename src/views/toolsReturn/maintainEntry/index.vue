@@ -1,7 +1,7 @@
 <template>
 	<div class="table-container layout-padding">
 		<div class="table-padding layout-padding-view layout-padding-auto">
-			<TableSearch labelWidth=" " :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
+			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
@@ -46,6 +46,7 @@ import { ElMessage, ElMessageBox, FormInstance } from 'element-plus';
 import { GetQueryStorableRepairCheckDetailsApi, GetPutStorageApi } from '/@/api/toolsReturn/maintainEntry';
 import { GetUserManagedStoreHouseApi } from '/@/api/requistManage/entryJob';
 import { useI18n } from 'vue-i18n';
+import { getLegalStoreTypesExceptIdleStoreApi } from '/@/api/global';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
@@ -70,16 +71,20 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'repairCheckNo', colWidth: '', title: '維修驗收單號', type: 'text', isCheck: true },
-			{ key: 'repairReceiveNo', colWidth: '', title: '維修收貨單號', type: 'text', isCheck: true },
+			{ key: 'repairNo', colWidth: '', title: '維修單號', type: 'text', isCheck: true },
+			// { key: 'repairReceiveNo', colWidth: '', title: '維修收貨單號', type: 'text', isCheck: true },
 			// { key: 'reqno', colWidth: '', title: '申请单号', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
-			{ key: 'repairNo', colWidth: '', title: '維修單號', type: 'text', isCheck: true },
-			// { key: 'namech', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
-			// { key: 'nameen', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'checkQty', colWidth: '', title: '驗收數量', type: 'text', isCheck: true },
-			{ key: 'passQty', colWidth: '', title: '合格數量', type: 'text', isCheck: true },
-			{ key: 'failQty', colWidth: '', title: '不合格數量', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			// { key: 'checkQty', colWidth: '', title: '驗收數量', type: 'text', isCheck: true },
+			// { key: 'passQty', colWidth: '', title: '合格數量', type: 'text', isCheck: true },
+			// { key: 'failQty', colWidth: '', title: '不合格數量', type: 'text', isCheck: true },
+			{ key: 'dispatcher', colWidth: '', title: '發料人', type: 'text', isCheck: true },
+			{ key: 'dispatchTime', colWidth: '', title: '發料時間', type: 'text', isCheck: true },
+			{ key: 'qty', colWidth: '', title: '發料數量', type: 'text', isCheck: true },
+			{ key: 'receiveStorageType', colWidth: '', title: '領用倉庫類型', type: 'text', isCheck: true },
+			{ key: 'receiveSLocation', colWidth: '', title: '領用倉庫位置', type: 'text', isCheck: true },
 			{ key: 'codeManageModeText', colWidth: '', title: '二維碼管理模式', type: 'text', isCheck: true },
 			// { key: 'runstatus', colWidth: '', title: '状态', type: 'status', isCheck: true },
 			// { key: 'isstorage', colWidth: '', title: '是否入库', type: 'text', isCheck: true },
@@ -100,9 +105,33 @@ const state = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: '維修單號', prop: 'repairNo', required: false, type: 'input' },
-			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 5, xl: 5 },
-			{ label: '維修驗收單號', prop: 'repairCheckNo', required: false, type: 'input' },
-			{ label: '維修收貨單號', prop: 'repairReceiveNo', required: false, type: 'input' },
+			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '品名', prop: 'name', required: false, type: 'input' },
+			{ label: '發料人', prop: 'dispatcher', required: false, type: 'input' },
+			{
+				label: '領用倉庫類型',
+				prop: 'receiveStorageType',
+				required: false,
+				type: 'select',
+				options: [],
+			},
+			{
+				label: '領用倉庫位置',
+				prop: 'receiveSLocation',
+				required: false,
+				type: 'input',
+				placeholder: '請輸入倉庫位置',
+				// options: [],
+				// loading: true,
+				// filterable: true,
+				// remote: true,
+				// remoteShowSuffix: true,
+				// lg: 6,
+				// xl: 6,
+			},
+			{ label: '發料時間', prop: 'dispatchDate', required: false, type: 'dateRange' },
+			// { label: '維修驗收單號', prop: 'repairCheckNo', required: false, type: 'input' },
+			// { label: '維修收貨單號', prop: 'repairReceiveNo', required: false, type: 'input' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -110,7 +139,7 @@ const state = reactive<TableDemoState>({
 		btnConfig: [{ type: 'sendReceive', name: '入庫', color: '#e6a23c', isSure: false, icon: 'ele-EditPen' }],
 		// 给后端的数据
 		form: {
-			repairCheckNo: '',
+			// repairCheckNo: '',
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -122,18 +151,16 @@ const state = reactive<TableDemoState>({
 		//入库弹窗
 		dialogConfig: [
 			// { label: '入库单号:', prop: 'putno', placeholder: '请输入入库单号', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
-			{
-				label: '驗收單號:',
-				prop: 'repairCheckNo',
-				placeholder: '請輸入驗收單號',
-				required: false,
-				type: 'text',
-			},
-			//这个字段待定
-			{ label: '驗收人:', prop: 'checker', placeholder: '請輸入驗收人', required: false, type: 'text' },
-			{ label: '料號:', prop: 'matNo', placeholder: '請輸入料號', required: false, type: 'text' },
-			{ label: '品名-中文:', prop: 'nameCh', placeholder: '請輸入品名-中文', required: false, type: 'text' },
-			{ label: '品名-英文:', prop: 'nameEn', placeholder: '請輸入品名-英文', required: false, type: 'text' },
+			{ label: '維修單號:', prop: 'repairNo', placeholder: '', required: false, type: 'text' },
+			{ label: '料號:', prop: 'matNo', placeholder: '', required: false, type: 'text' },
+			{ label: '品名-中文:', prop: 'nameCh', placeholder: '', required: false, type: 'text' },
+			{ label: '品名-英文:', prop: 'nameEn', placeholder: '', required: false, type: 'text' },
+			{ label: '發料時間:', prop: 'dispatchTime', placeholder: '', required: false, type: 'text' },
+			{ label: '發料數量:', prop: 'qty', placeholder: '', required: false, type: 'text' },
+			{ label: '發料人:', prop: 'dispatcher', placeholder: '', required: false, type: 'text' },
+			{ label: '二維碼管理:', prop: 'codeManageModeText', placeholder: '', required: false, type: 'text' },
+			{ label: '領用倉庫類型:', prop: 'receiveStorageType', placeholder: '', required: false, type: 'text' },
+			{ label: '領用倉庫位置:', prop: 'receiveSLocation', placeholder: '', required: false, type: 'text' },
 			// { label: '厂商代码:', prop: 'vendorCode', placeholder: '请输入厂商代码', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
 			// {
 			// 	label: '厂商名称:',
@@ -147,29 +174,41 @@ const state = reactive<TableDemoState>({
 			// 	lg: 16,
 			// 	xl: 16,
 			// },
-			{ label: '驗收合格數量:', prop: 'passQty', placeholder: '', required: false, type: 'text' },
+			// { label: '驗收合格數量:', prop: 'passQty', placeholder: '', required: false, type: 'text' },
 			// 这个字段待定
+			// {
+			// 	label: '驗收時間:',
+			// 	prop: 'checkTime',
+			// 	placeholder: '',
+			// 	required: false,
+			// 	type: 'text',
+			// 	xs: 24,
+			// 	sm: 24,
+			// 	md: 24,
+			// 	lg: 24,
+			// 	xl: 24,
+			// },
+			// validateForm: 'number',
+			// 	message: '请输入正整数',
+			// {
+			// 	label: '收貨倉庫:',
+			// 	prop: 'storageId',
+			// 	placeholder: '請選擇收貨倉庫',
+			// 	required: true,
+			// 	type: 'select',
+			// 	options: [],
+			// },
 			{
-				label: '驗收時間:',
-				prop: 'checkTime',
-				placeholder: '請輸入驗收時間',
+				type: 'textarea',
+				label: '描述說明:',
+				placeholder: '請輸入描述說明',
+				prop: 'describe',
 				required: false,
-				type: 'text',
 				xs: 24,
 				sm: 24,
 				md: 24,
 				lg: 24,
 				xl: 24,
-			},
-			// validateForm: 'number',
-			// 	message: '请输入正整数',
-			{
-				label: '收貨倉庫:',
-				prop: 'storageId',
-				placeholder: '請選擇收貨倉庫',
-				required: true,
-				type: 'select',
-				options: [],
 			},
 			{
 				label: '掃碼數量:',
@@ -287,6 +326,18 @@ const getOptionsData = async () => {
 		});
 	}
 };
+// 類型下拉框数据
+const getSelect = async () => {
+	const res = await getLegalStoreTypesExceptIdleStoreApi();
+	const option = res.data.map((item: any) => {
+		return { label: item, text: item, value: item };
+	});
+	state.tableData.search?.forEach((item) => {
+		if (item.prop === 'receiveStorageType') {
+			item.options = option;
+		}
+	});
+};
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;
@@ -296,13 +347,18 @@ const getTableData = async () => {
 	};
 	let data = {
 		...form,
+		dispatchDate: form.dispatchDate,
+		startDispatchTime: form.dispatchDate && form.dispatchDate[0],
+		endDispatchTime: form.dispatchDate && form.dispatchDate[1],
 		page: state.tableData.page,
 	};
+	delete data.dispatchDate;
 	const res = await GetQueryStorableRepairCheckDetailsApi(data);
 	state.tableData.data = res.data.data;
 	state.tableData.data.forEach((item) => {
 		item.stockqty = 0;
 		item.codeManageModeText = codeManageModeMap[item.codeManageMode];
+		item.dispatcher = `${item.dispatcher} / ${item.dispatcherName}`;
 	});
 	state.tableData.config.total = res.data.total;
 	if (res.status) {
@@ -415,7 +471,8 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 	let submitData = {
 		repairCheckDetailId: obj.repairCheckDetailId,
 		// runId: obj.runid,
-		storageId: obj.storageId,
+		// storageId: obj.storageId,
+		describe: obj.describe,
 		codes: obj.codeList,
 		// checkno: obj.checkno,
 		// creator: obj.creator,
@@ -462,6 +519,7 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 	else {
 		// console.log(submitData);
 		loadingBtn.value = true;
+		// console.log(submitData);
 		const res = await GetPutStorageApi(submitData);
 		if (res.status) {
 			ElMessage.success(`入庫成功`);
@@ -529,6 +587,7 @@ const onSortHeader = (data: TableHeaderType[]) => {
 onMounted(() => {
 	getTableData();
 	getOptionsData();
+	getSelect();
 });
 </script>
 

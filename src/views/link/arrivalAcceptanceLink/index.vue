@@ -104,7 +104,13 @@ watch(
 );
 // 点击文件
 const clickLink = () => {
-	state.tableData.form['accepreporturl'] && window.open(`${import.meta.env.VITE_API_URL}${state.tableData.form['accepreporturl']}`, '_blank');
+	state.tableData.form['accepreporturl'] &&
+		window.open(
+			`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${
+				state.tableData.form['accepreporturl']
+			}`,
+			'_blank'
+		);
 };
 // 初始化数据
 const getTableData = async () => {

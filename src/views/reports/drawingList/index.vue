@@ -102,7 +102,7 @@ const getTableData = async () => {
 // 点击查看图纸
 const drawPathClick = async (drawPath: string) => {
 	if (drawPath) {
-		window.open(`${import.meta.env.VITE_API_URL}${drawPath}`, '_blank');
+		window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${drawPath}`, '_blank');
 	} else {
 		ElMessage.warning(t('沒有圖紙'));
 	}

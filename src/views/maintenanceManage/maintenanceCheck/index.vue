@@ -313,7 +313,12 @@ const inputsubmitUpload = async () => {
 };
 // 查看上传的文件
 const lookUpload = () => {
-	window.open(`${import.meta.env.VITE_API_URL}${dialogState.tableData.form['accepReportUrl']}`, '_blank');
+	window.open(
+		`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${
+			dialogState.tableData.form['accepReportUrl']
+		}`,
+		'_blank'
+	);
 };
 //删除
 const onDelRow = (row: EmptyObjectType, i: number) => {

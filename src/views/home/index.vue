@@ -327,7 +327,7 @@ watch(
 // 点击模版下载
 const downloadTemp = (link: string) => {
 	if (link) {
-		window.open(`${import.meta.env.VITE_API_URL}${link}`, '_blank');
+		window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${link}`, '_blank');
 	} else {
 		ElMessage.warning('暫時沒有下載的模板');
 	}
@@ -349,6 +349,7 @@ const routePage = (type: number) => {
 		2: '/requistManage/arrivalAcceptance',
 		3: '/maintenanceManage/maintenanceCheck',
 		4: '/requistManage/issueMaterials',
+		5: '/maintenanceManage/maintenanceMaterialIssue',
 	};
 	router.push(routeTypeMap[type]);
 };
@@ -368,6 +369,7 @@ const getTodos = async () => {
 		2: '待驗收',
 		3: '待驗收',
 		4: '待發料',
+		5: '待發料',
 	};
 	const noTypeMap: EmptyObjectType = {
 		0: '送樣單',
@@ -375,6 +377,7 @@ const getTodos = async () => {
 		2: '申請單',
 		3: '維修收貨單',
 		4: '申請單',
+		5: '維修單',
 	};
 	res.data.forEach((item: any) => {
 		let type = item.todoType;

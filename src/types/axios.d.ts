@@ -12,3 +12,8 @@ declare module 'axios' {
 		[key: string]: T;
 	}
 }
+ export declare global {
+  interface Window {
+    webConfig: any;
+  }
+}

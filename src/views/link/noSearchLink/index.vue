@@ -133,7 +133,7 @@ const getDetailData = async () => {
 	let comkey = props.isDialog ? props.matNoRef : route.query.comkey;
 	const res = await getMaterialApi(comkey);
 	state.form = res.data;
-	state.form.picture = import.meta.env.VITE_API_URL + res.data.picture;
+	state.form.picture = (import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl) + res.data.picture;
 	const res1 = await getMachineTypesOfMatApi(comkey);
 	state.form.machineType = res1.data;
 	if (!res.status && !res1.status) {
@@ -143,7 +143,10 @@ const getDetailData = async () => {
 // 点击文件
 const clickLink = (prop: string) => {
 	if (prop === 'drawPath') {
-		window.open(`${import.meta.env.VITE_API_URL}${state.form[prop]}`, '_blank');
+		window.open(
+			`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${state.form[prop]}`,
+			'_blank'
+		);
 	} else {
 		ElMessage.warning('暫無圖紙文件');
 	}

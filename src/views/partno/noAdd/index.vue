@@ -323,7 +323,7 @@ const getTableData = async () => {
 	};
 	const res = await getMaterialListApi(data);
 	res.data.data.forEach((item: any) => {
-		item.picture = `${import.meta.env.VITE_API_URL}${item.picture}`;
+		item.picture = `${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${item.picture}`;
 		item.codeManageModeText = codeManageModeMap[item.codeManageMode];
 	});
 	state.tableData.data = res.data.data;

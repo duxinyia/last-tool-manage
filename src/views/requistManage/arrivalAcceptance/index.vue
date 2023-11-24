@@ -403,7 +403,10 @@ const openDetailDialog = (scope: EmptyObjectType) => {
 // 查看验收报告单
 const arriveList = (formData: EmptyObjectType) => {
 	if (formData.accepReportUrl) {
-		window.open(`${import.meta.env.VITE_API_URL}${formData.accepReportUrl}`, '_blank');
+		window.open(
+			`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${formData.accepReportUrl}`,
+			'_blank'
+		);
 	} else {
 		ElMessage.warning(t('沒有驗收報告單'));
 	}

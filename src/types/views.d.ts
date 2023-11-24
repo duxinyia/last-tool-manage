@@ -126,3 +126,4 @@ declare type parentIdListType={
 	text: string;
 	value:string;
 }
+declare const window: window & {  webConfig: EmptyObjectType };
