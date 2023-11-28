@@ -1,13 +1,18 @@
 <template>
-	<div class="table-container layout-padding">
-		<div class="table-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
+	<el-tabs v-model="activeName" class="table-container layout-padding" @tab-click="handleClick">
+		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="到貨作業" name="first">
+			<TableSearch
+				:search="state.tableData.search"
+				@search="(data) => onSearch(data, state.tableData)"
+				:searchConfig="state.tableData.searchConfig"
+				labelWidth=" "
+			/>
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
 				class="table"
-				@pageChange="onTablePageChange"
-				@sortHeader="onSortHeader"
+				@pageChange="(page) => onTablePageChange(page, state.tableData)"
+				@sortHeader="(data) => onSortHeader(data, state.tableData)"
 				@onOpenOtherDialog="openArriveJobDialog"
 			/>
 			<Dialog
@@ -23,15 +28,30 @@
 					<span style="float: right; color: var(--el-text-color-secondary)">{{ row.value }}</span>
 				</template>
 			</Dialog>
-		</div>
-	</div>
+		</el-tab-pane>
+		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="到貨記錄" name="second">
+			<TableSearch
+				:search="secondState.tableData.search"
+				@search="(data) => onSearch(data, secondState.tableData)"
+				:searchConfig="secondState.tableData.searchConfig"
+				labelWidth="90px"
+			/>
+			<Table
+				ref="tableRef"
+				v-bind="secondState.tableData"
+				class="table"
+				@pageChange="(page) => onTablePageChange(page, secondState.tableData)"
+				@sortHeader="(data) => onSortHeader(data, secondState.tableData)"
+			/>
+		</el-tab-pane>
+	</el-tabs>
 </template>
 
 <script setup lang="ts" name="/requistManage/arriveJob">
 import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
-import { ElMessage, FormInstance } from 'element-plus';
+import { ElMessage, FormInstance, TabsPaneContext } from 'element-plus';
 // 引入接口
-import { getGetWaitRecievePageListApi, getAddReceiveApi } from '/@/api/requistManage/arriveJob';
+import { getGetWaitRecievePageListApi, getAddReceiveApi, getQueryReceiveRecordApi } from '/@/api/requistManage/arriveJob';
 import { getEngieerGroupApi } from '/@/api/global/index';
 import { useI18n } from 'vue-i18n';
 // 引入组件
@@ -46,6 +66,11 @@ const tableRef = ref<RefType>();
 const arriveJobDialogRef = ref();
 const loading = ref(false);
 const loadingBtn = ref(false);
+const activeName = ref<string | number>('first');
+const handleClick = (tab: TabsPaneContext, event: Event) => {
+	activeName.value = tab.paneName as string | number;
+	getTableData(activeName.value === 'first' ? state.tableData : secondState.tableData);
+};
 const state = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
@@ -140,6 +165,73 @@ const state = reactive<TableDemoState>({
 		printName: '表格打印演示',
 	},
 });
+const secondState = reactive<TableDemoState>({
+	tableData: {
+		// 列表数据（必传）
+		data: [],
+		// 表头内容（必传，注意格式）
+		header: [
+			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'reqMatNo', colWidth: '', title: '申請料號', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			{ key: 'qty', colWidth: '', title: '收貨數量', type: 'text', isCheck: true },
+			{ key: 'receiveDate', colWidth: '', title: '收貨日期', type: 'text', isCheck: true },
+			{ key: 'hasChecked', colWidth: '120', title: '是否已驗收', type: 'text', isCheck: true },
+			{ key: 'engineer', colWidth: '', title: '工程驗收人', type: 'text', isCheck: true },
+			{ key: 'prNo', colWidth: '', title: 'PR單號', type: 'text', isCheck: true },
+			{ key: 'prItemNo', colWidth: '', title: 'PR項次', type: 'text', isCheck: true },
+			{ key: 'describe', colWidth: '', title: '描述說明', type: 'text', isCheck: true },
+		],
+		// 配置项（必传）
+		config: {
+			total: 0, // 列表总数
+			loading: true, // loading 加载
+			isBorder: false, // 是否显示表格边框
+			isSerialNo: true, // 是否显示表格序号
+			isSelection: false, // 是否显示表格多选
+			isOperate: false, // 是否显示表格操作栏
+			isButton: false, //是否显示表格上面的新增删除按钮
+			isInlineEditing: false, //是否是行内编辑
+			isTopTool: true, //是否有表格右上角工具
+			isPage: true, //是否有分页
+		},
+		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
+		search: [
+			{ label: '申請單號', prop: 'reqNo', required: false, type: 'input' },
+			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '品名', prop: 'name', required: false, type: 'input' },
+			{
+				label: '是否已驗收',
+				prop: 'hasChecked',
+				required: false,
+				clearable: false,
+				type: 'select',
+				options: [
+					{ value: true, label: '是', text: '是' },
+					{ value: false, label: '否', text: '否' },
+				],
+			},
+			{ label: 'PR單號', prop: 'prNo', required: false, type: 'input' },
+			{ label: '申請料號', prop: 'reqMatNo', required: false, type: 'input' },
+			{ label: '工程驗收人', prop: 'engineer', required: false, type: 'input' },
+			{ label: '收貨日期', prop: 'receiveDate', required: false, type: 'dateRange' },
+		],
+		searchConfig: {
+			isSearchBtn: true,
+		},
+		btnConfig: [],
+		// 给后端的数据
+		form: {},
+		dialogConfig: [],
+		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
+		page: {
+			pageNum: 1,
+			pageSize: 10,
+		},
+	},
+});
 // const dialogState = reactive<TableDemoState>({
 // 	tableData: {
 // 		// 列表数据（必传）
@@ -225,21 +317,38 @@ const remoteMethod = (query: string) => {
 };
 
 // 初始化列表数据
-const getTableData = async () => {
-	const form = state.tableData.form;
-	let data = {
-		...form,
-		reqDate: form.reqDate,
-		startReqDate: form.reqDate && form.reqDate[0],
-		endReqDate: form.reqDate && form.reqDate[1],
-		page: state.tableData.page,
-	};
-	delete data.reqDate;
-	const res = await getGetWaitRecievePageListApi(data);
-	state.tableData.data = res.data.data;
-	state.tableData.config.total = res.data.total;
-	if (res.status) {
-		state.tableData.config.loading = false;
+const getTableData = async (datas: EmptyObjectType) => {
+	const form = datas.form;
+	let res = null;
+	if (activeName.value === 'first') {
+		let data = {
+			...form,
+			reqDate: form.reqDate,
+			startReqDate: form.reqDate && form.reqDate[0],
+			endReqDate: form.reqDate && form.reqDate[1],
+			page: datas.page,
+		};
+		delete data.reqDate;
+		res = await getGetWaitRecievePageListApi(data);
+	} else {
+		let data = {
+			...form,
+			receiveDate: form.receiveDate,
+			startReceiveDate: form.receiveDate && form.receiveDate[0],
+			endReceiveDate: form.receiveDate && form.receiveDate[1],
+			page: datas.page,
+		};
+		delete data.receiveDate;
+		res = await getQueryReceiveRecordApi(data);
+		res.data.data.forEach((item: any) => {
+			item.hasChecked = item.hasChecked ? '是' : '否';
+			item.engineer = `${item.engineer} / ${item.engineerName}`;
+		});
+	}
+	datas.data = res!.data.data;
+	datas.config.total = res!.data.total;
+	if (res!.status) {
+		datas.config.loading = false;
 	}
 };
 
@@ -264,25 +373,25 @@ const onSubmit = async (formData: any) => {
 		ElMessage.success(t('收貨成功'));
 
 		arriveJobDialogRef.value.closeDialog();
-		getTableData();
+		getTableData(state.tableData);
 	}
 	loadingBtn.value = false;
 };
 // 搜索点击时表单回调
-const onSearch = (data: EmptyObjectType) => {
-	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
+const onSearch = (data: EmptyObjectType, tableData: EmptyObjectType) => {
+	tableData.form = Object.assign({}, tableData.form, { ...data });
 	tableRef.value?.pageReset();
 };
 
 // 分页改变时回调
-const onTablePageChange = (page: TableDemoPageType) => {
-	state.tableData.page.pageNum = page.pageNum;
-	state.tableData.page.pageSize = page.pageSize;
-	getTableData();
+const onTablePageChange = (page: TableDemoPageType, tableData: EmptyObjectType) => {
+	tableData.page.pageNum = page.pageNum;
+	tableData.page.pageSize = page.pageSize;
+	getTableData(tableData);
 };
 // 拖动显示列排序回调
-const onSortHeader = (data: TableHeaderType[]) => {
-	state.tableData.header = data;
+const onSortHeader = (data: TableHeaderType[], tableData: EmptyObjectType) => {
+	tableData.header = data;
 };
 // if (dialogState.tableData.btnConfig)
 // 	dialogState.tableData.btnConfig[0].disabled = computed(() => {
@@ -290,7 +399,7 @@ const onSortHeader = (data: TableHeaderType[]) => {
 // 	});
 // 页面加载时
 onMounted(() => {
-	getTableData();
+	getTableData(state.tableData);
 });
 </script>
 
@@ -310,5 +419,12 @@ onMounted(() => {
 	span {
 		width: 90px;
 	}
+}
+:deep(.el-tabs__content) {
+	height: 100% !important;
+}
+:deep(.el-tabs__item) {
+	font-weight: 700;
+	font-size: 14px;
 }
 </style>

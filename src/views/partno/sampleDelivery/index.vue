@@ -34,7 +34,7 @@
 			</template>
 			<template #dialogBtn="{ data, ref }">
 				<el-button
-					:disabled="data.formData.status === 1 ? true : false"
+					:disabled="activeName === 'first' || data.formData.status === 0 ? false : true"
 					:loading="loadingSaveBtn"
 					type="success"
 					@click="onSave(data, ref)"
@@ -72,11 +72,11 @@ const tableRef2 = ref<RefType>();
 const matNoDetaildialogVisible = ref(false);
 const loadingBtn = ref(false);
 const loadingSaveBtn = ref(false);
-const activeName = ref<string | number>('first');
+const activeName = ref<string>('first');
 const footBtnDisabled = ref(false);
 const handleClick = (tab: TabsPaneContext, event: Event) => {
-	activeName.value = tab.paneName as string | number;
-	const isContainsOther = activeName.value === 'first' ? 0 : 1;
+	activeName.value = tab.paneName as string;
+	activeName.value === 'first' ? 0 : 1;
 	getTableData();
 };
 const state = reactive<TableDemoState>({
@@ -423,7 +423,7 @@ const onTablePageChange = (page: TableDemoPageType) => {
 // 打开样品需求弹窗 1
 const openSampleDialog = (scope: EmptyObjectType, type: string) => {
 	loadingBtn.value = false;
-	footBtnDisabled.value = scope.row.status === 1 ? true : false;
+	footBtnDisabled.value = activeName.value === 'first' || scope.row.status === 0 ? false : true;
 	sampleDialogRef.value.openDialog('samp', scope.row, activeName.value === 'first' ? '樣品需求' : '提交送樣');
 };
 // 点击料号 2

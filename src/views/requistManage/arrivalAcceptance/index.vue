@@ -12,7 +12,7 @@
 			/>
 		</el-tab-pane>
 		<el-tab-pane label="驗收記錄" name="second" class="table-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="secondState.tableData.search" @search="onSearch2" :searchConfig="secondState.tableData.searchConfig" labelWidth="70px" />
+			<TableSearch :search="secondState.tableData.search" @search="onSearch2" :searchConfig="secondState.tableData.searchConfig" labelWidth="90px" />
 			<Table
 				ref="tableRef2"
 				v-bind="secondState.tableData"
@@ -364,6 +364,9 @@ const getTableData = async () => {
 	delete data2.checkDate;
 	if (activeName.value === 'first') {
 		const res = await getIToolReceivePageListApi(data);
+		res.data.data.forEach((item: any) => {
+			item.receiver = `${item.receiver} / ${item.receiverName}`;
+		});
 		state.tableData.data = res.data.data;
 		state.tableData.config.total = res.data.total;
 		if (res.status) {

@@ -70,7 +70,10 @@ const viteConfig = defineConfig((mode: ConfigEnv) => {
 			__INTLIFY_PROD_DEVTOOLS__: JSON.stringify(false),
 			__NEXT_VERSION__: JSON.stringify(process.env.npm_package_version),
 			__NEXT_NAME__: JSON.stringify(process.env.npm_package_name),
+			
 		},
+		
 	};
+
 });
 export default viteConfig;

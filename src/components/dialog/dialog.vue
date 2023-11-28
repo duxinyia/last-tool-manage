@@ -583,6 +583,7 @@ const commonInputHandleChange = debounce((val: any, prop: string) => {
 	emit('commonInputHandleChange', val, prop, state, iscontu.value);
 }, 500);
 let arr: EmptyArrayType = [];
+// 判斷是鍵盤輸入還是掃描槍輸入
 const inputNum = (target: EmptyObjectType, prop: string) => {
 	let timenow = target.timeStamp;
 	arr.push(timenow);

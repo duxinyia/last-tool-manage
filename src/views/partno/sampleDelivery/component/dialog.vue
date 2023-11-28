@@ -311,6 +311,7 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 			loadingBtn.value = true;
 			receiveData['recieveDetails'] = state.vendors.map((item) => {
 				let obj = {
+					runId: item.runId,
 					sampleTime: item.receiveTime,
 					sampleQty: item.receiveQty,
 					vendorCode: item.vendorCode,

@@ -16,3 +16,12 @@ export function getAddReceiveApi(data:Object) {
   	data:data
   });
 }
+// 收貨記錄
+export function getQueryReceiveRecordApi(data:Object) {
+  return request({
+    url: '/api/ToolApply/QueryReceiveRecord',
+    method: 'POST',
+  	data:data
+  });
+}
+
