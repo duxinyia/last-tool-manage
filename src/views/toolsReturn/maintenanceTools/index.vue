@@ -28,6 +28,7 @@
 				@handleTagClose="handleTagClose"
 				@selectChange="selectChange"
 				@remoteMethod="remoteMethod"
+				@inputBlur="onInputBlur"
 				:loadingBtn="loadingBtn"
 			>
 				<template #optionFat="{ row }" v-if="dilogTitle === '轉倉'">
@@ -49,7 +50,7 @@ import type { FormInstance } from 'element-plus';
 import { ElMessage } from 'element-plus';
 // 引入接口
 import { getStockListApi, ExitStoreApi, getExitReasonApi, getTransferStorageApi } from '/@/api/toolsReturn/maintentanceTools';
-import { getQueryStoreHouseExceptIdleStoreNoPageApi } from '/@/api/global';
+import { getQueryStoreHouseExceptIdleStoreNoPageApi, getUserNameApi } from '/@/api/global';
 
 import { useI18n } from 'vue-i18n';
 import type { TabsPaneContext } from 'element-plus';
@@ -242,11 +243,16 @@ const dialogState = reactive<TableDemoState>({
 		},
 		//退库弹窗
 		dialogConfig: [
-			{ label: '料號', prop: 'matno', placeholder: '', required: false, type: 'text', xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
+			{ label: '料號', prop: 'matno', placeholder: '', required: false, type: 'text' },
 			{ label: '品名-中文', prop: 'nameCh', placeholder: '', required: false, type: 'text' },
 			{ label: '品名-英文', prop: 'nameEn', placeholder: '', required: false, type: 'text' },
+			{ label: '倉庫類型', prop: 'storageType', placeholder: '', required: false, type: 'text' },
+			{ label: '倉庫位置', prop: 'sLocation', placeholder: '', required: false, type: 'text' },
+			{ label: '庫存總量', prop: 'stockqty', placeholder: '', required: false, type: 'text' },
 			// { label: '厂商代码', prop: 'vendorcode', placeholder: '', required: false, type: 'text', xs: 24, sm: 8, md: 12, lg: 8, xl: 8 },
 			// { label: '厂商名称', prop: 'vendorname', placeholder: '', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 12, xl: 12 },
+			{ label: 'DRI', prop: 'dri', placeholder: '', required: true, type: 'input' },
+			{ label: '姓名', prop: 'userName', placeholder: '', required: false, type: 'text' },
 			{
 				label: '退庫類型',
 				prop: 'exitType',
@@ -254,7 +260,6 @@ const dialogState = reactive<TableDemoState>({
 				required: true,
 				bindOthers: 'reasonId',
 				type: 'select',
-
 				options: [
 					{ value: 1, label: '維修', text: '維修' },
 					{ value: 2, label: '閒置', text: '閒置' },
@@ -269,6 +274,7 @@ const dialogState = reactive<TableDemoState>({
 				type: 'select',
 				options: [],
 			},
+
 			{
 				label: '接收倉庫:',
 				prop: 'storageId',
@@ -485,12 +491,14 @@ const openReturnDialog = (scope: EmptyObjectType, type: string) => {
 				item.label = '轉倉數量';
 				item.placeholder = '請輸入轉倉數量';
 			}
-			if (item.prop == 'exitType' || item.prop == 'reasonId') {
-				deleteData = JSON.parse(JSON.stringify(dialogConfig?.splice(index, 2)));
+
+			const delArr = ['exitType', 'reasonId', 'dri', 'userName'];
+			if (delArr.includes(item.prop)) {
+				deleteData = JSON.parse(JSON.stringify(dialogConfig?.splice(index, 4)));
 			}
 		});
 		deleteStorage.reverse().forEach((item: any) => {
-			dialogConfig?.splice(3, 0, item);
+			dialogConfig?.splice(6, 0, item);
 		});
 		deleteStorage = [];
 	} else {
@@ -506,11 +514,22 @@ const openReturnDialog = (scope: EmptyObjectType, type: string) => {
 			}
 		});
 		deleteData.reverse().forEach((item: any) => {
-			dialogConfig?.splice(3, 0, item);
+			dialogConfig?.splice(6, 0, item);
 		});
 		deleteData = [];
 	}
 	repairReturnDialogRef.value.openDialog('return', scope.row, dilogTitle.value);
+};
+// 輸入DRI得到姓名
+const onInputBlur = async (formData: EmptyObjectType) => {
+	const res = await getUserNameApi(formData.dri);
+	if (res.status) {
+		formData.userName = res.message;
+	} else {
+		formData.dri = '';
+		formData.userName = '';
+		ElMessage.warning('請重新輸入DRI');
+	}
 };
 // 根据接口得到仓库下拉数据
 let options: EmptyArrayType = [];
@@ -641,6 +660,7 @@ const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerDa
 		describe: allData.describe,
 		outDate: allData.outDate,
 		sLocation: allData.sLocation,
+		dri: allData.dri,
 		receiveStorageId: allData.receiveStorageId,
 		codeList: formInnerData.codeList,
 	};
@@ -676,6 +696,7 @@ const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerDa
 				exitReason: submitData.exitReason,
 				exitQty: submitData.exitQty,
 				describe: submitData.describe,
+				dri: submitData.dri,
 				codeList: formInnerData.codeList,
 			};
 			// console.log('退庫成功', exitStoreData);

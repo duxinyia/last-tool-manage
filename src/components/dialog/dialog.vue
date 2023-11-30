@@ -20,6 +20,7 @@
 								v-model="state.formData[item.prop]"
 								:placeholder="$t(item.placeholder)"
 								clearable
+								@blur="inputBlur"
 							></el-input>
 							<el-date-picker
 								v-if="item.type === 'date'"
@@ -339,6 +340,7 @@ const emit = defineEmits([
 	'editDialog',
 	'remoteMethod',
 	'handleNumberInputChange',
+	'inputBlur',
 ]);
 // 定义父组件传过来的值
 const props = defineProps({
@@ -429,6 +431,10 @@ const dailogFormButton = () => {
 // 改变number的值
 const handleNumberInputChange = (value: number) => {
 	emit('handleNumberInputChange', value, state.formData);
+};
+// 輸入框失去焦點
+const inputBlur = () => {
+	emit('inputBlur', state.formData);
 };
 // 校验表单
 const validatePass = (rule: any, value: any, callback: any, item: EmptyObjectType) => {

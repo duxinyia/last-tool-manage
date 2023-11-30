@@ -55,3 +55,25 @@ export function getQueryStoreHouseExceptIdleStoreNoPageApi(storeType: string,sLo
 		params: {storeType,sLocation},
 	});
 }
+// 根據工號拿姓名
+export function getUserNameApi(userId: string) {
+	return request({
+		url: '/api/User/GetUserName',
+		method: 'GET',
+		params: {userId},
+	});
+}
+// 導入
+export function getImportApplyDetailsApi(file:any) {
+  return request({
+    url: '/api/ToolApply/ImportApplyDetails',
+    method: 'POST',
+    headers: {
+      "Content-Type": "multipart/form-data",
+  },
+
+    data:{
+      file
+    }
+  });
+}

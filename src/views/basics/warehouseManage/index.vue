@@ -30,7 +30,14 @@
 				width="40%"
 			>
 				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
-					<Table ref="dialogTableRef" v-bind="dialogState.tableData" class="table-dialog" @delRow="onDelRow" @addrow="onAddrow" />
+					<Table
+						ref="dialogTableRef"
+						v-bind="dialogState.tableData"
+						class="table-dialog"
+						@delRow="onDelRow"
+						@addrow="onAddrow"
+						@inputBlur="onInputBlur"
+					/>
 				</el-form>
 				<template #footer>
 					<span class="dialog-footer">
@@ -56,7 +63,7 @@ import {
 	getAddAdminsToStoreHouseApi,
 	getRemoveAdminFromStoreHouseApi,
 } from '/@/api/basics/warehouseManage';
-import { getLegalStoreTypesApi, getQueryStoreHouseNoPageApi } from '/@/api/global';
+import { getLegalStoreTypesApi, getQueryStoreHouseNoPageApi, getUserNameApi } from '/@/api/global';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
@@ -197,6 +204,18 @@ const openAdminDialog = async (scope: EmptyObjectType) => {
 	loadingBtn.value = false;
 	warehouseDialogVisible.value = true;
 	getAdminData(scope.row.storeId);
+};
+// 輸入工號得到姓名
+const onInputBlur = async (index: number, formData: EmptyObjectType) => {
+	const row = formData.row;
+	const res = await getUserNameApi(row.userId);
+	if (res.status) {
+		row.username = res.message;
+	} else {
+		row.userId = '';
+		row.username = '';
+		ElMessage.warning('請重新輸入工號');
+	}
 };
 //删除
 const onDelRow = async (row: EmptyObjectType, i: number) => {

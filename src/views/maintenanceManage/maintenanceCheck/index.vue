@@ -287,6 +287,9 @@ const getTableData = async () => {
 		page: state.tableData.page,
 	};
 	const res = await getQueryCheckableRepairReceiveHeadApi(data);
+	res.data.data.forEach((item: any) => {
+		item.creator = `${item.creator} / ${item.receiverName}`;
+	});
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
 	if (res.status) {

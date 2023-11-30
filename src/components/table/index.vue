@@ -160,7 +160,7 @@
 							clearable
 							@change="changedata(scope.$index, item.key)"
 							@input="inputdata"
-							@blur="inputBlur(scope.$index)"
+							@blur="inputBlur(scope.$index, scope)"
 						></el-input>
 						<!-- 数字输入框 -->
 						<el-input-number
@@ -202,6 +202,7 @@
 							:max-collapse-tags="item.maxCollapseTags"
 							:collapse-tags="item.collapseTags"
 							:collapse-tags-tooltip="item.collapseTagsTooltip"
+							@focus="selectFocus(scope)"
 						>
 							<template v-if="item.rowOption">
 								<el-option v-for="i in data[scope.$index][`${item.key}option`]" :key="i.label" :label="i.text" :value="i.value" />
@@ -427,6 +428,7 @@ const emit = defineEmits([
 	'handleselect',
 	'handlechange',
 	'changeselect',
+	'selectFocus',
 	'inputData',
 	'inputBlur',
 	'changeData',
@@ -468,6 +470,10 @@ const handleSelect = (index: number, item: Object) => {
 };
 const changeSelect = (index: number, item: Object) => {
 	emit('changeselect', index, item);
+};
+// 下拉框獲取焦點時
+const selectFocus = (scope: EmptyObjectType) => {
+	emit('selectFocus', scope);
 };
 // 解决翻页组件开始输入中文按enter键之后光标不居中问题
 onMounted(() => {
@@ -669,8 +675,8 @@ const changedata = (index: number, key: string) => {
 const inputdata = (val: string) => {
 	emit('inputData', val);
 };
-const inputBlur = (index: number) => {
-	emit('inputBlur', index);
+const inputBlur = (index: number, scope: EmptyObjectType) => {
+	emit('inputBlur', index, scope);
 };
 // 暴露变量
 defineExpose({

@@ -2,6 +2,9 @@
 	<el-tabs v-model="activeName" class="table-container layout-padding" @tab-click="handleClick">
 		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="需求請購單" name="first">
 			<div class="title">需求請購單</div>
+			<span @click="onImportTable" style="position: absolute; right: 20px"
+				><el-icon name="iconfont icon-btn-daoru" :size="22" :title="$t('message.tooltip.import')"><ele-Download /></el-icon
+			></span>
 			<el-form ref="tableSearchRef" size="default" label-width="auto" class="table-form">
 				<el-row>
 					<el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4" class="mb20 mr20" v-for="(val, key) in state.tableData.search" :key="key">
@@ -31,6 +34,7 @@
 					@addrow="onAddRow(state.tableData)"
 					@remoteMethod="(index: number, query: string)=>remoteMethod(index, query,state.tableData)"
 					@changeselect="changeSelect"
+					@selectFocus="onSelectFocus"
 				/>
 			</el-form>
 			<div class="describe">
@@ -105,6 +109,7 @@
 					@addrow="onAddRow(dialogState.tableData)"
 					@remoteMethod="(index: number, query: string)=>remoteMethod(index, query,dialogState.tableData)"
 					@changeselect="changeSelect"
+					@selectFocus="onSelectFocus"
 				/>
 			</el-form>
 			<div class="describe">
@@ -118,10 +123,10 @@
 					placeholder="請輸入"
 					maxlength="150"
 				></el-input>
-				<span v-else style="color: #1890ff; font-weight: 700">{{ dialogState.tableData.form['describe'] }}</span>
+				<span v-else style="color: #1890ff; font-weight: 700; width: 100%">{{ dialogState.tableData.form['describe'] }}</span>
 			</div>
-			<template #footer v-if="isDraft">
-				<span class="dialog-footer">
+			<template #footer>
+				<span class="dialog-footer" v-if="isDraft">
 					<el-button size="default" auto-insert-space @click="detailDialogVisible = false">取 消</el-button>
 					<el-button size="default" type="danger" auto-insert-space :loading="delLoading" @click="onDelData"> 刪除草稿 </el-button>
 					<el-button
@@ -145,12 +150,45 @@
 				</span>
 			</template>
 		</el-dialog>
+		<!-- 上传文件弹窗 -->
+		<el-dialog draggable :close-on-click-modal="false" v-model="upLoadDialogVisible" title="上传文件" width="40%">
+			<el-form label-width="100px">
+				<el-button size="default" class="buttonBorder mb10" @click="onDownloadTemp" type="primary" plain>{{ $t('下載模板') }}</el-button>
+				<div class="download-form">
+					<el-input disabled v-model="fileListName" placeholder="請點擊瀏覽文件按鈕" />
+					<el-upload
+						v-model:file-list="fileList"
+						:auto-upload="false"
+						ref="uploadRefs"
+						action=""
+						class="upload"
+						drag
+						accept=".xlsx, .xls"
+						:limit="1"
+						:show-file-list="false"
+						:on-exceed="handleExceed"
+						:on-change="handleChange"
+					>
+						<el-button type="primary" size="default" class="ml10 buttonBorder bottonDownload" plain>瀏覽文件</el-button>
+					</el-upload>
+					<el-button
+						:disabled="fileListName && uploadForm ? false : true"
+						size="default"
+						class="ml10 buttonBorder bottonDownload"
+						type="primary"
+						plain
+						@click="submitUpload(tableFormRef)"
+						>{{ $t('開始上傳') }}</el-button
+					>
+				</div>
+			</el-form>
+		</el-dialog>
 	</el-tabs>
 </template>
 
 <script setup lang="ts" name="requistManagepresentation">
 import { defineAsyncComponent, reactive, ref, onMounted, watch, nextTick } from 'vue';
-import { ElMessage, ElMessageBox, TabsPaneContext } from 'element-plus';
+import { ElMessage, ElMessageBox, genFileId, TabsPaneContext, UploadInstance, UploadProps, UploadRawFile, UploadUserFile } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -165,6 +203,7 @@ import {
 	getSubmitDraftApi,
 } from '/@/api/requistManage/presentation';
 import { getMachineTypesOfMatApi } from '/@/api/partno/noSearch';
+import { getImportApplyDetailsApi } from '/@/api/global';
 // 定义变量内容
 const { t } = useI18n();
 const tableRef = ref();
@@ -177,7 +216,12 @@ const subLoading = ref(false);
 const saveLoading = ref(false);
 const delLoading = ref(false);
 const detailDialogVisible = ref(false);
+const upLoadDialogVisible = ref(false);
+const fileListName = ref();
+const fileList = ref<UploadUserFile[]>([]);
+const uploadRefs = ref<UploadInstance>();
 const activeName = ref<string | number>('first');
+const uploadForm = ref();
 const handleClick = (tab: TabsPaneContext, event: Event) => {
 	activeName.value = tab.paneName as string | number;
 	// activeName.value === 'first' ? 0 : getTableData();
@@ -186,17 +230,7 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
 const state = reactive<EmptyObjectType>({
 	tableData: {
 		// 列表数据（必传）
-		data: [
-			{
-				matNo: '',
-				nameCh: '',
-				nameEn: '',
-				drawNo: '',
-				reqQty: null,
-				reqDate: '',
-				prItemNo: '',
-			},
-		],
+		data: [{}],
 		config: {
 			total: 0, // 列表总数
 			loading: false, // loading 加载
@@ -309,17 +343,7 @@ const secondState = reactive<TableDemoState>({
 const dialogState = reactive<EmptyObjectType>({
 	tableData: {
 		// 列表数据（必传）
-		data: [
-			{
-				matNo: '',
-				nameCh: '',
-				nameEn: '',
-				drawNo: '',
-				reqQty: null,
-				reqDate: '',
-				prItemNo: '',
-			},
-		],
+		data: [{}],
 		config: {
 			total: 0, // 列表总数
 			loading: false, // loading 加载
@@ -369,7 +393,7 @@ const dialogState = reactive<EmptyObjectType>({
 			{ key: 'reqQty', colWidth: '150', title: 'PR數量', type: 'number', othersType: 'number', isCheck: true, isRequired: true, min: 0 },
 			{ key: 'reqDate', colWidth: '150', title: '需求時間', type: 'time', othersType: 'time', isCheck: true, isRequired: true },
 			{ key: 'prItemNo', colWidth: '', title: 'PR項次', type: 'input', othersType: 'input', isCheck: true, isRequired: false, maxlength: 20 },
-			{ key: 'describe', colWidth: '150', title: '描述說明', type: 'textarea', othersType: 'textarea', isCheck: true, isRequired: false },
+			// { key: 'describe', colWidth: '150', title: '描述說明', type: 'textarea', othersType: 'textarea', isCheck: true, isRequired: false },
 			{ key: 'receivedQty', colWidth: '110', title: '已收貨數量', type: 'text', isCheck: true, isRequired: false },
 			{ key: 'checkPassQty', colWidth: '120', title: '驗收合格數量', type: 'text', isCheck: true, isRequired: false },
 			{ key: 'checkFailQty', colWidth: '130', title: '驗收不合格數量', type: 'text', isCheck: true, isRequired: false },
@@ -443,6 +467,10 @@ const openDetailDialog = async (scope: EmptyObjectType) => {
 		if (hideArr.includes(item.key)) {
 			item.isCheck = res.data.isDraft ? false : true;
 		}
+		const requiredArr = ['matNo', 'machineType', 'line', 'reqQty', 'reqDate'];
+		if (requiredArr.includes(item.key)) {
+			item.isRequired = res.data.isDraft ? true : false;
+		}
 	});
 	dialogState.tableData.config.isAddRowBtn = res.data.isDraft ? true : false;
 	dialogState.tableData.config.isOperate = res.data.isDraft ? true : false;
@@ -507,12 +535,20 @@ const changeSelect = async (i: number, query: any) => {
 			data.drawNo = item.drawNo;
 			data.reqMatNo = item.reqMatNo;
 			data.machineType = item.machineType;
-			const res = await getMachineTypesOfMatApi(item.matNo);
-			data.machineTypeoption = res.data.map((item: EmptyObjectType) => {
-				return { value: `${item}`, label: `${item}` };
-			});
+			// const res = await getMachineTypesOfMatApi(item.matNo);
+			// data.machineTypeoption = res.data.map((item: EmptyObjectType) => {
+			// 	return { value: `${item}`, label: `${item}` };
+			// });
 		}
 	});
+};
+const onSelectFocus = async (scope: EmptyObjectType) => {
+	if (scope.column.property === 'machineType') {
+		const res = await getMachineTypesOfMatApi(scope.row.matNo);
+		scope.row.machineTypeoption = res.data.map((item: EmptyObjectType) => {
+			return { value: `${item}`, label: `${item}` };
+		});
+	}
 };
 // 刪除草稿
 const onDelData = async () => {
@@ -561,7 +597,8 @@ const onDelRow = (row: EmptyObjectType, i: number, datas: EmptyObjectType) => {
 // 清空數據 重置
 const onClearData = () => {
 	const tableData = state.tableData;
-	if (Object.keys(tableData.form).length <= 0 && tableData.data.length <= 0) return ElMessage.warning(t('數據已經重置了，請勿繼續點擊重置按鈕'));
+	if (Object.keys(tableData.form).length <= 0 && tableData.data.length <= 1 && Object.entries(tableData.data[0]).length === 0)
+		return ElMessage.warning(t('數據已經重置了，請勿繼續點擊重置按鈕'));
 	ElMessageBox.confirm('確定重置嗎?', '提示', {
 		confirmButtonText: '確 定',
 		cancelButtonText: '取 消',
@@ -571,7 +608,8 @@ const onClearData = () => {
 		.then(async () => {
 			// 清空
 			tableData.form = {};
-			tableData.data = [];
+			tableFormRef.value.resetFields();
+			tableData.data = [{}];
 		})
 		.catch(() => {});
 };
@@ -609,6 +647,7 @@ const onSubmit = async (formEl: EmptyObjectType | undefined, type: number, datas
 					ElMessage.success(t('保存草稿成功'));
 				}
 				saveLoading.value = false;
+				getTableData();
 			} else {
 				if (!datas.form.reqNo) return ElMessage.warning(t(`請先保存數據，得到申請料號再提交`));
 				ElMessageBox.confirm('確定提交嗎?', '提示', {
@@ -619,6 +658,7 @@ const onSubmit = async (formEl: EmptyObjectType | undefined, type: number, datas
 				})
 					.then(async () => {
 						subLoading.value = true;
+						await getCreateOrUpdateDraftApi(allData);
 						const res = await getSubmitDraftApi({ reqNo: datas.form.reqNo });
 						if (res.status) {
 							ElMessage.success(t('提交成功'));
@@ -627,16 +667,57 @@ const onSubmit = async (formEl: EmptyObjectType | undefined, type: number, datas
 						if (activeName.value !== 'first') {
 							detailDialogVisible.value = false;
 						}
+						getTableData();
 						// 清空
 						const tableData = state.tableData;
 						tableData.form = {};
-						tableData.data = [];
+						tableFormRef.value.resetFields();
+						tableData.data = [{}];
 					})
 					.catch(() => {});
 			}
-			getTableData();
 		}
 	});
+};
+// 打开导入弹窗
+const onImportTable = () => {
+	upLoadDialogVisible.value = true;
+	fileListName.value = '';
+	uploadForm.value = '';
+};
+// 模板下载 /Template/請購單身導入模板.xlsx
+const onDownloadTemp = () => {
+	window.open(
+		`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}/Template/請購單身導入模板.xlsx`,
+		'_blank'
+	);
+};
+//可以在选中时自动替换上一个文件
+const handleExceed: UploadProps['onExceed'] = (files) => {
+	uploadRefs.value!.clearFiles();
+	const file = files[0] as UploadRawFile;
+	file.uid = genFileId();
+	uploadRefs.value!.handleStart(file);
+};
+const handleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
+	fileListName.value = uploadFile.name;
+	uploadForm.value = uploadFile;
+};
+// 上传文件
+const submitUpload = async (formEl: EmptyObjectType | undefined) => {
+	// uploadRefs.value!.submit();
+	const res = await getImportApplyDetailsApi(uploadForm.value.raw);
+	if (res.status) {
+		if (state.tableData.data.length <= 1 && Object.entries(state.tableData.data[0]).length === 0) {
+			state.tableData.data = res.data;
+		} else {
+			state.tableData.data.push(...res.data);
+		}
+		ElMessage.success('導入數據成功！');
+		upLoadDialogVisible.value = false;
+		if (!formEl) return;
+		formEl.validate();
+	}
 };
 // 页面加载时
 onMounted(() => {
@@ -678,5 +759,18 @@ onMounted(() => {
 :deep(.el-tabs__item) {
 	font-weight: 700;
 	font-size: 14px;
+}
+.bottonDownload {
+	margin-top: 5px;
+}
+.download-form {
+	display: flex;
+	margin-bottom: 50px;
+}
+:deep(.el-upload-dragger) {
+	border: 0;
+	padding: 0;
+	background-color: transparent;
+	border-radius: unset;
 }
 </style>

@@ -389,9 +389,26 @@ const onSubmit = (formData: any) => {
 	})
 		.then(async () => {
 			loadingBtn.value = true;
+			const getData = {
+				sampleNo: formData.sampleNo,
+				matNo: formData.matNo,
+				needsQty: formData.needsQty,
+				needsDate: formData.needsDate,
+				purchaser: formData.purchaser,
+				purchaserName: formData.purchaserName,
+				needor: formData.needor,
+				needorTel: formData.needorTel,
+			};
+			options.forEach((item) => {
+				if (item.value === formData.purchaserName) {
+					getData['purchaser'] = item.label;
+					getData['purchaserName'] = item.text;
+				}
+			});
+			await getAddSampleNeedsApi(getData);
 			const res = await getSubmitSampleNeedsApi({ SampleNo: formData.sampleNo });
 			if (res.status) {
-				ElMessage.success(t('新增成功'));
+				ElMessage.success(t('提交成功'));
 				sampleDialogRef.value.closeDialog();
 				getTableData();
 			}
