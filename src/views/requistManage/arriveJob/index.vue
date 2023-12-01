@@ -420,11 +420,4 @@ onMounted(() => {
 		width: 90px;
 	}
 }
-:deep(.el-tabs__content) {
-	height: 100% !important;
-}
-:deep(.el-tabs__item) {
-	font-weight: 700;
-	font-size: 14px;
-}
 </style>

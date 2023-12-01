@@ -22,3 +22,19 @@ export function getReceiveApi(data:Object) {
   	data:data
   });
 }
+// 收貨記錄查詢接口
+export function getQueryRepairReceiveRecordApi(data:Object) {
+  return request({
+    url: '/api/ToolRepair/QueryRepairReceiveRecord',
+    method: 'POST',
+  	data:data
+  });
+}
+// 點擊查看詳情的詳情接口
+export function getRepairReceiveRecordDetailApi(repairReceiveNo:string) {
+  return request({
+    url: `/api/ToolRepair/GetRepairReceiveRecordDetail`,
+    method: 'GET',
+    params:{repairReceiveNo}
+  });
+}
