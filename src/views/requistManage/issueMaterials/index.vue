@@ -178,7 +178,7 @@ const secondState = reactive<TableDemoState>({
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'isStored', colWidth: '', title: '是否已入庫', type: 'text', isCheck: true },
-			{ key: 'dispatcher', colWidth: '', title: '發料人', type: 'text', isCheck: true },
+			// { key: 'dispatcher', colWidth: '', title: '發料人', type: 'text', isCheck: true },
 			{ key: 'dispatchTime', colWidth: '', title: '發料時間', type: 'text', isCheck: true },
 			{ key: 'qty', colWidth: '', title: '發料數量', type: 'text', isCheck: true },
 			{ key: 'receiveStorageType', colWidth: '', title: '領用倉庫類型', type: 'text', isCheck: true },

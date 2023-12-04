@@ -41,6 +41,7 @@ export default {
 		scrapBillQuery:'scrap bill query',
 		scrapSheetSub:'scrap sheet submission',
 		repairOrderAcceptance:'repair order acceptance',
+		maintenanceMaterialIssue:'maintenance issue',
 		warehouseManage:'warehouse management',
 		transferReceipt:'transfer receipt',
 		purchaseSampleDelivery:'purchase sample delivery',

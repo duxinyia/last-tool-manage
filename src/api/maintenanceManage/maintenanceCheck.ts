@@ -22,3 +22,19 @@ export function getCheckApi(data:Object) {
   	data:data
   });
 }
+// 驗收記錄查询接口
+export function getQueryRepairCheckRecordApi(data:Object) {
+  return request({
+    url: '/api/ToolRepair/QueryRepairCheckRecord',
+    method: 'POST',
+  	data:data
+  });
+}
+// 点击驗收記錄查看详情页
+export function getRepairCheckRecordDetailApi(repairCheckNo:string) {
+  return request({
+    url: `/api/ToolRepair/GetRepairCheckRecordDetail`,
+    method: 'GET',
+    params:{repairCheckNo}
+  });
+}

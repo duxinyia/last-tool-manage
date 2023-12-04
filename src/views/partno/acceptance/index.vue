@@ -32,29 +32,28 @@
 				<el-form ref="dialogTableFormRef" :model="dialogState.tableData" size="default">
 					<Table ref="tableRef2" v-bind="dialogState.tableData" @delRow="onDelRow" class="table-demo" @handlestatus1Change="handlestatus1Change" />
 				</el-form>
-				<el-input disabled v-model="dialogData.fileInfo.name" placeholder="文件" clearable class="mb10">
-					<template #prepend
-						><el-upload
-							v-model:file-list="inputfileList"
-							:auto-upload="false"
-							ref="inputuploadRefs"
-							action=""
-							class="upload"
-							drag
-							:limit="1"
-							:show-file-list="false"
-							:on-exceed="inputHandleExceed"
-							:on-change="inputHandleChange"
-						>
-							<el-button type="primary" class="ml1">上傳驗收報告</el-button>
-						</el-upload></template
+				<div class="describe up-file">
+					<span>驗收報告：</span>
+					<el-upload
+						style="width: 90%"
+						v-model:file-list="inputfileList"
+						:auto-upload="false"
+						ref="inputuploadRefs"
+						action="#"
+						class="upload ml5"
+						drag
+						:limit="1"
+						:show-file-list="false"
+						:on-exceed="inputHandleExceed"
+						:on-change="inputHandleChange"
 					>
-					<template #append v-if="dialogData.fileInfo.name"
-						><el-button @click="inputsubmitUpload" type="primary" class="ml1">上傳文件</el-button>
-						<el-button v-if="dialogData.fileInfo['drawPath'].includes('/')" class="look-file" @click="lookUpload">查看文件</el-button>
-					</template>
-				</el-input>
+						<el-input style="height: 35px" v-model="dialogData.fileInfo.name" placeholder="請點擊此處上傳文件"> > </el-input>
+					</el-upload>
+					<el-button size="default" plain @click="onClearFile" type="primary" class="ml10">清空驗收報告</el-button>
+					<el-button size="default" plain type="primary" @click="lookUpload">查看驗收報告</el-button>
+				</div>
 				<div class="describe">
+					<span>描述說明：</span>
 					<el-input
 						class="input-textarea"
 						show-word-limit
@@ -338,30 +337,38 @@ const onDelRow = (row: EmptyObjectType, i: number) => {
 	dialogState.tableData.data.splice(i, 1);
 };
 //上传文件里面的数据
-const inputHandleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
+const inputHandleChange: UploadProps['onChange'] = async (uploadFile, uploadFiles) => {
 	dialogData.fileInfo.name = uploadFile.name;
 	inputuploadForm.value = uploadFile;
-};
-//可以在选中时自动替换上一个文件
-const inputHandleExceed: UploadProps['onExceed'] = (files) => {
-	let upload_list: any = inputuploadRefs.value;
-	upload_list[0]!.clearFiles();
-	const file = files[0] as UploadRawFile;
-	file.uid = genFileId();
-	upload_list[0]!.handleStart(file);
-};
-// 上传文件
-const inputsubmitUpload = async () => {
 	const res = await getUploadFileApi(4, inputuploadForm.value.raw);
 	dialogData.fileInfo['drawPath'] = res.data;
 	res.status && ElMessage.success(`上傳成功`);
 };
+//可以在选中时自动替换上一个文件
+const inputHandleExceed: UploadProps['onExceed'] = (files) => {
+	inputuploadRefs.value!.clearFiles();
+	const file = files[0] as UploadRawFile;
+	file.uid = genFileId();
+	inputuploadRefs.value!.handleStart(file);
+};
+// 清空文件
+const onClearFile = async () => {
+	if (!dialogData.fileInfo['drawPath'] && !dialogData.fileInfo.name) {
+		ElMessage.warning(t('沒有清空內容，請選擇文件'));
+	} else {
+		dialogData.fileInfo['drawPath'] = '';
+		dialogData.fileInfo.name = '';
+		ElMessage.success(t('清空成功'));
+	}
+};
 // 查看上传的文件
 const lookUpload = () => {
-	window.open(
-		`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${dialogData.fileInfo['drawPath']}`,
-		'_blank'
-	);
+	const url = dialogData.fileInfo['drawPath'];
+	if (url) {
+		window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${url}`, '_blank');
+	} else {
+		ElMessage.warning(t('沒有驗收報告'));
+	}
 };
 // 提交
 const onSubmit = async (formEl: EmptyObjectType | undefined) => {
@@ -389,6 +396,7 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 			checkDetails: checkDetails,
 		};
 		loadingBtn.value = true;
+		// console.log(submitparams);
 		let res = await SampleCheckApi(submitparams);
 		if (res.status) {
 			dialogData.dialogVisible = false;
@@ -423,7 +431,19 @@ onMounted(() => {
 	background-color: transparent;
 	border-radius: unset;
 }
-.look-file {
-	color: var(--el-color-primary) !important;
+.describe {
+	display: flex;
+	margin-top: 10px;
+	span {
+		width: 100px;
+	}
+}
+.up-file {
+	display: flex;
+	span {
+		width: 122px;
+		// align-items: center;
+		line-height: 30px;
+	}
 }
 </style>

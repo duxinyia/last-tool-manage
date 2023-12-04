@@ -385,6 +385,7 @@ const getTableData = async () => {
 	state.tableData.data.forEach((item) => {
 		item.stockqty = 0;
 		item.codeManageModeText = codeManageModeMap[item.codeManageMode];
+		item.dispatcher = `${item.dispatcher} / ${item.dispatcherName}`;
 	});
 	state.tableData.config.total = res.data.total;
 	if (res.status) {

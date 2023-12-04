@@ -41,6 +41,7 @@ export default {
 		scrapBillQuery:'報廢單查詢',
 		scrapSheetSub:'報廢單提報',
 		repairOrderAcceptance:'維修單驗收',
+		maintenanceMaterialIssue:'維修發料',
 		warehouseManage:'倉庫管理',
 		transferReceipt:'轉倉接收',
 		purchaseSampleDelivery:'採購送樣',

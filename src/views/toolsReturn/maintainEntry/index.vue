@@ -1,49 +1,76 @@
 <template>
-	<div class="table-container layout-padding">
-		<div class="table-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
+	<el-tabs v-model="activeName" class="table-container layout-padding" @tab-click="handleClick">
+		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="維修入庫" name="first">
+			<TableSearch
+				:search="state.tableData.search"
+				@search="(data) => onSearch(data, state.tableData)"
+				:searchConfig="state.tableData.searchConfig"
+				labelWidth="100px"
+			/>
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
 				class="table"
-				@pageChange="onTablePageChange"
-				@sortHeader="onSortHeader"
+				@pageChange="(page) => onTablePageChange(page, state.tableData)"
+				@sortHeader="(data) => onSortHeader(data, state.tableData)"
 				@cellclick="reqNoClick"
 				@onOpenOtherDialog="openEntryDialog"
 			/>
-			<Dialog
-				ref="entryJobDialogRef"
-				:dialogConfig="state.tableData.dialogConfig"
-				:innerDialogConfig="state.tableData.innerDialogConfig"
-				dialogWidth="40%"
-				dialogType="nestDialogConfig"
-				@addData="entrySubmit"
-				@dailogFormButton="scanCodeEntry"
-				@commonInputHandleChange="change"
-				:tagsData="tags"
-				@innnerDialogCancel="innnerDialogCancel"
-				@innnerDialogSubmit="innnerDialogSubmit"
-				@openInnerDialog="openInnerDialog"
-				@handleTagClose="handleTagClose"
-				:loadingBtn="loadingBtn"
-			>
-				<template #optionFat="{ row }">
-					<span style="float: left; margin-right: 35px">{{ row.text }}</span>
-					<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
-				</template>
-				<template #buttonFooter="{ row, data }">
-					<el-button v-if="row.type === 'button'" type="primary" plain @click="addButton(data)">{{ row.label }}</el-button>
-				</template>
-			</Dialog>
-		</div>
-	</div>
+		</el-tab-pane>
+		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="維修入庫記錄" name="second">
+			<TableSearch
+				:search="secondState.tableData.search"
+				@search="(data) => onSearch(data, secondState.tableData)"
+				:searchConfig="secondState.tableData.searchConfig"
+				labelWidth="70px"
+			/>
+			<Table
+				ref="tableRef"
+				v-bind="secondState.tableData"
+				class="table"
+				@pageChange="(page) => onTablePageChange(page, secondState.tableData)"
+				@sortHeader="(data) => onSortHeader(data, secondState.tableData)"
+				@onOpenOtherDialog="openLookQrcodeDialog"
+			/>
+		</el-tab-pane>
+		<qrCodeDialog ref="inventoryDialogRef" :tags="qrCode" dialogTitle="入庫條碼" />
+		<Dialog
+			ref="entryJobDialogRef"
+			:dialogConfig="state.tableData.dialogConfig"
+			:innerDialogConfig="state.tableData.innerDialogConfig"
+			dialogWidth="40%"
+			dialogType="nestDialogConfig"
+			@addData="entrySubmit"
+			@dailogFormButton="scanCodeEntry"
+			@commonInputHandleChange="change"
+			:tagsData="tags"
+			@innnerDialogCancel="innnerDialogCancel"
+			@innnerDialogSubmit="innnerDialogSubmit"
+			@openInnerDialog="openInnerDialog"
+			@handleTagClose="handleTagClose"
+			:loadingBtn="loadingBtn"
+		>
+			<template #optionFat="{ row }">
+				<span style="float: left; margin-right: 35px">{{ row.text }}</span>
+				<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
+			</template>
+			<template #buttonFooter="{ row, data }">
+				<el-button v-if="row.type === 'button'" type="primary" plain @click="addButton(data)">{{ row.label }}</el-button>
+			</template>
+		</Dialog>
+	</el-tabs>
 </template>
 
 <script setup lang="ts" name="/toolsReturn/maintainEntry">
 import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
-import { ElMessage, ElMessageBox, FormInstance } from 'element-plus';
+import { ElMessage, ElMessageBox, FormInstance, TabsPaneContext } from 'element-plus';
 // 引入接口
-import { GetQueryStorableRepairCheckDetailsApi, GetPutStorageApi } from '/@/api/toolsReturn/maintainEntry';
+import {
+	GetQueryStorableRepairCheckDetailsApi,
+	GetPutStorageApi,
+	GetQueryRepairPutStorageRecordApi,
+	getCodesOfRepairPutStorageApi,
+} from '/@/api/toolsReturn/maintainEntry';
 import { GetUserManagedStoreHouseApi } from '/@/api/requistManage/entryJob';
 import { useI18n } from 'vue-i18n';
 import { getLegalStoreTypesExceptIdleStoreApi } from '/@/api/global';
@@ -51,6 +78,7 @@ import { getLegalStoreTypesExceptIdleStoreApi } from '/@/api/global';
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
 const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
+const qrCodeDialog = defineAsyncComponent(() => import('/@/components/dialog/qrCodeDialog.vue'));
 
 // 定义变量内容
 const { t } = useI18n();
@@ -58,13 +86,19 @@ const tableFormRef = ref();
 const tableRef = ref<RefType>();
 const entryJobDialogRef = ref();
 const loadingBtn = ref(false);
+const inventoryDialogRef = ref();
+let qrCode = ref<EmptyArrayType>([]);
 // tags的数据
 const tags = ref<EmptyArrayType<string>>([]);
 // 单元格样式
 const cellStyle = ref();
 // 弹窗标题
 const dilogTitle = ref();
-
+const activeName = ref<string | number>('first');
+const handleClick = (tab: TabsPaneContext, event: Event) => {
+	activeName.value = tab.paneName as string | number;
+	getTableData(activeName.value === 'first' ? state.tableData : secondState.tableData);
+};
 const state = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
@@ -301,6 +335,70 @@ const state = reactive<TableDemoState>({
 		],
 	},
 });
+const secondState = reactive<TableDemoState>({
+	tableData: {
+		// 列表数据（必传）
+		data: [],
+		// 表头内容（必传，注意格式）
+		header: [
+			{ key: 'repairNo', colWidth: '', title: '維修單號', type: 'text', isCheck: true },
+			{ key: 'repairPutNo', colWidth: '', title: '入庫單號', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			{ key: 'dispatcher', colWidth: '', title: '發料人', type: 'text', isCheck: true },
+			{ key: 'dispatchTime', colWidth: '', title: '發料時間', type: 'text', isCheck: true },
+			{ key: 'putQty', colWidth: '', title: '入庫數量', type: 'text', isCheck: true },
+			{ key: 'storageType', colWidth: '', title: '倉庫類型', type: 'text', isCheck: true },
+			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
+			{ key: 'putStorageTime', colWidth: '', title: '入庫時間', type: 'text', isCheck: true },
+			{ key: 'describe', colWidth: '', title: '描述說明', type: 'text', isCheck: true },
+			{ key: 'codeManageModeText', colWidth: '130', title: '二維碼管理模式', type: 'text', isCheck: true },
+		],
+		// 配置项（必传）
+		config: {
+			total: 0, // 列表总数
+			loading: true, // loading 加载
+			isBorder: false, // 是否显示表格边框
+			isSerialNo: true, // 是否显示表格序号
+			isSelection: false, // 是否显示表格多选
+			isOperate: true, // 是否显示表格操作栏
+			isButton: false, //是否显示表格上面的新增删除按钮
+			isInlineEditing: false, //是否是行内编辑
+			isTopTool: true, //是否有表格右上角工具
+			isPage: true, //是否有分页
+		},
+		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
+		search: [
+			{ label: '維修單號', prop: 'repairNo', required: false, type: 'input' },
+			{ label: '入庫單號', prop: 'repairPutNo', required: false, type: 'input' },
+			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '品名', prop: 'name', required: false, type: 'input' },
+			{ label: '發料人', prop: 'dispatcher', required: false, type: 'input' },
+			{
+				label: '倉庫類型',
+				prop: 'storageType',
+				required: false,
+				type: 'select',
+				options: [],
+			},
+			{ label: '倉庫位置', prop: 'sLocation', required: false, type: 'input', placeholder: '請輸入倉庫位置' },
+			{ label: '入庫時間', prop: 'putStorageTime', required: false, type: 'dateRange' },
+		],
+		searchConfig: {
+			isSearchBtn: true,
+		},
+		btnConfig: [{ type: 'detail', name: '查看二維碼', color: '#1890ff', isSure: false, icon: 'ele-View' }],
+		// 给后端的数据
+		form: {},
+		dialogConfig: [],
+		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
+		page: {
+			pageNum: 1,
+			pageSize: 10,
+		},
+	},
+});
 // 单元格字体颜色
 const changeToStyle = (indList: number[]) => {
 	return ({ columnIndex }: any) => {
@@ -337,32 +435,53 @@ const getSelect = async () => {
 			item.options = option;
 		}
 	});
+	secondState.tableData.search?.forEach((item) => {
+		if (item.prop === 'storageType') {
+			item.options = option;
+		}
+	});
 };
 // 初始化列表数据
-const getTableData = async () => {
-	const form = state.tableData.form;
+const getTableData = async (datas: EmptyObjectType) => {
+	const form = datas.form;
+	let res = null;
 	const codeManageModeMap: EmptyObjectType = {
 		0: '有碼管理',
 		1: '無碼管理',
 	};
-	let data = {
-		...form,
-		dispatchDate: form.dispatchDate,
-		startDispatchTime: form.dispatchDate && form.dispatchDate[0],
-		endDispatchTime: form.dispatchDate && form.dispatchDate[1],
-		page: state.tableData.page,
-	};
-	delete data.dispatchDate;
-	const res = await GetQueryStorableRepairCheckDetailsApi(data);
-	state.tableData.data = res.data.data;
-	state.tableData.data.forEach((item) => {
+	if (activeName.value === 'first') {
+		let data = {
+			...form,
+			dispatchDate: form.dispatchDate,
+			startDispatchTime: form.dispatchDate && form.dispatchDate[0],
+			endDispatchTime: form.dispatchDate && form.dispatchDate[1],
+			page: datas.page,
+		};
+		delete data.dispatchDate;
+		res = await GetQueryStorableRepairCheckDetailsApi(data);
+	} else {
+		let data = {
+			...form,
+			page: datas.page,
+			putStorageTime: form.putStorageTime,
+			startPutStorageTime: form.putStorageTime && form.putStorageTime[0],
+			endPutStorageTime: form.putStorageTime && form.putStorageTime[1],
+		};
+		delete data.putStorageTime;
+		res = await GetQueryRepairPutStorageRecordApi(data);
+		res.data.data.forEach((item: any) => {
+			item.disabled = item.codeManageMode ? true : false;
+		});
+	}
+	res.data.data.forEach((item: any) => {
 		item.stockqty = 0;
 		item.codeManageModeText = codeManageModeMap[item.codeManageMode];
 		item.dispatcher = `${item.dispatcher} / ${item.dispatcherName}`;
 	});
-	state.tableData.config.total = res.data.total;
-	if (res.status) {
-		state.tableData.config.loading = false;
+	datas.data = res!.data.data;
+	datas.config.total = res!.data.total;
+	if (res!.status) {
+		datas.config.loading = false;
 	}
 };
 // 手動添加碼
@@ -434,6 +553,16 @@ const handleTagClose = (tag: any, state: EmptyObjectType) => {
 	formInnerData.codeList.splice(formInnerData.codeList.indexOf(tag), 1);
 	formInnerData['stockqty'] = formInnerData.codeList.length;
 	formData['stockqty'] = formInnerData.codeList.length;
+};
+// 打開查看二維碼按鈕
+const openLookQrcodeDialog = async (scope: any) => {
+	let res = await getCodesOfRepairPutStorageApi(scope.row.repairPutNo);
+	if (res.data.length == 0) {
+		ElMessage.error('暫無條碼數據');
+	} else if (res.status) {
+		qrCode.value = res.data;
+		inventoryDialogRef.value?.openDialog();
+	}
 };
 // 打开入库弹窗
 const openEntryDialog = async (scope: any) => {
@@ -524,7 +653,7 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 		if (res.status) {
 			ElMessage.success(`入庫成功`);
 			entryJobDialogRef.value.closeDialog();
-			getTableData();
+			getTableData(state.tableData);
 		}
 	}
 	loadingBtn.value = false;
@@ -564,20 +693,20 @@ const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 // 	});
 // };
 // 搜索点击时表单回调
-const onSearch = (data: EmptyObjectType) => {
-	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
+const onSearch = (data: EmptyObjectType, tableData: EmptyObjectType) => {
+	tableData.form = Object.assign({}, tableData.form, { ...data });
 	tableRef.value?.pageReset();
 };
 
 // 分页改变时回调
-const onTablePageChange = (page: TableDemoPageType) => {
-	state.tableData.page.pageNum = page.pageNum;
-	state.tableData.page.pageSize = page.pageSize;
-	getTableData();
+const onTablePageChange = (page: TableDemoPageType, tableData: EmptyObjectType) => {
+	tableData.page.pageNum = page.pageNum;
+	tableData.page.pageSize = page.pageSize;
+	getTableData(tableData);
 };
 // 拖动显示列排序回调
-const onSortHeader = (data: TableHeaderType[]) => {
-	state.tableData.header = data;
+const onSortHeader = (data: TableHeaderType[], tableData: EmptyObjectType) => {
+	tableData.header = data;
 };
 // if (dialogState.tableData.btnConfig)
 // 	dialogState.tableData.btnConfig[0].disabled = computed(() => {
@@ -585,7 +714,7 @@ const onSortHeader = (data: TableHeaderType[]) => {
 // 	});
 // 页面加载时
 onMounted(() => {
-	getTableData();
+	getTableData(state.tableData);
 	getOptionsData();
 	getSelect();
 });

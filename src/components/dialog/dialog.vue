@@ -55,6 +55,24 @@
 									</el-tag>
 								</template>
 							</el-input> -->
+							<!-- 上傳文件優化 -->
+							<el-upload
+								style="width: 100%"
+								v-if="item.type === 'optionFile'"
+								v-model:file-list="inputfileList"
+								:auto-upload="false"
+								ref="inputuploadRefs"
+								action="#"
+								class="upload"
+								drag
+								:limit="1"
+								:show-file-list="false"
+								:on-exceed="newInputHandleExceed"
+								:on-change="newInputHandleChange"
+							>
+								<el-input v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)"> > </el-input>
+							</el-upload>
+
 							<el-input disabled v-if="item.type === 'inputFile'" v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)" clearable>
 								<template #prepend
 									><el-upload
@@ -122,26 +140,6 @@
 							>
 								<el-image class="avatar" v-if="imageUrl" :src="imageUrl" fit="contain" style="width: 148px; height: 148px" />
 								<SvgIcon v-else class="avatar-uploader-icon" name="ele-Plus" />
-
-								<!-- <template #file="{ file }">
-									<div style="width: 148px; height: 148px">
-										<el-image
-											class="el-upload-list__item-thumbnail"
-											v-if="imageUrl"
-											:src="imageUrl"
-											fit="contain"
-											style="width: 148px; height: 148px"
-										/>
-										<span class="el-upload-list__item-actions" style="width: 100%; height: 100%">
-											<span class="el-upload-list__item-preview" @click="handlePictureCardPreview(file)">
-												<el-icon title="查看大图"><ele-ZoomIn /></el-icon>
-											</span>
-											<span class="el-upload-list__item-preview" @click="handlePictureChange(file)">
-												<el-icon title="改变图片"><ele-PictureFilled /></el-icon>
-											</span>
-										</span>
-									</div>
-								</template> -->
 							</el-upload>
 							<el-select
 								v-model="state.formData[item.prop]"
@@ -192,7 +190,7 @@
 								style="margin-left: 20px"
 								plain
 								v-if="item.type === 'button'"
-								@click="dailogFormButton"
+								@click="dailogFormButton(item)"
 								>{{ item.label }}</el-button
 							>
 						</span>
@@ -425,8 +423,8 @@ const state = reactive<dialogFormState>({
 const ondownloadTemp = () => {
 	emit('downloadTemp');
 };
-const dailogFormButton = () => {
-	emit('dailogFormButton', state.formData);
+const dailogFormButton = (btnConfig: EmptyObjectType) => {
+	emit('dailogFormButton', state.formData, btnConfig);
 };
 // 改变number的值
 const handleNumberInputChange = (value: number) => {
@@ -645,7 +643,18 @@ const inputHandleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => 
 	});
 	inputuploadForm.value = uploadFile;
 };
-
+// 優化的
+const newInputHandleChange: UploadProps['onChange'] = async (uploadFile, uploadFiles) => {
+	props.dialogConfig.forEach((v) => {
+		if (v.type === 'optionFile') {
+			state.formData[v.prop] = uploadFile.name;
+		}
+	});
+	inputuploadForm.value = uploadFile;
+	const res = await getUploadFileApi(2, inputuploadForm.value.raw);
+	state.formData['fileUrl'] = res.data;
+	res.status && ElMessage.success(`上傳成功`);
+};
 //可以在选中时自动替换上一个文件
 const inputHandleExceed: UploadProps['onExceed'] = (files) => {
 	let upload_list: any = inputuploadRefs.value;
@@ -654,7 +663,14 @@ const inputHandleExceed: UploadProps['onExceed'] = (files) => {
 	file.uid = genFileId();
 	upload_list[0]!.handleStart(file);
 };
-
+// 優化的 可以在选中时自动替换上一个文件
+const newInputHandleExceed: UploadProps['onExceed'] = (files) => {
+	let upload_list: any = inputuploadRefs.value;
+	upload_list[0]!.clearFiles();
+	const file = files[0] as UploadRawFile;
+	file.uid = genFileId();
+	upload_list[0]!.handleStart(file);
+};
 // 上传文件
 const inputsubmitUpload = async (prop: string, key?: string) => {
 	let value = prop == 'drawPath' ? inputuploadForm.value.raw : input3duploadForm.value.raw;
@@ -679,34 +695,7 @@ const lookUpload = (prop: string) => {
 		'_blank'
 	);
 };
-// // 上传错误提示
-// const handleError = () => {
-// 	ElMessage.error('导入数据失败，请您重新上传！');
-// };
 
-// //上传成功提示
-// const handleSuccess = () => {
-// 	ElMessage.success('导入数据成功！');
-// 	// ElNotification({
-// 	// 	title: '温馨提示',
-// 	// 	message: '导入数据成功！',
-// 	// 	type: 'success',
-// 	// });
-// };
-// 文件上传
-// const uploadExcel = async (param: any) => {
-// 	console.log(param);
-// 	let fileFormData = new FormData();
-// 	fileFormData.append('file', param.file, param.file.name);
-
-// 	console.log(param);
-// 	console.log(formdata.get(file));
-
-// 	emit('importTableData');
-// 	// const res = await importUrl(fileFormData);
-// 	// if (res.code !== 0) return param.onError();
-// 	// closeDialog(); // 关闭弹窗
-// };
 const handleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
 	fileListName.value = uploadFile.name;
 	uploadForm.value = uploadFile;
@@ -751,12 +740,7 @@ const imageHandleExceed: UploadProps['onExceed'] = async (files, uploadFiles) =>
 		httpRequest();
 	}
 };
-// 查看大图
-const handlePictureCardPreview: UploadProps['onPreview'] = (uploadFile) => {
-	dialogImageUrl.value = uploadFile.url!;
-	dialogVisible.value = true;
-};
-const handlePictureChange = (file: UploadFile) => {};
+
 const httpRequest = async () => {
 	const res = await getUploadFileApi(5, imagefileList.value[0].raw);
 	if (res.status) {

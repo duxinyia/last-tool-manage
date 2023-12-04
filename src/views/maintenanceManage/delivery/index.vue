@@ -230,8 +230,8 @@ const secondState = reactive<TableDemoState>({
 			{ key: 'repairReceiveNo', colWidth: '', title: '收貨單號', type: 'text', isCheck: true },
 			{ key: 'repairNo', colWidth: '', title: '維修單號', type: 'text', isCheck: true },
 			{ key: 'prNo', colWidth: '', title: 'PR單號', type: 'text', isCheck: true },
-			{ key: 'engineer', colWidth: '', title: '工程驗收人', type: 'text', isCheck: true },
 			{ key: 'receiptTime', colWidth: '', title: '收貨時間', type: 'text', isCheck: true },
+			{ key: 'engineer', colWidth: '', title: '工程驗收人', type: 'text', isCheck: true },
 			{ key: 'isChecked', colWidth: '120', title: '是否已驗收', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -355,6 +355,7 @@ const getTableData = async (datas: EmptyObjectType) => {
 		};
 		res = await getQueryReceivableRepairOrdersApi(data);
 	} else {
+		if (form.isChecked === '') form.isChecked = null;
 		let data = {
 			...form,
 			page: datas.page,
@@ -369,7 +370,6 @@ const getTableData = async (datas: EmptyObjectType) => {
 			item.engineer = `${item.engineer} / ${item.engineerName}`;
 		});
 	}
-
 	datas.data = res!.data.data;
 	datas.config.total = res!.data.total;
 	if (res!.status) {

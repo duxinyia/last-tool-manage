@@ -30,6 +30,7 @@
 			:loadingBtn="loadingBtn"
 			labelWidth="120px"
 			@handleNumberInputChange="changeInput"
+			@dailogFormButton="onButton"
 		>
 		</Dialog>
 		<!-- 详情 -->
@@ -167,15 +168,39 @@ const state = reactive<TableDemoState>({
 			{
 				label: '驗收報告',
 				prop: 'drawPath',
-				key: 'accepreporturl',
-				placeholder: 'message.pages.placeDrawPath',
+				key: 'accepreporturlName',
+				placeholder: '請點擊此處上傳文件',
 				required: false,
-				type: 'inputFile',
-				xs: 24,
-				sm: 24,
-				md: 24,
-				lg: 24,
-				xl: 24,
+				type: 'optionFile',
+				xs: 14,
+				sm: 14,
+				md: 14,
+				lg: 14,
+				xl: 14,
+			},
+			{
+				type: 'button',
+				label: '清空驗收報告',
+				placeholder: '',
+				prop: 'clearUrl',
+				required: false,
+				xs: 4,
+				sm: 4,
+				md: 4,
+				lg: 4,
+				xl: 4,
+			},
+			{
+				type: 'button',
+				label: '查看驗收報告',
+				placeholder: '',
+				prop: 'fileUrl',
+				required: false,
+				xs: 4,
+				sm: 4,
+				md: 4,
+				lg: 4,
+				xl: 4,
 			},
 			{
 				type: 'text',
@@ -323,6 +348,22 @@ const openArriveJobDialog = (scope: EmptyObjectType) => {
 	state.tableData.dialogConfig![7].max = scope.row.qty;
 	currentData.value = scope.row;
 };
+// 點擊按鈕
+const onButton = (formData: EmptyObjectType, btnConfig: EmptyObjectType) => {
+	// 清空報告
+	if (btnConfig.prop === 'clearUrl') {
+		if (!formData.drawPath && !formData.fileUrl) {
+			ElMessage.warning(t('沒有清空內容，請選擇文件'));
+		} else {
+			formData.drawPath = '';
+			formData.fileUrl = '';
+			ElMessage.success(t('清空成功'));
+		}
+	} else {
+		// 查看報告
+		arriveList(formData);
+	}
+};
 const changeInput = (val: number, formData: EmptyObjectType) => {
 	// const dialogData = currentData.value;
 	if (val > formData.qty) {
@@ -405,11 +446,9 @@ const openDetailDialog = (scope: EmptyObjectType) => {
 };
 // 查看验收报告单
 const arriveList = (formData: EmptyObjectType) => {
-	if (formData.accepReportUrl) {
-		window.open(
-			`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${formData.accepReportUrl}`,
-			'_blank'
-		);
+	const url = formData.accepReportUrl || formData.fileUrl;
+	if (url) {
+		window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${url}`, '_blank');
 	} else {
 		ElMessage.warning(t('沒有驗收報告單'));
 	}
@@ -433,9 +472,10 @@ const onSubmit = async (formData: any) => {
 		failQty: formData.failqty,
 		describe: formData.checkDescribe,
 		checkDate: formData.checkDate,
-		accepReportUrl: formData.drawPath,
+		accepReportUrl: formData.fileUrl,
 		failReasonIds: formData.failReasonIds,
 	};
+	// console.log(getData);
 	const res = await getTInsertCheckApi(getData);
 	if (res.status) {
 		ElMessage.success(t('驗收成功'));
