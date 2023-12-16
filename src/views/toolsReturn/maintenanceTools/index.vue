@@ -50,7 +50,7 @@ import type { FormInstance } from 'element-plus';
 import { ElMessage } from 'element-plus';
 // 引入接口
 import { getStockListApi, ExitStoreApi, getExitReasonApi, getTransferStorageApi } from '/@/api/toolsReturn/maintentanceTools';
-import { getQueryStoreHouseExceptIdleStoreNoPageApi, getUserNameApi } from '/@/api/global';
+import { getAdminNamesOfStoreHouseApi, getQueryStoreHouseExceptIdleStoreNoPageApi, getUserNameApi } from '/@/api/global';
 
 import { useI18n } from 'vue-i18n';
 import type { TabsPaneContext } from 'element-plus';
@@ -293,11 +293,24 @@ const dialogState = reactive<TableDemoState>({
 				placeholder: '請選擇出庫日期',
 				required: true,
 				type: 'date',
+				isdisabledDate: true,
 			},
 			{
-				label: '描述說明:',
+				type: 'text',
+				label: '接收DRI',
+				placeholder: '',
+				prop: 'warehouseManager',
+				required: false,
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
+			},
+			{
+				label: '備註:',
 				prop: 'describe',
-				placeholder: '請輸入描述說明',
+				placeholder: '請輸入備註',
 				required: false,
 				type: 'textarea',
 				xs: 24,
@@ -465,6 +478,10 @@ const selectChange = async (val: string, name: string, formData: EmptyObjectType
 			}
 		});
 	}
+	if (name == 'storageId') {
+		const res = await getAdminNamesOfStoreHouseApi(formData.storageId);
+		formData.warehouseManager = res.data;
+	}
 };
 
 // 点击退库或者转仓按钮弹窗
@@ -508,9 +525,9 @@ const openReturnDialog = (scope: EmptyObjectType, type: string) => {
 				item.label = '退庫數量';
 				item.placeholder = '請輸入退庫數量';
 			}
-			const arr = ['storageId', 'outDate'];
+			const arr = ['storageId', 'outDate', 'warehouseManager'];
 			if (arr.includes(item.prop)) {
-				deleteStorage = JSON.parse(JSON.stringify(dialogConfig?.splice(index, 2)));
+				deleteStorage = JSON.parse(JSON.stringify(dialogConfig?.splice(index, 3)));
 			}
 		});
 		deleteData.reverse().forEach((item: any) => {
@@ -521,14 +538,16 @@ const openReturnDialog = (scope: EmptyObjectType, type: string) => {
 	repairReturnDialogRef.value.openDialog('return', scope.row, dilogTitle.value);
 };
 // 輸入DRI得到姓名
-const onInputBlur = async (formData: EmptyObjectType) => {
-	const res = await getUserNameApi(formData.dri);
-	if (res.status) {
-		formData.userName = res.message;
-	} else {
-		formData.dri = '';
-		formData.userName = '';
-		ElMessage.warning('請重新輸入DRI');
+const onInputBlur = async (formData: EmptyObjectType, item: EmptyObjectType) => {
+	if (item.prop === 'dri' && formData.dri) {
+		const res = await getUserNameApi(formData.dri);
+		if (res.status) {
+			formData.userName = res.message;
+		} else {
+			formData.dri = '';
+			formData.userName = '';
+			ElMessage.warning('請重新輸入DRI');
+		}
 	}
 };
 // 根据接口得到仓库下拉数据
@@ -617,7 +636,7 @@ const change = (val: any, prop: string, state: any, iscontu: boolean) => {
 		} else if (formInnerData.codeList.includes(val)) {
 			ElMessage.warning(`該條碼已存在，請勿重複掃碼`);
 			formInnerData['sacnexitqty'] = null;
-		} else if (iscontu) {
+		} else {
 			formInnerData.codeList.push(val);
 			formInnerData['sacnexitqty'] = null;
 			formInnerData['exitQty'] = formInnerData.codeList.length;

@@ -76,6 +76,8 @@ service.interceptors.response.use(
 			// 使用 reload 时，不需要调用 resetRoute() 重置路由
 			window.location.reload();
 			// window.location.href = '/'; // 去登录页
+		}else if(error.response.data.code===500||error.response.data.Code===500){
+			ElMessage.error(error.response.data.message||error.response.data.Message);
 		}
 		else {
 			if (error.response.data) ElMessage.error(error.response.statusText)

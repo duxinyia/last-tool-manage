@@ -40,8 +40,8 @@
 			<div class="table-top-tool" v-if="config.isTopTool">
 				<!-- <SvgIcon name="iconfont icon-dayinji" :size="19" title="打印" @click="onPrintTable" /> -->
 				<!-- <SvgIcon name="iconfont icon-btn-daoru" :size="22" :title="$t('message.tooltip.import')" @click="onImportTable('imp')" /> -->
-				<el-icon v-if="config.exportIcon" name="iconfont icon-btn-daochu" :size="22" :title="$t('message.tooltip.export')" @click="onExportTable"
-					><ele-Upload
+				<el-icon v-if="config.exportIcon" name="iconfont icon-btn-daochu" :size="22" :title="$t('下載')" @click="onExportTable"
+					><ele-Download
 				/></el-icon>
 				<!-- <SvgIcon v-if="config.exportIcon" name="iconfont icon-btn-daochu" :size="22" :title="$t('message.tooltip.export')" @click="onExportTable" /> -->
 				<!-- <SvgIcon name="iconfont icon-refresh-line" :size="23" :title="$t('message.tooltip.refresh')" @click="onRefreshTable" /> -->
@@ -121,11 +121,8 @@
 					<span class="pl5">{{ $t(item.title) }}</span>
 				</template>
 				<template v-slot="scope">
-					<el-form-item
-						v-if="config.isInlineEditing"
-						:prop="`data.${scope.$index}.${item.key}`"
-						:rules="[{ required: item.isRequired, message: '不能為空', trigger: item.type === 'time' ? 'blur' : 'change' }]"
-					>
+					<!-- :rules="[{ required: item.isRequired, message: '不能為空', trigger: item.type === 'time' ? 'blur' : 'change' }]" -->
+					<el-form-item v-if="config.isInlineEditing" :prop="`data.${scope.$index}.${item.key}`" :rules="allRules(item)">
 						<el-popover
 							v-if="item.type === 'textarea'"
 							effect="dark"
@@ -245,6 +242,7 @@
 							v-model="data[scope.$index][item.key]"
 							type="date"
 							placeholder="請選擇"
+							:disabled-date="(time:Date) => disabledDate(time, item.isdisabledDate)"
 							style="height: 30px; max-width: 167px"
 						/>
 
@@ -254,8 +252,8 @@
 					</el-form-item>
 					<!-- 不能行内编辑 -->
 					<template v-if="item.type === 'status'" style="text-align: center; width: 100%">
-						<el-tag type="success" v-if="scope.row.runstatus === 1">啟用</el-tag>
-						<el-tag type="info" v-else>禁用</el-tag>
+						<el-tag :type="item.color || 'success'" v-if="scope.row.runstatus || scope.row.applyCheckId">{{ item.successText || '啟用' }}</el-tag>
+						<el-tag type="info" v-else-if="scope.row.runstatus == ''">{{ item.infoText || '禁用' }}</el-tag>
 					</template>
 					<!-- 图片 -->
 					<template v-if="item.type === 'uploadImage'">
@@ -438,7 +436,16 @@ const emit = defineEmits([
 	'handleNumberInputBlur',
 	'onOpentopBtnOther',
 	'remoteMethod',
+	'selectionChange',
 ]);
+// 日期只能選擇今天之前
+const disabledDate = (time: Date, isdisabledDate: boolean) => {
+	if (isdisabledDate) {
+		return time.getTime() > Date.now();
+	} else {
+		return false;
+	}
+};
 const remoteMethod = (index: number, query: string) => {
 	emit('remoteMethod', index, query);
 };
@@ -553,11 +560,12 @@ const onCheckChange = () => {
 };
 //为行设置独有key
 const selRowKey = (row: EmptyObjectType) => {
-	return row.runid || row.matNo || row.reqNo || row.repairNo || row.idleno || row.uselessno;
+	return row.runid || row.runId || row.matNo || row.reqNo || row.repairNo || row.idleno || row.uselessno;
 };
 // 表格多选改变时，用于导出和删除
 const onSelectionChange = (val: EmptyObjectType[]) => {
 	state.selectlist = val;
+	emit('selectionChange', state.selectlist);
 };
 // 点击单元格触发row, column
 const cellClick = (row: Object, column: Object) => {
@@ -678,6 +686,50 @@ const inputdata = (val: string) => {
 };
 const inputBlur = (index: number, scope: EmptyObjectType) => {
 	emit('inputBlur', index, scope);
+};
+// 校验表单
+const validatePass = (rule: any, value: any, callback: any, item: EmptyObjectType) => {
+	// console.log(rule);
+	// console.log(value);
+	// let is = false;
+	// props.data.forEach((items) => {
+	// 	if (items.isOption) {
+	// 		rule.isOption = true;
+	// 	} else {
+	// 		rule.isOption = false;
+	// 	}
+	// });
+	// if (is) {
+	// 	callback(new Error(`${t(item.label)}不能為空`));
+	// } else {
+	// 	callback();
+	// }
+	// const validateForm = item.validateForm;
+	// if (!value) {
+	// 	callback(new Error(`${t(item.label)}不能為空`));
+	// } else {
+	// 	callback();
+	// }
+};
+let rules = reactive<EmptyObjectType>({});
+const allRules = (item: EmptyObjectType) => {
+	rules = {
+		default: [
+			{
+				required: item.isRequired,
+				message: '不能為空',
+				trigger: item.type === 'time' ? 'blur' : 'change',
+			},
+		],
+		other: [
+			{
+				validator: (rule: any, value: any, callback: any) => validatePass(rule, value, callback, item),
+				trigger: item.type === 'time' ? 'blur' : 'change',
+				required: item.isRequired,
+			},
+		],
+	};
+	return item.validateForm ? rules['other'] : rules['default'];
 };
 // 暴露变量
 defineExpose({

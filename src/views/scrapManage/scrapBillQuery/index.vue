@@ -40,7 +40,7 @@
 				<Table v-bind="dialogState.tableData" class="table" />
 				<div class="describe">
 					<div style="line-height: 30px">
-						描述說明：<span style="color: red" class="ml10">{{ dialogState.tableData.form['describe'] }}</span>
+						備註：<span style="color: red" class="ml10">{{ dialogState.tableData.form['describe'] }}</span>
 					</div>
 				</div>
 			</el-dialog>
@@ -67,6 +67,7 @@ const UselessNoDetailDialog = defineAsyncComponent(() => import('/@/views/link/s
 import { ElMessage } from 'element-plus';
 
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
 
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -81,6 +82,7 @@ const detaildialogVisible = ref(false);
 const sendDisabled = ref(false);
 const loadingBtn = ref(false);
 const UselessNoRef = ref();
+const route = useRoute();
 // 单元格样式
 const cellStyle = ref();
 // 弹窗标题
@@ -140,7 +142,7 @@ const state = reactive<TableDemoState>({
 		form: {
 			// uselessno: '',
 			// uselessdate: '',
-			signStatus: 0,
+			signStatus: Number(route.query.signStatus) || 0,
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -225,6 +227,15 @@ const getTableData = async () => {
 	state.tableData.config.loading = true;
 	const form = state.tableData.form;
 	let data: EmptyObjectType = {};
+	if (route.query.signStatus) {
+		state.tableData.search.forEach((item) => {
+			if (item.prop === 'signStatus') {
+				item.options?.forEach((option) => {
+					option.selected = option.value === Number(route.query.signStatus) ? true : false;
+				});
+			}
+		});
+	}
 	if (form.uselessdate) {
 		data = {
 			...form,

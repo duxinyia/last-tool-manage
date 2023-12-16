@@ -69,7 +69,7 @@
 		</div>
 		<el-dropdown :show-timeout="70" :hide-timeout="50" @command="onHandleCommandClick">
 			<span class="layout-navbars-breadcrumb-user-link">
-				{{ userInfos.userName === '' ? 'admin' : userInfos.userId + ' ' + userInfos.userName }}
+				{{ Cookies.get('userName') === '' ? 'admin' : Cookies.get('userId') + ' ' + Cookies.get('userName') }}
 				<el-icon class="userH"><ele-UserFilled /></el-icon>
 				<!-- <i class="iconfont icon-user-s userH"></i> -->
 				<!-- <el-icon class="el-icon--right">
@@ -93,6 +93,7 @@
 import { defineAsyncComponent, ref, unref, computed, reactive, onMounted, onUnmounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessageBox, ElMessage, ClickOutside as vClickOutside } from 'element-plus';
+import Cookies from 'js-cookie';
 import screenfull from 'screenfull';
 import { useI18n } from 'vue-i18n';
 import { storeToRefs } from 'pinia';

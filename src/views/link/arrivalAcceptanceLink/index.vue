@@ -22,7 +22,7 @@
 				<Table v-bind="state.tableData" class="table" />
 				<el-button type="primary" class="mt10" @click="clickLink">查看驗收報告單</el-button>
 				<div class="describe">
-					<span>描述說明：</span>
+					<span>備註：</span>
 					<span style="width: 100%; font-weight: 700; color: #1890ff">{{ state.tableData.form['describe'] }}</span>
 				</div>
 			</el-form>

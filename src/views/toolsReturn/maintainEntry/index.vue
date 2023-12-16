@@ -234,8 +234,8 @@ const state = reactive<TableDemoState>({
 			// },
 			{
 				type: 'textarea',
-				label: '描述說明:',
-				placeholder: '請輸入描述說明',
+				label: '備註:',
+				placeholder: '請輸入備註',
 				prop: 'describe',
 				required: false,
 				xs: 24,
@@ -352,7 +352,7 @@ const secondState = reactive<TableDemoState>({
 			{ key: 'storageType', colWidth: '', title: '倉庫類型', type: 'text', isCheck: true },
 			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
 			{ key: 'putStorageTime', colWidth: '', title: '入庫時間', type: 'text', isCheck: true },
-			{ key: 'describe', colWidth: '', title: '描述說明', type: 'text', isCheck: true },
+			{ key: 'describe', colWidth: '', title: '備註', type: 'text', isCheck: true },
 			{ key: 'codeManageModeText', colWidth: '130', title: '二維碼管理模式', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -511,7 +511,7 @@ const change = (val: any, prop: string, state: any, iscontu: boolean) => {
 		} else if (formInnerData.codeList.includes(val)) {
 			ElMessage.warning(`該條碼已存在，請勿重複掃碼`);
 			formInnerData['sacnstockqty'] = null;
-		} else if (iscontu) {
+		} else {
 			formInnerData.codeList.push(val);
 			formInnerData['sacnstockqty'] = null;
 			formInnerData['stockqty'] = formInnerData.codeList.length;

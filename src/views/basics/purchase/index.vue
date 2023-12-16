@@ -11,7 +11,14 @@
 				@sortHeader="onSortHeader"
 				@openAdd="openDialog"
 			/>
-			<Dialog ref="purchaseDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="addData" dialogWidth="30%" :loadingBtn="loadingBtn" />
+			<Dialog
+				ref="purchaseDialogRef"
+				:dialogConfig="state.tableData.dialogConfig"
+				@addData="addData"
+				dialogWidth="30%"
+				:loadingBtn="loadingBtn"
+				@inputBlur="onInputBlur"
+			/>
 		</div>
 	</div>
 </template>
@@ -27,6 +34,7 @@ const TableSearch = defineAsyncComponent(() => import('/@/components/search/sear
 // 引入组件
 const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 import { useI18n } from 'vue-i18n';
+import { getUserNameApi } from '/@/api/global';
 const { t } = useI18n();
 // 定义变量内容
 const loadingBtn = ref(false);
@@ -86,7 +94,10 @@ const state = reactive<TableDemoState>({
 		// 打印标题
 		printName: '表格打印演示',
 		// 弹窗表单
-		dialogConfig: [{ label: '工號', prop: 'UserId', placeholder: '請輸入工號', required: true, type: 'input', md: 20, lg: 20, xl: 20 }],
+		dialogConfig: [
+			{ label: '工號', prop: 'UserId', placeholder: '請輸入工號', required: true, type: 'input', md: 20, lg: 20, xl: 20 },
+			{ label: '姓名', prop: 'username', placeholder: '', required: false, type: 'text', md: 20, lg: 20, xl: 20 },
+		],
 	},
 });
 
@@ -121,11 +132,26 @@ const openDialog = (type: string, row: Object) => {
 	loadingBtn.value = false;
 	purchaseDialogRef.value.openDialog(type, row);
 };
-// 新增数据  修改数据
+// 輸入工號得到姓名
+const onInputBlur = async (formData: EmptyObjectType) => {
+	if (formData.UserId) {
+		const res = await getUserNameApi(formData.UserId);
+		if (res.status) {
+			formData.username = res.message;
+		} else {
+			formData.UserId = '';
+			formData.username = '';
+			ElMessage.warning('請重新輸入工號');
+		}
+	} else {
+		formData.username = '';
+	}
+};
+// 新增数据
 const addData = async (ruleForm: EmptyObjectType) => {
 	loadingBtn.value = true;
-	ruleForm['GroupType'] = 1;
-	const res = await getAddGroupMemberApi(ruleForm);
+	const { UserId } = ruleForm;
+	const res = await getAddGroupMemberApi({ UserId, GroupType: 1 });
 	if (res.status) {
 		ElMessage.success(`新增成功`);
 		purchaseDialogRef.value.closeDialog();
@@ -148,7 +174,7 @@ const onTableDelRow = async (row: EmptyObjectType, type: string) => {
 	} else {
 		const res = await getRemoveGroupMemberApi(1, row.userid);
 		if (res.status) {
-			ElMessage.success(`${t('message.allButton.deleteBtn')}${row.userid}${t('message.hint.success')}`);
+			ElMessage.success(`${t('message.allButton.deleteBtn')}${row.username}${t('message.hint.success')}`);
 			getTableData();
 		}
 	}

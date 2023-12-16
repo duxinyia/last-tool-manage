@@ -92,7 +92,7 @@ const dialogData = reactive({
 		{ key: 'vendorName', colWidth: '', title: '廠商名稱', type: 'text', isCheck: true },
 		// { key: 'needsTime', colWidth: '', title: '需求送样时间', type: 'text', isCheck: true },
 		{ key: 'needsQty', colWidth: '', title: '送樣數量', type: 'text', isCheck: true },
-		{ key: 'receiveTime', colWidth: '', title: '收貨時間', type: 'time', isCheck: true, isRequired: true },
+		{ key: 'receiveTime', colWidth: '', title: '收貨時間', type: 'time', isCheck: true, isRequired: true, isdisabledDate: true },
 		{ key: 'receiveQty', colWidth: '', title: '收貨數量', type: 'input', isCheck: true, isRequired: true },
 	],
 	// 收货弹窗数据

@@ -29,7 +29,7 @@
 				title="管理員設定"
 				width="40%"
 			>
-				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
+				<el-form ref="tableFormRef" :model="dialogState.tableData">
 					<Table
 						ref="dialogTableRef"
 						v-bind="dialogState.tableData"
@@ -208,13 +208,17 @@ const openAdminDialog = async (scope: EmptyObjectType) => {
 // 輸入工號得到姓名
 const onInputBlur = async (index: number, formData: EmptyObjectType) => {
 	const row = formData.row;
-	const res = await getUserNameApi(row.userId);
-	if (res.status) {
-		row.username = res.message;
+	if (row.userId) {
+		const res = await getUserNameApi(row.userId);
+		if (res.status) {
+			row.username = res.message;
+		} else {
+			row.userId = '';
+			row.username = '';
+			ElMessage.warning('請重新輸入工號');
+		}
 	} else {
-		row.userId = '';
 		row.username = '';
-		ElMessage.warning('請重新輸入工號');
 	}
 };
 //删除

@@ -47,7 +47,7 @@ import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
 import { ElMessage, FormInstance, TabsPaneContext } from 'element-plus';
 // 引入接口
 import { getQueryDispatchableApplyCheckApi, getDispatchApi, getQueryDispatchRecordApi } from '/@/api/requistManage/issueMaterials';
-import { getLegalStoreTypesExceptIdleStoreApi, getQueryStoreHouseExceptIdleStoreNoPageApi } from '/@/api/global';
+import { getAdminNamesOfStoreHouseApi, getLegalStoreTypesExceptIdleStoreApi, getQueryStoreHouseExceptIdleStoreNoPageApi } from '/@/api/global';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -145,7 +145,19 @@ const state = reactive<TableDemoState>({
 			},
 			{
 				type: 'text',
-				label: '描述說明',
+				label: '接收DRI',
+				placeholder: '',
+				prop: 'warehouseManager',
+				required: false,
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
+			},
+			{
+				type: 'text',
+				label: '備註',
 				placeholder: '',
 				prop: 'describe',
 				required: false,
@@ -235,6 +247,7 @@ const secondState = reactive<TableDemoState>({
 				lg: 6,
 				xl: 6,
 			},
+
 			{ label: '發料時間', prop: 'dispatchDate', required: false, type: 'dateRange' },
 		],
 		searchConfig: {
@@ -261,7 +274,7 @@ const secondState = reactive<TableDemoState>({
 			{ type: 'text', label: '驗收人', placeholder: '', prop: 'checker', required: false },
 			{ type: 'text', label: '實際提交日期', placeholder: '', prop: 'createTime', required: false },
 			{ type: 'text', label: '是否已發料', placeholder: '', prop: 'isDispatched', required: false },
-			{ type: 'text', label: '描述說明', placeholder: '', prop: 'describe', required: false, lg: 24, xl: 24 },
+			{ type: 'text', label: '備註', placeholder: '', prop: 'describe', required: false, lg: 24, xl: 24 },
 			{ type: 'button', label: '查看驗收報告', placeholder: '', prop: 'accepReportUrl', required: false },
 		],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
@@ -298,11 +311,13 @@ const openArriveJobDialog = (scope: EmptyObjectType) => {
 // 點擊詳情
 const openDetailDialog = () => {};
 // 改變倉庫類型清空倉庫位置
-const onChangeStoreType = (val: string, prop: string, form: EmptyObjectType) => {
+const onChangeStoreType = async (val: string, prop: string, form: EmptyObjectType) => {
 	if (prop === 'storeType') {
 		form.sLocation = '';
-	} else if (prop === 'receiveStorageType') {
-		form.receiveSLocation = '';
+		form.warehouseManager = '';
+	} else if (prop === 'sLocation') {
+		const res = await getAdminNamesOfStoreHouseApi(form.sLocation);
+		form.warehouseManager = res.data;
 	}
 };
 // 搜索下拉选择
@@ -422,7 +437,6 @@ const getTableData = async () => {
 
 // 提交
 const onSubmit = async (formData: any) => {
-	loadingBtn.value = true;
 	const getData = {
 		applyCheckId: formData.applyCheckId,
 		storageId: '',
@@ -432,6 +446,7 @@ const onSubmit = async (formData: any) => {
 			getData['storageId'] = item.value;
 		}
 	});
+	loadingBtn.value = true;
 	const res = await getDispatchApi(getData);
 	if (res.status) {
 		ElMessage.success(t('發料成功'));

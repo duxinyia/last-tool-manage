@@ -91,16 +91,18 @@ const getBreadcrumbList = (arr: RouteItems) => {
 };
 // 当前路由字符串切割成数组，并删除第一项空内容
 const initRouteSplit = (path: string) => {
-	if (!themeConfig.value.isBreadcrumb) return false;
-	state.breadcrumbList = [routesList.value[0]];
-	state.routeSplit = path.split('/');
-	state.routeSplit.shift();
-	state.routeSplitFirst = `/${state.routeSplit[0]}`;
-	state.routeSplitIndex = 1;
-	getBreadcrumbList(routesList.value);
-	if (route.name === 'system' || (route.name === 'notFound' && state.breadcrumbList.length > 1)) state.breadcrumbList.shift();
-	if (state.breadcrumbList.length > 0)
-		state.breadcrumbList[state.breadcrumbList.length - 1].meta.tagsViewName = other.setTagsViewNameI18n(<RouteToFrom>route);
+	if (routesList.value) {
+		if (!themeConfig.value.isBreadcrumb) return false;
+		state.breadcrumbList = [routesList.value[0]];
+		state.routeSplit = path.split('/');
+		state.routeSplit.shift();
+		state.routeSplitFirst = `/${state.routeSplit[0]}`;
+		state.routeSplitIndex = 1;
+		getBreadcrumbList(routesList.value);
+		if (route.name === 'system' || (route.name === 'notFound' && state.breadcrumbList.length > 1)) state.breadcrumbList.shift();
+		if (state.breadcrumbList.length > 0)
+			state.breadcrumbList[state.breadcrumbList.length - 1].meta.tagsViewName = other.setTagsViewNameI18n(<RouteToFrom>route);
+	}
 };
 // 页面加载时
 onMounted(() => {

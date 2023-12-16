@@ -1,6 +1,6 @@
 <template>
 	<el-tabs v-model="activeName" class="table-container layout-padding" @tab-click="handleClick">
-		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="到貨作業" name="first">
+		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="樣品發料" name="first">
 			<TableSearch
 				:search="state.tableData.search"
 				@search="(data) => onSearch(data, state.tableData)"
@@ -22,21 +22,13 @@
 				@remoteMethod="remoteMethod"
 				:loadingBtn="loadingBtn"
 				@handleNumberInputChange="changeInput"
+				@dailogFormButton="onDownLoad"
+				@selectChange="onSelectChange"
 			>
-				<template #Header="{ hearName }">
-					<div class="header">
-						<div style="font-size: 18px">{{ hearName }}</div>
-						<el-tag style="font-weight: 700" v-if="isApplyCheckId" class="ml30" type="danger">二次收貨</el-tag>
-					</div>
-				</template>
-				<template #optionFat="{ row }">
-					<span style="float: left">{{ row.label }}</span>
-					<span style="float: right; color: var(--el-text-color-secondary)">{{ row.value }}</span>
-				</template>
 			</Dialog>
 		</el-tab-pane>
-		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="到貨記錄" name="second">
-			<TableSearch
+		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="樣品發料記錄" name="second">
+			<!-- <TableSearch
 				:search="secondState.tableData.search"
 				@search="(data) => onSearch(data, secondState.tableData)"
 				:searchConfig="secondState.tableData.searchConfig"
@@ -48,18 +40,18 @@
 				class="table"
 				@pageChange="(page) => onTablePageChange(page, secondState.tableData)"
 				@sortHeader="(data) => onSortHeader(data, secondState.tableData)"
-			/>
+			/> -->
 		</el-tab-pane>
 	</el-tabs>
 </template>
 
-<script setup lang="ts" name="/requistManage/arriveJob">
+<script setup lang="ts" name="sampleIssue">
 import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
 import { ElMessage, FormInstance, TabsPaneContext } from 'element-plus';
 // 引入接口
-import { getGetWaitRecievePageListApi, getAddReceiveApi, getQueryReceiveRecordApi } from '/@/api/requistManage/arriveJob';
-import { getEngieerGroupApi } from '/@/api/global/index';
+import { getAdminNamesOfStoreHouseApi, getLegalStoreTypesExceptIdleStoreApi, getQueryStoreHouseExceptIdleStoreNoPageApi } from '/@/api/global/index';
 import { useI18n } from 'vue-i18n';
+import { getQueryDispatchableCheckDetailsApi, getSampleDispatchApi } from '/@/api/sampleManage/sampleIssue';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
@@ -67,7 +59,6 @@ const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vu
 
 // 定义变量内容
 const { t } = useI18n();
-const tableFormRef = ref();
 const tableRef = ref<RefType>();
 const arriveJobDialogRef = ref();
 const loading = ref(false);
@@ -83,16 +74,17 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
-			{ key: 'prNo', colWidth: '', title: 'PR單號', type: 'text', isCheck: true },
-			{ key: 'prItemNo', colWidth: '', title: 'PR項次', type: 'text', isCheck: true },
+			{ key: 'sampleNo', colWidth: '', title: '送樣單號', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'reqQty', colWidth: '', title: '需求數量', type: 'text', isCheck: true },
-			{ key: 'receiveQty', colWidth: '', title: '已收貨數量', type: 'text', isCheck: true },
-			{ key: 'reqDate', colWidth: '', title: '需求日期', type: 'text', isCheck: true },
-			{ key: 'creator', colWidth: '', title: '提報人', type: 'text', isCheck: true },
+			{ key: 'vendorCode', colWidth: '', title: '廠商代碼', type: 'text', isCheck: true },
+			{ key: 'vendorName', colWidth: '', title: '廠商名稱', type: 'text', isCheck: true },
+			{ key: 'checkQty', colWidth: '', title: '驗收數量', type: 'text', isCheck: true },
+			{ key: 'checker', colWidth: '', title: '驗收人', type: 'text', isCheck: true },
+			{ key: 'checktime', colWidth: '', title: '驗收日期', type: 'text', isCheck: true },
+			{ key: 'createTime', colWidth: '', title: '驗收提交時間', type: 'text', isCheck: true },
+			{ key: 'headDescribe', colWidth: '', title: '驗收備註', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -109,47 +101,45 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '申請單號', prop: 'reqNo', required: false, type: 'input' },
-			{ label: 'PR單號', prop: 'prNo', required: false, type: 'input' },
+			{ label: '送樣單號', prop: 'sampleNo', required: false, type: 'input' },
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
-			{ label: '需求日期', prop: 'reqDate', required: false, type: 'dateRange' },
-			{
-				label: '是否是二次收货',
-				prop: 'isReapply',
-				required: false,
-				clearable: false,
-				type: 'select',
-				options: [
-					{ value: true, label: '是', text: '是' },
-					{ value: false, label: '否', text: '否' },
-				],
-			},
+			{ label: '廠商', prop: 'vendor', required: false, type: 'input' },
+			{ label: '驗收人', prop: 'checker', required: false, type: 'input' },
+			{ label: '驗收日期', prop: 'checkTime', required: false, type: 'dateRange' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [{ type: 'sendReceive', name: '收貨', color: '#e6a23c', isSure: false, icon: 'ele-EditPen' }],
+		btnConfig: [{ type: 'sendReceive', name: '發料', color: '#67c23a', isSure: false, icon: 'ele-Van' }],
 		// 给后端的数据
-		form: {
-			// reqNo: '',
-			// prNo: '',
-		},
+		form: {},
 		dialogConfig: [
-			// { type: 'text', label: '收货单号', placeholder: '', prop: 'sendNo', required: false },
-			{ type: 'text', label: '申請單號', placeholder: '', prop: 'reqNo', required: false },
-			{ type: 'text', label: 'PR單號', placeholder: '', prop: 'prNo', required: false },
-			{ type: 'text', label: 'PR項次', placeholder: '', prop: 'prItemNo', required: false },
+			{ type: 'text', label: '送樣單號', placeholder: '', prop: 'sampleNo', required: false },
 			{ type: 'text', label: 'message.pages.matNo', placeholder: '', prop: 'matNo', required: false },
 			{ type: 'text', label: '品名-中文', placeholder: '', prop: 'nameCh', required: false },
 			{ type: 'text', label: '品名-英文', placeholder: '', prop: 'nameEn', required: false },
-			{ type: 'text', label: '需求數量', placeholder: '', prop: 'reqQty', required: false },
-			{ type: 'text', label: '已收貨數量', placeholder: '', prop: 'receiveQty', required: false },
-			{ type: 'text', label: '需求日期', placeholder: '', prop: 'reqDate', required: false },
+			{ type: 'text', label: '廠商代碼', placeholder: '', prop: 'vendorCode', required: false },
+			{ type: 'text', label: '廠商名稱', placeholder: '', prop: 'vendorName', required: false },
+			{ type: 'text', label: '驗收數量', placeholder: '', prop: 'checkQty', required: false },
+			{ type: 'text', label: '驗收人', placeholder: '', prop: 'checker', required: false },
+			{ type: 'text', label: '驗收日期', placeholder: '', prop: 'checktime', required: false },
+			{ type: 'text', label: '驗收提交時間', placeholder: '', prop: 'createTime', required: false },
+			{ type: 'text', label: '驗收備註', placeholder: '', prop: 'headDescribe', required: false },
+			{ type: 'button', label: '查看驗收報告', placeholder: '', prop: 'accepReportUrl', required: false, xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
 			{
-				label: '工程驗收人',
-				prop: 'engineer',
-				placeholder: '請輸入選擇工程驗收人',
+				label: '倉庫類型',
+				prop: 'storeType',
+				placeholder: '請選擇倉庫類型',
+				required: true,
+				type: 'select',
+				options: [],
+				clearable: true,
+			},
+			{
+				label: '倉庫位置',
+				prop: 'sLocation',
+				placeholder: '請輸入選擇倉庫位置',
 				required: true,
 				type: 'select',
 				options: [],
@@ -158,12 +148,22 @@ const state = reactive<TableDemoState>({
 				remote: true,
 				remoteShowSuffix: true,
 			},
-			{ type: 'number', label: '收貨數量', placeholder: '', prop: 'receiptQty', required: true, min: 1 },
-			{ type: 'date', label: '收貨時間', placeholder: '', prop: 'receiveDate', required: true, isdisabledDate: true },
+			{
+				type: 'text',
+				label: '接收DRI',
+				placeholder: '',
+				prop: 'warehouseManager',
+				required: false,
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
+			},
 			{
 				type: 'textarea',
 				label: '備註',
-				placeholder: '請輸入備註',
+				placeholder: '',
 				prop: 'describe',
 				required: false,
 				xs: 24,
@@ -249,122 +249,111 @@ const secondState = reactive<TableDemoState>({
 		},
 	},
 });
-// const dialogState = reactive<TableDemoState>({
-// 	tableData: {
-// 		// 列表数据（必传）
-// 		data: [],
-// 		// 表头内容（必传，注意格式）
-// 		header: [],
-// 		// 配置项（必传）
-// 		config: {
-// 			total: 0, // 列表总数
-// 			loading: true, // loading 加载
-// 			isBorder: false, // 是否显示表格边框
-// 			isSerialNo: true, // 是否显示表格序号
-// 			isSelection: false, // 是否显示表格多选
-// 			isOperate: false, // 是否显示表格操作栏
-// 			isButton: false, //是否显示表格上面的新增删除按钮
-// 			isInlineEditing: false, //是否是行内编辑
-// 			isTopTool: false, //是否有表格右上角工具
-// 			isPage: false, //是否有分页
-// 			isDialogTab: true, //是否是弹窗里面的表格
-// 			height: 500,
-// 		},
-// 		// 给后端的数据
-// 		form: {},
-// 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-// 		search: [
-// 			{ label: '收货单号', prop: 'sendNo', required: false, type: 'text' },
-// 			{ label: '申请单号', prop: 'reqNo', required: false, type: 'text' },
-// 			{ label: 'PR单号', prop: 'prNo', required: false, type: 'text' },
-// 			{ label: '工程验收人', prop: 'engineer', required: false, type: 'select', options: [], isRequired: true },
-// 			// { label: '收货时间', prop: 'sendTime', required: false, type: 'time', isRequired: true },
-// 		],
-// 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: true }],
-// 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
-// 		page: {
-// 			pageNum: 1,
-// 			pageSize: 10,
-// 		},
-// 	},
-// });
-// 点击收货弹窗
+// 点击發料弹窗
 const isApplyCheckId = ref(false);
 const currentData = ref<EmptyObjectType>([]);
 const openArriveJobDialog = (scope: EmptyObjectType) => {
 	isApplyCheckId.value = scope.row.applyCheckId ? true : false;
 	loadingBtn.value = false;
-	arriveJobDialogRef.value.openDialog('samp', scope.row, '收貨');
+	arriveJobDialogRef.value.openDialog('samp', scope.row, '發料');
 	currentData.value = scope.row;
 };
-const changeInput = (val: number, formData: EmptyObjectType) => {
-	const dialogData = currentData.value;
-	if (state.tableData.dialogConfig) {
-		state.tableData.dialogConfig[10].max = dialogData.reqQty - dialogData.receiveQty;
-		if (val > dialogData.reqQty - dialogData.receiveQty) {
-			formData.receiptQty = dialogData.reqQty - dialogData.receiveQty;
-		}
+const onSelectChange = async (val: string, prop: string, formData: EmptyObjectType) => {
+	if (prop === 'sLocation') {
+		const res = await getAdminNamesOfStoreHouseApi(formData.sLocation);
+		formData.warehouseManager = res.data;
+	} else {
+		formData.sLocation = '';
+		formData.warehouseManager = '';
 	}
 };
-
+const changeInput = (val: number, formData: EmptyObjectType) => {};
+// 查看驗收報告
+const onDownLoad = (formData: EmptyObjectType) => {
+	if (formData.accepreporturl) {
+		window.open(
+			`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${formData.accepreporturl}`,
+			'_blank'
+		);
+	} else {
+		ElMessage.warning(t('沒有驗收報告單'));
+	}
+};
 // 搜索下拉选择
-const remoteMethod = (query: string) => {
-	let dialogConfig = state.tableData.dialogConfig;
-	dialogConfig?.forEach((item) => {
-		if (item.prop === 'engineer') item.loading = true;
-	});
+let option: EmptyArrayType = [];
+const remoteMethod = (query: string, form: EmptyObjectType) => {
 	if (query) {
-		loading.value = true;
+		state.tableData.dialogConfig?.forEach((item) => {
+			if (item.prop === 'sLocation') {
+				item.loading = true;
+			}
+		});
 		setTimeout(async () => {
-			const res = await getEngieerGroupApi(query);
-			loading.value = false;
-			let options = res.data.map((item: EmptyObjectType) => {
-				return { value: `${item.userid}`, label: `${item.username}` };
+			const res = await getQueryStoreHouseExceptIdleStoreNoPageApi(form.storeType, query);
+			option = res.data.map((item: EmptyObjectType) => {
+				return { value: `${item.storeId}`, label: `${item.storeType}`, text: `${item.sLocation}` };
 			});
-			dialogConfig?.forEach((item) => {
-				if (item.prop === 'engineer') item.loading = false;
-				item.options = options.filter((item: EmptyObjectType) => {
-					return item.value.toLowerCase().includes(query.toLowerCase()) || item.label.toLowerCase().includes(query.toLowerCase());
-				});
+			state.tableData.dialogConfig?.forEach((item) => {
+				if (item.prop === 'sLocation') {
+					item.loading = false;
+					item.options = option.filter((item: EmptyObjectType) => {
+						return item.text.toLowerCase().includes(query.toLowerCase()) || item.label.toLowerCase().includes(query.toLowerCase());
+					});
+				}
 			});
 		}, 500);
 	} else {
-		dialogConfig?.forEach((item) => {
-			if (item.prop === 'engineer') item.options = [];
+		state.tableData.dialogConfig?.forEach((item) => {
+			if (item.prop === 'sLocation') {
+				item.options = [];
+			}
 		});
 	}
 };
-
+// 下拉框数据
+const getSelect = async () => {
+	const res = await getLegalStoreTypesExceptIdleStoreApi();
+	const option = res.data.map((item: any) => {
+		return { label: item, text: item, value: item };
+	});
+	state.tableData.dialogConfig?.forEach((item) => {
+		if (item.prop === 'storeType') {
+			item.options = option;
+		}
+	});
+};
 // 初始化列表数据
 const getTableData = async (datas: EmptyObjectType) => {
 	const form = datas.form;
 	let res = null;
 	if (activeName.value === 'first') {
-		if (form.isReapply === '') form.isReapply = null;
 		let data = {
 			...form,
-			reqDate: form.reqDate,
-			startReqDate: form.reqDate && form.reqDate[0],
-			endReqDate: form.reqDate && form.reqDate[1],
+			checkTime: form.checkTime,
+			startCheckTime: form.checkTime && form.checkTime[0],
+			endCheckTime: form.checkTime && form.checkTime[1],
 			page: datas.page,
 		};
-		delete data.reqDate;
-		res = await getGetWaitRecievePageListApi(data);
-	} else {
-		if (form.hasChecked === '') form.hasChecked = null;
-		let data = {
-			...form,
-			receiveDate: form.receiveDate,
-			startReceiveDate: form.receiveDate && form.receiveDate[0],
-			endReceiveDate: form.receiveDate && form.receiveDate[1],
-			page: datas.page,
-		};
-		delete data.receiveDate;
-		res = await getQueryReceiveRecordApi(data);
-		res.data.data.forEach((item: any) => {
-			item.hasChecked = item.hasChecked ? '是' : '否';
-			item.engineer = `${item.engineer} / ${item.engineerName}`;
+		delete data.checkTime;
+		res = await getQueryDispatchableCheckDetailsApi(data);
+		res!.data.data.forEach((item: any) => {
+			item.checker = `${item.checker} / ${item.checkerName}`;
 		});
+	} else {
+		// if (form.hasChecked === '') form.hasChecked = null;
+		// let data = {
+		// 	...form,
+		// 	receiveDate: form.receiveDate,
+		// 	startReceiveDate: form.receiveDate && form.receiveDate[0],
+		// 	endReceiveDate: form.receiveDate && form.receiveDate[1],
+		// 	page: datas.page,
+		// };
+		// delete data.receiveDate;
+		// res = await getQueryReceiveRecordApi(data);
+		// res!.data.data.forEach((item: any) => {
+		// 	item.hasChecked = item.hasChecked ? '是' : '否';
+		// 	item.engineer = `${item.engineer} / ${item.engineerName}`;
+		// });
 	}
 	datas.data = res!.data.data;
 	datas.config.total = res!.data.total;
@@ -375,24 +364,21 @@ const getTableData = async (datas: EmptyObjectType) => {
 
 // 提交
 const onSubmit = async (formData: any) => {
-	loadingBtn.value = true;
 	const getData = {
-		applyDetailId: formData.applyDetailId,
-		receiveQty: formData.receiptQty,
-		receiveDate: formData.receiveDate,
-		engineer: formData.engineer,
+		sampleCheckDetailId: formData.sampleCheckDetailId,
+		storageId: '',
 		describe: formData.describe,
 	};
-	// options.forEach((item) => {
-	// 	if (item.value === formData.purchaserName) {
-	// 		getData['purchaser'] = item.label;
-	// 		getData['purchaserName'] = item.text;
-	// 	}
-	// });
-	const res = await getAddReceiveApi(getData);
+	option.forEach((item) => {
+		if (item.value === formData.sLocation) {
+			getData['storageId'] = item.value;
+		}
+	});
+	loadingBtn.value = true;
+	// console.log(getData);
+	const res = await getSampleDispatchApi(getData);
 	if (res.status) {
-		ElMessage.success(t('收貨成功'));
-
+		ElMessage.success(t('發料成功'));
 		arriveJobDialogRef.value.closeDialog();
 		getTableData(state.tableData);
 	}
@@ -414,13 +400,10 @@ const onTablePageChange = (page: TableDemoPageType, tableData: EmptyObjectType) 
 const onSortHeader = (data: TableHeaderType[], tableData: EmptyObjectType) => {
 	tableData.header = data;
 };
-// if (dialogState.tableData.btnConfig)
-// 	dialogState.tableData.btnConfig[0].disabled = computed(() => {
-// 		return dialogState.tableData.data.length <= 1 ? true : false;
-// 	});
 // 页面加载时
 onMounted(() => {
 	getTableData(state.tableData);
+	getSelect();
 });
 </script>
 

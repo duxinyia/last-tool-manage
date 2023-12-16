@@ -21,7 +21,7 @@
 				:close-on-click-modal="false"
 				:destroy-on-close="true"
 			>
-				<el-form ref="dialogFormRef" :model="dialogState.tableData.form" size="default" label-width="100px">
+				<el-form ref="dialogFormRef" :model="dialogState.tableData.form" size="default" label-width="110px">
 					<el-row>
 						<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb15 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
 							<el-form-item
@@ -53,6 +53,7 @@
 									clearable
 									value-format="YYYY-MM-DD"
 									type="date"
+									:disabled-date="disabledDate"
 									style="height: 30px; width: 100%"
 								/>
 
@@ -78,7 +79,7 @@
 					<Table ref="dialogtableRef" v-bind="dialogState.tableData" class="table" @delRow="onDelRow" />
 				</el-form>
 				<div class="describe">
-					<span>描述說明：</span>
+					<span>備註：</span>
 					<el-input
 						class="input-textarea"
 						show-word-limit
@@ -92,7 +93,7 @@
 				<template #footer>
 					<span class="dialog-footer">
 						<el-button size="default" auto-insert-space @click="presentationDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn"> 確定 </el-button>
+						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(dialogFormRef)" :loading="loadingBtn"> 確定 </el-button>
 					</span>
 				</template>
 			</el-dialog>
@@ -124,6 +125,7 @@ const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vu
 // 定义变量内容
 const { t } = useI18n();
 const tableFormRef = ref();
+const dialogFormRef = ref();
 const matnoDetailDialogRef = ref();
 const inventoryDialogRef = ref();
 const loadingBtn = ref(false);
@@ -251,7 +253,7 @@ const dialogState = reactive<TableDemoState>({
 				placeholder: '請輸入選擇閒置倉庫位置',
 				type: 'select',
 				required: false,
-				isRequired: false,
+				isRequired: true,
 				options: [],
 				loading: true,
 				filterable: true,
@@ -277,7 +279,7 @@ const dialogMatnoDetail = ref([
 	{ label: '退庫類型:', prop: 'exittype', type: 'text' },
 	{ label: '退庫原因:', prop: 'exitreason', type: 'text' },
 	{ label: '退庫數量:', prop: 'exitqty', type: 'text' },
-	{ label: '描述說明:', prop: 'describe', type: 'text' },
+	{ label: '備註:', prop: 'describe', type: 'text' },
 ]);
 const exitTypeMap: EmptyObjectType = {
 	1: '維修',
@@ -293,6 +295,10 @@ watch(
 		}
 	}
 );
+// 只能選擇今天日期之前的日期
+const disabledDate = (time: Date) => {
+	return time.getTime() > Date.now();
+};
 // 刪除按鈕狀態
 dialogState.tableData.btnConfig![0].disabled = computed(() => {
 	return dialogState.tableData.data.length <= 1 ? true : false;
@@ -388,7 +394,7 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return;
 	await formEl!.validate(async (valid: boolean) => {
 		if (!valid) return ElMessage.warning(t('表格項必填未填'));
-		if (!dialogState.tableData.form['idleDate']) return ElMessage.warning(t('請填寫閒置日期'));
+		// if (!dialogState.tableData.form['idleDate']) return ElMessage.warning(t('請填寫閒置日期'));
 		loadingBtn.value = true;
 		let allData: EmptyObjectType = {};
 		allData = { ...dialogState.tableData.form };
@@ -441,7 +447,7 @@ onMounted(() => {
 	display: flex;
 	margin-top: 10px;
 	span {
-		width: 90px;
+		width: 50px;
 	}
 }
 .buttonBorder {

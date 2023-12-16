@@ -77,3 +77,11 @@ export function getImportApplyDetailsApi(file:any) {
     }
   });
 }
+// 獲取倉庫管理員姓名合集
+export function getAdminNamesOfStoreHouseApi(storeId: string) {
+	return request({
+		url: '/api/BaseStore/GetAdminNamesOfStoreHouse',
+		method: 'GET',
+		params: {storeId},
+	});
+}

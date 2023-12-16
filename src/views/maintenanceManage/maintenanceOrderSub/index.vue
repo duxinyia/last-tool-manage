@@ -41,6 +41,7 @@
 							<el-date-picker
 								v-model="dialogState.tableData.form[val.prop]"
 								:placeholder="`請選擇時間`"
+								:disabled-date="disabledDate"
 								clearable
 								value-format="YYYY-MM-DD"
 								type="date"
@@ -55,7 +56,7 @@
 					<Table ref="dialogtableRef" v-bind="dialogState.tableData" class="table" @delRow="onDelRow" />
 				</el-form>
 				<div class="describe">
-					<span>描述說明：</span>
+					<span>備註：</span>
 					<el-input
 						class="input-textarea"
 						show-word-limit
@@ -243,7 +244,7 @@ const dialogMatnoDetail = ref([
 	{ label: '退庫類型:', prop: 'exittype', type: 'text' },
 	{ label: '退庫原因:', prop: 'exitreason', type: 'text' },
 	{ label: '退庫數量:', prop: 'exitqty', type: 'text' },
-	{ label: '描述說明:', prop: 'describe', type: 'text' },
+	{ label: '備註:', prop: 'describe', type: 'text' },
 ]);
 const exitTypeMap: EmptyObjectType = {
 	1: '維修',
@@ -258,6 +259,10 @@ watch(
 		}
 	}
 );
+// 日期只能選擇今天之前
+const disabledDate = (time: Date) => {
+	return time.getTime() > Date.now();
+};
 // 刪除按鈕狀態
 dialogState.tableData.btnConfig![0].disabled = computed(() => {
 	return dialogState.tableData.data.length <= 1 ? true : false;
@@ -376,7 +381,7 @@ onMounted(() => {
 	display: flex;
 	margin-top: 10px;
 	span {
-		width: 90px;
+		width: 50px;
 	}
 }
 .buttonBorder {

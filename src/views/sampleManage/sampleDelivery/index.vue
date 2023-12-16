@@ -138,7 +138,7 @@ const state = reactive<TableDemoState>({
 			{ type: 'text', label: '圖紙編號', prop: 'drawNo', required: false, placeholder: '' },
 			{ type: 'text', label: '規格', prop: 'specs', required: false, placeholder: '' },
 			{ type: 'number', label: '需求數量', prop: 'needsQty', required: true, placeholder: '', min: 1 },
-			{ type: 'date', label: '需求時間', prop: 'needsDate', required: true, placeholder: '' },
+			{ type: 'date', label: '需求時間', prop: 'needsDate', required: true, placeholder: '', isdisabledDate: true },
 			{
 				label: '採購人員',
 				prop: 'purchaserName',
@@ -282,10 +282,10 @@ const dialogState = reactive<TableDemoState>({
 // cellStyle.value = changeToStyle(state.tableData.data, ['matNo'], [1]);
 // 单元格字体颜色
 const cellStyle = ({ column }: EmptyObjectType) => {
-	const property = column.property;
-	if (property === 'matNo' && activeName.value === 'first') {
-		return { color: 'var(--el-color-primary)', cursor: 'pointer' };
-	}
+	// const property = column.property;
+	// if (property === 'matNo' && activeName.value === 'first') {
+	// 	return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+	// }
 };
 // 初始化列表数据
 const getTableData = async () => {
@@ -419,7 +419,7 @@ const onSubmit = (formData: any) => {
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
 	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
-	tableRef.value?.pageReset();
+	tableRef.value && tableRef.value?.pageReset();
 };
 const onSearch2 = (data: EmptyObjectType) => {
 	secondState.tableData.form = Object.assign({}, secondState.tableData.form, { ...data });
@@ -445,11 +445,11 @@ const openSampleDialog = (scope: EmptyObjectType, type: string) => {
 };
 // 点击料号 2
 const matnoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
-	if (column.property === 'matNo') {
-		const res = await getGetSampleApi(row.matNo);
-		dialogState.tableData.data = res.data;
-		matNoDetaildialogVisible.value = true;
-	}
+	// if (column.property === 'matNo') {
+	// 	const res = await getGetSampleApi(row.matNo);
+	// 	dialogState.tableData.data = res.data;
+	// 	matNoDetaildialogVisible.value = true;
+	// }
 };
 // /**合并表格的第一列，处理表格数据 */
 const flitterData = (arr: EmptyObjectType, columnI: number, property: string) => {

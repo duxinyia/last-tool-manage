@@ -1,6 +1,9 @@
 <template>
 	<div class="system-menu-dialog-container">
 		<el-dialog draggable :close-on-click-modal="false" :title="state.dialog.title" v-model="state.dialog.isShowDialog" :width="dialogWidth">
+			<template #header="{}">
+				<slot name="Header" :hearName="state.dialog.title"></slot>
+			</template>
 			<el-form v-if="state.dialog.type !== 'imp'" ref="dialogFormRef" :model="state.formData" size="default" :label-width="labelWidth || '100px'">
 				<el-row :gutter="35">
 					<el-col
@@ -20,13 +23,14 @@
 								v-model="state.formData[item.prop]"
 								:placeholder="$t(item.placeholder)"
 								clearable
-								@blur="inputBlur"
+								@blur="inputBlur(item)"
 							></el-input>
 							<el-date-picker
 								v-if="item.type === 'date'"
 								value-format="YYYY-MM-DD"
 								v-model="state.formData[item.prop]"
 								type="date"
+								:disabled-date="(time:Date) => disabledDate(time, item.isdisabledDate)"
 								:placeholder="$t(item.placeholder)"
 								style="width: 100%"
 							/>
@@ -420,6 +424,7 @@ const state = reactive<dialogFormState>({
 		isdisable: false,
 	},
 });
+
 const ondownloadTemp = () => {
 	emit('downloadTemp');
 };
@@ -431,8 +436,8 @@ const handleNumberInputChange = (value: number) => {
 	emit('handleNumberInputChange', value, state.formData);
 };
 // 輸入框失去焦點
-const inputBlur = () => {
-	emit('inputBlur', state.formData);
+const inputBlur = (item: EmptyObjectType) => {
+	emit('inputBlur', state.formData, item);
 };
 // 校验表单
 const validatePass = (rule: any, value: any, callback: any, item: EmptyObjectType) => {
@@ -465,7 +470,14 @@ const allRules = (item: EmptyObjectType) => {
 	};
 	return item.validateForm ? rules['other'] : rules['default'];
 };
-
+// 日期只能選擇今天之前
+const disabledDate = (time: Date, isdisabledDate: boolean) => {
+	if (isdisabledDate) {
+		return time.getTime() > Date.now();
+	} else {
+		return false;
+	}
+};
 // 打开弹窗
 const openDialog = (type: string, row?: any, title?: string) => {
 	if (type === 'add') {
@@ -589,20 +601,20 @@ const commonInputHandleChange = debounce((val: any, prop: string) => {
 let arr: EmptyArrayType = [];
 // 判斷是鍵盤輸入還是掃描槍輸入
 const inputNum = (target: EmptyObjectType, prop: string) => {
-	let timenow = target.timeStamp;
-	arr.push(timenow);
-	for (let i in arr) {
-		if (Math.ceil(arr[arr.length - 1]) - Math.ceil(arr[arr.length - 2]) >= 30) {
-			iscontu.value = false;
-		} else {
-			iscontu.value = true;
-		}
-		if (i && arr.length == parseInt(i) + 1) {
-			if (iscontu.value == true) {
-				return;
-			}
-		}
-	}
+	// let timenow = target.timeStamp;
+	// arr.push(timenow);
+	// for (let i in arr) {
+	// 	if (Math.ceil(arr[arr.length - 1]) - Math.ceil(arr[arr.length - 2]) >= 30) {
+	// 		iscontu.value = false;
+	// 	} else {
+	// 		iscontu.value = true;
+	// 	}
+	// 	if (i && arr.length == parseInt(i) + 1) {
+	// 		if (iscontu.value == true) {
+	// 			return;
+	// 		}
+	// 	}
+	// }
 };
 // 关闭tag标签
 const handleTagClose = (tag: any) => {

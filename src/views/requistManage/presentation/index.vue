@@ -2,9 +2,10 @@
 	<el-tabs v-model="activeName" class="table-container layout-padding" @tab-click="handleClick">
 		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="需求請購單" name="first">
 			<div class="title">需求請購單</div>
-			<span @click="onImportTable" style="position: absolute; right: 20px"
-				><el-icon name="iconfont icon-btn-daoru" :size="22" :title="$t('message.tooltip.import')"><ele-Download /></el-icon
-			></span>
+
+			<div @click="onImportTable" style="position: absolute; right: 20px">
+				<el-button size="default" type="primary" plain> 批量導入 </el-button>
+			</div>
 			<el-form ref="tableSearchRef" size="default" label-width="auto" class="table-form">
 				<el-row>
 					<el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4" class="mb20 mr20" v-for="(val, key) in state.tableData.search" :key="key">
@@ -38,7 +39,7 @@
 				/>
 			</el-form>
 			<div class="describe">
-				<span>描述說明：</span>
+				<span>備註：</span>
 				<el-input
 					class="input-textarea"
 					show-word-limit
@@ -113,7 +114,7 @@
 				/>
 			</el-form>
 			<div class="describe">
-				<span>描述說明：</span>
+				<span>備註：</span>
 				<el-input
 					v-if="isDraft"
 					class="input-textarea"
@@ -204,6 +205,8 @@ import {
 } from '/@/api/requistManage/presentation';
 import { getMachineTypesOfMatApi } from '/@/api/partno/noSearch';
 import { getImportApplyDetailsApi } from '/@/api/global';
+import { useRoute } from 'vue-router';
+const route = useRoute();
 // 定义变量内容
 const { t } = useI18n();
 const tableRef = ref();
@@ -220,7 +223,7 @@ const upLoadDialogVisible = ref(false);
 const fileListName = ref();
 const fileList = ref<UploadUserFile[]>([]);
 const uploadRefs = ref<UploadInstance>();
-const activeName = ref<string | number>('first');
+const activeName = ref<string | number>((route.query.page as string) || 'first');
 const uploadForm = ref();
 const handleClick = (tab: TabsPaneContext, event: Event) => {
 	activeName.value = tab.paneName as string | number;
@@ -276,7 +279,7 @@ const state = reactive<EmptyObjectType>({
 			},
 			{ key: 'line', colWidth: '', title: '線體', type: 'input', isCheck: true, isRequired: true },
 			{ key: 'reqQty', colWidth: '150', title: 'PR數量', type: 'number', isCheck: true, isRequired: true, min: 0 },
-			{ key: 'reqDate', colWidth: '150', title: '需求時間', type: 'time', isCheck: true, isRequired: true },
+			{ key: 'reqDate', colWidth: '150', title: '需求時間', type: 'time', isCheck: true, isRequired: true, isdisabledDate: true },
 			{ key: 'prItemNo', colWidth: '', title: 'PR項次', type: 'input', isCheck: true, isRequired: false, maxlength: 20 },
 		],
 		// 弹窗表单
@@ -348,7 +351,7 @@ const dialogState = reactive<EmptyObjectType>({
 			total: 0, // 列表总数
 			loading: false, // loading 加载
 			isBorder: false, // 是否显示表格边框
-			isSerialNo: true, // 是否显示表格序号
+			isSerialNo: false, // 是否显示表格序号
 			isSelection: false, // 是否显示表格多选
 			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
@@ -360,6 +363,17 @@ const dialogState = reactive<EmptyObjectType>({
 		},
 		// 表头内容（必传，注意格式）
 		header: [
+			{ key: 'prItemNo', colWidth: '', title: 'PR項次', type: 'input', othersType: 'input', isCheck: true, isRequired: false, maxlength: 20 },
+			{
+				key: 'applyCheckId',
+				colWidth: '',
+				title: ' ',
+				type: 'status',
+				isCheck: true,
+				successText: '二次收貨',
+				infoText: '否',
+				color: 'danger',
+			},
 			{
 				key: 'matNo',
 				colWidth: '250',
@@ -391,9 +405,9 @@ const dialogState = reactive<EmptyObjectType>({
 			},
 			{ key: 'line', colWidth: '', title: '線體', type: 'input', othersType: 'input', isCheck: true, isRequired: true },
 			{ key: 'reqQty', colWidth: '150', title: 'PR數量', type: 'number', othersType: 'number', isCheck: true, isRequired: true, min: 0 },
-			{ key: 'reqDate', colWidth: '150', title: '需求時間', type: 'time', othersType: 'time', isCheck: true, isRequired: true },
-			{ key: 'prItemNo', colWidth: '', title: 'PR項次', type: 'input', othersType: 'input', isCheck: true, isRequired: false, maxlength: 20 },
-			// { key: 'describe', colWidth: '150', title: '描述說明', type: 'textarea', othersType: 'textarea', isCheck: true, isRequired: false },
+			{ key: 'reqDate', colWidth: '150', title: '需求時間', type: 'time', othersType: 'time', isCheck: true, isRequired: true, isdisabledDate: true },
+
+			// { key: 'describe', colWidth: '150', title: '備註', type: 'textarea', othersType: 'textarea', isCheck: true, isRequired: false },
 			{ key: 'receivedQty', colWidth: '110', title: '已收貨數量', type: 'text', isCheck: true, isRequired: false },
 			{ key: 'checkPassQty', colWidth: '120', title: '驗收合格數量', type: 'text', isCheck: true, isRequired: false },
 			{ key: 'checkFailQty', colWidth: '130', title: '驗收不合格數量', type: 'text', isCheck: true, isRequired: false },
@@ -450,9 +464,9 @@ const onSearch = (data: EmptyObjectType) => {
 };
 const isDraft = ref();
 // 打開詳情彈窗
-const openDetailDialog = async (scope: EmptyObjectType) => {
+const openDetailDialog = async (scope: EmptyObjectType, type: string, reqNo?: string) => {
 	dialogState.tableData.config.loading = true;
-	const res = await getApplyRecordDetailApi(scope.row.reqNo);
+	const res = await getApplyRecordDetailApi(Object.keys(scope).length > 0 ? scope.row.reqNo : reqNo);
 	dialogState.tableData.form = res.data;
 	dialogState.tableData.data = res.data.details;
 	isDraft.value = res.data.isDraft;
@@ -463,7 +477,10 @@ const openDetailDialog = async (scope: EmptyObjectType) => {
 	});
 	dialogState.tableData.header.forEach((item: any) => {
 		item.type = res.data.isDraft ? item.othersType || item.type : 'text';
-		const hideArr = ['receivedQty', 'checkPassQty', 'checkFailQty', 'dispatchedQty', 'storedQty'];
+		if (item.key == 'applyCheckId') {
+			item.type = 'status';
+		}
+		const hideArr = ['receivedQty', 'checkPassQty', 'checkFailQty', 'dispatchedQty', 'storedQty', 'applyCheckId'];
 		if (hideArr.includes(item.key)) {
 			item.isCheck = res.data.isDraft ? false : true;
 		}
@@ -474,6 +491,7 @@ const openDetailDialog = async (scope: EmptyObjectType) => {
 	});
 	dialogState.tableData.config.isAddRowBtn = res.data.isDraft ? true : false;
 	dialogState.tableData.config.isOperate = res.data.isDraft ? true : false;
+	// dialogState.tableData.config.isSerialNo = res.data.isDraft ? true : false;
 	detailDialogVisible.value = true;
 	if (res.status) {
 		dialogState.tableData.config.loading = false;
@@ -722,6 +740,9 @@ const submitUpload = async (formEl: EmptyObjectType | undefined) => {
 // 页面加载时
 onMounted(() => {
 	getTableData();
+	if (route.query.reqNo) {
+		openDetailDialog({}, '', route.query.reqNo as string);
+	}
 });
 </script>
 
@@ -745,7 +766,7 @@ onMounted(() => {
 	display: flex;
 	margin-top: 10px;
 	span {
-		width: 90px;
+		width: 50px;
 	}
 }
 .table-bottom {

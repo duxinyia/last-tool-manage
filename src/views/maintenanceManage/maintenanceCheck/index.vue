@@ -65,13 +65,13 @@
 			</el-form>
 			<template v-if="dilogTitle == '驗收' || dilogTitle == '詳情'">
 				<div class="describe" v-if="dilogTitle == '驗收'">
-					<span>收貨描述說明：</span>
+					<span>收貨備註：</span>
 					<div style="font-weight: 700; color: #1890ff">{{ dialogState.tableData.form['describe'] }}</div>
 				</div>
 				<div class="describe up-file" v-if="dilogTitle == '驗收'">
 					<span>驗收報告：</span>
 					<el-upload
-						style="width: 99%"
+						style="width: 100%"
 						v-model:file-list="inputfileList"
 						:auto-upload="false"
 						ref="inputuploadRefs"
@@ -114,8 +114,9 @@
 				</div>
 				<el-button class="mt5" v-if="dilogTitle == '詳情'" size="default" plain type="primary" @click="lookUpload">查看驗收報告</el-button>
 				<div class="describe">
-					<span>描述說明：</span>
+					<span>備註：</span>
 					<el-input
+						style="width: 120%"
 						v-if="dilogTitle == '驗收'"
 						class="input-textarea"
 						show-word-limit
@@ -186,10 +187,10 @@ const header = ref<EmptyArrayType>([
 	{ key: 'receiptQty', colWidth: '', title: '收貨數量', type: 'text', isCheck: true },
 	{ key: 'receiptDate', colWidth: '', title: '收貨時間', type: 'text', isCheck: true },
 	{ key: 'checkQty', colWidth: '100', title: '驗收數量', type: 'text', isCheck: true, isRequired: false, min: 0 },
-	{ key: 'passQty', colWidth: '100', title: '合格數量', type: 'number', isCheck: true, isRequired: true, min: 0 },
-	{ key: 'failqty', colWidth: '', title: '不合格數量', type: 'text', isCheck: true, isRequired: true },
-	{ key: 'failReasonIds', colWidth: '180', title: '驗收不合格原因', type: 'multipleSelect', isCheck: true, options: [] },
-	{ key: 'checkDate', colWidth: '150', title: '驗收時間', type: 'time', isCheck: true, isRequired: true },
+	{ key: 'passQty', colWidth: '100', title: '通過數量', type: 'number', isCheck: true, isRequired: true, min: 0 },
+	{ key: 'failqty', colWidth: '', title: '不通過數量', type: 'text', isCheck: true, isRequired: true },
+	{ key: 'failReasonIds', colWidth: '180', title: '驗收不通過原因', type: 'multipleSelect', isCheck: true, options: [] },
+	{ key: 'checkDate', colWidth: '150', title: '驗收時間', type: 'time', isCheck: true, isRequired: true, isdisabledDate: true },
 ]);
 const header1 = ref([
 	{
@@ -480,7 +481,7 @@ const openArriveJobDialog = async (scope: EmptyObjectType) => {
 	isSureDisabled.value = true;
 	dilogTitle.value = '驗收';
 	changeStatus(header.value, 300, true);
-	// 获取验收不合格原因
+	// 获取验收不通過原因
 	let res1 = await getExitReasonApi('CheckFail');
 	dialogState.tableData.header[7].options = res1.data.map((item: any) => {
 		return { value: item.runid, label: item.dataname };
@@ -591,14 +592,12 @@ onMounted(() => {
 	display: flex;
 	margin-top: 10px;
 	span {
-		width: 100px;
+		width: 110px;
 	}
 }
 .up-file {
 	display: flex;
 	span {
-		width: 122px;
-		// align-items: center;
 		line-height: 30px;
 	}
 }

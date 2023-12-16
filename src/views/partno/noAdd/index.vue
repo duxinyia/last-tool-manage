@@ -296,10 +296,12 @@ const remoteMethod = (query: string) => {
 				return { value: `${item}`, label: `${item}`, text: `${item}` };
 			});
 			dialogConfig?.forEach((item) => {
-				if (item.prop === 'machineTypes') item.loading = false;
-				item.options = options.filter((item: EmptyObjectType) => {
-					return item.value.toLowerCase().includes(query.toLowerCase());
-				});
+				if (item.prop === 'machineTypes') {
+					item.loading = false;
+					item.options = options.filter((item: EmptyObjectType) => {
+						return item.value.toLowerCase().includes(query.toLowerCase());
+					});
+				}
 			});
 		}, 500);
 	} else {

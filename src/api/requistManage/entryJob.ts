@@ -27,3 +27,19 @@ export function GetTStockAddApi(data: Object) {
 		data: data,
 	});
 }
+// 入库记录查询
+export function GetQueryPutStorageRecordApi(data: Object) {
+	return request({
+		url:'/api/ToolApply/QueryPutStorageRecord',
+		method: 'POST',
+		data: data,
+	});
+}
+
+// 查看入庫的碼
+export function getCodesOfApplyPutStorageApi(applyPutStorageId: string) {
+	return request({
+		url: `/api/ToolApply/GetCodesOfApplyPutStorage/${applyPutStorageId}`,
+		method: 'GET',
+	});
+}

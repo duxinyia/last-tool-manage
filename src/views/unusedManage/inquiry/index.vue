@@ -36,7 +36,7 @@
 
 				<div class="describe">
 					<div style="line-height: 30px">
-						描述說明：<span style="color: red" class="ml10">{{ dialogState.tableData.form['describe'] }}</span>
+						備註：<span style="color: red" class="ml10">{{ dialogState.tableData.form['describe'] }}</span>
 					</div>
 				</div>
 			</el-dialog>
@@ -62,6 +62,8 @@ import { ElMessage } from 'element-plus';
 import { IdleQueryPageListApi, GetIdleDetailApi, getIdleSubmitSignApi, getIdleDownloadApi } from '/@/api/unusedManage/unusedInquiry';
 import { getQueryStoreHouseNoPageApi } from '/@/api/global';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
+const route = useRoute();
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
@@ -145,7 +147,7 @@ const state = reactive<TableDemoState>({
 		form: {
 			// idleNo: '',
 			// idleDate: '',
-			signStatus: 0,
+			signStatus: Number(route.query.signStatus) || 0,
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -231,6 +233,15 @@ cellStyle.value = changeToStyle([2]);
 const getTableData = async () => {
 	state.tableData.config.loading = true;
 	const form = state.tableData.form;
+	if (route.query.signStatus) {
+		state.tableData.search.forEach((item) => {
+			if (item.prop === 'signStatus') {
+				item.options?.forEach((option) => {
+					option.selected = option.value === Number(route.query.signStatus) ? true : false;
+				});
+			}
+		});
+	}
 	option.forEach((item) => {
 		if (item.value === form.idleSLocation) {
 			form.idleSLocation = item.text;

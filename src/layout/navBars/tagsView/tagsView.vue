@@ -116,7 +116,8 @@ const isActive = (v: RouteItem) => {
 			return v.url ? v.url === state.routeActive : v.path === state.routeActive;
 		} else {
 			// 通过 name 传参，params 取值，刷新页面参数消失 一般会执行这个
-			return v.path === state.routePath;
+			// return v.path === state.routePath;
+			return v.url === state.routeActive;
 		}
 	}
 };

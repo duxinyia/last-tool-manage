@@ -22,7 +22,7 @@
 				</el-row>
 				<Table v-bind="state.tableData" class="table" />
 				<div class="describe">
-					<span>描述說明：</span>
+					<span>備註：</span>
 					<span style="width: 100%; font-weight: 700; color: #1890ff">{{ state.tableData.form['describe'] }}</span>
 				</div>
 			</el-form>

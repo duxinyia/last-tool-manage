@@ -344,8 +344,8 @@ const initNumCountUp = () => {
 // 点击单号跳转到相应的页面
 const routePage = (type: number) => {
 	const routeTypeMap: EmptyObjectType = {
-		0: '/partno/sampleRequirement',
-		1: '/partno/acceptance',
+		0: '/sampleManage/sampleRequirement',
+		1: '/sampleManage/acceptance',
 		2: '/requistManage/arrivalAcceptance',
 		3: '/maintenanceManage/maintenanceCheck',
 		4: '/requistManage/issueMaterials',

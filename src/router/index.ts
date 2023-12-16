@@ -116,7 +116,7 @@ router.beforeEach(async (to, from, next) => {
 		else {
 			const storesRoutesList = useRoutesList(pinia);
 			const { routesList } = storeToRefs(storesRoutesList);		
-			if (routesList.value.length === 0) {
+			if (routesList.value?.length === 0) {
 				if (isRequestRoutes) {		
 					// 后端控制路由：路由数据初始化，防止刷新时丢失
 					await initBackEndControlRoutes();		

@@ -116,6 +116,7 @@ const onSignIn = (formEl: EmptyObjectType | undefined) => {
 				Session.set('token', res.data.token);
 				Cookies.set('userName', res.data.userName);
 				Cookies.set('userId', res.data.userId);
+				Cookies.set('userPassword', datapw);
 				// Local.set('datas', res.data.datas);
 				// let home: string[] = [];
 				res.data.datas.unshift({

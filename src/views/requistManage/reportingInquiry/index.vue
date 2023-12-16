@@ -48,7 +48,7 @@
 					/>
 				</el-form>
 				<div class="describe" v-if="dilogTitle == '修改'">
-					<span>描述說明：</span>
+					<span>備註：</span>
 					<el-input
 						class="input-textarea"
 						show-word-limit
@@ -192,7 +192,7 @@ const header1 = ref<deliveryDialogHeader>([
 	},
 	{ key: 'line', colWidth: '', title: '線體', type: 'input', isCheck: true, isRequired: true },
 	{ key: 'reqQty', colWidth: '100', title: '需求數量', type: 'number', isCheck: true, isRequired: true, min: 0 },
-	{ key: 'reqDate', colWidth: '150', title: '需求時間', type: 'time', isCheck: true, isRequired: true },
+	{ key: 'reqDate', colWidth: '150', title: '需求時間', type: 'time', isCheck: true, isRequired: true, isdisabledDate: true },
 	{ key: 'prItemNo', colWidth: '', title: 'PR項次', type: 'input', isCheck: true, isRequired: false, maxlength: 20 },
 	// { key: 'describe', colWidth: '150', title: '描述说明', type: 'text', isCheck: true },
 ]);
@@ -469,7 +469,7 @@ onMounted(() => {
 	display: flex;
 	margin-top: 10px;
 	span {
-		width: 90px;
+		width: 50px;
 	}
 }
 </style>

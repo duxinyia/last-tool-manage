@@ -1,6 +1,6 @@
 <template>
 	<el-tabs v-model="activeName" class="table-container layout-padding" @tab-click="handleClick">
-		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="請購入庫" name="first">
+		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="樣品入庫" name="first">
 			<TableSearch
 				:search="state.tableData.search"
 				@search="(data) => onSearch(data, state.tableData)"
@@ -8,10 +8,10 @@
 				@remoteMethod="remoteMethod"
 				@selectChange="selectChangeStoreType"
 			>
-				<template #optionSearchFat="{ row, value }">
+				<!-- <template #optionSearchFat="{ row, value }">
 					<span v-if="value.prop === 'dispatcher'" style="float: left; margin-right: 35px">{{ row.value }}</span>
 					<span v-if="value.prop === 'dispatcher'" style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
-				</template>
+				</template> -->
 			</TableSearch>
 			<Table
 				ref="tableRef"
@@ -23,8 +23,8 @@
 				@onOpenOtherDialog="openEntryDialog"
 			/>
 		</el-tab-pane>
-		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="請購入庫記錄" name="second">
-			<TableSearch
+		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="樣品入庫記錄" name="second">
+			<!-- <TableSearch
 				:search="secondState.tableData.search"
 				@search="(data) => onSearch(data, secondState.tableData)"
 				:searchConfig="secondState.tableData.searchConfig"
@@ -37,7 +37,7 @@
 				@pageChange="(page) => onTablePageChange(page, secondState.tableData)"
 				@sortHeader="(data) => onSortHeader(data, secondState.tableData)"
 				@onOpenOtherDialog="openLookQrcodeDialog"
-			/>
+			/> -->
 		</el-tab-pane>
 		<qrCodeDialog ref="inventoryDialogRef" :tags="qrCode" dialogTitle="入庫條碼" />
 		<Dialog
@@ -67,24 +67,20 @@
 	</el-tabs>
 </template>
 
-<script setup lang="ts" name="/toolsReturn/entryJob">
+<script setup lang="ts" name="sampleStorage">
 import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
 import { ElMessage, ElMessageBox, FormInstance, TabsPaneContext } from 'element-plus';
 // 引入接口
-import {
-	GetTStockInputPageListApi,
-	GetUserManagedStoreHouseApi,
-	GetTStockAddApi,
-	GetQueryPutStorageRecordApi,
-	getCodesOfApplyPutStorageApi,
-} from '/@/api/requistManage/entryJob';
+import { GetQueryStoragableSampleCheckDetailsApi, getSamplePutStorageApi } from '/@/api/toolsReturn/sampleStorage';
+import { getCodesOfApplyPutStorageApi } from '/@/api/requistManage/entryJob';
+
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
 const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 const qrCodeDialog = defineAsyncComponent(() => import('/@/components/dialog/qrCodeDialog.vue'));
-import { getEngieerGroupApi, getLegalStoreTypesApi, getQueryStoreHouseNoPageApi } from '/@/api/global/index';
+import { getLegalStoreTypesApi, getQueryStoreHouseNoPageApi } from '/@/api/global/index';
 const activeName = ref<string | number>('first');
 const handleClick = (tab: TabsPaneContext, event: Event) => {
 	activeName.value = tab.paneName as string | number;
@@ -121,18 +117,19 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'applyCheckId', colWidth: '', title: '驗收單號', type: 'text', isCheck: true },
-			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
+			{ key: 'sampleNo', colWidth: '', title: '送樣單號', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
-			{ key: 'reqMatNo', colWidth: '', title: '請購料號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			{ key: 'vendorCode', colWidth: '', title: '廠商代碼', type: 'text', isCheck: true },
+			{ key: 'vendorName', colWidth: '', title: '廠商名稱', type: 'text', isCheck: true },
+			{ key: 'dispatchQty', colWidth: '', title: '發料數量', type: 'text', isCheck: true },
 			{ key: 'dispatcher', colWidth: '', title: '發料人', type: 'text', isCheck: true },
 			{ key: 'dispatchTime', colWidth: '', title: '發料時間', type: 'text', isCheck: true },
-			{ key: 'qty', colWidth: '', title: '發料數量', type: 'text', isCheck: true },
-			{ key: 'receiveStorageType', colWidth: '', title: '領用倉庫類型', type: 'text', isCheck: true },
-			{ key: 'receiveSLocation', colWidth: '', title: '領用倉庫位置', type: 'text', isCheck: true },
+			{ key: 'receiveStorageType', colWidth: '120', title: '領用倉庫類型', type: 'text', isCheck: true },
+			{ key: 'receiveSLocation', colWidth: '120', title: '領用倉庫位置', type: 'text', isCheck: true },
 			{ key: 'codeManageModeText', colWidth: '130', title: '二維碼管理模式', type: 'text', isCheck: true },
+			{ key: 'dispatchDescribe', colWidth: '', title: '發料備註', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -149,21 +146,17 @@ const state = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '申請單號', prop: 'reqNo', required: false, type: 'input' },
+			{ label: '送樣單號', prop: 'sampleNo', required: false, type: 'input' },
 			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
-			{ label: '請購料號', prop: 'reqMatNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
+			{ label: '廠商', prop: 'vendor', required: false, type: 'input' },
+
 			{
 				label: '發料人',
 				prop: 'dispatcher',
 				required: false,
 				type: 'input',
 				placeholder: '請輸入發料人',
-				// options: [],
-				// loading: true,
-				// filterable: true,
-				// remote: true,
-				// remoteShowSuffix: true,
 			},
 			{
 				label: '領用倉庫類型',
@@ -176,29 +169,24 @@ const state = reactive<TableDemoState>({
 				label: '領用倉庫位置',
 				prop: 'receiveSLocation',
 				required: false,
-				type: 'select',
+				type: 'input',
 				placeholder: '請輸入選擇領用倉庫位置',
-				options: [],
-				loading: true,
-				filterable: true,
-				remote: true,
-				remoteShowSuffix: true,
+				// options: [],
+				// loading: true,
+				// filterable: true,
+				// remote: true,
+				// remoteShowSuffix: true,
 				lg: 6,
 				xl: 6,
 			},
-			{ label: '發料時間', prop: 'dispatchDate', required: false, type: 'dateRange' },
-
-			// { label: '驗收日期', prop: 'checkDate', required: false, type: 'dateRange' },
+			{ label: '發料時間', prop: 'dispatchTime', required: false, type: 'dateRange' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
 		btnConfig: [{ type: 'sendReceive', name: '入庫', color: '#e6a23c', isSure: false, icon: 'ele-EditPen' }],
 		// 给后端的数据
-		form: {
-			// reqNo: '',
-			// prNo: '',
-		},
+		form: {},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
 			pageNum: 1,
@@ -208,22 +196,21 @@ const state = reactive<TableDemoState>({
 		printName: '表格打印演示',
 		//入库弹窗
 		dialogConfig: [
-			{ label: '申請單號:', prop: 'reqNo', placeholder: '', required: false, type: 'text' },
+			{ label: '送樣單號:', prop: 'sampleNo', placeholder: '', required: false, type: 'text' },
 			{ label: '料號:', prop: 'matNo', placeholder: '', required: false, type: 'text' },
-			{ label: '請購料號:', prop: 'reqMatNo', placeholder: '', required: false, type: 'text' },
 			{ label: '品名-中文:', prop: 'nameCh', placeholder: '', required: false, type: 'text' },
 			{ label: '品名-英文:', prop: 'nameEn', placeholder: '', required: false, type: 'text' },
+			{ label: '廠商代碼:', prop: 'vendorCode', placeholder: '', required: false, type: 'text' },
+			{ label: '廠商名稱:', prop: 'vendorName', placeholder: '', required: false, type: 'text' },
+			{ label: '發料數量:', prop: 'dispatchQty', placeholder: '', required: false, type: 'text' },
 			{ label: '發料人:', prop: 'dispatcher', placeholder: '', required: false, type: 'text' },
 			{ label: '發料時間:', prop: 'dispatchTime', placeholder: '', required: false, type: 'text' },
-			{ label: '發料數量:', prop: 'qty', placeholder: '', required: false, type: 'text' },
 			{ label: '領用倉庫類型:', prop: 'receiveStorageType', placeholder: '', required: false, type: 'text' },
 			{ label: '領用倉庫位置:', prop: 'receiveSLocation', placeholder: '', required: false, type: 'text' },
-			// { label: '驗收合格數量:', prop: 'passQty', placeholder: '', required: false, type: 'text' },
-			// validateForm: 'number',
-			// message: '请输入正整数',
+			{ label: '發料備註:', prop: 'dispatchDescribe', placeholder: '', required: false, type: 'text', xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
 			{
 				type: 'textarea',
-				label: '備註:',
+				label: '入庫備註:',
 				placeholder: '請輸入備註',
 				prop: 'entryDescribe',
 				required: false,
@@ -258,14 +245,6 @@ const state = reactive<TableDemoState>({
 				xl: 4,
 				disabled: false,
 			},
-			// {
-			// 	label: '收貨倉庫:',
-			// 	prop: 'storageId',
-			// 	placeholder: '請選擇收貨倉庫',
-			// 	required: true,
-			// 	type: 'select',
-			// 	options: [],
-			// },
 		],
 		innerDialogConfig: [
 			{
@@ -475,26 +454,26 @@ const getTableData = async (datas: EmptyObjectType) => {
 	if (activeName.value === 'first') {
 		let data = {
 			...form,
-			dispatchDate: form.dispatchDate,
-			startDispatchTime: form.dispatchDate && form.dispatchDate[0],
-			endDispatchTime: form.dispatchDate && form.dispatchDate[1],
+			dispatchTime: form.dispatchTime,
+			startDispatchTime: form.dispatchTime && form.dispatchTime[0],
+			endDispatchTime: form.dispatchTime && form.dispatchTime[1],
 			page: datas.page,
 		};
-		delete data.dispatchDate;
-		res = await GetTStockInputPageListApi(data);
+		delete data.dispatchTime;
+		res = await GetQueryStoragableSampleCheckDetailsApi(data);
 	} else {
-		let data = {
-			...form,
-			page: datas.page,
-			putStorageTime: form.putStorageTime,
-			startPutStorageTime: form.putStorageTime && form.putStorageTime[0],
-			endPutStorageTime: form.putStorageTime && form.putStorageTime[1],
-		};
-		delete data.putStorageTime;
-		res = await GetQueryPutStorageRecordApi(data);
-		res.data.data.forEach((item: any) => {
-			item.disabled = item.codeManageMode ? true : false;
-		});
+		// let data = {
+		// 	...form,
+		// 	page: datas.page,
+		// 	putStorageTime: form.putStorageTime,
+		// 	startPutStorageTime: form.putStorageTime && form.putStorageTime[0],
+		// 	endPutStorageTime: form.putStorageTime && form.putStorageTime[1],
+		// };
+		// delete data.putStorageTime;
+		// res = await GetQueryPutStorageRecordApi(data);
+		// res.data.data.forEach((item: any) => {
+		// 	item.disabled = item.codeManageMode ? true : false;
+		// });
 	}
 
 	datas.data = res!.data.data;
@@ -512,7 +491,7 @@ const getTableData = async (datas: EmptyObjectType) => {
 const addButton = (data: EmptyObjectType) => {
 	let formInnerData = data.formInnerData;
 	let formData = data.formData;
-	if (formInnerData.codeList.length + 1 > formData.qty) {
+	if (formInnerData.codeList.length + 1 > formData.dispatchQty) {
 		ElMessage.error(`掃碼數量超過發料數量，請勿繼續掃碼`);
 		formInnerData['inputQty'] = null;
 	} else if (formInnerData.codeList.includes(formInnerData['inputQty'])) {
@@ -529,7 +508,7 @@ const addButton = (data: EmptyObjectType) => {
 const change = (val: any, prop: string, state: any, iscontu: boolean) => {
 	let { formInnerData, formData } = state;
 	if (prop == 'sacnstockqty') {
-		if (formInnerData.codeList.length + 1 > formData.qty) {
+		if (formInnerData.codeList.length + 1 > formData.dispatchQty) {
 			ElMessage.error(`掃碼數量超過發料數量，請勿繼續掃碼`);
 			formInnerData['sacnstockqty'] = null;
 		} else if (formInnerData.codeList.includes(val)) {
@@ -541,9 +520,6 @@ const change = (val: any, prop: string, state: any, iscontu: boolean) => {
 			formInnerData['stockqty'] = formInnerData.codeList.length;
 			formData['stockqty'] = formInnerData.codeList.length;
 		}
-		// else if (iscontu) {
-
-		// }
 	}
 };
 const innnerDialogCancel = (formData: EmptyObjectType, formInnerData: EmptyObjectType) => {
@@ -625,63 +601,35 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 
 	obj.codeList = formInnerData.codeList;
 	let submitData = {
-		applyCheckId: obj.applyCheckId,
-		// storageId: obj.storageId,
+		sampleCheckDetailId: obj.sampleCheckDetailId,
 		describe: obj.entryDescribe,
 		codes: obj.codeList,
-		// runId: obj.runid,
-		// checkno: obj.checkno,
-		// creator: obj.creator,
-		// matno: obj.matno,
-		// namech: obj.nameCh,
-		// nameen: obj.nameEn,
-		// checkqty: obj.checkQty,
-		// stockqty: obj.stockqty,
-		// stockcode: obj.stockcode,
-		// sLocation: obj.sLocation,
-		// storeType: obj.storeType,
 	};
-	if (obj.stockqty > obj.qty && !obj.codeManageMode) {
+	if (obj.stockqty > obj.dispatchQty && !obj.codeManageMode) {
 		ElMessage.error(`掃碼數量大於發料數量`);
-	} else if (obj.stockqty < obj.qty && !obj.codeManageMode) {
+	} else if (obj.stockqty < obj.dispatchQty && !obj.codeManageMode) {
 		ElMessage.error(`掃碼數量小於發料數量，請繼續掃碼錄入`);
-	}
-	// else if (obj.codes && obj.stockqty < obj.codes.length) {
-	// 	ElMessage.error(`有码数量小于扫码数量`);
-	// }
-	// else if (obj.stockqty != obj.checkQty) {
-	// ElMessageBox.confirm('入库数量与验收数量不一致，是否继续提交', '提示', {
-	// 	confirmButtonText: '确认',
-	// 	cancelButtonText: '取消',
-	// 	type: 'warning',
-	// 	buttonSize: 'default',
-	// })
-	// 	.then(async () => {
-	// 		const res = await GetTStockAddApi(submitData);
-	// 		if (res.status) {
-	// 			ElMessage.success(`入库成功`);
-	// 			entryJobDialogRef.value.closeDialog();
-	// 			getTableData();
-	// 		}
-	// 	})
-	// 	.catch(() => {
-	// 		// ElMessage({
-	// 		// 	type: 'info',
-	// 		// 	message: 'Delete canceled',
-	// 		// });
-	// 	});
-	// }
-	else {
-		// console.log(submitData);
+	} else {
+		console.log(submitData);
 		loadingBtn.value = true;
-		const res = await GetTStockAddApi(submitData);
+		const res = await getSamplePutStorageApi(submitData);
 		if (res.status) {
 			ElMessage.success(`入庫成功`);
-			entryJobDialogRef.value.closeDialog();
 			getTableData(state.tableData);
 		}
+		loadingBtn.value = false;
+		ElMessageBox.confirm(`入庫單號：${res.data}`, '提示', {
+			confirmButtonText: '確 定',
+			showCancelButton: false,
+			showClose: false,
+			type: 'success',
+			draggable: true,
+		})
+			.then(async () => {
+				entryJobDialogRef.value.closeDialog();
+			})
+			.catch(() => {});
 	}
-	loadingBtn.value = false;
 };
 // 点击收货单号
 const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
@@ -692,31 +640,7 @@ const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 	// 	getDetailData(data);
 	// }
 };
-// 根据弹出窗不一样展现的配置不一样
-// const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) => {
-// 	let tableData = dialogState.tableData;
-// 	let config = tableData.config;
-// 	tableData.header = header;
-// 	config.height = height;
-// 	config.isOperate = isShow;
-// 	config.isInlineEditing = isShow;
-// };
-// 提交
-// const onSubmit = async (formEl: FormInstance | undefined) => {
-// 	if (!formEl) return;
-// 	await formEl.validate(async (valid: boolean) => {
-// 		if (!valid) return ElMessage.warning(t('表格項必填未填'));
-// 		// if (!dialogState.tableData.form['sendTime']) return ElMessage.warning(t('请填写收货时间'));
-// 		let allData: EmptyObjectType = {};
-// 		allData = { ...dialogState.tableData.form };
-// 		allData['details'] = dialogState.tableData.data;
-// 		const res = await getAddReceiveApi(allData);
-// 		if (res.status) {
-// 			ElMessage.success(t('收货成功'));
-// 			arriveJobDialogVisible.value = false;
-// 		}
-// 	});
-// };
+
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType, tableData: EmptyObjectType) => {
 	tableData.form = Object.assign({}, tableData.form, { ...data });
@@ -733,10 +657,7 @@ const onTablePageChange = (page: TableDemoPageType, tableData: EmptyObjectType) 
 const onSortHeader = (data: TableHeaderType[], tableData: EmptyObjectType) => {
 	tableData.header = data;
 };
-// if (dialogState.tableData.btnConfig)
-// 	dialogState.tableData.btnConfig[0].disabled = computed(() => {
-// 		return dialogState.tableData.data.length <= 1 ? true : false;
-// 	});
+
 // 页面加载时
 onMounted(() => {
 	getTableData(state.tableData);

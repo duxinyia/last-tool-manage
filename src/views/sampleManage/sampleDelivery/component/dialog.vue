@@ -1,6 +1,6 @@
 <template>
 	<div class="system-menu-dialog-container">
-		<el-dialog :title="state.dialog.title" v-model="state.dialog.isShowDialog" :width="dialogWidth">
+		<el-dialog destroy-on-close :title="state.dialog.title" v-model="state.dialog.isShowDialog" :width="dialogWidth">
 			<el-row :gutter="10" v-if="state.dialog.num === 1">
 				<el-col
 					v-for="item in dialogForm"
@@ -57,14 +57,16 @@
 					height="300px"
 					id="elTable"
 					:data="state.dialog.num === 1 ? state.vendors : marNoData"
-					:border="true"
+					:border="false"
 					v-bind="$attrs"
-					row-key="id"
+					row-key="runId"
 					style="width: 100%"
 					:row-style="{ height: '10px' }"
+					@selection-change="onSelectionChange"
 					:header-row-style="{ background: '#dce9fd' }"
 					:span-method="objectSpanMethod"
 				>
+					<el-table-column type="selection" :reserve-selection="true" width="30" />
 					<el-table-column
 						align="center"
 						v-for="item in state.dialog.num === 1 ? otherHeaderData : headerData"
@@ -95,6 +97,7 @@
 								<el-date-picker
 									v-if="item.type === 'time'"
 									value-format="YYYY-MM-DD"
+									:disabled-date="(time:Date) => disabledDate(time, item.isdisabledDate)"
 									v-model="state.vendors[scope.$index][item.key]"
 									type="date"
 									placeholder="請選擇時間"
@@ -107,7 +110,7 @@
 							</el-form-item>
 						</template>
 					</el-table-column>
-					<el-table-column v-if="state.dialog.num === 1" align="center" :label="$t('message.pages.operation')" :width="150">
+					<!-- <el-table-column v-if="state.dialog.num === 1" align="center" :label="$t('message.pages.operation')" :width="150">
 						<template v-slot="scope">
 							<el-button
 								:disabled="state.vendors.length <= 1"
@@ -119,7 +122,7 @@
 								><el-icon><ele-Delete /></el-icon> 刪除
 							</el-button>
 						</template>
-					</el-table-column>
+					</el-table-column> -->
 					<template #empty>
 						<el-empty :description="$t('message.hint.nodata')" />
 					</template>
@@ -139,7 +142,7 @@
 <script setup lang="ts" name="sampleDialog">
 import { defineAsyncComponent, reactive, onMounted, ref, nextTick, computed, onUpdated } from 'vue';
 import { i18n } from '/@/i18n/index';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { getTakeSampleApi } from '/@/api/partno/sampleDelivery';
 import { SampleRecieveApi } from '/@/api/partno/sendReceive';
 const emit = defineEmits(['sampleSuccess', 'selectChange']);
@@ -194,40 +197,48 @@ const state = reactive<dialogFormState>({
 	},
 });
 // /**合并表格的第一列，处理表格数据 */
-const flitterData = (arr: EmptyObjectType, columnI: number, property: string) => {
-	let spanOneArr: EmptyArrayType = [];
-	let concatOne = 0;
-	arr.forEach((item: EmptyObjectType, index: number) => {
-		if (index === 0) {
-			spanOneArr.push(1);
-		} else {
-			// 注意这里的data是表格绑定的字段，根据自己的需求来改
-			if (item[property] === arr[index - 1][property] && item['sampleNo'] === arr[index - 1]['sampleNo']) {
-				//列需合并相同内容的判断条件
-				spanOneArr[concatOne] += 1;
-				spanOneArr.push(0);
-			} else {
-				spanOneArr.push(1);
-				concatOne = index;
-			}
-		}
-	});
-	return {
-		one: spanOneArr,
-	};
-};
+// const flitterData = (arr: EmptyObjectType, columnI: number, property: string) => {
+// 	let spanOneArr: EmptyArrayType = [];
+// 	let concatOne = 0;
+// 	arr.forEach((item: EmptyObjectType, index: number) => {
+// 		if (index === 0) {
+// 			spanOneArr.push(1);
+// 		} else {
+// 			// 注意这里的data是表格绑定的字段，根据自己的需求来改
+// 			if (item[property] === arr[index - 1][property] && item['sampleNo'] === arr[index - 1]['sampleNo']) {
+// 				//列需合并相同内容的判断条件
+// 				spanOneArr[concatOne] += 1;
+// 				spanOneArr.push(0);
+// 			} else {
+// 				spanOneArr.push(1);
+// 				concatOne = index;
+// 			}
+// 		}
+// 	});
+// 	return {
+// 		one: spanOneArr,
+// 	};
+// };
 const objectSpanMethod = ({ row, column, rowIndex, columnIndex }: any) => {
-	let arr = ['nameCh', 'nameEn', 'sampleNo'];
-	if (~arr.indexOf(column.property)) {
-		const _row = flitterData(marNoData.value, columnIndex, column.property).one[rowIndex];
-		const _col = _row > 0 ? 1 : 0;
-		return {
-			rowspan: _row,
-			colspan: _col,
-		};
+	// let arr = ['nameCh', 'nameEn', 'sampleNo'];
+	// if (~arr.indexOf(column.property)) {
+	// 	const _row = flitterData(marNoData.value, columnIndex, column.property).one[rowIndex];
+	// 	const _col = _row > 0 ? 1 : 0;
+	// 	return {
+	// 		rowspan: _row,
+	// 		colspan: _col,
+	// 	};
+	// }
+};
+// 禁止選中當前日期之後的日期
+// 日期只能選擇今天之前
+const disabledDate = (time: Date, isdisabledDate: boolean) => {
+	if (isdisabledDate) {
+		return time.getTime() > Date.now();
+	} else {
+		return false;
 	}
 };
-
 // 增加一行数据
 const onAddRow = () => {
 	state.vendors.push({
@@ -277,55 +288,114 @@ const closeDialog = () => {
 const onCancel = () => {
 	closeDialog();
 };
+// 表格多选改变时
+const selectList = ref([] as EmptyObjectType[]);
+let validateFieldList: EmptyArrayType = [];
+// 選中行
+const onSelectionChange = (selectlist: EmptyArrayType) => {
+	selectList.value = selectlist;
+	validateFieldList = [];
+	state.vendors.forEach((item: any, index: number) => {
+		selectlist.forEach((list) => {
+			if (item.runId === list.runId && Number(list.receiveQty) != list.needsQty) {
+				validateFieldList.push(`vendors.${index}.receiveTime`);
+				validateFieldList.push(`vendors.${index}.receiveQty`);
+			} else {
+				tableSampleRef.value.clearValidate(`vendors.${index}.receiveTime`);
+				tableSampleRef.value.clearValidate(`vendors.${index}.receiveQty`);
+			}
+		});
+	});
+};
 // 提交
 const onSubmit = async (formEl: EmptyObjectType | undefined) => {
+	let receiveData: EmptyObjectType = {};
+	props.dialogForm.forEach((item) => {
+		if (item.prop == 'engineerNo') {
+			receiveData['engineer'] = state.formData[item.prop];
+		}
+		if (item.prop == 'sampleNo') {
+			receiveData[item.prop] = state.formData[item.prop];
+		}
+	});
+	if (!receiveData['engineer']) return ElMessage.warning('請選擇工程驗收人');
+	let data = selectList.value;
+	if (data.length <= 0) return ElMessage.warning('請選擇要收貨的廠商');
 	if (!formEl) return;
-	await formEl.validate(async (valid: boolean) => {
-		if (!valid) return ElMessage.warning('表格項必填未填');
-		let sampleData: EmptyObjectType = {};
-		props.dialogForm.forEach((item) => {
-			sampleData[item.prop] = state.formData[item.prop];
-		});
-		sampleData['vendors'] = state.vendors;
-		sampleData.vendors.forEach((item: EmptyObjectType) => {
-			delete item.sampleQty;
-		});
-		if (props.operation == '送樣') {
-			const res = await getTakeSampleApi(sampleData);
-			if (res.status) {
-				closeDialog();
-				ElMessage.success('送樣成功');
-				emit('sampleSuccess');
-			}
-		} else if (props.operation == '收貨') {
-			let receiveData: EmptyObjectType = {};
+	formEl.validateField(validateFieldList, async (errorMessage: any) => {
+		if (errorMessage) {
+			// 验证失败
+			let sampleData: EmptyObjectType = {};
 			props.dialogForm.forEach((item) => {
-				if (item.prop == 'engineerNo') {
-					receiveData['engineer'] = state.formData[item.prop];
-				}
-				if (item.prop == 'sampleNo') {
-					receiveData[item.prop] = state.formData[item.prop];
-				}
+				sampleData[item.prop] = state.formData[item.prop];
 			});
-			if (!receiveData['engineer']) return ElMessage.warning('請選擇工程驗收人');
-			loadingBtn.value = true;
-			receiveData['recieveDetails'] = state.vendors.map((item) => {
+			sampleData['vendors'] = state.vendors;
+			sampleData.vendors.forEach((item: EmptyObjectType) => {
+				delete item.sampleQty;
+			});
+			receiveData['recieveDetails'] = data.map((item) => {
 				let obj = {
 					runId: item.runId,
 					sampleTime: item.receiveTime,
-					sampleQty: item.receiveQty,
-					vendorCode: item.vendorCode,
+					// sampleQty: item.receiveQty,
+					// vendorCode: item.vendorCode,
 				};
 				return obj;
 			});
-			const res: any = await SampleRecieveApi(receiveData);
-			if (res.status) {
-				closeDialog();
-				ElMessage.success('收貨成功');
-				emit('sampleSuccess');
+			let flag = 0;
+			let sampleArr: EmptyArrayType = [];
+			data.forEach((item) => {
+				if (Number(item.receiveQty) != item.needsQty) {
+					flag++;
+					sampleArr.push(item.vendorName);
+				}
+			});
+			if (flag > 0) {
+				// 若尚未完全到貨，請收到全部樣品後再進行收貨作業
+				ElMessageBox.confirm(
+					`<span style="color:red">廠商${sampleArr.join(',')}收貨數量必須與送樣數量保持一致</span><br/>若尚未完全到貨,請收到全部樣品後再進行收貨作業`,
+					'提示',
+					{
+						// showConfirmButton: false,
+						showClose: false,
+						showCancelButton: false,
+						dangerouslyUseHTMLString: true, // 注意此属性
+						type: 'warning',
+						draggable: true,
+					}
+				)
+					.then(() => {
+						data.forEach((item) => {
+							if (Number(item.receiveQty) != item.needsQty) {
+								item.receiveQty = '';
+								formEl.validateField(validateFieldList, () => {});
+							}
+						});
+					})
+					.catch(() => {});
+			} else {
+				ElMessageBox.confirm('確定提交嗎?', '提示', {
+					confirmButtonText: '確 定',
+					cancelButtonText: '取 消',
+					type: 'warning',
+					draggable: true,
+				})
+					.then(async () => {
+						loadingBtn.value = true;
+						const res: any = await SampleRecieveApi(receiveData);
+						if (res.status) {
+							closeDialog();
+							ElMessage.success('收貨成功');
+							emit('sampleSuccess');
+						}
+					})
+					.catch(() => {});
+				loadingBtn.value = false;
 			}
+		} else {
+			// 验证成功
+			ElMessage.warning('表格項必填未填');
 		}
-		loadingBtn.value = false;
 	});
 };
 
