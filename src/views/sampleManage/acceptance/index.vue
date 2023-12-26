@@ -1,97 +1,120 @@
 <template>
-	<div class="table-demo-container layout-padding">
-		<div class="table-demo-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
+	<el-tabs v-model="activeName" class="table-container layout-padding" @tab-click="handleClick">
+		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="樣品驗收" name="first">
+			<TableSearch
+				:search="state.tableData.search"
+				@search="(data) => onSearch(data, state.tableData)"
+				:searchConfig="state.tableData.searchConfig"
+				labelWidth=" "
+			/>
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
-				class="table-demo"
-				@pageChange="onTablePageChange"
+				class="table"
+				@pageChange="(page) => onTablePageChange(page, state.tableData)"
 				@onOpenOtherDialog="openAcceptanceDialog"
 				:cellStyle="cellStyle"
-				@sortHeader="onSortHeader"
+				@sortHeader="(data) => onSortHeader(data, state.tableData)"
 			/>
-			<!-- <Dialog ref="sendReceiveDialogRef" v-bind="dialogData" /> -->
-			<el-dialog draggable :close-on-click-modal="false" v-model="dialogData.dialogVisible" title="驗收" width="70%" destroy-on-close>
-				<el-row :gutter="10">
-					<el-col
-						v-for="item in dialogData.dialogForm"
-						:key="item.prop"
-						:xs="item.xs || 8"
-						:sm="item.sm || 8"
-						:md="item.md || 8"
-						:lg="item.md || 8"
-						:xl="item.xl || 8"
-						class="sample-dialog-col mb10"
-					>
-						<div>
-							{{ item.label }}：<span style="color: red" class="ml10">{{ dialogData.formData[item.prop] }}</span>
-						</div>
-					</el-col>
-				</el-row>
-				<el-form ref="dialogTableFormRef" :model="dialogState.tableData" size="default">
-					<Table
-						ref="tableRef2"
-						v-bind="dialogState.tableData"
-						@delRow="onDelRow"
-						class="table-demo"
-						@handlestatus1Change="handlestatus1Change"
-						@selectionChange="onSelectionChange"
-					/>
-				</el-form>
-				<div class="describe up-file">
-					<span>驗收報告：</span>
-					<el-upload
-						style="width: 100%"
-						v-model:file-list="inputfileList"
-						:auto-upload="false"
-						ref="inputuploadRefs"
-						action="#"
-						class="upload"
-						drag
-						:limit="1"
-						:show-file-list="false"
-						:on-exceed="inputHandleExceed"
-						:on-change="inputHandleChange"
-					>
-						<el-input style="height: 35px" v-model="dialogData.fileInfo.name" placeholder="請點擊此處上傳文件"> > </el-input>
-					</el-upload>
-					<el-button size="default" plain @click="onClearFile" type="primary" class="ml10">清空驗收報告</el-button>
-					<el-button size="default" plain type="primary" @click="lookUpload">查看驗收報告</el-button>
-				</div>
-				<div class="describe">
-					<span>備註：</span>
-					<el-input
-						style="width: 130%"
-						class="input-textarea"
-						show-word-limit
-						v-model="dialogData.describe"
-						type="textarea"
-						placeholder="請輸入備註"
-						maxlength="150"
-					></el-input>
-				</div>
-				<template #footer>
-					<span class="dialog-footer">
-						<el-button @click="dialogData.dialogVisible = false" size="default">取 消</el-button>
-						<el-button type="primary" @click="onSubmit(dialogTableFormRef)" size="default" :loading="loadingBtn">確定</el-button>
-					</span>
-				</template>
-			</el-dialog>
-		</div>
-	</div>
+		</el-tab-pane>
+		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="驗收記錄" name="second">
+			<TableSearch
+				:search="secondState.tableData.search"
+				@search="(data) => onSearch(data, secondState.tableData)"
+				:searchConfig="secondState.tableData.searchConfig"
+				labelWidth="70px"
+			/>
+			<Table
+				ref="tableRef"
+				v-bind="secondState.tableData"
+				class="table"
+				@pageChange="(page) => onTablePageChange(page, secondState.tableData)"
+				@sortHeader="(data) => onSortHeader(data, secondState.tableData)"
+				@onOpenOtherDialog="openDetailDialog"
+			/>
+		</el-tab-pane>
+		<el-dialog draggable :close-on-click-modal="false" v-model="dialogData.dialogVisible" title="驗收" width="70%" destroy-on-close>
+			<el-row :gutter="10">
+				<el-col
+					v-for="item in dialogData.dialogForm"
+					:key="item.prop"
+					:xs="item.xs || 8"
+					:sm="item.sm || 8"
+					:md="item.md || 8"
+					:lg="item.md || 8"
+					:xl="item.xl || 8"
+					class="sample-dialog-col mb10"
+				>
+					<div>
+						{{ item.label }}：<span style="color: red" class="ml10">{{ dialogData.formData[item.prop] }}</span>
+					</div>
+				</el-col>
+			</el-row>
+			<el-form ref="dialogTableFormRef" :model="dialogState.tableData" size="default">
+				<Table
+					ref="tableRef2"
+					v-bind="dialogState.tableData"
+					@delRow="onDelRow"
+					class="table-demo"
+					@handlestatus1Change="handlestatus1Change"
+					@selectionChange="onSelectionChange"
+				/>
+			</el-form>
+			<div class="describe up-file">
+				<span>驗收報告：</span>
+				<el-upload
+					style="width: 100%"
+					v-model:file-list="inputfileList"
+					:auto-upload="false"
+					ref="inputuploadRefs"
+					action="#"
+					class="upload"
+					drag
+					:limit="1"
+					:show-file-list="false"
+					:on-exceed="inputHandleExceed"
+					:on-change="inputHandleChange"
+				>
+					<el-input style="height: 35px" v-model="dialogData.fileInfo.name" placeholder="請點擊此處上傳文件"> > </el-input>
+				</el-upload>
+				<el-button size="default" plain @click="onClearFile" type="primary" class="ml10">清空驗收報告</el-button>
+				<el-button size="default" plain type="primary" @click="lookUpload">查看驗收報告</el-button>
+			</div>
+			<div class="describe">
+				<span>備註：</span>
+				<el-input
+					style="width: 130%"
+					class="input-textarea"
+					show-word-limit
+					v-model="dialogData.describe"
+					type="textarea"
+					placeholder="請輸入備註"
+					maxlength="150"
+				></el-input>
+			</div>
+			<template #footer>
+				<span class="dialog-footer">
+					<el-button @click="dialogData.dialogVisible = false" size="default">取 消</el-button>
+					<el-button type="primary" @click="onSubmit(dialogTableFormRef)" size="default" :loading="loadingBtn">確定</el-button>
+				</span>
+			</template>
+		</el-dialog>
+		<el-dialog draggable :close-on-click-modal="false" v-model="detaildialogVisible" title="詳情" width="50%"
+			><acceptanceDetailDialog :isDialog="true" :checkNoRef="checkNoRef"
+		/></el-dialog>
+	</el-tabs>
 </template>
 
 <script setup lang="ts" name="/partno/acceptance">
 import { defineAsyncComponent, reactive, ref, onMounted, watch } from 'vue';
 import { getUploadFileApi } from '/@/api/global/index';
-import { ElMessage, ElMessageBox, genFileId, UploadRawFile } from 'element-plus';
-import { GetCheckTaskApi, SampleCheckApi, GetSampleWaitCheckDetailApi } from '/@/api/partno/acceptance';
+import { ElMessage, ElMessageBox, genFileId, TabsPaneContext, UploadRawFile } from 'element-plus';
+import { GetCheckTaskApi, SampleCheckApi, GetSampleWaitCheckDetailApi, getQuerySampleCheckRecordApi } from '/@/api/partno/acceptance';
 import { getExitReasonApi } from '/@/api/toolsReturn/maintentanceTools';
 import { GetSampleDetailApi } from '/@/api/partno/sendReceive';
 import { useI18n } from 'vue-i18n';
 import type { UploadInstance, UploadProps, UploadUserFile } from 'element-plus';
-
+const acceptanceDetailDialog = defineAsyncComponent(() => import('/@/views/link/acceptanceLink/index.vue'));
 // 引入表格组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 // 引入上面的表单组件
@@ -101,6 +124,8 @@ const Dialog = defineAsyncComponent(() => import('../sampleDelivery/component/di
 
 // 定义变量内容
 const { t } = useI18n();
+const detaildialogVisible = ref(false);
+const checkNoRef = ref();
 const sendReceiveDialogRef = ref();
 const loadingBtn = ref(false);
 const tableRef = ref<RefType>();
@@ -108,6 +133,11 @@ const dialogTableFormRef = ref();
 const inputuploadRefs = ref<UploadInstance>();
 const inputfileList = ref<UploadUserFile[]>([]);
 const inputuploadForm = ref();
+const activeName = ref<string | number>('first');
+const handleClick = (tab: TabsPaneContext, event: Event) => {
+	activeName.value = tab.paneName as string | number;
+	getTableData(activeName.value === 'first' ? state.tableData : secondState.tableData);
+};
 const state = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
@@ -126,7 +156,7 @@ const state = reactive<TableDemoState>({
 		// 表格配置项（必传）
 		config: {
 			total: 0, // 列表总数
-			loading: false, // loading 加载
+			loading: true, // loading 加载
 			isBorder: false, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
 			isSelection: false, // 是否显示表格多选
@@ -153,6 +183,69 @@ const state = reactive<TableDemoState>({
 			matNo: '',
 		},
 		// 页码
+		page: {
+			pageNum: 1,
+			pageSize: 10,
+		},
+	},
+});
+const secondState = reactive<TableDemoState>({
+	tableData: {
+		// 列表数据（必传）
+		data: [],
+		// 表头内容（必传，注意格式）
+		header: [
+			{ key: 'checkNo', colWidth: '', title: '驗收單號', type: 'text', isCheck: true },
+			{ key: 'sampleNo', colWidth: '', title: '送樣單號', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			{ key: 'receiver', colWidth: '', title: '收貨人', type: 'text', isCheck: true },
+			{ key: 'createTime', colWidth: '', title: '提交時間', type: 'text', isCheck: true },
+			{ key: 'signStatusStr', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
+		],
+		// 配置项（必传）
+		config: {
+			total: 0, // 列表总数
+			loading: true, // loading 加载
+			isBorder: false, // 是否显示表格边框
+			isSerialNo: true, // 是否显示表格序号
+			isSelection: false, // 是否显示表格多选
+			isOperate: true, // 是否显示表格操作栏
+			isButton: false, //是否显示表格上面的新增删除按钮
+			isInlineEditing: false, //是否是行内编辑
+			isTopTool: true, //是否有表格右上角工具
+			isPage: true, //是否有分页
+		},
+		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
+		search: [
+			{ label: '送樣單號', prop: 'sampleNo', required: false, type: 'input' },
+			{ label: '驗收單號', prop: 'checkNo', required: false, type: 'input' },
+			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '品名', prop: 'name', required: false, type: 'input' },
+			{ label: '收貨人', prop: 'receiver', required: false, type: 'input' },
+			{ label: '提交時間', prop: 'createTime', required: false, type: 'dateRange' },
+			{
+				label: '簽核狀態',
+				prop: 'signStatus',
+				required: false,
+				clearable: false,
+				type: 'select',
+				options: [
+					{ value: 0, label: '簽核撤回', text: '簽核撤回', selected: false },
+					{ value: 1, label: '簽核中', text: '簽核中', selected: false },
+					{ value: 2, label: '簽核完成', text: '簽核完成', selected: false },
+				],
+			},
+		],
+		searchConfig: {
+			isSearchBtn: true,
+		},
+		btnConfig: [{ type: 'detail', name: '查看詳情', color: '#1890ff', isSure: false, icon: 'ele-View' }],
+		// 给后端的数据
+		form: {},
+		dialogConfig: [],
+		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
 			pageNum: 1,
 			pageSize: 10,
@@ -237,26 +330,44 @@ const dialogData = reactive<EmptyObjectType>({
 	},
 	describe: '',
 });
-watch(
-	() => dialogState.tableData.data.length,
-	(newValue) => {
-		dialogState.tableData.btnConfig![0].disabled = newValue <= 1 ? true : false;
-	},
-	{ deep: true }
-);
+// watch(
+// 	() => dialogState.tableData.data.length,
+// 	(newValue) => {
+// 		dialogState.tableData.btnConfig![0].disabled = newValue <= 1 ? true : false;
+// 	},
+// 	{ deep: true }
+// );
 // 初始化列表数据
-const getTableData = async () => {
-	state.tableData.config.loading = true;
-	const form = state.tableData.form;
-	let data = {
-		...form,
-		page: state.tableData.page,
-	};
-	const res = await GetCheckTaskApi(data);
-	state.tableData.data = res.data.data;
-	state.tableData.config.total = res.data.total;
-	if (res.status) {
-		state.tableData.config.loading = false;
+const getTableData = async (datas: EmptyObjectType) => {
+	datas.config.loading = true;
+	const form = datas.form;
+	let res = null;
+	if (activeName.value === 'first') {
+		let data = {
+			...form,
+			page: datas.page,
+		};
+		res = await GetCheckTaskApi(data);
+	} else {
+		let data = {
+			...form,
+			page: datas.page,
+			createTime: form.createTime,
+			startCreateTime: form.createTime && form.createTime[0],
+			endCreateTime: form.createTime && form.createTime[1],
+		};
+		delete data.createTime;
+		if (data.signStatus === '') data.signStatus = null;
+		res = await getQuerySampleCheckRecordApi(data);
+		res.data.data.forEach((item: any) => {
+			item.receiver = `${item.receiver} / ${item.receiverName}`;
+		});
+	}
+
+	datas.data = res!.data.data;
+	datas.config.total = res!.data.total;
+	if (res!.status) {
+		datas.config.loading = false;
 	}
 };
 //改变是否验收通过
@@ -275,20 +386,20 @@ const handlestatus1Change = (value: number, index: number, key: string) => {
 	}
 };
 // 搜索点击时表单回调
-const onSearch = (data: EmptyObjectType) => {
-	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
+const onSearch = (data: EmptyObjectType, tableData: EmptyObjectType) => {
+	tableData.form = Object.assign({}, tableData.form, { ...data });
 	tableRef.value?.pageReset();
 };
 
 // 分页改变时回调
-const onTablePageChange = (page: TableDemoPageType) => {
-	state.tableData.page.pageNum = page.pageNum;
-	state.tableData.page.pageSize = page.pageSize;
-	getTableData();
+const onTablePageChange = (page: TableDemoPageType, tableData: EmptyObjectType) => {
+	tableData.page.pageNum = page.pageNum;
+	tableData.page.pageSize = page.pageSize;
+	getTableData(tableData);
 };
 // 拖动显示列排序回调
-const onSortHeader = (data: TableHeaderType[]) => {
-	state.tableData.header = data;
+const onSortHeader = (data: TableHeaderType[], tableData: EmptyObjectType) => {
+	tableData.header = data;
 };
 
 // 打开验收弹窗 1
@@ -339,6 +450,11 @@ const openAcceptanceDialog = async (scope: any) => {
 			item.isPass = 0;
 		}
 	});
+};
+// 点击查看详情按钮
+const openDetailDialog = (scope: EmptyObjectType) => {
+	checkNoRef.value = scope.row;
+	detaildialogVisible.value = true;
 };
 //删除表格某一行數據
 const onDelRow = (row: EmptyObjectType, i: number) => {
@@ -437,7 +553,7 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 					let res = await SampleCheckApi(submitparams);
 					if (res.status) {
 						ElMessage.success('驗收成功');
-						getTableData();
+						getTableData(state.tableData);
 					}
 					loadingBtn.value = false;
 					ElMessageBox.confirm(`驗收單號：${res.data}`, '提示', {
@@ -461,15 +577,15 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 };
 // 页面加载时
 onMounted(() => {
-	getTableData();
+	getTableData(state.tableData);
 });
 </script>
 
 <style scoped lang="scss">
-.table-demo-container {
-	.table-demo-padding {
+.table-container {
+	.table-padding {
 		padding: 15px;
-		.table-demo {
+		.table {
 			flex: 1;
 			overflow: hidden;
 		}

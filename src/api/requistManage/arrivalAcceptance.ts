@@ -19,7 +19,7 @@ export function getReceiveApi(data:object) {
 // 验收
 export function getTInsertCheckApi(data:Object) {
   return request({
-    url:'/api/ToolApply/Check',
+    url:'/api/ToolApply/ApplyCheck',
     // url: '/api/ToolCheck/InsertCheck',
     method: 'POST',
   	data:data
@@ -50,6 +50,15 @@ export function getCheckdetailApi(checkNo:Object) {
   	params:checkNo
   });
 }
+// 用於簽核平台的詳情信息
+export function getCheckRecordApi(checkNo:Object) {
+  return request({
+    url: '/api/ToolApply/GetCheckRecord',
+    method: 'GET',
+  	params:checkNo
+  });
+}
+
 
 
 

@@ -25,3 +25,19 @@ export function GetSampleWaitCheckDetailApi(sampleNo: string) {
 		params: { sampleNo },
 	});
 }
+// 查詢樣品驗收記錄
+export function getQuerySampleCheckRecordApi(data: Object) {
+	return request({
+		url: '/api/Material/QuerySampleCheckRecord',
+		method: 'POST',
+		data: data,
+	});
+}
+// 樣品驗收詳情
+export function getSampleCheckRecordDetailApi(checkNo: string) {
+	return request({
+		url: '/api/Material/GetSampleCheckRecordDetail',
+		method: 'GET',
+		params:{checkNo}
+	});
+}

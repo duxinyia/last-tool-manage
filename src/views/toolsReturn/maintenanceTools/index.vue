@@ -29,6 +29,7 @@
 				@selectChange="selectChange"
 				@remoteMethod="remoteMethod"
 				@inputBlur="onInputBlur"
+				@inputFocus="onInputFocus"
 				:loadingBtn="loadingBtn"
 			>
 				<template #optionFat="{ row }" v-if="dilogTitle === '轉倉'">
@@ -45,11 +46,26 @@
 
 <script setup lang="ts" name="/toolsReturn/maintenanceTools">
 import { defineAsyncComponent, reactive, ref, onMounted, computed, nextTick } from 'vue';
-import type { FormInstance } from 'element-plus';
+import { ElMessageBox, FormInstance } from 'element-plus';
 
 import { ElMessage } from 'element-plus';
 // 引入接口
-import { getStockListApi, ExitStoreApi, getExitReasonApi, getTransferStorageApi } from '/@/api/toolsReturn/maintentanceTools';
+import {
+	getStockListApi,
+	ExitStoreApi,
+	getExitReasonApi,
+	getTransferStorageApi,
+	getOrCreateExitStoreDraftApi,
+	getStockOperDraftResetCodesOfExitStoreDraftApi,
+	getStockOperDraftAddCodesToExitStoreDraftApi,
+	getStockOperDraftRemoveCodeFromExitStoreDraftApi,
+	getStockOperDraftModifyExitStoreDraftApi,
+	getOrCreateStockTransferDraftApi,
+	getStockOperDraftAddCodesToStockTransferDraftApi,
+	getStockOperDraftResetCodesOfStockTransferDraftApi,
+	getStockOperDraftModifyStockTransferDraftApi,
+	getStockOperDraftRemoveCodeFromStockTransferDraftApi,
+} from '/@/api/toolsReturn/maintentanceTools';
 import { getAdminNamesOfStoreHouseApi, getQueryStoreHouseExceptIdleStoreNoPageApi, getUserNameApi } from '/@/api/global';
 
 import { useI18n } from 'vue-i18n';
@@ -457,6 +473,7 @@ const selectChange = async (val: string, name: string, formData: EmptyObjectType
 	let exitReasonMap: any = [];
 	if (name == 'exitType') {
 		formData.reasonId = '';
+		formData.exitReason = '';
 		dialogState.tableData.dialogConfig?.forEach(async (item, index) => {
 			if (item.prop == 'reasonId') {
 				let res = await getExitReasonApi(exitTypeMap[val]);
@@ -488,8 +505,10 @@ const selectChange = async (val: string, name: string, formData: EmptyObjectType
 let deleteData: any = [];
 let deleteStorage: any = [];
 let btnType = '';
-const openReturnDialog = (scope: EmptyObjectType, type: string) => {
+let getData: EmptyObjectType = {};
+const openReturnDialog = async (scope: EmptyObjectType, type: string) => {
 	loadingBtn.value = false;
+	let res: EmptyObjectType = {};
 	btnType = type === 'transferStorage' ? '轉倉' : '退庫';
 	dialogState.tableData.dialogConfig?.forEach((item) => {
 		if (item.prop === 'scan') {
@@ -518,6 +537,13 @@ const openReturnDialog = (scope: EmptyObjectType, type: string) => {
 			dialogConfig?.splice(6, 0, item);
 		});
 		deleteStorage = [];
+		res = await getOrCreateStockTransferDraftApi({ stockId: scope.row.runid });
+		scope.row = Object.assign({}, scope.row, { ...res.data });
+		scope.row.exitQty = scope.row.codeManageMode === 1 ? res.data.transferQty : res.data.codes?.length;
+		getData = res.data;
+		scope.row.warehouseManager = res.data.inDRI;
+		scope.row.storageId = res.data.inSLocation;
+		scope.row.storageid = res.data.inStorageId;
 	} else {
 		dilogTitle.value = '退庫';
 		dialogConfig?.forEach((item, index) => {
@@ -534,12 +560,26 @@ const openReturnDialog = (scope: EmptyObjectType, type: string) => {
 			dialogConfig?.splice(6, 0, item);
 		});
 		deleteData = [];
+		res = await getOrCreateExitStoreDraftApi({ stockId: scope.row.runid });
+		scope.row = Object.assign({}, scope.row, { ...res.data });
+		scope.row.exitQty = scope.row.codeManageMode === 1 ? res.data.exitQty : res.data.codes?.length;
+		getData = res.data;
+		scope.row.userName = res.data.driName;
+		if (scope.row.exitType) {
+			selectChange(scope.row.exitType, 'exitType', scope.row);
+		}
+		scope.row.reasonId = res.data.exitReason;
 	}
-	repairReturnDialogRef.value.openDialog('return', scope.row, dilogTitle.value);
+	repairReturnDialogRef.value.openDialog('return', scope.row, dilogTitle.value, { codeList: res!.data.codes || [] });
+};
+let oldData: EmptyObjectType = {};
+// 獲取焦點
+const onInputFocus = (formData: EmptyObjectType) => {
+	oldData = { ...formData };
 };
 // 輸入DRI得到姓名
 const onInputBlur = async (formData: EmptyObjectType, item: EmptyObjectType) => {
-	if (item.prop === 'dri' && formData.dri) {
+	if (item.prop === 'dri' && oldData.dri !== formData.dri) {
 		const res = await getUserNameApi(formData.dri);
 		if (res.status) {
 			formData.userName = res.message;
@@ -548,6 +588,47 @@ const onInputBlur = async (formData: EmptyObjectType, item: EmptyObjectType) => 
 			formData.userName = '';
 			ElMessage.warning('請重新輸入DRI');
 		}
+	}
+	const { draftId, dri, exitType, reasonId, exitReason, exitQty, describe, outDate } = formData;
+	if (
+		dilogTitle.value === '退庫' &&
+		((item.prop === 'dri' && oldData.dri != formData.dri) ||
+			(item.prop === 'exitType' && oldData.exitType != formData.exitType) ||
+			(item.prop === 'describe' && oldData.describe != formData.describe) ||
+			(item.prop === 'reasonId' && oldData.reasonId != formData.reasonId) ||
+			(item.prop === 'exitQty' && oldData.exitQty != formData.exitQty))
+	) {
+		const res = await getStockOperDraftModifyExitStoreDraftApi({
+			draftId,
+			dri,
+			exitType,
+			reasonId,
+			exitReason,
+			exitQty,
+			describe,
+		});
+		res.status && ElMessage.success(`保存成功`);
+	} else if (
+		dilogTitle.value === '轉倉' &&
+		((item.prop === 'storageId' && oldData.storageId != formData.storageId) ||
+			(item.prop === 'outDate' && oldData.outDate != formData.outDate) ||
+			(item.prop === 'describe' && oldData.describe != formData.describe) ||
+			(item.prop === 'exitQty' && oldData.exitQty != formData.exitQty))
+	) {
+		options.forEach((item) => {
+			if (item.value === formData.storageId) {
+				formData.storageid = item.value;
+			}
+		});
+		const res = await getStockOperDraftModifyStockTransferDraftApi({
+			draftId,
+			outDate,
+			describe,
+			inStorageId: formData.storageid,
+			transferQty: exitQty,
+		});
+
+		res.status && ElMessage.success(`保存成功`);
 	}
 };
 // 根据接口得到仓库下拉数据
@@ -579,8 +660,8 @@ const remoteMethod = (query: string) => {
 const scanCodeEntry = () => {
 	repairReturnDialogRef.value.openInnerDialog('掃碼錄入');
 };
-// 嵌套弹窗提交
-const innnerDialogSubmit = (formInnerData: any, formData: any) => {
+// 嵌套弹窗確定提交
+const innnerDialogSubmit = async (formInnerData: any, formData: any) => {
 	// 防止用户用扫码枪扫数据之后又手动修改数量
 	if (formInnerData.codeList.length != 0) {
 		formInnerData.exitQty = formInnerData.codeList.length;
@@ -595,6 +676,34 @@ const innnerDialogSubmit = (formInnerData: any, formData: any) => {
 				});
 			}
 		});
+	if (dilogTitle.value === '退庫') {
+		const { draftId, dri, exitType, reasonId, exitReason, exitQty, describe } = formData;
+		const res = await getStockOperDraftModifyExitStoreDraftApi({
+			draftId,
+			dri,
+			exitType,
+			reasonId,
+			exitReason,
+			exitQty,
+			describe,
+		});
+		res.status && ElMessage.success(`保存成功`);
+	} else {
+		const { draftId, outDate, describe, exitQty } = formData;
+		options.forEach((item) => {
+			if (item.value === formData.storageId) {
+				formData.storageid = item.value;
+			}
+		});
+		const res = await getStockOperDraftModifyStockTransferDraftApi({
+			draftId,
+			outDate,
+			describe,
+			inStorageId: formData.storageid,
+			transferQty: exitQty,
+		});
+		res.status && ElMessage.success(`保存成功`);
+	}
 };
 // 打开嵌套弹窗
 const openInnerDialog = (state: any) => {
@@ -603,32 +712,60 @@ const openInnerDialog = (state: any) => {
 	formData['exitQty'] = formInnerData.codeList.length;
 };
 // 关闭tag标签
-const handleTagClose = (tag: any, state: EmptyObjectType) => {
+const handleTagClose = async (tag: any, state: EmptyObjectType) => {
 	let { formInnerData, formData } = state;
-	formInnerData.codeList.splice(formInnerData.codeList.indexOf(tag), 1);
-	formInnerData['exitQty'] = formInnerData.codeList.length;
-	formData['exitQty'] = formInnerData.codeList.length;
+	let res = null;
+	if (dilogTitle.value === '退庫') {
+		res = await getStockOperDraftRemoveCodeFromExitStoreDraftApi({ draftId: getData.draftId, codesToRemove: [tag] });
+	} else {
+		res = await getStockOperDraftRemoveCodeFromStockTransferDraftApi({ draftId: getData.draftId, codesToRemove: [tag] });
+	}
+	if (res.status) {
+		formInnerData.codeList.splice(formInnerData.codeList.indexOf(tag), 1);
+		formInnerData['exitQty'] = formInnerData.codeList.length;
+		formData['exitQty'] = formInnerData.codeList.length;
+		ElMessage.success('刪除成功');
+	}
 };
 // 手動添加碼
-const addButton = (data: EmptyObjectType) => {
+const addButton = async (data: EmptyObjectType) => {
 	let formInnerData = data.formInnerData;
 	let formData = data.formData;
+	let res = null;
 	if (formInnerData.codeList.length + 1 > formData.stockqty) {
-		ElMessage.error(`掃碼數量超過發料數量，請勿繼續掃碼`);
+		ElMessage.error(`掃碼數量超過庫存總量，請勿繼續掃碼`);
 		formInnerData['inputQty'] = null;
 	} else if (formInnerData.codeList.includes(formInnerData['inputQty'])) {
 		ElMessage.warning(`該條碼已存在，請勿重複掃碼`);
 		formInnerData['inputQty'] = null;
 	} else {
 		formInnerData.codeList.push(formInnerData['inputQty']);
-		formInnerData['inputQty'] = null;
+		if (dilogTitle.value === '退庫') {
+			res = await getStockOperDraftAddCodesToExitStoreDraftApi({
+				draftId: getData.draftId,
+				codesToAdd: [formInnerData['inputQty']],
+			});
+		} else {
+			res = await getStockOperDraftAddCodesToStockTransferDraftApi({
+				draftId: getData.draftId,
+				codesToAdd: [formInnerData['inputQty']],
+			});
+		}
+		if (!res.status) {
+			let errorCode = res.message.split('：');
+			formInnerData.codeList.splice(formInnerData.codeList.indexOf(errorCode[1]), 1);
+		} else {
+			formInnerData['inputQty'] = null;
+			ElMessage.success('掃碼成功');
+		}
 		formInnerData['exitQty'] = formInnerData.codeList.length;
 		formData['exitQty'] = formInnerData.codeList.length;
 	}
 };
 // change
-const change = (val: any, prop: string, state: any, iscontu: boolean) => {
+const change = async (val: any, prop: string, state: any, iscontu: boolean) => {
 	let { formInnerData, formData } = state;
+	let res = null;
 	if (prop == 'sacnexitqty') {
 		if (formInnerData.codeList.length + 1 > formData.stockqty) {
 			ElMessage.error(`掃碼數量超過庫存總量，請勿繼續掃碼`);
@@ -639,15 +776,50 @@ const change = (val: any, prop: string, state: any, iscontu: boolean) => {
 		} else {
 			formInnerData.codeList.push(val);
 			formInnerData['sacnexitqty'] = null;
+			if (dilogTitle.value === '退庫') {
+				res = await getStockOperDraftAddCodesToExitStoreDraftApi({
+					draftId: getData.draftId,
+					codesToAdd: [val],
+				});
+			} else {
+				res = await getStockOperDraftAddCodesToStockTransferDraftApi({
+					draftId: getData.draftId,
+					codesToAdd: [val],
+				});
+			}
+			if (!res.status) {
+				let errorCode = res.message.split('：');
+				formInnerData.codeList.splice(formInnerData.codeList.indexOf(errorCode[1]), 1);
+			} else {
+				ElMessage.success('掃碼成功');
+			}
 			formInnerData['exitQty'] = formInnerData.codeList.length;
 			formData['exitQty'] = formInnerData.codeList.length;
 		}
 	}
 };
-const innnerDialogCancel = (formData: EmptyObjectType, formInnerData: EmptyObjectType) => {
-	formInnerData.codeList = [];
-	formInnerData['exitQty'] = 0;
-	formData['exitQty'] = 0;
+const innnerDialogCancel = async (formData: EmptyObjectType, formInnerData: EmptyObjectType) => {
+	let res = null;
+	if (formInnerData.codeList.length <= 0) return ElMessage.warning('數據已清空');
+	ElMessageBox.confirm('確定清空嗎?', '提示', {
+		confirmButtonText: '確 定',
+		cancelButtonText: '取 消',
+		type: 'warning',
+		draggable: true,
+	})
+		.then(async () => {
+			if (dilogTitle.value === '退庫') {
+				res = await getStockOperDraftResetCodesOfExitStoreDraftApi(getData.draftId);
+			} else {
+				res = await getStockOperDraftResetCodesOfStockTransferDraftApi(getData.draftId);
+			}
+			if (res.status) {
+				formInnerData.codeList = [];
+				formInnerData['exitQty'] = 0;
+				formData['exitQty'] = 0;
+			}
+		})
+		.catch(() => {});
 };
 // 点击料号,暂时不做
 const matnoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
@@ -660,7 +832,6 @@ const matnoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 
 // 提交 确认退库
 const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerData: EmptyObjectType) => {
-	loadingBtn.value = true;
 	let allData: EmptyObjectType = { ...ruleForm };
 	options.forEach((item) => {
 		if (item.value === allData.storageId) {
@@ -690,15 +861,21 @@ const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerDa
 	} else {
 		// 转仓提交
 		if (ruleForm.storageId) {
+			options.forEach((item) => {
+				if (item.value === allData.storageId) {
+					allData.storageid = item.value;
+				}
+			});
 			let transferStorageData = {
-				receiveStorageId: submitData.receiveStorageId,
+				// receiveStorageId: submitData.receiveStorageId,
 				stockId: submitData.stockId,
-				outDate: submitData.outDate,
-				describe: submitData.describe,
-				transferQty: submitData.transferQty,
-				codeList: formInnerData.codeList,
+				// outDate: submitData.outDate,
+				// describe: submitData.describe,
+				// transferQty: submitData.transferQty,
+				// codeList: formInnerData.codeList,
 			};
 			// console.log('轉倉成功', transferStorageData);
+			loadingBtn.value = true;
 			const res = await getTransferStorageApi(transferStorageData);
 			if (res.status) {
 				ElMessage.success(t('轉倉成功'));
@@ -710,15 +887,16 @@ const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerDa
 			// delete submitData.transferQty;
 			let exitStoreData = {
 				stockId: submitData.stockId,
-				exitType: submitData.exitType,
-				reasonId: submitData.reasonId,
-				exitReason: submitData.exitReason,
-				exitQty: submitData.exitQty,
-				describe: submitData.describe,
-				dri: submitData.dri,
-				codeList: formInnerData.codeList,
+				// exitType: submitData.exitType,
+				// reasonId: submitData.reasonId,
+				// exitReason: submitData.exitReason,
+				// exitQty: submitData.exitQty,
+				// describe: submitData.describe,
+				// dri: submitData.dri,
+				// codeList: formInnerData.codeList,
 			};
 			// console.log('退庫成功', exitStoreData);
+			loadingBtn.value = true;
 			const res = await ExitStoreApi(exitStoreData);
 			if (res.status) {
 				ElMessage.success(t('退庫成功'));

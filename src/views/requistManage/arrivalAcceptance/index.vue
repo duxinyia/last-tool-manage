@@ -36,20 +36,24 @@
 				<div class="header">
 					<div style="font-size: 18px">{{ hearName }}</div>
 					<el-tag size="large" style="font-weight: 700; font-size: 14px" class="ml20" type="danger"
-						>此處填寫的通過數量都會進入發料入庫流程，若要全部退回通過數量請填0</el-tag
+						>此處填寫的通過數量都會進入發料入庫流程，若要全部退回，通過數量請填0</el-tag
 					>
 				</div>
 			</template>
 		</Dialog>
 		<!-- 详情 -->
-		<Dialog
+		<!-- <Dialog
 			ref="detaildialogRef"
 			:dialogConfig="secondState.tableData.dialogConfig"
 			labelWidth="120px"
 			:isFootBtn="false"
 			@dailogFormButton="arriveList"
 		>
-		</Dialog>
+		</Dialog> -->
+
+		<el-dialog draggable :close-on-click-modal="false" v-model="detaildialogVisible" :title="dilogTitle" width="50%"
+			><checkNoDetailDialog :isDialog="true" :checkNoRef="checkNoRef"
+		/></el-dialog>
 		<!-- 驗收記錄詳情彈窗 -->
 		<!-- <el-dialog v-model="detaildialogVisible" :title="dilogTitle" width="50%">
 			<checkNoDetailDialog :isDialog="true" :checkNoRef="checkNoRef" />
@@ -73,14 +77,15 @@ import { ElMessage, TabsPaneContext } from 'element-plus';
 import { getIToolReceivePageListApi, getTInsertCheckApi, getQueryCheckPageApi, getSubmitSignApi } from '/@/api/requistManage/arrivalAcceptance';
 import { getExitReasonApi } from '/@/api/toolsReturn/maintentanceTools';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
 const checkNoDetailDialog = defineAsyncComponent(() => import('/@/views/link/arrivalAcceptanceLink/index.vue'));
 const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 // 定义变量内容
+const route = useRoute();
 const { t } = useI18n();
-const tableFormRef = ref();
 const tableRef = ref<RefType>();
 const tableRef2 = ref<RefType>();
 const arriveJobDialogRef = ref();
@@ -254,7 +259,7 @@ const secondState = reactive<TableDemoState>({
 			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
 			{ key: 'applyReceiveId', colWidth: '', title: '收貨單號', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
-			{ key: 'reqMatNo', colWidth: '', title: '申請料號', type: 'text', isCheck: true },
+			{ key: 'reqMatNo', colWidth: '', title: '請購料號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'checkDate', colWidth: '', title: '驗收日期', type: 'text', isCheck: true },
@@ -264,6 +269,7 @@ const secondState = reactive<TableDemoState>({
 			// { key: 'checker', colWidth: '', title: '验收人', type: 'text', isCheck: true },
 			// { key: 'createTime', colWidth: '120', title: '实际提交日期', type: 'text', isCheck: true },
 			{ key: 'isDispatched', colWidth: '120', title: '是否已發料', type: 'text', isCheck: true },
+			{ key: 'signStatusStr', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -282,7 +288,7 @@ const secondState = reactive<TableDemoState>({
 		search: [
 			{ label: '申請單號', prop: 'reqNo', required: false, type: 'input' },
 			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 5, xl: 5 },
-			{ label: '申請料號', prop: 'reqMatNo', required: false, type: 'input' },
+			{ label: '請購料號', prop: 'reqMatNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{
 				label: '是否已發料',
@@ -296,19 +302,18 @@ const secondState = reactive<TableDemoState>({
 				],
 			},
 			{ label: '驗收日期', prop: 'checkDate', required: false, type: 'dateRange' },
-
-			// {
-			// 	label: '签核状态',
-			// 	prop: 'signStatus',
-			// 	required: false,
-			// 	clearable: true,
-			// 	type: 'select',
-			// 	options: [
-			// 		{ value: 0, label: '未送签', text: '未送签', selected: true },
-			// 		{ value: 1, label: '签核中', text: '签核中', selected: false },
-			// 		{ value: 2, label: '签核完成', text: '签核完成', selected: false },
-			// 	],
-			// },
+			{
+				label: '簽核狀態',
+				prop: 'signStatus',
+				required: false,
+				clearable: false,
+				type: 'select',
+				options: [
+					{ value: 0, label: '簽核撤回', text: '簽核撤回', selected: false },
+					{ value: 1, label: '簽核中', text: '簽核中', selected: false },
+					{ value: 2, label: '簽核完成', text: '簽核完成', selected: false },
+				],
+			},
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -317,14 +322,14 @@ const secondState = reactive<TableDemoState>({
 		// 给后端的数据
 		form: {
 			// checkNo: '',
-			// signStatus: 0,
+			// signStatus: Number(route.query.signStatus) || 0,
 		},
 		dialogConfig: [
 			{ type: 'text', label: '驗收單號', placeholder: '', prop: 'applyCheckId', required: false },
 			{ type: 'text', label: '申請單號', placeholder: '', prop: 'reqNo', required: false },
 			{ type: 'text', label: '收貨單號', placeholder: '', prop: 'applyReceiveId', required: false },
 			{ type: 'text', label: 'message.pages.matNo', placeholder: '', prop: 'matNo', required: false },
-			{ type: 'text', label: '申請單號', placeholder: '', prop: 'reqMatNo', required: false },
+			{ type: 'text', label: '請購料號', placeholder: '', prop: 'reqMatNo', required: false },
 			{ type: 'text', label: '品名-中文', placeholder: '', prop: 'nameCh', required: false },
 			{ type: 'text', label: '品名-英文', placeholder: '', prop: 'nameEn', required: false },
 			{ type: 'text', label: '驗收日期', placeholder: '', prop: 'checkDate', required: false },
@@ -404,7 +409,7 @@ const getTableData = async () => {
 	if (form2.isDispatched === '') {
 		form2.isDispatched = null;
 	}
-	let data2 = {
+	let data2: EmptyObjectType = {
 		...form2,
 		checkDate: form2.checkDate,
 		startCheckDate: form2.checkDate && form2.checkDate[0],
@@ -428,6 +433,9 @@ const getTableData = async () => {
 		// 	1: '签核中',
 		// 	2: '签核完成',
 		// };
+		if (data2.signStatus === '') {
+			data2.signStatus = null;
+		}
 		const res = await getQueryCheckPageApi(data2);
 		// res.data.data.forEach((item: any) => {
 		// item.signstatus1 = item.signstatus;
@@ -446,11 +454,12 @@ const getTableData = async () => {
 
 // 点击查看详情按钮
 const openDetailDialog = (scope: EmptyObjectType) => {
-	detaildialogRef.value.openDialog('detail', scope.row, '詳情');
-	// checkNoRef.value = scope.row.checkno;
-	// detaildialogVisible.value = true;
+	// detaildialogRef.value.openDialog('detail', scope.row, '詳情');
+	// checkNoRef.value = scope.row.applyCheckId;
+	checkNoRef.value = scope.row;
+	detaildialogVisible.value = true;
 	// // isSendBtn.value = scope.row.signstatus === '未送签' ? true : false;
-	// dilogTitle.value = '詳情';
+	dilogTitle.value = '詳情';
 	// sendDisabled.value = scope.row.signstatus1 ? true : false;
 };
 // 查看验收报告单
@@ -499,11 +508,15 @@ const onSearch = (data: EmptyObjectType) => {
 	tableRef.value && tableRef.value?.pageReset();
 };
 const onSearch2 = (data: EmptyObjectType) => {
-	// secondState.tableData.search[1].options?.forEach((item) => {
-	// 	if (data.signStatus === item.text) {
-	// 		data.signStatus = item.value;
-	// 	}
-	// });
+	secondState.tableData.search.forEach((item) => {
+		if (item.prop === 'signStatus') {
+			item.options?.forEach((option) => {
+				if (data.signStatus === option.text) {
+					data.signStatus = option.value;
+				}
+			});
+		}
+	});
 	secondState.tableData.form = Object.assign({}, secondState.tableData.form, { ...data });
 	tableRef2.value && tableRef2.value?.pageReset();
 };

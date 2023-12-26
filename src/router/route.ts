@@ -445,7 +445,15 @@ export const staticRoutes: Array<RouteRecordRaw> = [
 		name: 'arrivalAcceptanceLink',
 		component: () => import('/@/views/link/arrivalAcceptanceLink/index.vue'),
 		meta: {
-			title: '驗收單详情',
+			title: '請購驗收單详情',
+		},
+	},
+	{
+		path: '/link/maintenanceCheckLink',
+		name: 'maintenanceCheckLink',
+		component: () => import('/@/views/link/maintenanceCheckLink/index.vue'),
+		meta: {
+			title: '維修驗收單详情',
 		},
 	},
 	{

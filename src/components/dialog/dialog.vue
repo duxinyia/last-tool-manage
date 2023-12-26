@@ -23,7 +23,8 @@
 								v-model="state.formData[item.prop]"
 								:placeholder="$t(item.placeholder)"
 								clearable
-								@blur="inputBlur(item)"
+								@blur="(FocusEvent: Event)=>inputBlur(item,FocusEvent)"
+								@focus="(FocusEvent: Event)=>inputFocus(item,FocusEvent)"
 							></el-input>
 							<el-date-picker
 								v-if="item.type === 'date'"
@@ -33,6 +34,8 @@
 								:disabled-date="(time:Date) => disabledDate(time, item.isdisabledDate)"
 								:placeholder="$t(item.placeholder)"
 								style="width: 100%"
+								@blur="(FocusEvent: Event)=>inputBlur(item,FocusEvent)"
+								@focus="(FocusEvent: Event)=>inputFocus(item,FocusEvent)"
 							/>
 							<!-- 数字输入框 -->
 							<el-input-number
@@ -146,6 +149,8 @@
 								<SvgIcon v-else class="avatar-uploader-icon" name="ele-Plus" />
 							</el-upload>
 							<el-select
+								@blur="(FocusEvent: Event)=>inputBlur(item,FocusEvent)"
+								@focus="(FocusEvent: Event)=>inputFocus(item,FocusEvent)"
 								v-model="state.formData[item.prop]"
 								:placeholder="$t(item.placeholder)"
 								:clearable="item.clearable"
@@ -181,6 +186,8 @@
 								type="textarea"
 								:placeholder="$t(item.placeholder)"
 								:maxlength="item.maxlength || 500"
+								@blur="(FocusEvent: Event)=>inputBlur(item,FocusEvent)"
+								@focus="(FocusEvent: Event)=>inputFocus(item,FocusEvent)"
 							></el-input>
 							<span v-if="item.type === 'text'" style="width: 100%; font-weight: 700; color: #1890ff">
 								{{ state.formData[item.prop] }}
@@ -247,6 +254,7 @@
 					v-model="state.innerdialog.isShowInnerDialog"
 					width="40%"
 					append-to-body
+					:show-close="false"
 				>
 					<el-form ref="innnerDialogFormRef" :model="state.formInnerData" size="default">
 						<el-row :gutter="35">
@@ -340,9 +348,11 @@ const emit = defineEmits([
 	'innnerDialogSubmit',
 	'openInnerDialog',
 	'editDialog',
+	'otherDialog',
 	'remoteMethod',
 	'handleNumberInputChange',
 	'inputBlur',
+	'inputFocus',
 ]);
 // 定义父组件传过来的值
 const props = defineProps({
@@ -436,8 +446,12 @@ const handleNumberInputChange = (value: number) => {
 	emit('handleNumberInputChange', value, state.formData);
 };
 // 輸入框失去焦點
-const inputBlur = (item: EmptyObjectType) => {
-	emit('inputBlur', state.formData, item);
+const inputBlur = (item: EmptyObjectType, FocusEvent: Event) => {
+	emit('inputBlur', state.formData, item, FocusEvent);
+};
+// 輸入框獲取焦點
+const inputFocus = (item: EmptyObjectType, FocusEvent: Event) => {
+	emit('inputFocus', state.formData, item, FocusEvent);
 };
 // 校验表单
 const validatePass = (rule: any, value: any, callback: any, item: EmptyObjectType) => {
@@ -479,7 +493,7 @@ const disabledDate = (time: Date, isdisabledDate: boolean) => {
 	}
 };
 // 打开弹窗
-const openDialog = (type: string, row?: any, title?: string) => {
+const openDialog = (type: string, row?: any, title?: string, formInnerData?: any) => {
 	if (type === 'add') {
 		state.dialog.isdisable = false;
 		state.dialog.title = '新增';
@@ -526,7 +540,9 @@ const openDialog = (type: string, row?: any, title?: string) => {
 			state.formData = JSON.parse(JSON.stringify(row));
 			dialogFormRef.value && dialogFormRef.value.resetFields();
 			innnerDialogFormRef.value && innnerDialogFormRef.value.resetFields();
+			state.formInnerData.codeList = formInnerData?.codeList || [];
 		});
+		emit('otherDialog', state.formInnerData);
 	}
 	state.dialog.type = type;
 	state.dialog.isShowDialog = true;
@@ -571,7 +587,7 @@ const innnerDialogSubmit = (formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
 	formEl.validate((valid: boolean) => {
 		if (valid) {
-			emit('innnerDialogSubmit', state.formInnerData, state.formData);
+			emit('innnerDialogSubmit', state.formInnerData, state.formData, state.innerdialog.isShowInnerDialog);
 			closeInnerDialog();
 		} else {
 		}

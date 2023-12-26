@@ -11,8 +11,8 @@
 				ref="tableRef"
 				v-bind="state.tableData"
 				class="table"
-				@pageChange="onTablePageChange"
-				@sortHeader="onSortHeader"
+				@pageChange="(page) => onTablePageChange(page, state.tableData)"
+				@sortHeader="(data) => onSortHeader(data, state.tableData)"
 				@cellclick="reqNoClick"
 				:cellStyle="cellStyle"
 				@onOpenOtherDialog="openArriveJobDialog"
@@ -64,7 +64,7 @@
 				<Table v-bind="dialogState.tableData" class="table" @delRow="onDelRow" @handleNumberInputChange="changeInput" />
 			</el-form>
 			<template v-if="dilogTitle == '驗收' || dilogTitle == '詳情'">
-				<div class="describe" v-if="dilogTitle == '驗收'">
+				<div style="display: flex" v-if="dilogTitle == '驗收'" class="mt10">
 					<span>收貨備註：</span>
 					<div style="font-weight: 700; color: #1890ff">{{ dialogState.tableData.form['describe'] }}</div>
 				</div>
@@ -76,7 +76,7 @@
 						:auto-upload="false"
 						ref="inputuploadRefs"
 						action="#"
-						class="upload ml5"
+						class="upload"
 						drag
 						:limit="1"
 						:show-file-list="false"
@@ -113,7 +113,7 @@
 						</el-input> -->
 				</div>
 				<el-button class="mt5" v-if="dilogTitle == '詳情'" size="default" plain type="primary" @click="lookUpload">查看驗收報告</el-button>
-				<div class="describe">
+				<div :class="{ describe: dilogTitle == '驗收' }" class="mt10">
 					<span>備註：</span>
 					<el-input
 						style="width: 120%"
@@ -289,6 +289,7 @@ const secondState = reactive<TableDemoState>({
 			{ key: 'prNo', colWidth: '', title: 'PR單號', type: 'text', isCheck: true },
 			{ key: 'receiver', colWidth: '', title: '收貨人', type: 'text', isCheck: true },
 			{ key: 'createTime', colWidth: '', title: '提交時間', type: 'text', isCheck: true },
+			{ key: 'signStatusStr', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -309,6 +310,18 @@ const secondState = reactive<TableDemoState>({
 			{ label: '驗收單號', prop: 'repairCheckNo', required: false, type: 'input' },
 			{ label: '收貨單號', prop: 'repairReceiveNo', required: false, type: 'input' },
 			{ label: '提交時間', prop: 'createTime', required: false, type: 'dateRange' },
+			{
+				label: '簽核狀態',
+				prop: 'signStatus',
+				required: false,
+				clearable: false,
+				type: 'select',
+				options: [
+					{ value: 0, label: '簽核撤回', text: '簽核撤回', selected: false },
+					{ value: 1, label: '簽核中', text: '簽核中', selected: false },
+					{ value: 2, label: '簽核完成', text: '簽核完成', selected: false },
+				],
+			},
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -411,6 +424,7 @@ const getTableData = async (datas: EmptyObjectType) => {
 			endCreateTime: form.createTime && form.createTime[1],
 		};
 		delete data.createTime;
+		if (data.signStatus === '') data.signStatus = null;
 		res = await getQueryRepairCheckRecordApi(data);
 		res.data.data.forEach((item: any) => {
 			item.receiver = `${item.receiver} / ${item.receiverName}`;

@@ -55,6 +55,8 @@
 			@openInnerDialog="openInnerDialog"
 			@handleTagClose="handleTagClose"
 			:loadingBtn="loadingBtn"
+			@inputBlur="onInputBlur"
+			@inputFocus="onInputFocus"
 		>
 			<template #optionFat="{ row }">
 				<span style="float: left; margin-right: 10px">{{ row.text }}</span>
@@ -85,6 +87,13 @@ const TableSearch = defineAsyncComponent(() => import('/@/components/search/sear
 const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 const qrCodeDialog = defineAsyncComponent(() => import('/@/components/dialog/qrCodeDialog.vue'));
 import { getEngieerGroupApi, getLegalStoreTypesApi, getQueryStoreHouseNoPageApi } from '/@/api/global/index';
+import {
+	getOrCreatePutStorageDraftApi,
+	getStockOperDraftAddCodesApi,
+	getStockOperDraftModifyPutStorageDraftApi,
+	getStockOperDraftRemoveCodeFromPutStorageDraftApi,
+	getStockOperDraftResetCodesOfPutStorageDraftApi,
+} from '/@/api/toolsReturn/sampleStorage';
 const activeName = ref<string | number>('first');
 const handleClick = (tab: TabsPaneContext, event: Event) => {
 	activeName.value = tab.paneName as string | number;
@@ -509,7 +518,7 @@ const getTableData = async (datas: EmptyObjectType) => {
 	}
 };
 // 手動添加碼
-const addButton = (data: EmptyObjectType) => {
+const addButton = async (data: EmptyObjectType) => {
 	let formInnerData = data.formInnerData;
 	let formData = data.formData;
 	if (formInnerData.codeList.length + 1 > formData.qty) {
@@ -520,13 +529,37 @@ const addButton = (data: EmptyObjectType) => {
 		formInnerData['inputQty'] = null;
 	} else {
 		formInnerData.codeList.push(formInnerData['inputQty']);
-		formInnerData['inputQty'] = null;
+		const res = await getStockOperDraftAddCodesApi({
+			draftId,
+			codesToAdd: [formInnerData['inputQty']],
+		});
+		if (!res.status) {
+			let errorCode = res.message.split('：');
+			formInnerData.codeList.splice(formInnerData.codeList.indexOf(errorCode[1]), 1);
+		} else {
+			formInnerData['inputQty'] = null;
+			ElMessage.success('掃碼成功');
+		}
 		formInnerData['stockqty'] = formInnerData.codeList.length;
 		formData['stockqty'] = formInnerData.codeList.length;
 	}
 };
+let oldEntryDescribe = '';
+// 獲取焦點
+const onInputFocus = (formData: EmptyObjectType) => {
+	oldEntryDescribe = formData.entryDescribe;
+};
+// 描述失去焦點
+const onInputBlur = async (formData: EmptyObjectType) => {
+	if (oldEntryDescribe === formData.entryDescribe) return;
+	const res = await getStockOperDraftModifyPutStorageDraftApi({
+		draftId,
+		describe: formData.entryDescribe,
+	});
+	res.status && ElMessage.success(`保存成功`);
+};
 // change掃碼錄入
-const change = (val: any, prop: string, state: any, iscontu: boolean) => {
+const change = async (val: any, prop: string, state: any, iscontu: boolean) => {
 	let { formInnerData, formData } = state;
 	if (prop == 'sacnstockqty') {
 		if (formInnerData.codeList.length + 1 > formData.qty) {
@@ -538,6 +571,16 @@ const change = (val: any, prop: string, state: any, iscontu: boolean) => {
 		} else {
 			formInnerData.codeList.push(val);
 			formInnerData['sacnstockqty'] = null;
+			const res = await getStockOperDraftAddCodesApi({
+				draftId,
+				codesToAdd: [val],
+			});
+			if (!res.status) {
+				let errorCode = res.message.split('：');
+				formInnerData.codeList.splice(formInnerData.codeList.indexOf(errorCode[1]), 1);
+			} else {
+				ElMessage.success('掃碼成功');
+			}
 			formInnerData['stockqty'] = formInnerData.codeList.length;
 			formData['stockqty'] = formInnerData.codeList.length;
 		}
@@ -546,10 +589,24 @@ const change = (val: any, prop: string, state: any, iscontu: boolean) => {
 		// }
 	}
 };
+// 清空
 const innnerDialogCancel = (formData: EmptyObjectType, formInnerData: EmptyObjectType) => {
-	formInnerData.codeList = [];
-	formInnerData['stockqty'] = 0;
-	formData['stockqty'] = 0;
+	if (formInnerData.codeList.length <= 0) return ElMessage.warning('數據已清空');
+	ElMessageBox.confirm('確定清空嗎?', '提示', {
+		confirmButtonText: '確 定',
+		cancelButtonText: '取 消',
+		type: 'warning',
+		draggable: true,
+	})
+		.then(async () => {
+			const res = await getStockOperDraftResetCodesOfPutStorageDraftApi(draftId);
+			if (res.status) {
+				formInnerData.codeList = [];
+				formInnerData['stockqty'] = 0;
+				formData['stockqty'] = 0;
+			}
+		})
+		.catch(() => {});
 };
 // 嵌套弹窗提交
 const innnerDialogSubmit = (formInnerData: any, formData: any) => {
@@ -585,12 +642,17 @@ const openLookQrcodeDialog = async (scope: any) => {
 	}
 };
 // 关闭tag标签
-const handleTagClose = (tag: any, state: EmptyObjectType) => {
+const handleTagClose = async (tag: any, state: EmptyObjectType) => {
 	let { formInnerData, formData } = state;
-	formInnerData.codeList.splice(formInnerData.codeList.indexOf(tag), 1);
-	formInnerData['stockqty'] = formInnerData.codeList.length;
-	formData['stockqty'] = formInnerData.codeList.length;
+	const res = await getStockOperDraftRemoveCodeFromPutStorageDraftApi({ draftId, codesToRemove: [tag] });
+	if (res.status) {
+		formInnerData.codeList.splice(formInnerData.codeList.indexOf(tag), 1);
+		formInnerData['stockqty'] = formInnerData.codeList.length;
+		formData['stockqty'] = formInnerData.codeList.length;
+		ElMessage.success('刪除成功');
+	}
 };
+let draftId = '';
 // 打开入库弹窗
 const openEntryDialog = async (scope: any) => {
 	loadingBtn.value = false;
@@ -603,7 +665,11 @@ const openEntryDialog = async (scope: any) => {
 			}
 		}
 	});
-	entryJobDialogRef.value.openDialog('entry', scope.row, '入庫');
+	const res = await getOrCreatePutStorageDraftApi({ relationCheckId: scope.row.applyCheckId, putStorageType: 0 });
+	scope.row.entryDescribe = res.data.describe;
+	draftId = res.data.draftId;
+	scope.row.stockqty = res.data.codes?.length || 0;
+	entryJobDialogRef.value.openDialog('entry', scope.row, '入庫', { codeList: res.data.codes || [] });
 };
 const scanCodeEntry = () => {
 	entryJobDialogRef.value.openInnerDialog('掃碼錄入');
@@ -627,8 +693,8 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 	let submitData = {
 		applyCheckId: obj.applyCheckId,
 		// storageId: obj.storageId,
-		describe: obj.entryDescribe,
-		codes: obj.codeList,
+		// describe: obj.entryDescribe,
+		// codes: obj.codeList,
 		// runId: obj.runid,
 		// checkno: obj.checkno,
 		// creator: obj.creator,

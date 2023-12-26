@@ -55,6 +55,8 @@
 			@openInnerDialog="openInnerDialog"
 			@handleTagClose="handleTagClose"
 			:loadingBtn="loadingBtn"
+			@inputBlur="onInputBlur"
+			@inputFocus="onInputFocus"
 		>
 			<template #optionFat="{ row }">
 				<span style="float: left; margin-right: 10px">{{ row.text }}</span>
@@ -71,7 +73,15 @@
 import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
 import { ElMessage, ElMessageBox, FormInstance, TabsPaneContext } from 'element-plus';
 // 引入接口
-import { GetQueryStoragableSampleCheckDetailsApi, getSamplePutStorageApi } from '/@/api/toolsReturn/sampleStorage';
+import {
+	getOrCreatePutStorageDraftApi,
+	GetQueryStoragableSampleCheckDetailsApi,
+	getSamplePutStorageApi,
+	getStockOperDraftAddCodesApi,
+	getStockOperDraftModifyPutStorageDraftApi,
+	getStockOperDraftRemoveCodeFromPutStorageDraftApi,
+	getStockOperDraftResetCodesOfPutStorageDraftApi,
+} from '/@/api/toolsReturn/sampleStorage';
 import { getCodesOfApplyPutStorageApi } from '/@/api/requistManage/entryJob';
 
 import { useI18n } from 'vue-i18n';
@@ -150,7 +160,6 @@ const state = reactive<TableDemoState>({
 			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{ label: '廠商', prop: 'vendor', required: false, type: 'input' },
-
 			{
 				label: '發料人',
 				prop: 'dispatcher',
@@ -488,7 +497,7 @@ const getTableData = async (datas: EmptyObjectType) => {
 	}
 };
 // 手動添加碼
-const addButton = (data: EmptyObjectType) => {
+const addButton = async (data: EmptyObjectType) => {
 	let formInnerData = data.formInnerData;
 	let formData = data.formData;
 	if (formInnerData.codeList.length + 1 > formData.dispatchQty) {
@@ -499,13 +508,38 @@ const addButton = (data: EmptyObjectType) => {
 		formInnerData['inputQty'] = null;
 	} else {
 		formInnerData.codeList.push(formInnerData['inputQty']);
-		formInnerData['inputQty'] = null;
+		const res = await getStockOperDraftAddCodesApi({
+			draftId,
+			codesToAdd: [formInnerData['inputQty']],
+		});
+		if (!res.status) {
+			let errorCode = res.message.split('：');
+			formInnerData.codeList.splice(formInnerData.codeList.indexOf(errorCode[1]), 1);
+		} else {
+			formInnerData['inputQty'] = null;
+			ElMessage.success('掃碼成功');
+		}
 		formInnerData['stockqty'] = formInnerData.codeList.length;
 		formData['stockqty'] = formInnerData.codeList.length;
 	}
 };
+let oldEntryDescribe = '';
+// 獲取焦點
+const onInputFocus = (formData: EmptyObjectType) => {
+	oldEntryDescribe = formData.entryDescribe;
+};
+// 描述失去焦點
+const onInputBlur = async (formData: EmptyObjectType) => {
+	if (oldEntryDescribe === formData.entryDescribe) return;
+	const res = await getStockOperDraftModifyPutStorageDraftApi({
+		draftId,
+		describe: formData.entryDescribe,
+	});
+	res.status && ElMessage.success(`保存成功`);
+};
 // change掃碼錄入
-const change = (val: any, prop: string, state: any, iscontu: boolean) => {
+
+const change = async (val: any, prop: string, state: any, iscontu: boolean) => {
 	let { formInnerData, formData } = state;
 	if (prop == 'sacnstockqty') {
 		if (formInnerData.codeList.length + 1 > formData.dispatchQty) {
@@ -517,18 +551,42 @@ const change = (val: any, prop: string, state: any, iscontu: boolean) => {
 		} else {
 			formInnerData.codeList.push(val);
 			formInnerData['sacnstockqty'] = null;
+			const res = await getStockOperDraftAddCodesApi({
+				draftId,
+				codesToAdd: [val],
+			});
+			if (!res.status) {
+				let errorCode = res.message.split('：');
+				formInnerData.codeList.splice(formInnerData.codeList.indexOf(errorCode[1]), 1);
+			} else {
+				ElMessage.success('掃碼成功');
+			}
 			formInnerData['stockqty'] = formInnerData.codeList.length;
 			formData['stockqty'] = formInnerData.codeList.length;
 		}
 	}
 };
-const innnerDialogCancel = (formData: EmptyObjectType, formInnerData: EmptyObjectType) => {
-	formInnerData.codeList = [];
-	formInnerData['stockqty'] = 0;
-	formData['stockqty'] = 0;
+// 清空條碼
+const innnerDialogCancel = async (formData: EmptyObjectType, formInnerData: EmptyObjectType) => {
+	if (formInnerData.codeList.length <= 0) return ElMessage.warning('數據已清空');
+	ElMessageBox.confirm('確定清空嗎?', '提示', {
+		confirmButtonText: '確 定',
+		cancelButtonText: '取 消',
+		type: 'warning',
+		draggable: true,
+	})
+		.then(async () => {
+			const res = await getStockOperDraftResetCodesOfPutStorageDraftApi(draftId);
+			if (res.status) {
+				formInnerData.codeList = [];
+				formInnerData['stockqty'] = 0;
+				formData['stockqty'] = 0;
+			}
+		})
+		.catch(() => {});
 };
 // 嵌套弹窗提交
-const innnerDialogSubmit = (formInnerData: any, formData: any) => {
+const innnerDialogSubmit = async (formInnerData: any, formData: any, isShowInnerDialog: boolean) => {
 	// 防止用户用扫码枪扫数据之后又手动修改数量
 	if (formInnerData.codeList.length != 0) {
 		formInnerData.stockqty = formInnerData.codeList.length;
@@ -548,7 +606,6 @@ const innnerDialogSubmit = (formInnerData: any, formData: any) => {
 const openInnerDialog = (state: any) => {
 	let { formInnerData, formData } = state;
 	formInnerData['stockqty'] = formInnerData.codeList.length;
-	formData['stockqty'] = formInnerData.codeList.length;
 };
 // 打開查看二維碼按鈕
 const openLookQrcodeDialog = async (scope: any) => {
@@ -561,12 +618,18 @@ const openLookQrcodeDialog = async (scope: any) => {
 	}
 };
 // 关闭tag标签
-const handleTagClose = (tag: any, state: EmptyObjectType) => {
+const handleTagClose = async (tag: any, state: EmptyObjectType) => {
 	let { formInnerData, formData } = state;
-	formInnerData.codeList.splice(formInnerData.codeList.indexOf(tag), 1);
-	formInnerData['stockqty'] = formInnerData.codeList.length;
-	formData['stockqty'] = formInnerData.codeList.length;
+	const res = await getStockOperDraftRemoveCodeFromPutStorageDraftApi({ draftId, codesToRemove: [tag] });
+	if (res.status) {
+		formInnerData.codeList.splice(formInnerData.codeList.indexOf(tag), 1);
+		formInnerData['stockqty'] = formInnerData.codeList.length;
+		formData['stockqty'] = formInnerData.codeList.length;
+		ElMessage.success('刪除成功');
+	}
 };
+let draftId = '';
+
 // 打开入库弹窗
 const openEntryDialog = async (scope: any) => {
 	loadingBtn.value = false;
@@ -579,7 +642,11 @@ const openEntryDialog = async (scope: any) => {
 			}
 		}
 	});
-	entryJobDialogRef.value.openDialog('entry', scope.row, '入庫');
+	const res = await getOrCreatePutStorageDraftApi({ relationCheckId: scope.row.sampleCheckDetailId, putStorageType: 2 });
+	scope.row.entryDescribe = res.data.describe;
+	draftId = res.data.draftId;
+	scope.row.stockqty = res.data.codes?.length || 0;
+	entryJobDialogRef.value.openDialog('entry', scope.row, '入庫', { codeList: res.data.codes || [] });
 };
 const scanCodeEntry = () => {
 	entryJobDialogRef.value.openInnerDialog('掃碼錄入');
@@ -602,18 +669,18 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 	obj.codeList = formInnerData.codeList;
 	let submitData = {
 		sampleCheckDetailId: obj.sampleCheckDetailId,
-		describe: obj.entryDescribe,
-		codes: obj.codeList,
+		// describe: obj.entryDescribe,
+		// codes: obj.codeList,
 	};
 	if (obj.stockqty > obj.dispatchQty && !obj.codeManageMode) {
 		ElMessage.error(`掃碼數量大於發料數量`);
 	} else if (obj.stockqty < obj.dispatchQty && !obj.codeManageMode) {
 		ElMessage.error(`掃碼數量小於發料數量，請繼續掃碼錄入`);
 	} else {
-		console.log(submitData);
 		loadingBtn.value = true;
 		const res = await getSamplePutStorageApi(submitData);
 		if (res.status) {
+			// onInputBlur(obj);
 			ElMessage.success(`入庫成功`);
 			getTableData(state.tableData);
 		}

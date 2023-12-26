@@ -17,7 +17,7 @@ export function getRepariReceiveDetailsForCheckApi(repairReceiveNo:string) {
 // 验收接口
 export function getCheckApi(data:Object) {
   return request({
-    url: '/api/ToolRepair/Check',
+    url: '/api/ToolRepair/RepairCheck',
     method: 'POST',
   	data:data
   });

@@ -36,3 +36,83 @@ export function getTransferStorageApi(data: Object) {
 		data: data,
 	});
 }
+// 獲取退庫操作草稿
+export function getOrCreateExitStoreDraftApi(data: Object) {
+	return request({
+		url: '/api/StockOperDraft/GetOrCreateExitStoreDraft',
+		method: 'POST',
+		data: data,
+	});
+}
+// 向退庫操作草稿中添加暫存的碼
+export function getStockOperDraftAddCodesToExitStoreDraftApi(data: Object) {
+	return request({
+		url: '/api/StockOperDraft/AddCodesToExitStoreDraft',
+		method: 'POST',
+		data: data,
+	});
+}
+// 修改退庫草稿
+export function getStockOperDraftModifyExitStoreDraftApi(data: Object) {
+	return request({
+		url: '/api/StockOperDraft/ModifyExitStoreDraft',
+		method: 'POST',
+		data: data,
+	});
+}
+
+// 清空刪除所有的碼
+export function getStockOperDraftResetCodesOfExitStoreDraftApi(draftId: string) {
+	return request({
+		url: `/api/StockOperDraft/ResetCodesOfExitStoreDraft/${draftId}`,
+		method: 'DELETE',
+	});
+}
+// 刪除退庫草稿中暫存的碼
+export function getStockOperDraftRemoveCodeFromExitStoreDraftApi(data: Object) {
+	return request({
+		url: `/api/StockOperDraft/RemoveCodeFromExitStoreDraft`,
+		method: 'POST',
+		data:data
+	});
+}
+// 獲取轉倉操作草稿
+export function getOrCreateStockTransferDraftApi(data: Object) {
+	return request({
+		url: '/api/StockOperDraft/GetOrCreateStockTransferDraft',
+		method: 'POST',
+		data: data,
+	});
+}
+// 向轉倉操作草稿中添加暫存的碼
+export function getStockOperDraftAddCodesToStockTransferDraftApi(data: Object) {
+	return request({
+		url: '/api/StockOperDraft/AddCodesToStockTransferDraft',
+		method: 'POST',
+		data: data,
+	});
+}
+// 修改轉倉草稿
+export function getStockOperDraftModifyStockTransferDraftApi(data: Object) {
+	return request({
+		url: '/api/StockOperDraft/ModifyStockTransferDraft',
+		method: 'POST',
+		data: data,
+	});
+}
+
+// 清空刪除所有轉倉的碼
+export function getStockOperDraftResetCodesOfStockTransferDraftApi(draftId: string) {
+	return request({
+		url: `/api/StockOperDraft/ResetCodesOfStockTransferDraft/${draftId}`,
+		method: 'DELETE',
+	});
+}
+// 刪除轉倉草稿中暫存的碼
+export function getStockOperDraftRemoveCodeFromStockTransferDraftApi(data: Object) {
+	return request({
+		url: `/api/StockOperDraft/RemoveCodeFromStockTransferDraft`,
+		method: 'POST',
+		data:data
+	});
+}
