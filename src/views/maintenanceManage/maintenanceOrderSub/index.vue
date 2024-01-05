@@ -1,96 +1,124 @@
 <template>
-	<div class="table-container layout-padding">
-		<div class="table-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
+	<el-tabs v-model="activeName" class="table-container layout-padding" @tab-click="handleClick">
+		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="維修單提報" name="first">
+			<TableSearch
+				:search="state.tableData.search"
+				@search="(data) => onSearch(data, state.tableData)"
+				:searchConfig="state.tableData.searchConfig"
+				labelWidth=" "
+			/>
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
 				class="table"
-				@pageChange="onTablePageChange"
-				@sortHeader="onSortHeader"
+				@pageChange="(page) => onTablePageChange(page, state.tableData)"
+				@sortHeader="(data) => onSortHeader(data, state.tableData)"
 				@cellclick="matNoClick"
 				:cellStyle="cellStyle"
 				@onOpentopBtnOther="onOpenSendRepair"
 			/>
-			<el-dialog
-				draggable
-				:close-on-click-modal="false"
-				ref="presentationDialogRef"
-				v-model="presentationDialogVisible"
-				:title="dilogTitle"
-				width="60%"
-			>
-				<el-row>
-					<el-col :xs="24" :sm="12" :md="6" :lg="6" :xl="6" class="mb10 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
-						<div v-if="val.type === 'text'">
-							{{ val.label }}<span style="color: red" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
-						</div>
-						<template v-if="val.type === 'input'">
-							<span class="mr10">{{ val.label }}</span>
-							<el-input
-								size="default"
-								v-model="dialogState.tableData.form[val.prop]"
-								:placeholder="`請輸入${$t(val.label)}`"
-								clearable
-								style="width: 100%; max-width: 167px"
-							/>
-						</template>
-						<div v-if="val.type === 'time'">
-							<span v-if="val.isRequired" class="color-danger mr5">*</span>
-							<span style="width: 96px" class="mr10">{{ val.label }}</span>
-							<el-date-picker
-								v-model="dialogState.tableData.form[val.prop]"
-								:placeholder="`請選擇時間`"
-								:disabled-date="disabledDate"
-								clearable
-								value-format="YYYY-MM-DD"
-								type="date"
-								style="height: 30px; max-width: 167px"
-							/>
-						</div>
-					</el-col>
-				</el-row>
+		</el-tab-pane>
+		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="維修記錄" name="second">
+			<TableSearch
+				:search="secondState.tableData.search"
+				@search="(data) => onSearch(data, secondState.tableData)"
+				:searchConfig="secondState.tableData.searchConfig"
+				labelWidth=" "
+			/>
+			<Table
+				ref="tableRef"
+				v-bind="secondState.tableData"
+				class="table"
+				@pageChange="(page) => onTablePageChange(page, secondState.tableData)"
+				@sortHeader="(data) => onSortHeader(data, secondState.tableData)"
+				@onOpenOtherDialog="openDetailDialog"
+			/>
+		</el-tab-pane>
+		<el-dialog
+			draggable
+			:close-on-click-modal="false"
+			ref="presentationDialogRef"
+			v-model="presentationDialogVisible"
+			:title="dilogTitle"
+			width="60%"
+		>
+			<el-row v-if="activeName === 'first'">
+				<el-col :xs="24" :sm="12" :md="6" :lg="6" :xl="6" class="mb10 mr20" v-for="(val, key) in dialogState.tableData.search" :key="key">
+					<div v-if="val.type === 'text'">
+						{{ val.label }}<span style="color: red" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
+					</div>
+					<template v-if="val.type === 'input'">
+						<span class="mr10">{{ val.label }}</span>
+						<el-input
+							size="default"
+							v-model="dialogState.tableData.form[val.prop]"
+							:placeholder="`請輸入${$t(val.label)}`"
+							clearable
+							style="width: 100%; max-width: 167px"
+						/>
+					</template>
+					<div v-if="val.type === 'time'">
+						<span v-if="val.isRequired" class="color-danger mr5">*</span>
+						<span style="width: 96px" class="mr10">{{ val.label }}</span>
+						<el-date-picker
+							v-model="dialogState.tableData.form[val.prop]"
+							:placeholder="`請選擇時間`"
+							:disabled-date="disabledDate"
+							clearable
+							value-format="YYYY-MM-DD"
+							type="date"
+							style="height: 30px; max-width: 167px"
+						/>
+					</div>
+				</el-col>
+			</el-row>
 
-				<!-- 表格 -->
-				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
-					<Table ref="dialogtableRef" v-bind="dialogState.tableData" class="table" @delRow="onDelRow" />
-				</el-form>
-				<div class="describe">
-					<span>備註：</span>
-					<el-input
-						class="input-textarea"
-						show-word-limit
-						v-model="dialogState.tableData.form['describe']"
-						type="textarea"
-						placeholder="請輸入"
-						maxlength="150"
-					></el-input>
-				</div>
-				<!-- 提交按钮 -->
-				<template #footer>
-					<span class="dialog-footer">
-						<el-button size="default" auto-insert-space @click="presentationDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn"> 確定 </el-button>
-					</span>
-				</template>
-			</el-dialog>
-			<Dialog ref="matnoDetailDialogRef" :isFootBtn="false" :dialogConfig="dialogMatnoDetail" />
-			<qrCodeDialog ref="inventoryDialogRef" :tags="tags" dialogTitle="庫存條碼" />
-			<!-- <el-dialog v-model="inventoryDialogRef" title="庫存條碼" width="30%" draggable>
+			<!-- 表格 -->
+			<el-form ref="tableFormRef" :model="dialogState.tableData">
+				<Table ref="dialogtableRef" v-bind="dialogState.tableData" class="table" @delRow="onDelRow" />
+			</el-form>
+			<div class="describe" style="line-height: 30px">
+				<span>備註：</span>
+				<el-input
+					v-if="activeName === 'first'"
+					class="input-textarea"
+					show-word-limit
+					v-model="dialogState.tableData.form['describe']"
+					type="textarea"
+					placeholder="請輸入"
+					maxlength="150"
+				></el-input>
+				<span v-else style="color: #1890ff; font-weight: 700; width: 100%">{{ dialogState.tableData.form['describe'] }}</span>
+			</div>
+			<!-- 提交按钮 -->
+			<template #footer>
+				<span class="dialog-footer" v-if="activeName === 'first'">
+					<el-button size="default" auto-insert-space @click="presentationDialogVisible = false">取消</el-button>
+					<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn"> 確定 </el-button>
+				</span>
+			</template>
+		</el-dialog>
+		<Dialog ref="matnoDetailDialogRef" :isFootBtn="false" :dialogConfig="dialogMatnoDetail" />
+		<qrCodeDialog ref="inventoryDialogRef" :tags="tags" dialogTitle="庫存條碼" />
+	</el-tabs>
+</template>
+<!-- <el-dialog v-model="inventoryDialogRef" title="庫存條碼" width="30%" draggable>
 				<el-tag v-for="tag in tags" :key="tag.code" class="mr10 mb10" :type="tag.runstatus === 1 ? '' : 'danger'">
 					{{ tag.code }}
 				</el-tag>
 			</el-dialog> -->
-		</div>
-	</div>
-</template>
-
 <script setup lang="ts" name="maintenanceOrderSub">
 import { defineAsyncComponent, reactive, ref, onMounted, computed, watch } from 'vue';
-import { ElMessage, FormInstance } from 'element-plus';
+import { ElMessage, ElMessageBox, FormInstance, TabsPaneContext } from 'element-plus';
 const presentationDialogVisible = ref(false);
 // 引入接口
-import { getQueryExitPageApi, getSubmitRepairOrderApi, GetExitStoreQrCodeListApi } from '/@/api/maintenanceManage/maintenanceOrderSub';
+import {
+	getQueryExitPageApi,
+	getSubmitRepairOrderApi,
+	GetExitStoreQrCodeListApi,
+	getQueryRepairRecordApi,
+	getRepairRecordDetailApi,
+} from '/@/api/maintenanceManage/maintenanceOrderSub';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -115,6 +143,11 @@ let tags = ref<EmptyArrayType>([]);
 
 // 送修弹窗标题
 const dilogTitle = ref();
+const activeName = ref<string | number>('first');
+const handleClick = (tab: TabsPaneContext, event: Event) => {
+	activeName.value = tab.paneName as string | number;
+	getTableData(activeName.value === 'first' ? state.tableData : secondState.tableData);
+};
 const header = ref([
 	{
 		key: 'matno',
@@ -126,11 +159,29 @@ const header = ref([
 	{ key: 'machine', colWidth: '', title: '機種', type: 'text', isCheck: true },
 	{ key: 'namech', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	{ key: 'nameen', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-	// { key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
-	// { key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 	{ key: 'exitqty', colWidth: '', title: '維修數量', type: 'text', isCheck: true },
 	{ key: 'exitreason', colWidth: '', title: '維修原因', type: 'text', isCheck: true },
-	{ key: 'prItemNo', colWidth: '', title: 'pr項次', type: 'input', isCheck: true },
+	{ key: 'prItemNo', colWidth: '', title: 'pr項次', type: 'input', isCheck: true, isRequired: false },
+]);
+const header1 = ref([
+	{ key: 'prItemNo', colWidth: '', title: 'pr項次', type: 'text', isCheck: true },
+	{
+		key: 'matNo',
+		colWidth: '250',
+		title: 'message.pages.matNo',
+		type: 'text',
+		isCheck: true,
+	},
+	{ key: 'nameCh', colWidth: '100', title: '品名-中文', type: 'text', isCheck: true },
+	{ key: 'nameEn', colWidth: '100', title: '品名-英文', type: 'text', isCheck: true },
+	{ key: 'qty', colWidth: '100', title: '維修數量', type: 'text', isCheck: true },
+	{ key: 'reason', colWidth: '100', title: '維修原因', type: 'text', isCheck: true },
+	{ key: 'exitStoreOperator', colWidth: '', title: '發起人', type: 'text', isCheck: true },
+	{ key: 'pendingReceiptQty', colWidth: '110', title: '待收貨數量', type: 'text', isCheck: true },
+	{ key: 'pendingCheckQty', colWidth: '110', title: '待驗收數量', type: 'text', isCheck: true },
+	{ key: 'pendingStorageQty', colWidth: '110', title: '待入庫數量', type: 'text', isCheck: true },
+	{ key: 'storedQty', colWidth: '110', title: '已入庫數量', type: 'text', isCheck: true },
+	{ key: 'checkUnqualifiedQty', colWidth: '140', title: '驗收不合格數量', type: 'text', isCheck: true },
 ]);
 const state = reactive<TableDemoState>({
 	tableData: {
@@ -153,6 +204,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
 			{ key: 'exitqty', colWidth: '', title: '退庫數量', type: 'text', isCheck: true },
 			{ key: 'exitreason', colWidth: '', title: '退庫原因', type: 'text', isCheck: true },
+			{ key: 'creator', colWidth: '', title: '發起人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -192,6 +244,51 @@ const state = reactive<TableDemoState>({
 		},
 		// 打印标题
 		printName: '表格打印演示',
+	},
+});
+const secondState = reactive<TableDemoState>({
+	tableData: {
+		// 列表数据（必传）
+		data: [],
+		// 表头内容（必传，注意格式）
+		header: [
+			{ key: 'repairNo', colWidth: '', title: '維修單號', type: 'text', isCheck: true },
+			{ key: 'prNo', colWidth: '', title: 'PR單號', type: 'text', isCheck: true },
+			{ key: 'sendRepairDate', colWidth: '', title: '送修時間', type: 'text', isCheck: true },
+			{ key: 'createTime', colWidth: '', title: '提交時間', type: 'text', isCheck: true },
+			{ key: 'isAllReceived', colWidth: '', title: '是否全部收貨', type: 'text', isCheck: true },
+		],
+		// 配置项（必传）
+		config: {
+			total: 0, // 列表总数
+			loading: true, // loading 加载
+			isBorder: false, // 是否显示表格边框
+			isSerialNo: true, // 是否显示表格序号
+			isSelection: false, // 是否显示表格多选
+			isOperate: true, // 是否显示表格操作栏
+			isButton: false, //是否显示表格上面的新增删除按钮
+			isInlineEditing: false, //是否是行内编辑
+			isTopTool: true, //是否有表格右上角工具
+			isPage: true, //是否有分页
+		},
+		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
+		search: [
+			{ label: '維修單號', prop: 'repairNo', required: false, type: 'input' },
+			{ label: 'PR單號', prop: 'prNo', required: false, type: 'input' },
+			{ label: '提交時間', prop: 'createTime', required: false, type: 'dateRange' },
+		],
+		searchConfig: {
+			isSearchBtn: true,
+		},
+		btnConfig: [{ type: 'detail', name: '查看詳情', color: '#1890ff', isSure: false, icon: 'ele-View' }],
+		// 给后端的数据
+		form: {},
+		dialogConfig: [],
+		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
+		page: {
+			pageNum: 1,
+			pageSize: 10,
+		},
 	},
 });
 const dialogState = reactive<TableDemoState>({
@@ -275,26 +372,61 @@ const cellStyle = ({ column }: EmptyObjectType) => {
 	}
 };
 // 初始化列表数据
-const getTableData = async () => {
-	const form = state.tableData.form;
-	let data = {
-		matName: form.matName,
-		matNo: form.matNo,
-		exitType: 1,
-		page: state.tableData.page,
-	};
-	const res = await getQueryExitPageApi(data);
-	state.tableData.data = res.data.data;
-	state.tableData.config.total = res.data.total;
-	if (res.status) {
-		state.tableData.config.loading = false;
+const getTableData = async (datas: EmptyObjectType) => {
+	const form = datas.form;
+	let res = null;
+	if (activeName.value === 'first') {
+		let data = {
+			matName: form.matName,
+			matNo: form.matNo,
+			exitType: 1,
+			page: datas.page,
+		};
+		res = await getQueryExitPageApi(data);
+		res.data.data.forEach((item: any) => {
+			item.creator = `${item.creator} / ${item.creatorName}`;
+		});
+	} else {
+		let data = {
+			...form,
+			page: datas.page,
+			createTime: form.createTime,
+			startCreateTime: form.createTime && form.createTime[0],
+			endCreateTime: form.createTime && form.createTime[1],
+		};
+		delete data.createTime;
+		res = await getQueryRepairRecordApi(data);
+		res.data.data.forEach((item: any) => {
+			item.isAllReceived = item.isAllReceived === true ? '是' : '否';
+		});
+	}
+	datas.data = res!.data.data;
+	datas.config.total = res!.data.total;
+	if (res!.status) {
+		datas.config.loading = false;
 	}
 };
 //删除
 const onDelRow = (row: EmptyObjectType, i: number) => {
 	dialogState.tableData.data.splice(i, 1);
 };
-
+// 查看詳情
+const openDetailDialog = async (row: EmptyObjectType) => {
+	dilogTitle.value = '詳情';
+	presentationDialogVisible.value = true;
+	let tableData = dialogState.tableData;
+	changeDialogStatus(false);
+	tableData.header = header1.value;
+	const res = await getRepairRecordDetailApi(row.row.repairNo);
+	res.data.details.forEach((item: any) => {
+		item.exitStoreOperator = `${item.exitStoreOperator} / ${item.exitStoreOperatorName}`;
+	});
+	tableData.data = res.data.details;
+	tableData.form['describe'] = res.data.describe;
+	if (res.status) {
+		tableData.config.loading = false;
+	}
+};
 // 点击送修按钮
 const onOpenSendRepair = (row: EmptyObjectType[]) => {
 	loadingBtn.value = false;
@@ -302,12 +434,15 @@ const onOpenSendRepair = (row: EmptyObjectType[]) => {
 	presentationDialogVisible.value = true;
 	let tableData = dialogState.tableData;
 	tableData.header = header.value;
-	tableData.data = [];
 	tableData.data = row;
+	changeDialogStatus(true);
 	tableData.config.loading = false;
 	dilogTitle.value = '維修單提報';
 };
-
+const changeDialogStatus = (isShow: boolean) => {
+	let tableData = dialogState.tableData;
+	tableData.config.isSerialNo = tableData.config.isOperate = isShow;
+};
 // 点击料号弹出详情
 const matNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'matno') {
@@ -339,31 +474,42 @@ const onSubmit = async (formEl: FormInstance | undefined) => {
 		const res = await getSubmitRepairOrderApi(allData);
 		if (res.status) {
 			ElMessage.success(t('送修成功'));
-			presentationDialogVisible.value = false;
-			getTableData();
+			ElMessageBox.confirm(`維修單號：${res.data}`, '提示', {
+				confirmButtonText: '確 定',
+				showCancelButton: false,
+				showClose: false,
+				type: 'success',
+				draggable: true,
+			})
+				.then(async () => {
+					presentationDialogVisible.value = false;
+				})
+				.catch(() => {});
+			getTableData(state.tableData);
 		}
+
 		loadingBtn.value = false;
 	});
 };
 // 搜索点击时表单回调
-const onSearch = (data: EmptyObjectType) => {
-	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
+const onSearch = (data: EmptyObjectType, tableData: EmptyObjectType) => {
+	tableData.form = Object.assign({}, tableData.form, { ...data });
 	tableRef.value?.pageReset();
 };
 
 // 分页改变时回调
-const onTablePageChange = (page: TableDemoPageType) => {
-	state.tableData.page.pageNum = page.pageNum;
-	state.tableData.page.pageSize = page.pageSize;
-	getTableData();
+const onTablePageChange = (page: TableDemoPageType, tableData: EmptyObjectType) => {
+	tableData.page.pageNum = page.pageNum;
+	tableData.page.pageSize = page.pageSize;
+	getTableData(tableData);
 };
 // 拖动显示列排序回调
-const onSortHeader = (data: TableHeaderType[]) => {
-	state.tableData.header = data;
+const onSortHeader = (data: TableHeaderType[], tableData: EmptyObjectType) => {
+	tableData.header = data;
 };
 // 页面加载时
 onMounted(() => {
-	getTableData();
+	getTableData(state.tableData);
 });
 </script>
 

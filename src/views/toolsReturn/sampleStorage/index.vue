@@ -24,7 +24,7 @@
 			/>
 		</el-tab-pane>
 		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="樣品入庫記錄" name="second">
-			<!-- <TableSearch
+			<TableSearch
 				:search="secondState.tableData.search"
 				@search="(data) => onSearch(data, secondState.tableData)"
 				:searchConfig="secondState.tableData.searchConfig"
@@ -37,7 +37,7 @@
 				@pageChange="(page) => onTablePageChange(page, secondState.tableData)"
 				@sortHeader="(data) => onSortHeader(data, secondState.tableData)"
 				@onOpenOtherDialog="openLookQrcodeDialog"
-			/> -->
+			/>
 		</el-tab-pane>
 		<qrCodeDialog ref="inventoryDialogRef" :tags="qrCode" dialogTitle="入庫條碼" />
 		<Dialog
@@ -75,6 +75,7 @@ import { ElMessage, ElMessageBox, FormInstance, TabsPaneContext } from 'element-
 // 引入接口
 import {
 	getOrCreatePutStorageDraftApi,
+	getQuerySamplePutStorageRecordApi,
 	GetQueryStoragableSampleCheckDetailsApi,
 	getSamplePutStorageApi,
 	getStockOperDraftAddCodesApi,
@@ -326,20 +327,22 @@ const secondState = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
-			{ key: 'applyPutStorageId', colWidth: '', title: '入庫單號', type: 'text', isCheck: true },
+			{ key: 'sampleNo', colWidth: '', title: '送樣單號', type: 'text', isCheck: true },
+			{ key: 'samplePutStorageNo', colWidth: '', title: '入庫單號', type: 'text', isCheck: true },
+			{ key: 'checkNo', colWidth: '', title: '驗收單號', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '100', title: '品名-中文', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '100', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'reqMatNo', colWidth: '', title: '請購料號', type: 'text', isCheck: true },
-			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
-			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'dispatcher', colWidth: '', title: '發料人', type: 'text', isCheck: true },
-			{ key: 'dispatchTime', colWidth: '', title: '發料時間', type: 'text', isCheck: true },
+			{ key: 'vendorCode', colWidth: '', title: '廠商代碼', type: 'text', isCheck: true },
+			{ key: 'vendorName', colWidth: '', title: '廠商名稱', type: 'text', isCheck: true },
 			{ key: 'qty', colWidth: '', title: '入庫數量', type: 'text', isCheck: true },
+			{ key: 'putStorageTime', colWidth: '', title: '入庫時間', type: 'text', isCheck: true },
 			{ key: 'storageType', colWidth: '', title: '倉庫類型', type: 'text', isCheck: true },
 			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
-			{ key: 'putStorageTime', colWidth: '', title: '入庫時間', type: 'text', isCheck: true },
+			{ key: 'dispatcher', colWidth: '', title: '發料人', type: 'text', isCheck: true },
 			{ key: 'describe', colWidth: '', title: '備註', type: 'text', isCheck: true },
-			{ key: 'codeManageModeText', colWidth: '130', title: '二維碼管理模式', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -356,12 +359,13 @@ const secondState = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '申請單號', prop: 'reqNo', required: false, type: 'input' },
-			{ label: '入庫單號', prop: 'applyPutStorageId', required: false, type: 'input' },
+			{ label: '送樣單號', prop: 'sampleNo', required: false, type: 'input' },
+			{ label: '入庫單號', prop: 'samplePutStorageNo', required: false, type: 'input', lg: 6, xl: 6 },
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
-			{ label: '請購料號', prop: 'reqMatNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
-			{ label: '發料人', prop: 'dispatcher', required: false, type: 'input' },
+			{ label: '廠商', prop: 'vendor', required: false, type: 'input' },
+			{ label: '入庫時間', prop: 'putStorageTime', required: false, type: 'dateRange', lg: 6, xl: 6 },
 			{
 				label: '倉庫類型',
 				prop: 'storageType',
@@ -370,7 +374,9 @@ const secondState = reactive<TableDemoState>({
 				options: [],
 			},
 			{ label: '倉庫位置', prop: 'sLocation', required: false, type: 'input', placeholder: '請輸入倉庫位置' },
-			{ label: '入庫時間', prop: 'putStorageTime', required: false, type: 'dateRange' },
+			{ label: '發料人', prop: 'dispatcher', required: false, type: 'input' },
+			{ label: '請購料號', prop: 'reqMatNo', required: false, type: 'input' },
+			{ label: '驗收單號', prop: 'checkNo', required: false, type: 'input', lg: 6, xl: 6 },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -471,20 +477,19 @@ const getTableData = async (datas: EmptyObjectType) => {
 		delete data.dispatchTime;
 		res = await GetQueryStoragableSampleCheckDetailsApi(data);
 	} else {
-		// let data = {
-		// 	...form,
-		// 	page: datas.page,
-		// 	putStorageTime: form.putStorageTime,
-		// 	startPutStorageTime: form.putStorageTime && form.putStorageTime[0],
-		// 	endPutStorageTime: form.putStorageTime && form.putStorageTime[1],
-		// };
-		// delete data.putStorageTime;
-		// res = await GetQueryPutStorageRecordApi(data);
-		// res.data.data.forEach((item: any) => {
-		// 	item.disabled = item.codeManageMode ? true : false;
-		// });
+		let data = {
+			...form,
+			page: datas.page,
+			putStorageTime: form.putStorageTime,
+			startPutStorageTime: form.putStorageTime && form.putStorageTime[0],
+			endPutStorageTime: form.putStorageTime && form.putStorageTime[1],
+		};
+		delete data.putStorageTime;
+		res = await getQuerySamplePutStorageRecordApi(data);
+		res.data.data.forEach((item: any) => {
+			item.disabled = item.codeManageMode ? true : false;
+		});
 	}
-
 	datas.data = res!.data.data;
 	datas.data.forEach((item: any) => {
 		item.stockqty = 0;
@@ -609,13 +614,13 @@ const openInnerDialog = (state: any) => {
 };
 // 打開查看二維碼按鈕
 const openLookQrcodeDialog = async (scope: any) => {
-	let res = await getCodesOfApplyPutStorageApi(scope.row.applyPutStorageId);
-	if (res.data.length == 0) {
-		ElMessage.error('暫無條碼數據');
-	} else if (res.status) {
-		qrCode.value = res.data;
-		inventoryDialogRef.value?.openDialog();
-	}
+	// let res = await getCodesOfApplyPutStorageApi(scope.row.applyPutStorageId);
+	// if (res.data.length == 0) {
+	// 	ElMessage.error('暫無條碼數據');
+	// } else if (res.status) {
+	// 	qrCode.value = res.data;
+	// 	inventoryDialogRef.value?.openDialog();
+	// }
 };
 // 关闭tag标签
 const handleTagClose = async (tag: any, state: EmptyObjectType) => {
@@ -682,20 +687,20 @@ const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyO
 		if (res.status) {
 			// onInputBlur(obj);
 			ElMessage.success(`入庫成功`);
+			ElMessageBox.confirm(`入庫單號：${res.data}`, '提示', {
+				confirmButtonText: '確 定',
+				showCancelButton: false,
+				showClose: false,
+				type: 'success',
+				draggable: true,
+			})
+				.then(async () => {
+					entryJobDialogRef.value.closeDialog();
+				})
+				.catch(() => {});
 			getTableData(state.tableData);
 		}
 		loadingBtn.value = false;
-		ElMessageBox.confirm(`入庫單號：${res.data}`, '提示', {
-			confirmButtonText: '確 定',
-			showCancelButton: false,
-			showClose: false,
-			type: 'success',
-			draggable: true,
-		})
-			.then(async () => {
-				entryJobDialogRef.value.closeDialog();
-			})
-			.catch(() => {});
 	}
 };
 // 点击收货单号

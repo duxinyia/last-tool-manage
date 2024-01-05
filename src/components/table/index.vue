@@ -95,18 +95,28 @@
 			:data="data"
 			:border="setBorder"
 			v-bind="$attrs"
-			:row-key="config.isSelection ? selRowKey : ' '"
+			:row-key="config.isSelection || config.expand ? selRowKey : ' '"
 			:stripe="objectSpanMethod ? false : true"
 			style="width: 100%"
 			:header-row-style="{ background: '' }"
 			v-loading="config.loading"
 			@selection-change="onSelectionChange"
 			@cell-click="cellClick"
+			@row-click="rowClick"
 			:cell-style="cellStyle"
 			:span-method="objectSpanMethod"
+			:expand-row-keys="expandedRowKeys"
+			@expand-change="toggleRowExpansion"
+			@current-change="handleCurrentChange"
+			:row-style="rowStyle"
 		>
 			<el-table-column type="selection" :reserve-selection="true" width="30" v-if="config.isSelection" />
 			<el-table-column align="center" type="index" :index="indexMethod" :label="$t('message.pages.no')" width="70" v-if="config.isSerialNo" />
+			<el-table-column type="expand" v-if="config.expand">
+				<template #default="props">
+					<slot name="expand" :expandProps="props"></slot>
+				</template>
+			</el-table-column>
 			<el-table-column
 				align="center"
 				v-for="(item, index) in setHeader"
@@ -246,7 +256,10 @@
 							style="height: 30px; max-width: 167px"
 						/>
 
-						<span v-else-if="item.type === 'text'" style="text-align: center; width: 100%">
+						<span
+							v-else-if="item.type === 'text'"
+							style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center; width: 100%"
+						>
 							{{ scope.row[item.key] }}
 						</span>
 					</el-form-item>
@@ -355,7 +368,7 @@ const pagination = ref<RefType>();
 const visible = ref(false);
 // 引入组件
 // const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
-
+const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 // 定义父组件传过来的值
 const props = defineProps({
 	// 列表内容
@@ -399,6 +412,13 @@ const props = defineProps({
 			return Function;
 		},
 	},
+	// 行樣式
+	rowStyle: {
+		type: Function,
+		default: () => {
+			return Function;
+		},
+	},
 	// 合并单元格
 	objectSpanMethod: {
 		type: Function,
@@ -408,6 +428,14 @@ const props = defineProps({
 	},
 	indexMethod: {
 		type: Function,
+	},
+	expandData: {
+		type: Array<EmptyObjectType>,
+		default: () => [],
+	},
+	expandedRowKeys: {
+		type: Array,
+		default: () => [],
 	},
 });
 
@@ -420,6 +448,7 @@ const emit = defineEmits([
 	'importTableData',
 	'onOpenOtherDialog',
 	'cellclick',
+	'rowClick',
 	'openAdd',
 	'openImp',
 	'addrow',
@@ -437,6 +466,8 @@ const emit = defineEmits([
 	'onOpentopBtnOther',
 	'remoteMethod',
 	'selectionChange',
+	'toggleRowExpansion',
+	'handleCurrentChange',
 ]);
 // 日期只能選擇今天之前
 const disabledDate = (time: Date, isdisabledDate: boolean) => {
@@ -560,7 +591,29 @@ const onCheckChange = () => {
 };
 //为行设置独有key
 const selRowKey = (row: EmptyObjectType) => {
-	return row.runid || row.runId || row.matNo || row.reqNo || row.repairNo || row.idleno || row.uselessno;
+	return row.applyDetailId || row.runid || row.runId || row.matNo || row.reqNo || row.repairNo || row.idleno || row.uselessno;
+};
+// const remove = (array: any[], val: any) => {
+// 	const index = array.indexOf(val);
+// 	if (index > -1) {
+// 		array.splice(index, 1);
+// 		return true;
+// 	}
+// 	return false;
+// };
+// const expandedRowKeys = ref<string[]>([]);
+const toggleRowExpansion = (row: any, expanded: any) => {
+	// if (row.applyDetailId && !remove(expandedRowKeys.value, row.applyDetailId)) {
+	// 	expandedRowKeys.value.push(row.applyDetailId);
+	// }
+	// console.log(expandedRowKeys.value);
+
+	emit('toggleRowExpansion', row);
+};
+const currentRow = ref();
+const handleCurrentChange = (val: any) => {
+	emit('handleCurrentChange', val);
+	// currentRow.value = val;
 };
 // 表格多选改变时，用于导出和删除
 const onSelectionChange = (val: EmptyObjectType[]) => {
@@ -571,7 +624,10 @@ const onSelectionChange = (val: EmptyObjectType[]) => {
 const cellClick = (row: Object, column: Object) => {
 	emit('cellclick', row, column);
 };
-
+// 點擊單元格一行
+const rowClick = (row: Object, column: Object) => {
+	emit('rowClick', row, column);
+};
 // 删除当前项
 const onDelRow = (row: EmptyObjectType, index?: number) => {
 	emit('delRow', row, index, 'delRow');

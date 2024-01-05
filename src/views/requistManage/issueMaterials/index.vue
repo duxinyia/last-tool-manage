@@ -75,6 +75,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			{ key: 'machineType', colWidth: '', title: '機種', type: 'text', isCheck: true },
 			{ key: 'checkDate', colWidth: '', title: '驗收日期', type: 'text', isCheck: true },
 			{ key: 'checkQty', colWidth: '', title: '驗收數量', type: 'text', isCheck: true },
 			{ key: 'passQty', colWidth: '', title: '合格數量', type: 'text', isCheck: true },
@@ -116,6 +117,7 @@ const state = reactive<TableDemoState>({
 			{ type: 'text', label: 'message.pages.matNo', placeholder: '', prop: 'matNo', required: false },
 			{ type: 'text', label: '品名-中文', placeholder: '', prop: 'nameCh', required: false },
 			{ type: 'text', label: '品名-英文', placeholder: '', prop: 'nameEn', required: false },
+			{ type: 'text', label: '機種', placeholder: '', prop: 'machineType', required: false },
 			{ type: 'text', label: '驗收日期', placeholder: '', prop: 'checkDate', required: false },
 			// { type: 'text', label: '驗收數量', placeholder: '', prop: 'checkQty', required: false },
 			{ type: 'text', label: '驗收合格數量', placeholder: '', prop: 'passQty', required: false },
@@ -189,8 +191,9 @@ const secondState = reactive<TableDemoState>({
 			{ key: 'reqMatNo', colWidth: '', title: '請購料號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			{ key: 'machineType', colWidth: '', title: '機種', type: 'text', isCheck: true },
 			{ key: 'isStored', colWidth: '', title: '是否已入庫', type: 'text', isCheck: true },
-			// { key: 'dispatcher', colWidth: '', title: '發料人', type: 'text', isCheck: true },
+			{ key: 'checker', colWidth: '', title: '驗收人', type: 'text', isCheck: true },
 			{ key: 'dispatchTime', colWidth: '', title: '發料時間', type: 'text', isCheck: true },
 			{ key: 'qty', colWidth: '', title: '發料數量', type: 'text', isCheck: true },
 			{ key: 'receiveStorageType', colWidth: '', title: '領用倉庫類型', type: 'text', isCheck: true },
@@ -417,6 +420,9 @@ const getTableData = async () => {
 	delete data.checkDate;
 	if (currName.value === 'first') {
 		const res = await getQueryDispatchableApplyCheckApi(data);
+		res.data.data.forEach((item: any) => {
+			item.checker = `${item.checker} / ${item.checkerName}`;
+		});
 		state.tableData.data = res.data.data;
 		state.tableData.config.total = res.data.total;
 		if (res.status) {
@@ -426,6 +432,7 @@ const getTableData = async () => {
 		const res = await getQueryDispatchRecordApi(data2);
 		res.data.data.forEach((item: any) => {
 			item.isStored = item.isStored ? '是' : '否';
+			item.checker = `${item.checker} / ${item.checkerName}`;
 		});
 		secondState.tableData.data = res.data.data;
 		secondState.tableData.config.total = res.data.total;

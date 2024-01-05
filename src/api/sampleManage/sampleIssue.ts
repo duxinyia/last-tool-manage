@@ -15,3 +15,12 @@ export function getSampleDispatchApi(data:Object) {
   	data:data
   });
 }
+// 樣品發料記錄
+export function getQuerySampleDispatchRecordApi(data:Object) {
+  return request({
+    url: '/api/Material/QuerySampleDispatchRecord',
+    method: 'POST',
+  	data:data
+  });
+}
+

@@ -24,4 +24,21 @@ export function SampleRecieveApi(data:Object) {
     data:data
   });
 }
+// 查詢樣品收貨記錄
+export function getQuerySampleReceiveRecordApi(data:Object) {
+  return request({
+    url: '/api/Material/QuerySampleReceiveRecord',
+    method: 'POST',
+    data:data
+  });
+}
+// 詳情
+export function getSampleReceiveRecordDetailApi(sampleNo:string) {
+  return request({
+    url: '/api/Material/GetSampleReceiveRecordDetail',
+    method: 'GET',
+    params:{sampleNo}
+  });
+}
+
 

@@ -68,7 +68,7 @@
 			/>
 		</el-tab-pane>
 		<!-- 彈窗 -->
-		<el-dialog draggable :close-on-click-modal="false" v-model="detailDialogVisible" title="詳情" width="80%">
+		<el-dialog draggable :close-on-click-modal="false" :destroy-on-close="true" v-model="detailDialogVisible" title="詳情" width="95%">
 			<el-form ref="dialogFormRef" :model="dialogState.tableData.form" size="default" label-width="100px">
 				<el-row>
 					<el-col :xs="24" :sm="12" :md="6" :lg="6" :xl="6" class="mb10" v-for="(val, key) in dialogState.tableData.dialogConfig" :key="key">
@@ -103,7 +103,7 @@
 			</el-form>
 			<el-form ref="dialogtableFormRef" :model="dialogState.tableData" size="default">
 				<Table
-					ref="tableRef"
+					ref="dialogTableRef"
 					v-bind="dialogState.tableData"
 					class="table"
 					@delRow="(row: EmptyObjectType, i: number)=>onDelRow(row,i,dialogState.tableData)"
@@ -111,7 +111,61 @@
 					@remoteMethod="(index: number, query: string)=>remoteMethod(index, query,dialogState.tableData)"
 					@changeselect="changeSelect"
 					@selectFocus="onSelectFocus"
-				/>
+					@toggleRowExpansion="toggleRowExpansion"
+					@rowClick="toggleRowExpansion"
+					:expandedRowKeys="expandedRowKeys"
+					:row-style="tableRowClassName"
+				>
+					<template #expand="{ expandProps }">
+						<h4 class="pt20 pb10">收貨記錄</h4>
+						<el-table
+							ref="singleTableRef"
+							style="padding-bottom: 30px; border: 2px solid #a2d2ff"
+							:data="expandProps.row.child"
+							v-loading="loading"
+							:cell-style="cellStyle"
+							:header-cell-style="headerCellStyle"
+							empty-text="暫無收貨記錄"
+						>
+							<el-table-column
+								align="center"
+								v-for="(item, index) in setExpandHeader"
+								:key="index"
+								show-overflow-tooltip
+								:prop="item.key"
+								:width="item.colWidth"
+								:label="$t(item.title)"
+							>
+								<template v-slot="scope">
+									<el-popover v-if="item.type === 'popover' && scope.row.failQty > 0" placement="bottom-start" width="2%" trigger="hover">
+										<span>跳轉到二次收貨</span>
+										<template #reference>
+											<span
+												style="text-align: center; width: 100%; cursor: pointer; color: red"
+												@click="transSecond(scope, dialogState.tableData.data)"
+											>
+												{{ scope.row.failQty }}
+											</span>
+										</template>
+									</el-popover>
+								</template>
+							</el-table-column>
+							<el-table-column align="right" header-align="center" :label="$t('message.pages.operation')" :width="140">
+								<template v-slot="scope">
+									<el-button
+										:disabled="scope.row.disabled || false"
+										class="button"
+										type="primary"
+										plain
+										size="default"
+										@click="openQrcodeDialog(scope.row)"
+										><el-icon class="mr5"><ele-View /></el-icon>查看二維碼</el-button
+									>
+								</template>
+							</el-table-column>
+						</el-table>
+					</template>
+				</Table>
 			</el-form>
 			<div class="describe">
 				<span>備註：</span>
@@ -184,21 +238,35 @@
 				</div>
 			</el-form>
 		</el-dialog>
+		<!-- 二維碼 -->
+		<qrCodeDialog ref="qrcodeDialogRef" :tags="tags" dialogTitle="庫存條碼" />
 	</el-tabs>
 </template>
 
 <script setup lang="ts" name="requistManagepresentation">
 import { defineAsyncComponent, reactive, ref, onMounted, watch, nextTick } from 'vue';
-import { ElMessage, ElMessageBox, genFileId, TabsPaneContext, UploadInstance, UploadProps, UploadRawFile, UploadUserFile } from 'element-plus';
+import {
+	ElMessage,
+	ElMessageBox,
+	ElTable,
+	genFileId,
+	TabsPaneContext,
+	UploadInstance,
+	UploadProps,
+	UploadRawFile,
+	UploadUserFile,
+} from 'element-plus';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
+const qrCodeDialog = defineAsyncComponent(() => import('/@/components/dialog/qrCodeDialog.vue'));
 // 接口
 import {
 	getApplyRecordDetailApi,
 	getCreateOrUpdateDraftApi,
 	getDeleteDraftApi,
+	getProgressOfApplyRecordDetailApi,
 	getQueryApplyRecordApi,
 	getQueryNoPageApi,
 	getSubmitDraftApi,
@@ -206,11 +274,15 @@ import {
 import { getMachineTypesOfMatApi } from '/@/api/partno/noSearch';
 import { getImportApplyDetailsApi } from '/@/api/global';
 import { useRoute } from 'vue-router';
+import { getCodesOfApplyPutStorageApi } from '/@/api/requistManage/entryJob';
 const route = useRoute();
 // 定义变量内容
 const { t } = useI18n();
 const tableRef = ref();
 const dialogTableRef = ref();
+const qrcodeDialogRef = ref();
+// tags的数据
+let tags = ref<EmptyArrayType>([]);
 const tableRef2 = ref();
 const tableFormRef = ref();
 const dialogtableFormRef = ref();
@@ -221,14 +293,41 @@ const delLoading = ref(false);
 const detailDialogVisible = ref(false);
 const upLoadDialogVisible = ref(false);
 const fileListName = ref();
+const loading = ref(false);
 const fileList = ref<UploadUserFile[]>([]);
 const uploadRefs = ref<UploadInstance>();
+const singleTableRef = ref();
 const activeName = ref<string | number>((route.query.page as string) || 'first');
 const uploadForm = ref();
 const handleClick = (tab: TabsPaneContext, event: Event) => {
 	activeName.value = tab.paneName as string | number;
 	// activeName.value === 'first' ? 0 : getTableData();
 };
+const setExpandHeader = ref([
+	{ key: 'status', colWidth: '', title: '狀態', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'applyReceiveId', colWidth: '', title: '收貨單號', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'receiveSubmitTime', colWidth: '110', title: '收貨提交時間', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'receiveDate', colWidth: '', title: '收貨日期', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'receiveQty', colWidth: '', title: '收貨數量', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'receiveDescribe', colWidth: '', title: '收貨備註', type: 'text', isCheck: true, isRequired: false },
+
+	{ key: 'engineer', colWidth: '100', title: '工程驗收人', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'applyCheckId', colWidth: '', title: '驗收單號', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'checkSubmitTime', colWidth: '110', title: '驗收提交時間', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'checkDate', colWidth: '', title: '驗收日期', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'passQty', colWidth: '110', title: '驗收通過數量', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'failQty', colWidth: '130', title: '驗收不通過數量', type: 'popover', isCheck: true, isRequired: false },
+	{ key: 'checkDescribe', colWidth: '', title: '驗收備註', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'checkSignStatus', colWidth: '110', title: '驗收簽核狀態', type: 'text', isCheck: true, isRequired: false },
+
+	{ key: 'dispatchTime', colWidth: '', title: '發料時間', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'storageType', colWidth: '', title: '倉庫類型', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true, isRequired: false },
+
+	{ key: 'applyPutStorageId', colWidth: '', title: '入庫單號', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'putStorageTime', colWidth: '', title: '入庫時間', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'putStorageDescribe', colWidth: '', title: '入庫備註', type: 'text', isCheck: true, isRequired: false },
+]);
 // 彈窗form數據
 const state = reactive<EmptyObjectType>({
 	tableData: {
@@ -360,6 +459,7 @@ const dialogState = reactive<EmptyObjectType>({
 			isPage: false, //是否有分页
 			height: 500,
 			isAddRowBtn: true, //是否有添加行按钮
+			expand: true,
 		},
 		// 表头内容（必传，注意格式）
 		header: [
@@ -409,8 +509,8 @@ const dialogState = reactive<EmptyObjectType>({
 
 			// { key: 'describe', colWidth: '150', title: '備註', type: 'textarea', othersType: 'textarea', isCheck: true, isRequired: false },
 			{ key: 'receivedQty', colWidth: '110', title: '已收貨數量', type: 'text', isCheck: true, isRequired: false },
-			{ key: 'checkPassQty', colWidth: '120', title: '驗收合格數量', type: 'text', isCheck: true, isRequired: false },
-			{ key: 'checkFailQty', colWidth: '130', title: '驗收不合格數量', type: 'text', isCheck: true, isRequired: false },
+			{ key: 'checkPassQty', colWidth: '120', title: '驗收通過數量', type: 'text', isCheck: true, isRequired: false },
+			{ key: 'checkFailQty', colWidth: '130', title: '驗收不通過數量', type: 'text', isCheck: true, isRequired: false },
 			{ key: 'dispatchedQty', colWidth: '110', title: '已發料數量', type: 'text', isCheck: true, isRequired: false },
 			{ key: 'storedQty', colWidth: '110', title: '已入庫數量', type: 'text', isCheck: true, isRequired: false },
 		],
@@ -431,6 +531,7 @@ const dialogState = reactive<EmptyObjectType>({
 		form: {},
 	},
 });
+
 // 初始化列表数据
 const getTableData = async () => {
 	{
@@ -465,6 +566,7 @@ const onSearch = (data: EmptyObjectType) => {
 const isDraft = ref();
 // 打開詳情彈窗
 const openDetailDialog = async (scope: EmptyObjectType, type: string, reqNo?: string) => {
+	expandedRowKeys.value = [];
 	dialogState.tableData.config.loading = true;
 	const res = await getApplyRecordDetailApi(Object.keys(scope).length > 0 ? scope.row.reqNo : reqNo);
 	dialogState.tableData.form = res.data;
@@ -491,6 +593,7 @@ const openDetailDialog = async (scope: EmptyObjectType, type: string, reqNo?: st
 	});
 	dialogState.tableData.config.isAddRowBtn = res.data.isDraft ? true : false;
 	dialogState.tableData.config.isOperate = res.data.isDraft ? true : false;
+	dialogState.tableData.config.expand = res.data.isDraft ? false : true;
 	// dialogState.tableData.config.isSerialNo = res.data.isDraft ? true : false;
 	detailDialogVisible.value = true;
 	if (res.status) {
@@ -559,6 +662,97 @@ const changeSelect = async (i: number, query: any) => {
 			// });
 		}
 	});
+};
+// 查看二維碼
+const openQrcodeDialog = async (row: EmptyObjectType) => {
+	let res = await getCodesOfApplyPutStorageApi(row.applyPutStorageId);
+	if (res.data.length == 0) {
+		ElMessage.error('暫無條碼數據');
+	} else if (res.status) {
+		tags.value = res.data;
+		qrcodeDialogRef.value?.openDialog();
+	}
+};
+// 右邊框
+const cellStyle = ({ column }: any) => {
+	const col = ['receiveDescribe', 'checkSignStatus', 'sLocation'];
+	if (col.includes(column.property)) {
+		return { borderRight: '1px solid #a2d2ff' };
+	}
+};
+const headerCellStyle = ({ column }: any) => {
+	const col = ['receiveDescribe', 'checkSignStatus', 'sLocation'];
+	let sty: EmptyObjectType = { backgroundColor: 'white', color: '#438df5' };
+	if (col.includes(column.property)) {
+		sty.borderRight = '1px solid #a2d2ff';
+	}
+	return sty;
+};
+const tableRowClassName = ({ row, rowIndex }: any) => {
+	if (row.flag) {
+		return { 'background-color': '#d5e8fa', transition: 'all 1s  ease-in-out' };
+	}
+};
+// 跳轉到二次收貨
+const transSecond = (scope: EmptyObjectType, data: EmptyArrayType) => {
+	data.forEach((item: any) => {
+		item.flag = 0;
+		if (item.applyDetailId === scope.row.reapplyDetailId) {
+			item.flag = 1;
+			item.expand = true;
+			toggleRowExpansion(item, 1);
+			nextTick(() => {
+				dialogTableRef.value.setScrollTop();
+			});
+		}
+	});
+};
+const remove = (array: any[], val: any) => {
+	const index = array.indexOf(val);
+	if (index > -1) {
+		array.splice(index, 1);
+		return true;
+	}
+	return false;
+};
+// 展開行
+const expandedRowKeys = ref<string[]>([]);
+const toggleRowExpansion = async (row: EmptyObjectType, falg: number) => {
+	if (row.applyDetailId && !remove(expandedRowKeys.value, row.applyDetailId)) {
+		expandedRowKeys.value.push(row.applyDetailId);
+	}
+	// 先判断该行是否已经展开了
+	if (!row.expand) {
+		loading.value = true;
+		const res = await getProgressOfApplyRecordDetailApi(row.applyDetailId);
+		loading.value = false;
+		dialogState.tableData.data.forEach((item: any, index: any) => {
+			// 找到当前点击的行，把动态获取到的数据赋值进去
+			if (item.applyDetailId === row.applyDetailId) {
+				dialogState.tableData.data[index].child = res.data;
+				const signStatusMap: EmptyObjectType = {
+					0: '簽核撤回',
+					1: '簽核中',
+					2: '簽核完成',
+				};
+
+				res.data.forEach((item: any) => {
+					item.checkSignStatus = signStatusMap[item.checkSignStatus];
+					if (item.applyPutStorageId) {
+						item.disabled = item.codeManageMode;
+					} else {
+						item.disabled = true;
+					}
+					item.engineer = `${item.engineer} / ${item.engineerName}`;
+				});
+				row.expand = true;
+			}
+		});
+	} else if (falg === 1) {
+		expandedRowKeys.value = [];
+	} else {
+		row.expand = false;
+	}
 };
 const onSelectFocus = async (scope: EmptyObjectType) => {
 	if (scope.column.property === 'machineType') {
@@ -667,7 +861,7 @@ const onSubmit = async (formEl: EmptyObjectType | undefined, type: number, datas
 				saveLoading.value = false;
 				getTableData();
 			} else {
-				if (!datas.form.reqNo) return ElMessage.warning(t(`請先保存數據，得到申請料號再提交`));
+				if (!datas.form.reqNo) return ElMessage.warning(t(`請先保存數據，得到申請單號再提交`));
 				ElMessageBox.confirm('確定提交嗎?', '提示', {
 					confirmButtonText: '確 定',
 					cancelButtonText: '取 消',
@@ -793,5 +987,16 @@ onMounted(() => {
 	padding: 0;
 	background-color: transparent;
 	border-radius: unset;
+}
+// :deep(.ep-table__body tr.current-row > td.ep-table__cell) {
+// 	background-color: #0887bd !important;
+// }
+@keyframes back-color {
+	0% {
+		opacity: 0;
+	}
+	100% {
+		opacity: 1;
+	}
 }
 </style>

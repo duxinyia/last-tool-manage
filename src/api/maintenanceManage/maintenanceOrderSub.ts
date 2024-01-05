@@ -23,3 +23,20 @@ export function GetExitStoreQrCodeListApi(exitId: string) {
 		params: { exitId },
 	});
 }
+// 記錄查询接口
+export function getQueryRepairRecordApi(data: Object) {
+	return request({
+		url: '/api/ToolRepair/QueryRepairRecord',
+		method: 'POST',
+		data: data,
+	});
+}
+// 詳情接口
+export function getRepairRecordDetailApi(repairNo: string) {
+	return request({
+		url: '/api/ToolRepair/GetRepairRecordDetail',
+		method: 'GET',
+		params: { repairNo },
+	});
+}
+

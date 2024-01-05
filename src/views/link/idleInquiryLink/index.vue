@@ -90,7 +90,7 @@ const state = reactive<TableDemoState>({
 		search: [
 			{ label: '閒置單號:', prop: 'idleno', type: 'text', required: false },
 			{ label: '閒置時間:', prop: 'idleDate', type: 'text', required: false },
-			{ label: '班別:', prop: 'classes', type: 'text', required: false },
+			// { label: '班別:', prop: 'classes', type: 'text', required: false },
 			{ label: '閒置倉庫位置:', prop: 'idleSLocation', type: 'text', required: false },
 		],
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: true }],

@@ -117,6 +117,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'matNo', title: 'message.pages.matNo', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			{ key: 'machineType', colWidth: '', title: '機種', type: 'text', isCheck: true },
 			// { key: 'companyId', colWidth: '', title: '法人', type: 'text', isCheck: true },
 			{ key: 'buCode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
 			{ key: 'qty', colWidth: '', title: '收貨數量', type: 'text', isCheck: true },
@@ -158,6 +159,8 @@ const state = reactive<TableDemoState>({
 			{ type: 'text', label: 'message.pages.matNo', placeholder: '', prop: 'matNo', required: false },
 			{ type: 'text', label: '品名-中文', placeholder: '', prop: 'nameCh', required: false },
 			{ type: 'text', label: '品名-英文', placeholder: '', prop: 'nameEn', required: false },
+			{ type: 'text', label: '機種', placeholder: '', prop: 'machineType', required: false },
+			{ type: 'text', label: 'BU', placeholder: '', prop: 'buCode', required: false },
 			{ type: 'text', label: '收貨數量', placeholder: '', prop: 'qty', required: false },
 			{ type: 'text', label: '收貨日期', placeholder: '', prop: 'receiveDate', required: false },
 			{ type: 'text', label: '驗收數量', placeholder: '', prop: 'checkqty', required: true },
@@ -262,11 +265,12 @@ const secondState = reactive<TableDemoState>({
 			{ key: 'reqMatNo', colWidth: '', title: '請購料號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			{ key: 'machineType', colWidth: '', title: '機種', type: 'text', isCheck: true },
 			{ key: 'checkDate', colWidth: '', title: '驗收日期', type: 'text', isCheck: true },
 			// { key: 'checkQty', colWidth: '', title: '验收数量', type: 'text', isCheck: true },
 			// { key: 'passQty', colWidth: '', title: '合格数量', type: 'text', isCheck: true },
 			// { key: 'failQty', colWidth: '120', title: '不合格数量', type: 'text', isCheck: true },
-			// { key: 'checker', colWidth: '', title: '验收人', type: 'text', isCheck: true },
+			{ key: 'receiver', colWidth: '', title: '收貨人', type: 'text', isCheck: true },
 			// { key: 'createTime', colWidth: '120', title: '实际提交日期', type: 'text', isCheck: true },
 			{ key: 'isDispatched', colWidth: '120', title: '是否已發料', type: 'text', isCheck: true },
 			{ key: 'signStatusStr', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
@@ -287,7 +291,7 @@ const secondState = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: '申請單號', prop: 'reqNo', required: false, type: 'input' },
-			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 5, xl: 5 },
+			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
 			{ label: '請購料號', prop: 'reqMatNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{
@@ -336,7 +340,7 @@ const secondState = reactive<TableDemoState>({
 			{ type: 'text', label: '驗收數量', placeholder: '', prop: 'checkQty', required: false },
 			{ type: 'text', label: '通過數量', placeholder: '', prop: 'passQty', required: false },
 			{ type: 'text', label: '不通過數量', placeholder: '', prop: 'failQty', required: false },
-			{ type: 'text', label: '驗收人', placeholder: '', prop: 'checker', required: false },
+			{ type: 'text', label: '收貨人', placeholder: '', prop: 'checker', required: false },
 			{ type: 'text', label: '實際提交日期', placeholder: '', prop: 'createTime', required: false },
 			{ type: 'text', label: '是否已發料', placeholder: '', prop: 'isDispatched', required: false },
 			{ type: 'text', label: '備註', placeholder: '', prop: 'describe', required: false, lg: 24, xl: 24 },
@@ -359,7 +363,12 @@ const openArriveJobDialog = (scope: EmptyObjectType) => {
 	arriveJobDialogRef.value.openDialog('samp', scope.row, '收貨');
 	// 此處填寫的通過數量都會進入發料入庫流程，若要全部退回通過數量請填0
 	scope.row.checkqty = scope.row.qty;
-	state.tableData.dialogConfig![8].max = scope.row.qty;
+	state.tableData.dialogConfig?.forEach((item) => {
+		if (item.prop === 'passqty') {
+			item.max = scope.row.qty;
+		}
+	});
+
 	currentData.value = scope.row;
 };
 // 點擊按鈕
@@ -390,7 +399,7 @@ const changeInput = (val: number, formData: EmptyObjectType) => {
 // 获取验收不通過原因下拉
 const getFailReason = async () => {
 	let res = await getExitReasonApi('CheckFail');
-	state.tableData.dialogConfig![10].options = res.data.map((item: any) => {
+	state.tableData.dialogConfig![12].options = res.data.map((item: any) => {
 		return { text: item.dataname, value: item.runid };
 	});
 };
@@ -443,6 +452,7 @@ const getTableData = async () => {
 		// });
 		res.data.data.forEach((item: any) => {
 			item.isDispatched = item.isDispatched ? '是' : '否';
+			item.receiver = `${item.receiver} / ${item.receiverName}`;
 		});
 		secondState.tableData.data = res.data.data;
 		secondState.tableData.config.total = res.data.total;

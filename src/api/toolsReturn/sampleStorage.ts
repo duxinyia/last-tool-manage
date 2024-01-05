@@ -55,5 +55,13 @@ export function getStockOperDraftRemoveCodeFromPutStorageDraftApi(data: Object) 
 		data:data
 	});
 }
+// 查詢樣品入庫記錄
+export function getQuerySamplePutStorageRecordApi(data: Object) {
+	return request({
+		url: '/api/Material/QuerySamplePutStorageRecord',
+		method: 'POST',
+		data: data,
+	});
+}
 
 

@@ -49,5 +49,13 @@ export function getDeleteDraftApi(reqNo:string) {
     method: 'DELETE',
   });
 }
+// 详情业务进度
+export function getProgressOfApplyRecordDetailApi(applyDetailId:string) {
+  return request({
+    url: '/api/ToolApply/GetProgressOfApplyRecordDetail',
+    method: 'GET',
+    params:{applyDetailId}
+  });
+}
 
 

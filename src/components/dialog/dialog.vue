@@ -208,7 +208,7 @@
 					</el-col>
 				</el-row>
 			</el-form>
-
+			<slot name="dialogTable" :data="state"></slot>
 			<el-form v-if="state.dialog.type === 'imp'" class="drawer-multiColumn-form" label-width="100px">
 				<el-button size="default" class="buttonBorder mb10" @click="ondownloadTemp" type="primary" plain>{{ $t('下載模板') }}</el-button>
 				<div class="download-form">

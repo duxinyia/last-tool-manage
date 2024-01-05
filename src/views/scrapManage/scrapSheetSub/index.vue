@@ -159,6 +159,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
 			{ key: 'exitqty', colWidth: '', title: '報廢數量', type: 'text', isCheck: true },
 			{ key: 'exitreason', colWidth: '', title: '報廢原因', type: 'text', isCheck: true },
+			{ key: 'creator', colWidth: '', title: '發起人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -230,8 +231,8 @@ const dialogState = reactive<TableDemoState>({
 		search: [
 			{ label: '報廢單號', prop: 'matNo', placeholder: '請輸入報廢單號', type: 'text', required: false, isRequired: false },
 			{ label: '報廢時間', prop: 'uselessdate', type: 'time', required: false, isRequired: true },
-			{ label: '班別', prop: 'classes', type: 'input', required: false, isRequired: false },
-			{ label: '站位', prop: 'state', type: 'input', required: false, isRequired: false },
+			// { label: '班別', prop: 'classes', type: 'input', required: false, isRequired: false },
+			// { label: '站位', prop: 'state', type: 'input', required: false, isRequired: false },
 		],
 		// 弹窗表单
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: false }],
@@ -302,6 +303,9 @@ const getTableData = async () => {
 		page: state.tableData.page,
 	};
 	const res = await getQueryExitPageApi(data);
+	res.data.data.forEach((item: any) => {
+		item.creator = `${item.creator} / ${item.creatorName}`;
+	});
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
 	if (res.status) {

@@ -28,11 +28,11 @@
 			</Dialog>
 		</el-tab-pane>
 		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="樣品發料記錄" name="second">
-			<!-- <TableSearch
+			<TableSearch
 				:search="secondState.tableData.search"
 				@search="(data) => onSearch(data, secondState.tableData)"
 				:searchConfig="secondState.tableData.searchConfig"
-				labelWidth="90px"
+				labelWidth="100px"
 			/>
 			<Table
 				ref="tableRef"
@@ -40,7 +40,7 @@
 				class="table"
 				@pageChange="(page) => onTablePageChange(page, secondState.tableData)"
 				@sortHeader="(data) => onSortHeader(data, secondState.tableData)"
-			/> -->
+			/>
 		</el-tab-pane>
 	</el-tabs>
 </template>
@@ -51,7 +51,7 @@ import { ElMessage, FormInstance, TabsPaneContext } from 'element-plus';
 // 引入接口
 import { getAdminNamesOfStoreHouseApi, getLegalStoreTypesExceptIdleStoreApi, getQueryStoreHouseExceptIdleStoreNoPageApi } from '/@/api/global/index';
 import { useI18n } from 'vue-i18n';
-import { getQueryDispatchableCheckDetailsApi, getSampleDispatchApi } from '/@/api/sampleManage/sampleIssue';
+import { getQueryDispatchableCheckDetailsApi, getQuerySampleDispatchRecordApi, getSampleDispatchApi } from '/@/api/sampleManage/sampleIssue';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
@@ -188,17 +188,20 @@ const secondState = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
+			{ key: 'sampleNo', colWidth: '', title: '送樣單號', type: 'text', isCheck: true },
+			{ key: 'checkNo', colWidth: '', title: '驗收單號', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
-			{ key: 'reqMatNo', colWidth: '', title: '申請料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'qty', colWidth: '', title: '收貨數量', type: 'text', isCheck: true },
-			{ key: 'receiveDate', colWidth: '', title: '收貨日期', type: 'text', isCheck: true },
-			{ key: 'hasChecked', colWidth: '120', title: '是否已驗收', type: 'text', isCheck: true },
-			{ key: 'engineer', colWidth: '', title: '工程驗收人', type: 'text', isCheck: true },
-			{ key: 'prNo', colWidth: '', title: 'PR單號', type: 'text', isCheck: true },
-			{ key: 'prItemNo', colWidth: '', title: 'PR項次', type: 'text', isCheck: true },
+			{ key: 'vendorCode', colWidth: '', title: '廠商代碼', type: 'text', isCheck: true },
+			{ key: 'vendorName', colWidth: '', title: '廠商名稱', type: 'text', isCheck: true },
+			{ key: 'dispatchTime', colWidth: '', title: '發料時間', type: 'text', isCheck: true },
+			{ key: 'qty', colWidth: '', title: '發料數量', type: 'text', isCheck: true },
+			{ key: 'receiveStorageType', colWidth: '120', title: '領用倉庫類型', type: 'text', isCheck: true },
+			{ key: 'receiveSLocation', colWidth: '120', title: '領用倉庫位置', type: 'text', isCheck: true },
+			{ key: 'checker', colWidth: '', title: '驗收人', type: 'text', isCheck: true },
+			{ key: 'hasPutStorage', colWidth: '120', title: '是否已入庫', type: 'text', isCheck: true },
 			{ key: 'describe', colWidth: '', title: '備註', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -216,12 +219,24 @@ const secondState = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '申請單號', prop: 'reqNo', required: false, type: 'input' },
+			{ label: '送樣單號', prop: 'sampleNo	', required: false, type: 'input' },
+			{ label: '驗收單號', prop: 'checkNo', required: false, type: 'input' },
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
+			{ label: '廠商', prop: 'vendor', required: false, type: 'input' },
+			{ label: '發料時間', prop: 'DispatchTime', required: false, type: 'dateRange' },
 			{
-				label: '是否已驗收',
-				prop: 'hasChecked',
+				label: '領用倉庫類型',
+				prop: 'receiveStorageType',
+				required: false,
+				type: 'select',
+				options: [],
+			},
+			{ label: '領用倉庫位置', prop: 'receiveSLocation', required: false, type: 'input' },
+			{
+				label: '是否已入庫',
+				prop: 'hasPutStorage',
 				required: false,
 				clearable: false,
 				type: 'select',
@@ -230,10 +245,6 @@ const secondState = reactive<TableDemoState>({
 					{ value: false, label: '否', text: '否' },
 				],
 			},
-			{ label: 'PR單號', prop: 'prNo', required: false, type: 'input' },
-			{ label: '申請料號', prop: 'reqMatNo', required: false, type: 'input' },
-			{ label: '工程驗收人', prop: 'engineer', required: false, type: 'input' },
-			{ label: '收貨日期', prop: 'receiveDate', required: false, type: 'dateRange' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -321,6 +332,11 @@ const getSelect = async () => {
 			item.options = option;
 		}
 	});
+	secondState.tableData.search.forEach((item) => {
+		if (item.prop === 'receiveStorageType') {
+			item.options = option;
+		}
+	});
 };
 // 初始化列表数据
 const getTableData = async (datas: EmptyObjectType) => {
@@ -340,20 +356,20 @@ const getTableData = async (datas: EmptyObjectType) => {
 			item.checker = `${item.checker} / ${item.checkerName}`;
 		});
 	} else {
-		// if (form.hasChecked === '') form.hasChecked = null;
-		// let data = {
-		// 	...form,
-		// 	receiveDate: form.receiveDate,
-		// 	startReceiveDate: form.receiveDate && form.receiveDate[0],
-		// 	endReceiveDate: form.receiveDate && form.receiveDate[1],
-		// 	page: datas.page,
-		// };
-		// delete data.receiveDate;
-		// res = await getQueryReceiveRecordApi(data);
-		// res!.data.data.forEach((item: any) => {
-		// 	item.hasChecked = item.hasChecked ? '是' : '否';
-		// 	item.engineer = `${item.engineer} / ${item.engineerName}`;
-		// });
+		if (form.hasPutStorage === '') form.hasPutStorage = null;
+		let data = {
+			...form,
+			DispatchTime: form.DispatchTime,
+			startDispatchTime: form.DispatchTime && form.DispatchTime[0],
+			endDispatchTime: form.DispatchTime && form.DispatchTime[1],
+			page: datas.page,
+		};
+		delete data.DispatchTime;
+		res = await getQuerySampleDispatchRecordApi(data);
+		res!.data.data.forEach((item: any) => {
+			item.hasPutStorage = item.hasPutStorage ? '是' : '否';
+			item.checker = `${item.checker} / ${item.checkerName}`;
+		});
 	}
 	datas.data = res!.data.data;
 	datas.config.total = res!.data.total;
@@ -400,6 +416,7 @@ const onTablePageChange = (page: TableDemoPageType, tableData: EmptyObjectType) 
 const onSortHeader = (data: TableHeaderType[], tableData: EmptyObjectType) => {
 	tableData.header = data;
 };
+
 // 页面加载时
 onMounted(() => {
 	getTableData(state.tableData);

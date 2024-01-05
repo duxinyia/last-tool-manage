@@ -175,6 +175,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
 			{ key: 'exitqty', colWidth: '', title: '閒置數量', type: 'text', isCheck: true },
 			{ key: 'exitreason', colWidth: '', title: '閒置原因', type: 'text', isCheck: true },
+			{ key: 'creator', colWidth: '', title: '發起人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -246,7 +247,7 @@ const dialogState = reactive<TableDemoState>({
 		search: [
 			{ label: '閒置單號', prop: 'matNo', type: 'text', required: false, isRequired: false },
 			{ label: '閒置日期', prop: 'idleDate', placeholder: '請選擇閒置日期', type: 'time', required: false, isRequired: true },
-			{ label: '班別', prop: 'classes', placeholder: '請輸入班別', type: 'input', required: false, isRequired: false },
+			// { label: '班別', prop: 'classes', placeholder: '請輸入班別', type: 'input', required: false, isRequired: false },
 			{
 				label: '閒置倉庫位置',
 				prop: 'idleStorageId',
@@ -350,6 +351,9 @@ const getTableData = async () => {
 		page: state.tableData.page,
 	};
 	const res = await getQueryExitPageApi(data);
+	res.data.data.forEach((item: any) => {
+		item.creator = `${item.creator} / ${item.creatorName}`;
+	});
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
 	if (res.status) {

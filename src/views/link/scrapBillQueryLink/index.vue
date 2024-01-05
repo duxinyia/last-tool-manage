@@ -68,11 +68,11 @@ const state = reactive<TableDemoState>({
 			},
 			{ key: 'qty', colWidth: '', title: '報廢數量', type: 'text', isCheck: true },
 			{ key: 'reason', colWidth: '', title: '報廢原因', type: 'text', isCheck: true },
-			{ key: 'state', colWidth: '', title: '站位', type: 'text', isCheck: true },
-			{ key: 'stage', colWidth: '', title: '階段', type: 'text', isCheck: true },
-			{ key: 'classes', colWidth: '', title: '班次', type: 'text', isCheck: true },
-			{ key: 'me', colWidth: '', title: 'ME負責人', type: 'text', isCheck: true },
-			{ key: 'pm', colWidth: '', title: 'PM確認人', type: 'text', isCheck: true },
+			// { key: 'state', colWidth: '', title: '站位', type: 'text', isCheck: true },
+			// { key: 'stage', colWidth: '', title: '階段', type: 'text', isCheck: true },
+			// { key: 'classes', colWidth: '', title: '班次', type: 'text', isCheck: true },
+			// { key: 'me', colWidth: '100', title: 'ME負責人', type: 'text', isCheck: true },
+			// { key: 'pm', colWidth: '100', title: 'PM確認人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -95,8 +95,8 @@ const state = reactive<TableDemoState>({
 		search: [
 			{ label: '報廢單號:', prop: 'uselessno', type: 'text', required: false },
 			{ label: '報廢時間:', prop: 'uselessDate', type: 'text', required: false },
-			{ label: '班別:', prop: 'classes', type: 'text', required: false },
-			{ label: '站位:', prop: 'state', type: 'text', required: false },
+			// { label: '班別:', prop: 'classes', type: 'text', required: false },
+			// { label: '站位:', prop: 'state', type: 'text', required: false },
 		],
 		btnConfig: [],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
@@ -166,7 +166,7 @@ nav {
 	display: flex;
 	margin-top: 10px;
 	span {
-		width: 100px;
+		width: 50px;
 	}
 }
 </style>

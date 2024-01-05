@@ -89,6 +89,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			{ key: 'machineType', colWidth: '', title: '機種', type: 'text', isCheck: true },
 			{ key: 'reqQty', colWidth: '', title: '需求數量', type: 'text', isCheck: true },
 			{ key: 'receiveQty', colWidth: '', title: '已收貨數量', type: 'text', isCheck: true },
 			{ key: 'reqDate', colWidth: '', title: '需求日期', type: 'text', isCheck: true },
@@ -143,9 +144,11 @@ const state = reactive<TableDemoState>({
 			{ type: 'text', label: 'message.pages.matNo', placeholder: '', prop: 'matNo', required: false },
 			{ type: 'text', label: '品名-中文', placeholder: '', prop: 'nameCh', required: false },
 			{ type: 'text', label: '品名-英文', placeholder: '', prop: 'nameEn', required: false },
+			{ type: 'text', label: '機種', placeholder: '', prop: 'machineType', required: false },
 			{ type: 'text', label: '需求數量', placeholder: '', prop: 'reqQty', required: false },
 			{ type: 'text', label: '已收貨數量', placeholder: '', prop: 'receiveQty', required: false },
 			{ type: 'text', label: '需求日期', placeholder: '', prop: 'reqDate', required: false },
+			{ type: 'text', label: '提報人', placeholder: '', prop: 'creator', required: false },
 			{
 				label: '工程驗收人',
 				prop: 'engineer',
@@ -190,9 +193,10 @@ const secondState = reactive<TableDemoState>({
 		header: [
 			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
-			{ key: 'reqMatNo', colWidth: '', title: '申請料號', type: 'text', isCheck: true },
+			{ key: 'reqMatNo', colWidth: '', title: '請購料號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			{ key: 'machineType', colWidth: '', title: '機種', type: 'text', isCheck: true },
 			{ key: 'qty', colWidth: '', title: '收貨數量', type: 'text', isCheck: true },
 			{ key: 'receiveDate', colWidth: '', title: '收貨日期', type: 'text', isCheck: true },
 			{ key: 'hasChecked', colWidth: '120', title: '是否已驗收', type: 'text', isCheck: true },
@@ -231,7 +235,7 @@ const secondState = reactive<TableDemoState>({
 				],
 			},
 			{ label: 'PR單號', prop: 'prNo', required: false, type: 'input' },
-			{ label: '申請料號', prop: 'reqMatNo', required: false, type: 'input' },
+			{ label: '請購料號', prop: 'reqMatNo', required: false, type: 'input' },
 			{ label: '工程驗收人', prop: 'engineer', required: false, type: 'input' },
 			{ label: '收貨日期', prop: 'receiveDate', required: false, type: 'dateRange' },
 		],
@@ -300,7 +304,11 @@ const openArriveJobDialog = (scope: EmptyObjectType) => {
 const changeInput = (val: number, formData: EmptyObjectType) => {
 	const dialogData = currentData.value;
 	if (state.tableData.dialogConfig) {
-		state.tableData.dialogConfig[10].max = dialogData.reqQty - dialogData.receiveQty;
+		state.tableData.dialogConfig.forEach((item) => {
+			if (item.prop === 'receiptQty') {
+				item.max = dialogData.reqQty - dialogData.receiveQty;
+			}
+		});
 		if (val > dialogData.reqQty - dialogData.receiveQty) {
 			formData.receiptQty = dialogData.reqQty - dialogData.receiveQty;
 		}
@@ -392,7 +400,6 @@ const onSubmit = async (formData: any) => {
 	const res = await getAddReceiveApi(getData);
 	if (res.status) {
 		ElMessage.success(t('收貨成功'));
-
 		arriveJobDialogRef.value.closeDialog();
 		getTableData(state.tableData);
 	}

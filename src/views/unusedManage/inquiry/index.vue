@@ -3,7 +3,6 @@
 		<div class="table-padding layout-padding-view layout-padding-auto">
 			<TableSearch
 				labelWidth=" "
-				v-if="state.tableData.search[2].options && state.tableData.search[2].options.length > 0"
 				:search="state.tableData.search"
 				@search="onSearch"
 				:searchConfig="state.tableData.searchConfig"
@@ -90,9 +89,9 @@ const state = reactive<TableDemoState>({
 		header: [
 			{ key: 'idleno', colWidth: '', title: '閒置單號', type: 'text', isCheck: true },
 			{ key: 'idledate', colWidth: '', title: '閒置日期', type: 'text', isCheck: true },
-			{ key: 'classes', colWidth: '', title: '班別', type: 'text', isCheck: true },
+			// { key: 'classes', colWidth: '', title: '班別', type: 'text', isCheck: true },
 			{ key: 'idleSLocation', colWidth: '', title: '閒置倉庫位置', type: 'text', isCheck: true },
-			{ key: 'signStatus', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
+			// { key: 'signStatus', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
 			{ key: 'creator', colWidth: '', title: '操作人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -113,19 +112,19 @@ const state = reactive<TableDemoState>({
 		search: [
 			{ label: '閒置單號', prop: 'idleNo', required: false, type: 'input' },
 			{ label: '閒置日期', prop: 'idleDate', required: false, type: 'dateRange' },
-			{
-				label: '簽核狀態',
-				prop: 'signStatus',
-				required: false,
-				type: 'select',
-				clearable: true,
-				options: [
-					{ value: 0, label: '未送簽', text: '未送簽', selected: true },
-					{ value: 1, label: '簽核中', text: '簽核中', selected: false },
-					{ value: 2, label: '簽核完成', text: '簽核完成', selected: false },
-				],
-			},
-			{ label: '班別', prop: 'classes', type: 'input', required: false },
+			// {
+			// 	label: '簽核狀態',
+			// 	prop: 'signStatus',
+			// 	required: false,
+			// 	type: 'select',
+			// 	clearable: true,
+			// 	options: [
+			// 		{ value: 0, label: '未送簽', text: '未送簽', selected: true },
+			// 		{ value: 1, label: '簽核中', text: '簽核中', selected: false },
+			// 		{ value: 2, label: '簽核完成', text: '簽核完成', selected: false },
+			// 	],
+			// },
+			// { label: '班別', prop: 'classes', type: 'input', required: false },
 			{
 				label: '閒置倉庫位置',
 				prop: 'idleSLocation',
@@ -198,7 +197,7 @@ const dialogState = reactive<TableDemoState>({
 		search: [
 			{ label: '閒置單號:', prop: 'idlepno', type: 'text', required: false },
 			{ label: '閒置日期:', prop: 'idleDate', type: 'text', required: false },
-			{ label: '班別:', prop: 'classes', type: 'text', required: false },
+			// { label: '班別:', prop: 'classes', type: 'text', required: false },
 			{ label: '閒置倉庫位置:', prop: 'idleSLocation', type: 'text', required: false },
 		],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
@@ -256,15 +255,15 @@ const getTableData = async () => {
 	};
 
 	delete data.idleDate;
-	const signStatusMap: EmptyObjectType = {
-		0: '未送簽',
-		1: '簽核中',
-		2: '簽核完成',
-	};
+	// const signStatusMap: EmptyObjectType = {
+	// 	0: '未送簽',
+	// 	1: '簽核中',
+	// 	2: '簽核完成',
+	// };
 	const res = await IdleQueryPageListApi(data);
 	res.data.data.forEach((item: any) => {
 		item.signStatus1 = item.signStatus;
-		item.signStatus = signStatusMap[item.signStatus];
+		// item.signStatus = signStatusMap[item.signStatus];
 	});
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;

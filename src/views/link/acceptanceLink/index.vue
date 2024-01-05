@@ -2,6 +2,26 @@
 	<div :class="{ main: !isDialog }" class="main-detail" :style="!isDialog ? 'height: 420px' : ''">
 		<div class="table-container" :class="{ 'link-width': !isDialog }">
 			<nav v-if="!isDialog" class="pb10">樣品驗收單詳情</nav>
+			<el-form v-if="state.tableData.form" ref="tableSearchRef" :model="state.tableData.form" size="default" label-width="100px">
+				<el-row :gutter="35">
+					<el-col
+						:xs="val.xs || 24"
+						:sm="val.sm || 12"
+						:md="val.md || 12"
+						:lg="val.lg || 12"
+						:xl="val.xl || 12"
+						class="mb10"
+						v-for="(val, key) in state.tableData.search"
+						:key="val.prop"
+					>
+						<el-form-item :label="$t(val.label)" :prop="val.prop">
+							<span v-if="val.type === 'text'" style="width: 100%; font-weight: 700; color: #1890ff">
+								{{ state.tableData.form[val.prop] }}
+							</span>
+						</el-form-item>
+					</el-col>
+				</el-row>
+			</el-form>
 			<Table v-bind="state.tableData" class="table" />
 			<el-form class="mt20" v-if="state.tableData.form" ref="tableSearchRef" :model="state.tableData.form" size="default" label-width="100px">
 				<el-row :gutter="35">
@@ -69,7 +89,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'vendorName', colWidth: '', title: '廠商名稱', type: 'text', isCheck: true },
 			{ key: 'checkQty', colWidth: '', title: '驗收數量', type: 'text', isCheck: true },
 			{ key: 'checktime', colWidth: '', title: '驗收日期', type: 'text', isCheck: true },
-			{ key: 'isPass', colWidth: '', title: '是否驗收通過', type: 'text', isCheck: true },
+			{ key: 'isPass', colWidth: '120', title: '是否驗收通過', type: 'text', isCheck: true },
 			{ key: 'isDispatched', colWidth: '', title: '是否已發料', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -90,7 +110,10 @@ const state = reactive<TableDemoState>({
 		// 给后端的数据
 		form: {},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-		search: [],
+		search: [
+			{ type: 'text', label: '品名-中文', placeholder: '', prop: 'nameCh', required: false },
+			{ type: 'text', label: '品名-英文', placeholder: '', prop: 'nameEn', required: false },
+		],
 		dialogConfig: [
 			// { type: 'text', label: '驗收單號', placeholder: '', prop: 'checkNo', required: false },
 			// { type: 'text', label: '送樣單號', placeholder: '', prop: 'sampleNo', required: false },
@@ -141,7 +164,7 @@ const getTableData = async () => {
 	// let data = { checkNo: comkey };
 	state.tableData.form = props.checkNoRef;
 	const res = await getSampleCheckRecordDetailApi(comkey);
-	res.data.forEach((item) => {
+	res.data.forEach((item: any) => {
 		item.isDispatched = item.isDispatched === true ? '是' : '否';
 		item.isPass = item.isPass === true ? '是' : '否';
 	});
@@ -178,6 +201,7 @@ onMounted(() => {
 
 .table-container {
 	width: 100%;
+	height: 100%;
 }
 .link-width {
 	width: 900px !important;

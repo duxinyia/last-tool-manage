@@ -1,12 +1,7 @@
 <template>
 	<div class="table-container layout-padding">
 		<div class="table-padding layout-padding-view layout-padding-auto">
-			<TableSearch
-				v-if="state.tableData.search[2].options && state.tableData.search[2].options.length > 0"
-				:search="state.tableData.search"
-				@search="onSearch"
-				:searchConfig="state.tableData.searchConfig"
-			/>
+			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
@@ -24,7 +19,7 @@
 				ref="reportInquiryDialogRef"
 				v-model="reportInquiryDialogVisible"
 				:title="dilogTitle"
-				width="70%"
+				width="50%"
 			>
 				<el-form ref="dialogFormRef" :model="dialogState.tableData" size="default" label-width="100px">
 					<el-row>
@@ -95,9 +90,10 @@ const state = reactive<TableDemoState>({
 		header: [
 			{ key: 'uselessno', colWidth: '', title: '報廢單號', type: 'text', isCheck: true },
 			{ key: 'uselessdate', colWidth: '', title: '報廢時間', type: 'text', isCheck: true },
-			{ key: 'signStatus', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
-			{ key: 'classes', colWidth: '', title: '班別', type: 'text', isCheck: true },
-			{ key: 'state', colWidth: '', title: '站位', type: 'text', isCheck: true },
+			{ key: 'createtime', colWidth: '', title: '提交時間', type: 'text', isCheck: true },
+			// { key: 'signStatus', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
+			// { key: 'classes', colWidth: '', title: '班別', type: 'text', isCheck: true },
+			// { key: 'state', colWidth: '', title: '站位', type: 'text', isCheck: true },
 			{ key: 'creator', colWidth: '', title: '操作人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -118,20 +114,20 @@ const state = reactive<TableDemoState>({
 		search: [
 			{ label: '報廢單號', prop: 'uselessno', required: false, type: 'input' },
 			{ label: '報廢時間', prop: 'uselessdate', required: false, type: 'dateRange' },
-			{
-				label: '簽核狀態',
-				prop: 'signStatus',
-				required: false,
-				type: 'select',
-				clearable: true,
-				options: [
-					{ value: 0, label: '未簽核', text: '未簽核', selected: true },
-					{ value: 1, label: '簽核中', text: '簽核中', selected: false },
-					{ value: 2, label: '簽核完成', text: '簽核完成', selected: false },
-				],
-			},
-			{ label: '班別', prop: 'classes', required: false, type: 'input' },
-			{ label: '站位', prop: 'state', required: false, type: 'input' },
+			// {
+			// 	label: '簽核狀態',
+			// 	prop: 'signStatus',
+			// 	required: false,
+			// 	type: 'select',
+			// 	clearable: true,
+			// 	options: [
+			// 		{ value: 0, label: '未簽核', text: '未簽核', selected: true },
+			// 		{ value: 1, label: '簽核中', text: '簽核中', selected: false },
+			// 		{ value: 2, label: '簽核完成', text: '簽核完成', selected: false },
+			// 	],
+			// },
+			// { label: '班別', prop: 'classes', required: false, type: 'input' },
+			// { label: '站位', prop: 'state', required: false, type: 'input' },
 		],
 		btnConfig: [{ type: 'detail', name: '詳情', color: '#1890ff', isSure: false, icon: 'ele-View' }],
 		searchConfig: {
@@ -161,7 +157,7 @@ const dialogState = reactive<TableDemoState>({
 		header: [
 			{
 				key: 'matno',
-				colWidth: '250',
+				colWidth: '200',
 				title: 'message.pages.matNo',
 				type: 'text',
 				isCheck: true,
@@ -172,11 +168,11 @@ const dialogState = reactive<TableDemoState>({
 			// { key: 'vendorname', colWidth: '', title: '厂商名称', type: 'text', isCheck: true },
 			{ key: 'qty', colWidth: '', title: '報廢數量', type: 'text', isCheck: true },
 			{ key: 'reason', colWidth: '', title: '報廢原因', type: 'text', isCheck: true },
-			{ key: 'state', colWidth: '', title: '站位', type: 'text', isCheck: true },
-			{ key: 'stage', colWidth: '', title: '階段', type: 'text', isCheck: true },
-			{ key: 'classes', colWidth: '', title: '班次', type: 'text', isCheck: true },
-			{ key: 'me', colWidth: '', title: 'ME負責人', type: 'text', isCheck: true },
-			{ key: 'pm', colWidth: '', title: 'PM確認人', type: 'text', isCheck: true },
+			// { key: 'state', colWidth: '', title: '站位', type: 'text', isCheck: true },
+			// { key: 'stage', colWidth: '', title: '階段', type: 'text', isCheck: true },
+			// { key: 'classes', colWidth: '', title: '班次', type: 'text', isCheck: true },
+			// { key: 'me', colWidth: '100', title: 'ME負責人', type: 'text', isCheck: true },
+			// { key: 'pm', colWidth: '100', title: 'PM確認人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -199,8 +195,8 @@ const dialogState = reactive<TableDemoState>({
 		search: [
 			{ label: '報廢單號:', prop: 'uselessno', type: 'text', required: false },
 			{ label: '報廢時間:', prop: 'uselessDate', type: 'text', required: false },
-			{ label: '班別:', prop: 'classes', type: 'text', required: false },
-			{ label: '站位:', prop: 'state', type: 'text', required: false },
+			// { label: '班別:', prop: 'classes', type: 'text', required: false },
+			// { label: '站位:', prop: 'state', type: 'text', required: false },
 		],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -251,16 +247,16 @@ const getTableData = async () => {
 			page: state.tableData.page,
 		};
 	}
-	const signStatusMap: EmptyObjectType = {
-		0: '未送簽',
-		1: '簽核中',
-		2: '簽核完成',
-	};
+	// const signStatusMap: EmptyObjectType = {
+	// 	0: '未送簽',
+	// 	1: '簽核中',
+	// 	2: '簽核完成',
+	// };
 	delete data.uselessdate;
 	const res = await getQueryExitPageApi(data);
 	res.data.data.forEach((item: any) => {
 		item.signStatus1 = item.signStatus;
-		item.signStatus = signStatusMap[item.signStatus];
+		// item.signStatus = signStatusMap[item.signStatus];
 	});
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;

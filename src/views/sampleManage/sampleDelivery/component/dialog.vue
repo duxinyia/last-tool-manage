@@ -353,7 +353,7 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 			if (flag > 0) {
 				// 若尚未完全到貨，請收到全部樣品後再進行收貨作業
 				ElMessageBox.confirm(
-					`<span style="color:red">廠商${sampleArr.join(',')}收貨數量必須與送樣數量保持一致</span><br/>若尚未完全到貨,請收到全部樣品後再進行收貨作業`,
+					`<span style="color:red">廠商${sampleArr.join(',')}的收貨數量須與送樣數量一致</span><br/>若尚未完全到貨,請待收到全部樣品後再進行收貨作業`,
 					'提示',
 					{
 						// showConfirmButton: false,

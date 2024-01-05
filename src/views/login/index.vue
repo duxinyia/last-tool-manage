@@ -38,18 +38,17 @@
 				<div class="author-info">
 					<div>
 						<span class="author">
-							<el-icon class="icon"><ele-UserFilled /></el-icon>
-							杜欣怡/82585
-						</span>
-						<span class="mail">
-							<el-icon class="icon"><ele-Message /></el-icon>wwlh-mis-feweb@mail.foxconn.com
-						</span>
-						&nbsp;&nbsp;
-						<span class="author">
 							<el-icon class="icon"><ele-UserFilled /></el-icon>劉進/37500
 						</span>
 						<span class="mail">
 							<el-icon class="icon"><ele-Message /></el-icon>rein.j.liu@mail.foxconn.com
+						</span>
+						&nbsp;&nbsp;
+						<span class="author">
+							<el-icon class="icon"><ele-UserFilled /></el-icon>杜欣怡/82585
+						</span>
+						<span class="mail">
+							<el-icon class="icon"><ele-Message /></el-icon>wwlh-mis-feweb@mail.foxconn.com
 						</span>
 					</div>
 				</div>
@@ -64,8 +63,6 @@ import { storeToRefs } from 'pinia';
 import { useThemeConfig } from '/@/stores/themeConfig';
 import { NextLoading } from '/@/utils/loading';
 import logoMini from '/@/assets/images/new_logo.png';
-import loginMain from '/@/assets/login-main.svg';
-import loginBg from '/@/assets/login-bg.svg';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Account = defineAsyncComponent(() => import('/@/views/login/component/account.vue'));

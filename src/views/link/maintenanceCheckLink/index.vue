@@ -1,7 +1,7 @@
 <template>
 	<div class="main" :style="!isDialog ? 'height: 330px' : ''">
 		<div class="table-container" :class="{ 'link-width': !isDialog }">
-			<nav v-if="!isDialog" class="pb10">維修單驗收詳情</nav>
+			<nav v-if="!isDialog" class="pt10 pb10">維修單驗收詳情</nav>
 			<el-form v-if="state.tableData.form" ref="tableSearchRef" :model="state.tableData.form" size="default" label-width="100px" class="table-form">
 				<Table v-bind="state.tableData" class="table" />
 				<el-button class="mt5" size="default" plain type="primary" @click="clickLink">查看驗收報告</el-button>
@@ -98,7 +98,7 @@ const getTableData = async () => {
 	// state.tableData.config['height'] = props.isDialog ? 400 : 200;
 	//link/maintenanceCheckLink?comkey=CSG-2023319001
 	const comkey = props.isDialog ? props.IdleNoRef : route.query.comkey;
-	const res = await getRepairCheckRecordDetailApi(comkey);
+	const res = await getRepairCheckRecordDetailApi(comkey as string);
 	state.tableData.form = res.data;
 	state.tableData.data = res.data.details;
 	if (!res.status) {
