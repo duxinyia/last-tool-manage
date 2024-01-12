@@ -87,6 +87,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'prNo', colWidth: '', title: 'PR單號', type: 'text', isCheck: true },
 			{ key: 'prItemNo', colWidth: '', title: 'PR項次', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'machineType', colWidth: '', title: '機種', type: 'text', isCheck: true },
@@ -113,8 +114,8 @@ const state = reactive<TableDemoState>({
 			{ label: '申請單號', prop: 'reqNo', required: false, type: 'input' },
 			{ label: 'PR單號', prop: 'prNo', required: false, type: 'input' },
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
-			{ label: '品名', prop: 'name', required: false, type: 'input' },
-			{ label: '需求日期', prop: 'reqDate', required: false, type: 'dateRange' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
+			{ label: '品名', prop: 'name', required: false, type: 'input', xl: 3 },
 			{
 				label: '是否是二次收货',
 				prop: 'isReapply',
@@ -125,7 +126,9 @@ const state = reactive<TableDemoState>({
 					{ value: true, label: '是', text: '是' },
 					{ value: false, label: '否', text: '否' },
 				],
+				xl: 3,
 			},
+			{ label: '需求日期', prop: 'reqDate', required: false, type: 'dateRange' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -142,6 +145,7 @@ const state = reactive<TableDemoState>({
 			{ type: 'text', label: 'PR單號', placeholder: '', prop: 'prNo', required: false },
 			{ type: 'text', label: 'PR項次', placeholder: '', prop: 'prItemNo', required: false },
 			{ type: 'text', label: 'message.pages.matNo', placeholder: '', prop: 'matNo', required: false },
+			{ type: 'text', label: '圖紙編號', placeholder: '', prop: 'drawNo', required: false },
 			{ type: 'text', label: '品名-中文', placeholder: '', prop: 'nameCh', required: false },
 			{ type: 'text', label: '品名-英文', placeholder: '', prop: 'nameEn', required: false },
 			{ type: 'text', label: '機種', placeholder: '', prop: 'machineType', required: false },
@@ -193,6 +197,7 @@ const secondState = reactive<TableDemoState>({
 		header: [
 			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'reqMatNo', colWidth: '', title: '請購料號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
@@ -222,6 +227,7 @@ const secondState = reactive<TableDemoState>({
 		search: [
 			{ label: '申請單號', prop: 'reqNo', required: false, type: 'input' },
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{
 				label: '是否已驗收',

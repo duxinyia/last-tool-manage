@@ -63,5 +63,11 @@ export function getQuerySamplePutStorageRecordApi(data: Object) {
 		data: data,
 	});
 }
+export function getCodesOfSamplePutStorageRecordApi(samplePutStorageNo: string) {
+	return request({
+		url: `/api/Material/GetCodesOfSamplePutStorageRecord/${samplePutStorageNo}`,
+		method: 'GET',
+	});
+}
 
 

@@ -1,7 +1,7 @@
 <template>
 	<el-tabs v-model="activeName" class="table-container layout-padding" @tab-click="handleClick">
 		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="送樣需求提報" name="first">
-			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" labelWidth="70px" />
+			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" labelWidth=" " />
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
@@ -17,7 +17,7 @@
 			</el-dialog>
 		</el-tab-pane>
 		<el-tab-pane label="送樣需求記錄" name="second" class="table-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="secondState.tableData.search" @search="onSearch2" :searchConfig="secondState.tableData.searchConfig" labelWidth="70px" />
+			<TableSearch :search="secondState.tableData.search" @search="onSearch2" :searchConfig="secondState.tableData.searchConfig" labelWidth=" " />
 			<Table ref="tableRef2" v-bind="secondState.tableData" class="table" @pageChange="onTablePageChange" @onOpenOtherDialog="openSampleDialog" />
 		</el-tab-pane>
 		<Dialog
@@ -180,6 +180,7 @@ const secondState = reactive<TableDemoState>({
 		// 表头内容（必传，注意格式）
 		header: [
 			{ key: 'matNo', colWidth: '200', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '200', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'sampleNo', colWidth: '180', title: '送樣單號', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
@@ -204,7 +205,8 @@ const secondState = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
+			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '送樣單號', prop: 'sampleNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'matName', required: false, type: 'input' },
 			{ label: '需求人', prop: 'needor', required: false, type: 'input' },

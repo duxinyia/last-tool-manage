@@ -79,8 +79,41 @@
 							>
 								<el-input v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)"> > </el-input>
 							</el-upload>
-
-							<el-input disabled v-if="item.type === 'inputFile'" v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)" clearable>
+							<!-- 上傳文件優化 -->
+							<el-upload
+								style="width: 100%"
+								v-if="item.type === 'inputFile'"
+								v-model:file-list="state.formData[item.prop + 'file']"
+								:auto-upload="false"
+								ref="inputuploadRefs"
+								action="#"
+								class="upload"
+								drag
+								:limit="1"
+								:show-file-list="false"
+								:on-exceed="(uploadFile:any) => inputHandleExceed(uploadFile, item.prop)"
+								:on-change="(uploadFile:any) => inputHandleChange(uploadFile, item.prop)"
+							>
+								<el-input v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)" :readonly="true" :suffix-icon="FolderOpened">
+									<template #append v-if="state.formData[item.prop]">
+										<text v-if="item.prop === 'draw3dPath'" class="look-file mr10" @click.stop="clearUpload(item.prop)">清空文件</text>
+										<text class="look-file" @click.stop="lookUpload(item.prop)">查看文件</text>
+									</template>
+									>
+								</el-input>
+							</el-upload>
+							<!-- 上传进度条弹窗 -->
+							<el-dialog v-model="showProgress" title="上传进度" width="30%" :close-on-click-modal="false" :modal="false" :show-close="false">
+								<div class="">
+									<!-- 上传的文件名字 -->
+									<div>{{ state.formData[item.prop] }}</div>
+									<div class="">
+										<!-- 进度条百分比 -->
+										<el-progress :percentage="uploadPercentage" :format="format" max="100"></el-progress>
+									</div>
+								</div>
+							</el-dialog>
+							<!-- <el-input disabled v-if="item.type === 'inputFile'" v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)" clearable>
 								<template #prepend
 									><el-upload
 										v-model:file-list="inputfileList"
@@ -101,13 +134,13 @@
 									><el-button @click="inputsubmitUpload(item.prop, item.key)" type="primary" class="ml1">上傳文件</el-button>
 									<el-button v-if="state.formData['drawPath'].includes('/')" class="look-file" @click="lookUpload(item.prop)">查看文件</el-button>
 								</template>
-							</el-input>
+							</el-input> -->
 							<div v-if="item.type == 'tagsarea'">
 								<el-tag v-for="tag in state.formData[item.prop]" :key="tag" closable class="mr10">
 									{{ tag }}
 								</el-tag>
 							</div>
-							<el-input disabled v-if="item.type === 'input3dFile'" v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)" clearable>
+							<!-- <el-input disabled v-if="item.type === 'input3dFile'" v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)" clearable>
 								<template #prepend
 									><el-upload
 										v-model:file-list="input3dfileList"
@@ -128,7 +161,7 @@
 									><el-button @click="inputsubmitUpload(item.prop)" type="primary" class="ml1">上傳文件</el-button>
 									<el-button v-if="state.formData['draw3dPath'].includes('/')" class="look-file" @click="lookUpload(item.prop)">查看文件</el-button>
 								</template>
-							</el-input>
+							</el-input> -->
 
 							<!-- 上传图片 -->
 							<el-upload
@@ -321,10 +354,10 @@
 </template>
 
 <script setup lang="ts" name="systemMenuDialog">
-import { defineAsyncComponent, reactive, onMounted, ref, nextTick } from 'vue';
+import { defineAsyncComponent, reactive, onMounted, ref, nextTick, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { debounce } from '/@/utils/debounceAndThrottle';
-import { ElMessage, genFileId, UploadRawFile, FormRules, FormInstance } from 'element-plus';
+import { ElMessage, genFileId, UploadRawFile, FormRules, FormInstance, ElMessageBox } from 'element-plus';
 import type { UploadInstance, UploadProps, UploadUserFile, UploadRequestOptions, UploadFile } from 'element-plus';
 import { UploadFilled } from '@element-plus/icons-vue';
 import { getUploadFileApi } from '/@/api/global/index';
@@ -332,6 +365,7 @@ import { verifyPhone, verifyTelPhone, verifyEmail, verifiyNumberInteger } from '
 import { useI18n } from 'vue-i18n';
 import table2excel from 'js-table2excel';
 import { useRouter } from 'vue-router';
+import { FolderOpened } from '@element-plus/icons-vue';
 const router = useRouter();
 // 引入组件
 const IconSelector = defineAsyncComponent(() => import('/@/components/iconSelector/index.vue'));
@@ -353,6 +387,8 @@ const emit = defineEmits([
 	'handleNumberInputChange',
 	'inputBlur',
 	'inputFocus',
+	'inputHandleExceed',
+	'inputHandleChange',
 ]);
 // 定义父组件传过来的值
 const props = defineProps({
@@ -663,13 +699,22 @@ const input3dHandleExceed: UploadProps['onExceed'] = (files) => {
 	upload_list[0]!.handleStart(file);
 };
 // 文件input框里面的数据
-const inputHandleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
-	props.dialogConfig.forEach((v) => {
-		if (v.type === 'inputFile') {
-			state.formData[v.prop] = uploadFile.name;
-		}
-	});
+const inputHandleChange: UploadProps['onChange'] = (uploadFile, prop) => {
+	// props.dialogConfig.forEach((v) => {
+	// 	if (v.type === 'inputFile') {
+	// 		state.formData[v.prop] = uploadFile.name;
+	// 	}
+	// });
+	// inputuploadForm.value = uploadFile;
+	if (!flag) return;
+	dialogFormRef.value?.clearValidate();
+	emit('inputHandleChange', uploadFile, prop, state.formData, dialogFormRef.value);
+	const props = prop + '';
+	if (props == 'programFilePath' && state.formData.error === 0) {
+		return;
+	}
 	inputuploadForm.value = uploadFile;
+	getFileData(uploadFile, prop);
 };
 // 優化的
 const newInputHandleChange: UploadProps['onChange'] = async (uploadFile, uploadFiles) => {
@@ -684,13 +729,73 @@ const newInputHandleChange: UploadProps['onChange'] = async (uploadFile, uploadF
 	res.status && ElMessage.success(`上傳成功`);
 };
 //可以在选中时自动替换上一个文件
-const inputHandleExceed: UploadProps['onExceed'] = (files) => {
+let flag = true;
+const showProgress = ref(false);
+const inputHandleExceed: UploadProps['onExceed'] = (files, prop) => {
+	// let upload_list: any = inputuploadRefs.value;
+	// upload_list[0]!.clearFiles();
+	// const file = files[0] as UploadRawFile;
+	// file.uid = genFileId();
+	// upload_list[0]!.handleStart(file);
+	flag = false;
 	let upload_list: any = inputuploadRefs.value;
 	upload_list[0]!.clearFiles();
 	const file = files[0] as UploadRawFile;
 	file.uid = genFileId();
 	upload_list[0]!.handleStart(file);
+	getFileData(files[0], prop);
+	emit('inputHandleExceed', files, prop, state.formData);
+	flag = true;
 };
+// 格式化进度，使用百分比进行展示
+const format = (percentage: any) => `${percentage}%`;
+// 上传百分比
+const uploadPercentage = ref(0);
+let times = null;
+const getFileData = async (uploadFile: EmptyObjectType, prop: any) => {
+	// 打开进度条弹窗
+	showProgress.value = true;
+	uploadPercentage.value = 0;
+	times = setInterval(() => {
+		uploadPercentage.value = (uploadPercentage.value % 100) + 10;
+	}, 1000);
+
+	const uploadTypeMap: EmptyObjectType = { drawPath: 0, draw3dPath: 1 };
+	const res = await getUploadFileApi(uploadTypeMap[prop + ''], inputuploadForm.value.raw);
+	if (res.status) {
+		uploadPercentage.value = 100;
+		ElMessage.success(`上傳成功`);
+		props.dialogConfig.forEach((v) => {
+			if (v.type === 'inputFile' && v.prop === prop) {
+				state.formData[v.prop] = uploadFile.name;
+			}
+		});
+		state.formData[prop + 'fileUrl'] = res.data;
+		showProgress.value = false;
+	} else {
+		state.formData[prop + 'fileUrl'] = '';
+		state.formData[prop + 'file'] = [];
+		state.formData[prop + ''] = '';
+		showProgress.value = false;
+		ElMessageBox.confirm('上傳失敗! 請檢查此文件是否已經上傳過', '警告', {
+			type: 'error',
+			draggable: true,
+			closeOnClickModal: false,
+			showCancelButton: false,
+		})
+			.then(async () => {})
+			.catch(() => {});
+	}
+};
+watch(
+	() => uploadPercentage.value,
+	() => {
+		if (uploadPercentage.value >= 90) clearInterval(times!);
+	},
+	{
+		deep: true,
+	}
+);
 // 優化的 可以在选中时自动替换上一个文件
 const newInputHandleExceed: UploadProps['onExceed'] = (files) => {
 	let upload_list: any = inputuploadRefs.value;
@@ -719,11 +824,30 @@ const inputsubmitUpload = async (prop: string, key?: string) => {
 // 查看上传的文件
 const lookUpload = (prop: string) => {
 	window.open(
-		`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${state.formData[prop]}`,
+		`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${state.formData[prop + 'fileUrl']}`,
 		'_blank'
 	);
 };
-
+// 清除文件
+const clearUpload = (prop: string) => {
+	ElMessageBox.confirm('確定清除文件嗎?', '提示', {
+		confirmButtonText: '確 定',
+		cancelButtonText: '取 消',
+		type: 'warning',
+		draggable: true,
+	})
+		.then(async () => {
+			props.dialogConfig.forEach((v) => {
+				if (v.type === 'inputFile' && v.prop === prop) {
+					state.formData[prop + 'fileUrl'] = '';
+					state.formData[prop + 'file'] = [];
+					state.formData[prop + ''] = '';
+				}
+			});
+			ElMessage.success(`清空文件成功`);
+		})
+		.catch(() => {});
+};
 const handleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
 	fileListName.value = uploadFile.name;
 	uploadForm.value = uploadFile;
@@ -770,6 +894,12 @@ const imageHandleExceed: UploadProps['onExceed'] = async (files, uploadFiles) =>
 };
 
 const httpRequest = async () => {
+	// 打开进度条弹窗
+	showProgress.value = true;
+	uploadPercentage.value = 0;
+	times = setInterval(() => {
+		uploadPercentage.value = (uploadPercentage.value % 100) + 10;
+	}, 1000);
 	const res = await getUploadFileApi(5, imagefileList.value[0].raw);
 	if (res.status) {
 		props.dialogConfig.forEach((item) => {
@@ -778,6 +908,7 @@ const httpRequest = async () => {
 			}
 		});
 	}
+	showProgress.value = false;
 };
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
 	if (rawFile.type !== 'image/jpeg' && rawFile.type !== 'image/png') {

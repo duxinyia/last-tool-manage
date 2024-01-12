@@ -393,12 +393,20 @@ const selectChange = (query: string) => {
 			let options = res.data.map((item: EmptyObjectType) => {
 				return { value: `${item.userid}`, label: `${item.username}` };
 			});
-			dialogState.tableData.search[3].options = options.filter((item: EmptyObjectType) => {
-				return item.label.toLowerCase().includes(query.toLowerCase()) || item.value.toLowerCase().includes(query.toLowerCase());
+			dialogState.tableData.search.forEach((item) => {
+				if (item.prop === 'engineer') {
+					item.options = options.filter((item: EmptyObjectType) => {
+						return item.label.toLowerCase().includes(query.toLowerCase()) || item.value.toLowerCase().includes(query.toLowerCase());
+					});
+				}
 			});
 		}, 500);
 	} else {
-		dialogState.tableData.search[3].options = [];
+		dialogState.tableData.search.forEach((item) => {
+			if (item.prop === 'engineer') {
+				item.options = [];
+			}
+		});
 	}
 };
 //删除一行

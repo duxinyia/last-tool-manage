@@ -247,7 +247,7 @@ const cellStyle = ({ column }: EmptyObjectType) => {
 // 点击料号弹出详情
 const matNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'matNo') {
-		matNoRef.value = row.matNo;
+		matNoRef.value = row;
 		setTimeout(() => {
 			matNoDetaildialogVisible.value = true;
 		}, 100);
@@ -263,7 +263,6 @@ const remoteMethod = (query: string) => {
 	if (query) {
 		setTimeout(async () => {
 			const res = await getMachineTypesApi(query);
-
 			options = res.data.map((item: EmptyObjectType) => {
 				return { value: `${item}`, label: `${item}`, text: `${item}` };
 			});

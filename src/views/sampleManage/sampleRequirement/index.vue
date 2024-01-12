@@ -1,7 +1,7 @@
 <template>
 	<el-tabs v-model="activeName" class="table-container layout-padding" @tab-click="handleClick">
 		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="採購送樣" name="first">
-			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" labelWidth="70px" />
+			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" labelWidth=" " />
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
@@ -118,8 +118,9 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'matNo', colWidth: '200', title: '料號', type: 'text', isCheck: true },
-			{ key: 'sampleNo', colWidth: '180', title: '送樣單號', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '180', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
+			{ key: 'sampleNo', colWidth: '', title: '送樣單號', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'runStatus', colWidth: '', title: '狀態', type: 'text', isCheck: true },
@@ -144,6 +145,7 @@ const state = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '送樣單號', prop: 'sampleNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'matName', required: false, type: 'input' },
 			{ label: '需求人', prop: 'needor', required: false, type: 'input' },
@@ -170,7 +172,8 @@ const secondState = reactive<TableDemoState>({
 		// 表头内容（必传，注意格式）
 		header: [
 			{ key: 'matNo', colWidth: '200', title: '料號', type: 'text', isCheck: true },
-			{ key: 'sampleNo', colWidth: '180', title: '送樣單號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
+			{ key: 'sampleNo', colWidth: '', title: '送樣單號', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'runStatus', colWidth: '', title: '狀態', type: 'text', isCheck: true },
@@ -195,6 +198,7 @@ const secondState = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '送樣單號', prop: 'sampleNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'matName', required: false, type: 'input' },
 			{ label: '需求人', prop: 'needor', required: false, type: 'input' },
@@ -241,16 +245,15 @@ const dialogState = reactive<TableDemoState>({
 		search: [
 			{ label: '送樣單號', prop: 'sampleNo', required: false, type: 'text' },
 			{ label: '料號', prop: 'matNo', required: false, type: 'text' },
+			{ label: '图纸编号', prop: 'drawNo', required: false, type: 'text' },
 			{ label: '品名-英文', prop: 'nameEn', required: false, type: 'text' },
 			{ label: '品名-中文', prop: 'nameCh', required: false, type: 'text' },
-			// { label: '图纸编号', prop: 'drawNo', required: false, type: 'text' },
 			// { label: '规格', prop: 'specs', required: false, type: 'text' },
 			{ label: '需求數量', prop: 'needsQty', required: false, type: 'text' },
 			{ label: '需求時間', prop: 'needsDate', required: false, type: 'text' },
 			{ label: '需求人', prop: 'needor', required: false, type: 'text' },
 			{ label: '需求人電話', prop: 'needorTel', required: false, type: 'text' },
 			{ label: '開單人', prop: 'creator', required: false, type: 'text' },
-			{ label: '', prop: '', required: false, type: '' },
 			{ label: '下載查看圖紙', prop: 'drawPathProp', required: false, type: 'button' },
 			{ label: '下載查看3d圖紙', prop: 'draw3dPathProp', required: false, type: 'button' },
 		],

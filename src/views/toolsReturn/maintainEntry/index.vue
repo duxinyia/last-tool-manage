@@ -118,6 +118,7 @@ const state = reactive<TableDemoState>({
 			// { key: 'repairReceiveNo', colWidth: '', title: '維修收貨單號', type: 'text', isCheck: true },
 			// { key: 'reqno', colWidth: '', title: '申请单号', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			// { key: 'checkQty', colWidth: '', title: '驗收數量', type: 'text', isCheck: true },
@@ -149,6 +150,7 @@ const state = reactive<TableDemoState>({
 		search: [
 			{ label: '維修單號', prop: 'repairNo', required: false, type: 'input' },
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{ label: '發料人', prop: 'dispatcher', required: false, type: 'input' },
 			{
@@ -196,6 +198,7 @@ const state = reactive<TableDemoState>({
 			// { label: '入库单号:', prop: 'putno', placeholder: '请输入入库单号', required: false, type: 'text', xs: 24, sm: 8, md: 8, lg: 8, xl: 8 },
 			{ label: '維修單號:', prop: 'repairNo', placeholder: '', required: false, type: 'text' },
 			{ label: '料號:', prop: 'matNo', placeholder: '', required: false, type: 'text' },
+			{ label: '圖紙編號:', prop: 'drawNo', placeholder: '', required: false, type: 'text' },
 			{ label: '品名-中文:', prop: 'nameCh', placeholder: '', required: false, type: 'text' },
 			{ label: '品名-英文:', prop: 'nameEn', placeholder: '', required: false, type: 'text' },
 			{ label: '發料時間:', prop: 'dispatchTime', placeholder: '', required: false, type: 'text' },
@@ -353,6 +356,7 @@ const secondState = reactive<TableDemoState>({
 			{ key: 'repairNo', colWidth: '', title: '維修單號', type: 'text', isCheck: true },
 			{ key: 'repairPutNo', colWidth: '', title: '入庫單號', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'dispatcher', colWidth: '', title: '發料人', type: 'text', isCheck: true },
@@ -382,6 +386,7 @@ const secondState = reactive<TableDemoState>({
 			{ label: '維修單號', prop: 'repairNo', required: false, type: 'input' },
 			{ label: '入庫單號', prop: 'repairPutNo', required: false, type: 'input' },
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{ label: '發料人', prop: 'dispatcher', required: false, type: 'input' },
 			{
@@ -582,7 +587,7 @@ const innnerDialogCancel = (formData: EmptyObjectType, formInnerData: EmptyObjec
 		.catch(() => {});
 };
 // 嵌套弹窗提交
-const innnerDialogSubmit = (formInnerData: any, formData: any) => {
+const innnerDialogSubmit = async (formInnerData: any, formData: any) => {
 	// 防止用户用扫码枪扫数据之后又手动修改数量
 	if (formInnerData.codeList.length != 0) {
 		formInnerData.stockqty = formInnerData.codeList.length;
@@ -597,6 +602,12 @@ const innnerDialogSubmit = (formInnerData: any, formData: any) => {
 				});
 			}
 		});
+	const res = await getStockOperDraftModifyPutStorageDraftApi({
+		draftId,
+		describe: formData.describe,
+		stockqty: formData.stockqty,
+	});
+	res.status && ElMessage.success(`保存成功`);
 };
 // 打开嵌套弹窗
 const openInnerDialog = (state: any) => {

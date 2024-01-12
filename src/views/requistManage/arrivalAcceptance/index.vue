@@ -1,7 +1,7 @@
 <template>
 	<el-tabs v-model="activeName" class="table-container layout-padding" @tab-click="handleClick">
 		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="到貨驗收" name="first">
-			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" labelWidth="70px" />
+			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" labelWidth=" " />
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
@@ -115,6 +115,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'applyReceiveId', colWidth: '', title: '單號', type: 'text', isCheck: true },
 			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
 			{ key: 'matNo', title: 'message.pages.matNo', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'machineType', colWidth: '', title: '機種', type: 'text', isCheck: true },
@@ -141,7 +142,8 @@ const state = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: '申請單號', prop: 'reqNo', required: false, type: 'input' },
-			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 5, xl: 5 },
+			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{ label: '收貨日期', prop: 'receiveDate', required: false, type: 'dateRange', lg: 4, xl: 4 },
 		],
@@ -157,11 +159,13 @@ const state = reactive<TableDemoState>({
 		dialogConfig: [
 			{ type: 'text', label: '申請單號', placeholder: '', prop: 'reqNo', required: false },
 			{ type: 'text', label: 'message.pages.matNo', placeholder: '', prop: 'matNo', required: false },
+			{ type: 'text', label: '圖紙編號', placeholder: '', prop: 'drawNo', required: false },
 			{ type: 'text', label: '品名-中文', placeholder: '', prop: 'nameCh', required: false },
 			{ type: 'text', label: '品名-英文', placeholder: '', prop: 'nameEn', required: false },
 			{ type: 'text', label: '機種', placeholder: '', prop: 'machineType', required: false },
 			{ type: 'text', label: 'BU', placeholder: '', prop: 'buCode', required: false },
 			{ type: 'text', label: '收貨數量', placeholder: '', prop: 'qty', required: false },
+			{ type: 'text', label: '收貨人', placeholder: '', prop: 'receiver', required: false },
 			{ type: 'text', label: '收貨日期', placeholder: '', prop: 'receiveDate', required: false },
 			{ type: 'text', label: '驗收數量', placeholder: '', prop: 'checkqty', required: true },
 			{ type: 'date', label: '驗收時間', placeholder: '', prop: 'checkDate', required: true, isdisabledDate: true },
@@ -262,6 +266,7 @@ const secondState = reactive<TableDemoState>({
 			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
 			{ key: 'applyReceiveId', colWidth: '', title: '收貨單號', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'reqMatNo', colWidth: '', title: '請購料號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
@@ -291,7 +296,9 @@ const secondState = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: '申請單號', prop: 'reqNo', required: false, type: 'input' },
+			{ label: '驗收單號', prop: 'applyCheckId', required: false, type: 'input' },
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '請購料號', prop: 'reqMatNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{
@@ -399,8 +406,12 @@ const changeInput = (val: number, formData: EmptyObjectType) => {
 // 获取验收不通過原因下拉
 const getFailReason = async () => {
 	let res = await getExitReasonApi('CheckFail');
-	state.tableData.dialogConfig![12].options = res.data.map((item: any) => {
-		return { text: item.dataname, value: item.runid };
+	state.tableData.dialogConfig?.forEach((item) => {
+		if (item.prop === 'failReasonIds') {
+			item.options = res.data.map((item: any) => {
+				return { text: item.dataname, value: item.runid };
+			});
+		}
 	});
 };
 // 初始化列表数据

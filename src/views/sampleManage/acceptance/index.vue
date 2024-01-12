@@ -145,6 +145,7 @@ const state = reactive<TableDemoState>({
 		// 表头内容（必传，注意格式）
 		header: [
 			{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'sampleNo', colWidth: '', title: 'message.pages.sampleNo', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
@@ -171,6 +172,7 @@ const state = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '送樣單號', prop: 'sampleNo', placeholder: '請輸入送樣單號', required: false, type: 'input' },
 			{ label: '品名', prop: 'matName', required: false, type: 'input' },
 			{ label: '需求人', prop: 'needor', required: false, type: 'input' },
@@ -198,6 +200,7 @@ const secondState = reactive<TableDemoState>({
 			{ key: 'checkNo', colWidth: '', title: '驗收單號', type: 'text', isCheck: true },
 			{ key: 'sampleNo', colWidth: '', title: '送樣單號', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'receiver', colWidth: '', title: '收貨人', type: 'text', isCheck: true },
@@ -222,6 +225,7 @@ const secondState = reactive<TableDemoState>({
 			{ label: '送樣單號', prop: 'sampleNo', required: false, type: 'input' },
 			{ label: '驗收單號', prop: 'checkNo', required: false, type: 'input' },
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{ label: '收貨人', prop: 'receiver', required: false, type: 'input' },
 			{ label: '提交時間', prop: 'createTime', required: false, type: 'dateRange' },
@@ -313,6 +317,7 @@ const dialogData = reactive<EmptyObjectType>({
 		// { type: 'text', label: '驗收單號', prop: 'checkNo', value: '' },
 		{ type: 'text', label: '送樣單號', prop: 'sampleNo', value: '' },
 		{ type: 'text', label: '料號', prop: 'matNo', value: '' },
+		{ type: 'text', label: '圖紙編號', prop: 'drawNo', value: '' },
 		{ type: 'text', label: '驗收人', prop: 'engineerName', value: '', xs: 8, sm: 8, md: 8, lg: 8, xl: 8 },
 		{ type: 'text', label: '品名-中文', prop: 'nameCh', value: '' },
 		{ type: 'text', label: '品名-英文', prop: 'nameEn', value: '' },
@@ -497,7 +502,7 @@ const selectList = ref([] as EmptyObjectType[]);
 let validateFieldList: EmptyArrayType = [];
 // 選中行
 const onSelectionChange = (selectlist: EmptyArrayType) => {
-	console.log(selectlist);
+	// console.log(selectlist);
 	selectList.value = selectlist;
 	validateFieldList = [];
 	dialogState.tableData.data.forEach((item: any, index: number) => {

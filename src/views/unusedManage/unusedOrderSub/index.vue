@@ -140,11 +140,12 @@ const dilogTitle = ref();
 const header = ref([
 	{
 		key: 'matno',
-		colWidth: '250',
+		colWidth: '150',
 		title: 'message.pages.matNo',
 		type: 'text',
 		isCheck: true,
 	},
+	{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 	{ key: 'machine', colWidth: '', title: '機種', type: 'text', isCheck: true },
 	{ key: 'namech', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	{ key: 'nameen', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
@@ -167,6 +168,7 @@ const state = reactive<TableDemoState>({
 				type: 'text',
 				isCheck: true,
 			},
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'namech', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameen', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			// { key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
@@ -196,7 +198,9 @@ const state = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'matName', required: false, type: 'input' },
+			{ label: '發起人', prop: 'creator', required: false, type: 'input' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -273,6 +277,7 @@ const dialogState = reactive<TableDemoState>({
 });
 const dialogMatnoDetail = ref([
 	{ label: '料號:', prop: 'matno', type: 'text' },
+	{ label: '圖紙編號:', prop: 'drawNo', type: 'text' },
 	{ label: '品名-中文:', prop: 'namech', type: 'text' },
 	{ label: '品名-英文:', prop: 'nameen', type: 'text' },
 	// { label: '厂商代码:', prop: 'vendorcode', type: 'text' },
@@ -280,7 +285,7 @@ const dialogMatnoDetail = ref([
 	{ label: '退庫類型:', prop: 'exittype', type: 'text' },
 	{ label: '退庫原因:', prop: 'exitreason', type: 'text' },
 	{ label: '退庫數量:', prop: 'exitqty', type: 'text' },
-	{ label: '備註:', prop: 'describe', type: 'text' },
+	{ label: '備註:', prop: 'describe', type: 'text', lg: 24, xl: 24 },
 ]);
 const exitTypeMap: EmptyObjectType = {
 	1: '維修',
@@ -345,8 +350,7 @@ const cellStyle = ({ column }: EmptyObjectType) => {
 const getTableData = async () => {
 	const form = state.tableData.form;
 	let data = {
-		matName: form.matName,
-		matNo: form.matNo,
+		...form,
 		exitType: 2,
 		page: state.tableData.page,
 	};

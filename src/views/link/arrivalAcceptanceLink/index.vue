@@ -82,6 +82,7 @@ const state = reactive<TableDemoState>({
 			{ type: 'text', label: '申請單號', placeholder: '', prop: 'reqNo', required: false },
 			{ type: 'text', label: '收貨單號', placeholder: '', prop: 'applyReceiveId', required: false },
 			{ type: 'text', label: '料號', placeholder: '', prop: 'matNo', required: false },
+			{ type: 'text', label: '圖紙編號', placeholder: '', prop: 'drawNo', required: false },
 			{ type: 'text', label: '請購料號', placeholder: '', prop: 'reqMatNo', required: false },
 			{ type: 'text', label: '品名-中文', placeholder: '', prop: 'nameCh', required: false },
 			{ type: 'text', label: '品名-英文', placeholder: '', prop: 'nameEn', required: false },
@@ -109,6 +110,9 @@ watch(
 	() => props.checkNoRef,
 	() => {
 		getTableData();
+	},
+	{
+		deep: true,
 	}
 );
 // 点击文件

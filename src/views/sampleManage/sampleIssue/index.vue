@@ -5,7 +5,7 @@
 				:search="state.tableData.search"
 				@search="(data) => onSearch(data, state.tableData)"
 				:searchConfig="state.tableData.searchConfig"
-				labelWidth=" "
+				labelWidth="70px"
 			/>
 			<Table
 				ref="tableRef"
@@ -76,6 +76,7 @@ const state = reactive<TableDemoState>({
 		header: [
 			{ key: 'sampleNo', colWidth: '', title: '送樣單號', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'vendorCode', colWidth: '', title: '廠商代碼', type: 'text', isCheck: true },
@@ -83,7 +84,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'checkQty', colWidth: '', title: '驗收數量', type: 'text', isCheck: true },
 			{ key: 'checker', colWidth: '', title: '驗收人', type: 'text', isCheck: true },
 			{ key: 'checktime', colWidth: '', title: '驗收日期', type: 'text', isCheck: true },
-			{ key: 'createTime', colWidth: '', title: '驗收提交時間', type: 'text', isCheck: true },
+			{ key: 'createTime', colWidth: '120', title: '驗收提交時間', type: 'text', isCheck: true },
 			{ key: 'headDescribe', colWidth: '', title: '驗收備註', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -103,6 +104,7 @@ const state = reactive<TableDemoState>({
 		search: [
 			{ label: '送樣單號', prop: 'sampleNo', required: false, type: 'input' },
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{ label: '廠商', prop: 'vendor', required: false, type: 'input' },
 			{ label: '驗收人', prop: 'checker', required: false, type: 'input' },
@@ -117,6 +119,7 @@ const state = reactive<TableDemoState>({
 		dialogConfig: [
 			{ type: 'text', label: '送樣單號', placeholder: '', prop: 'sampleNo', required: false },
 			{ type: 'text', label: 'message.pages.matNo', placeholder: '', prop: 'matNo', required: false },
+			{ type: 'text', label: '圖紙編號', placeholder: '', prop: 'drawNo', required: false },
 			{ type: 'text', label: '品名-中文', placeholder: '', prop: 'nameCh', required: false },
 			{ type: 'text', label: '品名-英文', placeholder: '', prop: 'nameEn', required: false },
 			{ type: 'text', label: '廠商代碼', placeholder: '', prop: 'vendorCode', required: false },

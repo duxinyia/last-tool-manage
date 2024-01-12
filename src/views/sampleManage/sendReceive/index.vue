@@ -80,6 +80,7 @@ const state = reactive<TableDemoState>({
 		// 表头内容（必传，注意格式）
 		header: [
 			{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'sampleNo', colWidth: '', title: 'message.pages.sampleNo', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
@@ -106,6 +107,7 @@ const state = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '送樣單號', prop: 'sampleNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'matName', required: false, type: 'input' },
 			{ label: '需求人', prop: 'needor', required: false, type: 'input' },
@@ -229,11 +231,12 @@ const dialogData = reactive({
 		// { key: 'needsTime', colWidth: '', title: '需求送样时间', type: 'text', isCheck: true },
 		{ key: 'needsQty', colWidth: '', title: '送樣數量', type: 'text', isCheck: true },
 		{ key: 'receiveTime', colWidth: '', title: '收貨時間', type: 'time', isCheck: true, isRequired: true, isdisabledDate: true },
-		{ key: 'receiveQty', colWidth: '', title: '收貨數量', type: 'input', isCheck: true, isRequired: true },
+		{ key: 'receiveQty', colWidth: '', title: '收貨數量', type: 'number', isCheck: true, isRequired: true },
 	],
 	// 收货弹窗数据
 	dialogForm: [
 		{ type: 'text', label: '料號', prop: 'matNo', value: '' },
+		{ type: 'text', label: '圖紙編號', prop: 'drawNo', value: '' },
 		{ type: 'text', label: '送樣單號', prop: 'sampleNo', value: '', lg: 9, xl: 9 },
 		{ type: 'text', label: '品名-中文', prop: 'nameCh', value: '' },
 		{ type: 'text', label: '品名-英文', prop: 'nameEn', value: '' },
@@ -310,12 +313,20 @@ const selectChange = (query: string) => {
 			let options = res.data.map((item: EmptyObjectType) => {
 				return { value: `${item.userid}`, label: `${item.username}` };
 			});
-			dialogData.dialogForm[4].options = options.filter((item: EmptyObjectType) => {
-				return item.label.toLowerCase().includes(query.toLowerCase()) || item.value.toLowerCase().includes(query.toLowerCase());
+			dialogData.dialogForm.forEach((item) => {
+				if (item.prop === 'engineerNo') {
+					item.options = options.filter((item: EmptyObjectType) => {
+						return item.label.toLowerCase().includes(query.toLowerCase()) || item.value.toLowerCase().includes(query.toLowerCase());
+					});
+				}
 			});
 		}, 500);
 	} else {
-		dialogData.dialogForm[4].options = [];
+		dialogData.dialogForm.forEach((item) => {
+			if (item.prop === 'engineerNo') {
+				item.options = [];
+			}
+		});
 	}
 };
 

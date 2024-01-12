@@ -133,6 +133,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'applyCheckId', colWidth: '', title: '驗收單號', type: 'text', isCheck: true },
 			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'reqMatNo', colWidth: '', title: '請購料號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
@@ -140,8 +141,8 @@ const state = reactive<TableDemoState>({
 			{ key: 'dispatcher', colWidth: '', title: '發料人', type: 'text', isCheck: true },
 			{ key: 'dispatchTime', colWidth: '', title: '發料時間', type: 'text', isCheck: true },
 			{ key: 'qty', colWidth: '', title: '發料數量', type: 'text', isCheck: true },
-			{ key: 'receiveStorageType', colWidth: '', title: '領用倉庫類型', type: 'text', isCheck: true },
-			{ key: 'receiveSLocation', colWidth: '', title: '領用倉庫位置', type: 'text', isCheck: true },
+			{ key: 'receiveStorageType', colWidth: '120', title: '領用倉庫類型', type: 'text', isCheck: true },
+			{ key: 'receiveSLocation', colWidth: '120', title: '領用倉庫位置', type: 'text', isCheck: true },
 			{ key: 'codeManageModeText', colWidth: '130', title: '二維碼管理模式', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -161,6 +162,7 @@ const state = reactive<TableDemoState>({
 		search: [
 			{ label: '申請單號', prop: 'reqNo', required: false, type: 'input' },
 			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '請購料號', prop: 'reqMatNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{
@@ -181,6 +183,8 @@ const state = reactive<TableDemoState>({
 				required: false,
 				type: 'select',
 				options: [],
+				lg: 6,
+				xl: 6,
 			},
 			{
 				label: '領用倉庫位置',
@@ -193,8 +197,6 @@ const state = reactive<TableDemoState>({
 				filterable: true,
 				remote: true,
 				remoteShowSuffix: true,
-				lg: 6,
-				xl: 6,
 			},
 			{ label: '發料時間', prop: 'dispatchDate', required: false, type: 'dateRange' },
 
@@ -220,6 +222,7 @@ const state = reactive<TableDemoState>({
 		dialogConfig: [
 			{ label: '申請單號:', prop: 'reqNo', placeholder: '', required: false, type: 'text' },
 			{ label: '料號:', prop: 'matNo', placeholder: '', required: false, type: 'text' },
+			{ label: '圖紙編號:', prop: 'drawNo', placeholder: '', required: false, type: 'text' },
 			{ label: '請購料號:', prop: 'reqMatNo', placeholder: '', required: false, type: 'text' },
 			{ label: '品名-中文:', prop: 'nameCh', placeholder: '', required: false, type: 'text' },
 			{ label: '品名-英文:', prop: 'nameEn', placeholder: '', required: false, type: 'text' },
@@ -352,9 +355,10 @@ const secondState = reactive<TableDemoState>({
 			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
 			{ key: 'applyPutStorageId', colWidth: '', title: '入庫單號', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'reqMatNo', colWidth: '', title: '請購料號', type: 'text', isCheck: true },
-			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
-			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '100', title: '品名-中文', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '100', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'machineType', colWidth: '', title: '機種', type: 'text', isCheck: true },
 			{ key: 'dispatcher', colWidth: '', title: '發料人', type: 'text', isCheck: true },
 			{ key: 'dispatchTime', colWidth: '', title: '發料時間', type: 'text', isCheck: true },
@@ -363,7 +367,7 @@ const secondState = reactive<TableDemoState>({
 			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
 			{ key: 'putStorageTime', colWidth: '', title: '入庫時間', type: 'text', isCheck: true },
 			{ key: 'describe', colWidth: '', title: '備註', type: 'text', isCheck: true },
-			{ key: 'codeManageModeText', colWidth: '130', title: '二維碼管理模式', type: 'text', isCheck: true },
+			{ key: 'codeManageModeText', colWidth: '', title: '二維碼管理模式', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -383,6 +387,7 @@ const secondState = reactive<TableDemoState>({
 			{ label: '申請單號', prop: 'reqNo', required: false, type: 'input' },
 			{ label: '入庫單號', prop: 'applyPutStorageId', required: false, type: 'input' },
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '請購料號', prop: 'reqMatNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{ label: '發料人', prop: 'dispatcher', required: false, type: 'input' },
@@ -421,7 +426,7 @@ const getOptionsData = async () => {
 	const option = res.data.map((item: any) => {
 		return { label: item, text: item, value: item };
 	});
-	state.tableData.search[5].options = option;
+	state.tableData.search[6].options = option;
 	state.tableData.dialogConfig![5].options = option;
 	secondState.tableData.search?.forEach((item) => {
 		if (item.prop === 'storageType') {
@@ -612,7 +617,7 @@ const innnerDialogCancel = (formData: EmptyObjectType, formInnerData: EmptyObjec
 		.catch(() => {});
 };
 // 嵌套弹窗提交
-const innnerDialogSubmit = (formInnerData: any, formData: any) => {
+const innnerDialogSubmit = async (formInnerData: any, formData: any) => {
 	// 防止用户用扫码枪扫数据之后又手动修改数量
 	if (formInnerData.codeList.length != 0) {
 		formInnerData.stockqty = formInnerData.codeList.length;
@@ -627,6 +632,12 @@ const innnerDialogSubmit = (formInnerData: any, formData: any) => {
 				});
 			}
 		});
+	const res = await getStockOperDraftModifyPutStorageDraftApi({
+		draftId,
+		describe: formData.entryDescribe,
+		stockqty: formData.stockqty,
+	});
+	res.status && ElMessage.success(`保存成功`);
 };
 // 打开嵌套弹窗
 const openInnerDialog = (state: any) => {

@@ -42,14 +42,15 @@ const state = reactive<TableDemoState>({
 		// 表头内容（必传，注意格式）
 		header: [
 			{ key: 'matno', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'namech', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			// { key: 'nameen', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
-			{ key: 'outStorageType', colWidth: '', title: '傳出倉庫類型', type: 'text', isCheck: true },
-			{ key: 'outSLocation', colWidth: '', title: '轉出倉庫位置', type: 'text', isCheck: true },
+			{ key: 'outStorageType', colWidth: '120', title: '傳出倉庫類型', type: 'text', isCheck: true },
+			{ key: 'outSLocation', colWidth: '120', title: '轉出倉庫位置', type: 'text', isCheck: true },
 			{ key: 'outdate', colWidth: '', title: '轉出日期', type: 'text', isCheck: true },
-			{ key: 'inStorageType', colWidth: '', title: '接收倉庫類型', type: 'text', isCheck: true },
-			{ key: 'inSLocation', colWidth: '', title: '接收倉庫位置', type: 'text', isCheck: true },
-			{ key: 'transferqty', colWidth: '', title: '轉移總數量', type: 'text', isCheck: true },
+			{ key: 'inStorageType', colWidth: '120', title: '接收倉庫類型', type: 'text', isCheck: true },
+			{ key: 'inSLocation', colWidth: '120', title: '接收倉庫位置', type: 'text', isCheck: true },
+			{ key: 'transferqty', colWidth: '110', title: '轉移總數量', type: 'text', isCheck: true },
 			{ key: 'qrqty', colWidth: '', title: '有碼數量', type: 'text', isCheck: true },
 			{ key: 'notqrqty', colWidth: '', title: '無碼數量', type: 'text', isCheck: true },
 			{ key: 'describe', colWidth: '', title: '備註', type: 'text', isCheck: true },
@@ -70,15 +71,19 @@ const state = reactive<TableDemoState>({
 			isPage: true, //是否有分页
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-		search: [{ label: '料號', prop: 'matNo', required: false, type: 'input' }],
+		search: [
+			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
+		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
 		// 弹窗表单
 		dialogConfig: [
 			{ label: '料號', prop: 'matno', placeholder: '', required: false, type: 'text' },
+			{ label: '圖紙編號', prop: 'drawNo', placeholder: '', required: false, type: 'text' },
 			{ label: '品名-中文', prop: 'namech', placeholder: '', required: false, type: 'text' },
-			// { label: '品名-英文', prop: 'nameen', placeholder: '', required: false, type: 'text' },
+			{ label: '品名-英文', prop: 'nameen', placeholder: '', required: false, type: 'text' },
 			{ label: '轉出倉庫類型', prop: 'outStorageType', placeholder: '', required: false, type: 'text' },
 			{ label: '轉出倉庫位置', prop: 'outSLocation', placeholder: '', required: false, type: 'text' },
 			{ label: '轉出日期', prop: 'outdate', placeholder: '', required: false, type: 'text' },
@@ -132,7 +137,7 @@ const codeManageModeMap: EmptyObjectType = {
 const getTableData = async () => {
 	const form = state.tableData.form;
 	let data = {
-		matNo: form.matNo,
+		...form,
 		page: state.tableData.page,
 	};
 	const res = await getQueryTransferPageApi(data);

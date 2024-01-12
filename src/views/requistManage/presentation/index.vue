@@ -378,7 +378,7 @@ const state = reactive<EmptyObjectType>({
 			},
 			{ key: 'line', colWidth: '', title: '線體', type: 'input', isCheck: true, isRequired: true },
 			{ key: 'reqQty', colWidth: '150', title: 'PR數量', type: 'number', isCheck: true, isRequired: true, min: 0 },
-			{ key: 'reqDate', colWidth: '150', title: '需求時間', type: 'time', isCheck: true, isRequired: true, isdisabledDate: true },
+			{ key: 'reqDate', colWidth: '150', title: '需求時間', type: 'time', isCheck: true, isRequired: true, isdisabledDate: false },
 			{ key: 'prItemNo', colWidth: '', title: 'PR項次', type: 'input', isCheck: true, isRequired: false, maxlength: 20 },
 		],
 		// 弹窗表单
@@ -505,7 +505,16 @@ const dialogState = reactive<EmptyObjectType>({
 			},
 			{ key: 'line', colWidth: '', title: '線體', type: 'input', othersType: 'input', isCheck: true, isRequired: true },
 			{ key: 'reqQty', colWidth: '150', title: 'PR數量', type: 'number', othersType: 'number', isCheck: true, isRequired: true, min: 0 },
-			{ key: 'reqDate', colWidth: '150', title: '需求時間', type: 'time', othersType: 'time', isCheck: true, isRequired: true, isdisabledDate: true },
+			{
+				key: 'reqDate',
+				colWidth: '150',
+				title: '需求時間',
+				type: 'time',
+				othersType: 'time',
+				isCheck: true,
+				isRequired: true,
+				isdisabledDate: false,
+			},
 
 			// { key: 'describe', colWidth: '150', title: '備註', type: 'textarea', othersType: 'textarea', isCheck: true, isRequired: false },
 			{ key: 'receivedQty', colWidth: '110', title: '已收貨數量', type: 'text', isCheck: true, isRequired: false },
@@ -601,27 +610,37 @@ const openDetailDialog = async (scope: EmptyObjectType, type: string, reqNo?: st
 	}
 };
 const remoteMethod = (index: number, query: string, datas: EmptyObjectType) => {
-	let loading = datas.header[0].loading;
 	if (query) {
-		loading = true;
+		datas.header.forEach((item: any) => {
+			if (item.key === 'matNo') {
+				item.loading = true;
+			}
+		});
 		setTimeout(async () => {
 			const res = await getQueryNoPageApi(query);
-			loading = false;
 			resDataRef.value = res.data;
-			datas.header[0].option = res.data.map((item: EmptyObjectType) => {
-				return { ...item, value: `${item.matNo}`, label: `${item.matNo}` };
+			datas.header.forEach((item: any) => {
+				if (item.key === 'matNo') {
+					item.loading = false;
+					item.option = res.data.map((item: EmptyObjectType) => {
+						return { ...item, value: `${item.matNo}`, label: `${item.matNo}` };
+					});
+				}
 			});
 			if (res.data.length === 1) {
 				datas.data[0].matNo = query;
 				changeSelect(0, query);
 			}
-
 			// datas.header[0].option = option.filter((item: EmptyObjectType, index) => {
 			// 	return item.label.toLowerCase().includes(query.toLowerCase());
 			// });
 		}, 500);
 	} else {
-		datas.header[0].option = [];
+		datas.header.forEach((item: any) => {
+			if (item.key === 'matNo') {
+				item.option = [];
+			}
+		});
 	}
 };
 // let links = ref([]);
@@ -717,7 +736,7 @@ const remove = (array: any[], val: any) => {
 };
 // 展開行
 const expandedRowKeys = ref<string[]>([]);
-const toggleRowExpansion = async (row: EmptyObjectType, falg: number) => {
+const toggleRowExpansion = async (row: EmptyObjectType, falg?: number) => {
 	if (row.applyDetailId && !remove(expandedRowKeys.value, row.applyDetailId)) {
 		expandedRowKeys.value.push(row.applyDetailId);
 	}

@@ -107,6 +107,7 @@ const state = reactive<TableDemoState>({
 		// 表头内容（必传，注意格式）
 		header: [
 			{ key: 'matno', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
 			// { key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
@@ -136,6 +137,7 @@ const state = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'matName', required: false, type: 'input' },
 		],
 		searchConfig: {
@@ -260,11 +262,12 @@ const dialogState = reactive<TableDemoState>({
 		//退库弹窗
 		dialogConfig: [
 			{ label: '料號', prop: 'matno', placeholder: '', required: false, type: 'text' },
+			{ label: '圖紙編號', prop: 'drawNo', placeholder: '', required: false, type: 'text' },
 			{ label: '品名-中文', prop: 'nameCh', placeholder: '', required: false, type: 'text' },
 			{ label: '品名-英文', prop: 'nameEn', placeholder: '', required: false, type: 'text' },
 			{ label: '倉庫類型', prop: 'storageType', placeholder: '', required: false, type: 'text' },
 			{ label: '倉庫位置', prop: 'sLocation', placeholder: '', required: false, type: 'text' },
-			{ label: '庫存總量', prop: 'stockqty', placeholder: '', required: false, type: 'text' },
+			{ label: '庫存總量', prop: 'stockqty', placeholder: '', required: false, type: 'text', lg: 24, xl: 24 },
 			// { label: '厂商代码', prop: 'vendorcode', placeholder: '', required: false, type: 'text', xs: 24, sm: 8, md: 12, lg: 8, xl: 8 },
 			// { label: '厂商名称', prop: 'vendorname', placeholder: '', required: false, type: 'text', xs: 24, sm: 12, md: 12, lg: 12, xl: 12 },
 			{ label: 'DRI', prop: 'dri', placeholder: '', required: true, type: 'input' },
@@ -448,8 +451,7 @@ const getTableData = async () => {
 		1: '無碼管理',
 	};
 	let data = {
-		matNo: form.matNo,
-		matName: form.matName,
+		...form,
 		page: state.tableData.page,
 	};
 	const res = await getStockListApi(data);
@@ -534,7 +536,7 @@ const openReturnDialog = async (scope: EmptyObjectType, type: string) => {
 			}
 		});
 		deleteStorage.reverse().forEach((item: any) => {
-			dialogConfig?.splice(6, 0, item);
+			dialogConfig?.splice(7, 0, item);
 		});
 		deleteStorage = [];
 		res = await getOrCreateStockTransferDraftApi({ stockId: scope.row.runid });
@@ -557,7 +559,7 @@ const openReturnDialog = async (scope: EmptyObjectType, type: string) => {
 			}
 		});
 		deleteData.reverse().forEach((item: any) => {
-			dialogConfig?.splice(6, 0, item);
+			dialogConfig?.splice(7, 0, item);
 		});
 		deleteData = [];
 		res = await getOrCreateExitStoreDraftApi({ stockId: scope.row.runid });

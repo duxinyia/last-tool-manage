@@ -138,6 +138,9 @@ watch(
 	() => props.checkNoRef,
 	() => {
 		getTableData();
+	},
+	{
+		deep: true,
 	}
 );
 // 点击文件

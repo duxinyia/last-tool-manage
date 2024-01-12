@@ -350,6 +350,7 @@ const routePage = (type: number) => {
 		3: '/maintenanceManage/maintenanceCheck',
 		4: '/requistManage/issueMaterials',
 		5: '/maintenanceManage/maintenanceMaterialIssue',
+		6: '/sampleManage/sampleIssue',
 	};
 	router.push(routeTypeMap[type]);
 };
@@ -370,6 +371,7 @@ const getTodos = async () => {
 		3: '待驗收',
 		4: '待發料',
 		5: '待發料',
+		6: '待發料',
 	};
 	const noTypeMap: EmptyObjectType = {
 		0: '送樣單',
@@ -378,6 +380,7 @@ const getTodos = async () => {
 		3: '維修收貨單',
 		4: '申請單',
 		5: '維修單',
+		6: '送樣單',
 	};
 	res.data.forEach((item: any) => {
 		let type = item.todoType;

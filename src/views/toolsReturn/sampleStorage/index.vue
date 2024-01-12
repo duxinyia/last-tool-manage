@@ -74,6 +74,7 @@ import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
 import { ElMessage, ElMessageBox, FormInstance, TabsPaneContext } from 'element-plus';
 // 引入接口
 import {
+	getCodesOfSamplePutStorageRecordApi,
 	getOrCreatePutStorageDraftApi,
 	getQuerySamplePutStorageRecordApi,
 	GetQueryStoragableSampleCheckDetailsApi,
@@ -130,6 +131,7 @@ const state = reactive<TableDemoState>({
 		header: [
 			{ key: 'sampleNo', colWidth: '', title: '送樣單號', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'vendorCode', colWidth: '', title: '廠商代碼', type: 'text', isCheck: true },
@@ -159,6 +161,7 @@ const state = reactive<TableDemoState>({
 		search: [
 			{ label: '送樣單號', prop: 'sampleNo', required: false, type: 'input' },
 			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{ label: '廠商', prop: 'vendor', required: false, type: 'input' },
 			{
@@ -174,6 +177,8 @@ const state = reactive<TableDemoState>({
 				required: false,
 				type: 'select',
 				options: [],
+				lg: 6,
+				xl: 6,
 			},
 			{
 				label: '領用倉庫位置',
@@ -186,8 +191,6 @@ const state = reactive<TableDemoState>({
 				// filterable: true,
 				// remote: true,
 				// remoteShowSuffix: true,
-				lg: 6,
-				xl: 6,
 			},
 			{ label: '發料時間', prop: 'dispatchTime', required: false, type: 'dateRange' },
 		],
@@ -208,6 +211,7 @@ const state = reactive<TableDemoState>({
 		dialogConfig: [
 			{ label: '送樣單號:', prop: 'sampleNo', placeholder: '', required: false, type: 'text' },
 			{ label: '料號:', prop: 'matNo', placeholder: '', required: false, type: 'text' },
+			{ label: '圖紙編號:', prop: 'drawNo', placeholder: '', required: false, type: 'text' },
 			{ label: '品名-中文:', prop: 'nameCh', placeholder: '', required: false, type: 'text' },
 			{ label: '品名-英文:', prop: 'nameEn', placeholder: '', required: false, type: 'text' },
 			{ label: '廠商代碼:', prop: 'vendorCode', placeholder: '', required: false, type: 'text' },
@@ -403,7 +407,7 @@ const getOptionsData = async () => {
 	const option = res.data.map((item: any) => {
 		return { label: item, text: item, value: item };
 	});
-	state.tableData.search[5].options = option;
+	state.tableData.search[6].options = option;
 	state.tableData.dialogConfig![5].options = option;
 	secondState.tableData.search?.forEach((item) => {
 		if (item.prop === 'storageType') {
@@ -606,6 +610,12 @@ const innnerDialogSubmit = async (formInnerData: any, formData: any, isShowInner
 				});
 			}
 		});
+	const res = await getStockOperDraftModifyPutStorageDraftApi({
+		draftId,
+		stockqty: formData.stockqty,
+		describe: formData.entryDescribe,
+	});
+	res.status && ElMessage.success(`保存成功`);
 };
 // 打开嵌套弹窗
 const openInnerDialog = (state: any) => {
@@ -614,13 +624,13 @@ const openInnerDialog = (state: any) => {
 };
 // 打開查看二維碼按鈕
 const openLookQrcodeDialog = async (scope: any) => {
-	// let res = await getCodesOfApplyPutStorageApi(scope.row.applyPutStorageId);
-	// if (res.data.length == 0) {
-	// 	ElMessage.error('暫無條碼數據');
-	// } else if (res.status) {
-	// 	qrCode.value = res.data;
-	// 	inventoryDialogRef.value?.openDialog();
-	// }
+	let res = await getCodesOfSamplePutStorageRecordApi(scope.row.samplePutStorageNo);
+	if (res.data.length == 0) {
+		ElMessage.error('暫無條碼數據');
+	} else if (res.status) {
+		qrCode.value = res.data;
+		inventoryDialogRef.value?.openDialog();
+	}
 };
 // 关闭tag标签
 const handleTagClose = async (tag: any, state: EmptyObjectType) => {

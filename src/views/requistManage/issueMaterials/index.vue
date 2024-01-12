@@ -73,6 +73,7 @@ const state = reactive<TableDemoState>({
 			// { key: 'companyId', colWidth: '', title: '法人', type: 'text', isCheck: true },
 			{ key: 'buCode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'machineType', colWidth: '', title: '機種', type: 'text', isCheck: true },
@@ -98,6 +99,7 @@ const state = reactive<TableDemoState>({
 		search: [
 			{ label: '申請單號', prop: 'reqNo', required: false, type: 'input' },
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '請購料號', prop: 'reqMatNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{ label: '驗收人', prop: 'checker', required: false, type: 'input' },
@@ -115,6 +117,7 @@ const state = reactive<TableDemoState>({
 			// { type: 'text', label: '法人', placeholder: '', prop: 'companyId', required: false },
 			{ type: 'text', label: 'BU', placeholder: '', prop: 'buCode', required: false },
 			{ type: 'text', label: 'message.pages.matNo', placeholder: '', prop: 'matNo', required: false },
+			{ type: 'text', label: '圖紙編號', placeholder: '', prop: 'drawNo', required: false },
 			{ type: 'text', label: '品名-中文', placeholder: '', prop: 'nameCh', required: false },
 			{ type: 'text', label: '品名-英文', placeholder: '', prop: 'nameEn', required: false },
 			{ type: 'text', label: '機種', placeholder: '', prop: 'machineType', required: false },
@@ -188,6 +191,7 @@ const secondState = reactive<TableDemoState>({
 			{ key: 'applyCheckId', colWidth: '', title: '請購驗收ID', type: 'text', isCheck: true },
 			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'reqMatNo', colWidth: '', title: '請購料號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
@@ -196,8 +200,8 @@ const secondState = reactive<TableDemoState>({
 			{ key: 'checker', colWidth: '', title: '驗收人', type: 'text', isCheck: true },
 			{ key: 'dispatchTime', colWidth: '', title: '發料時間', type: 'text', isCheck: true },
 			{ key: 'qty', colWidth: '', title: '發料數量', type: 'text', isCheck: true },
-			{ key: 'receiveStorageType', colWidth: '', title: '領用倉庫類型', type: 'text', isCheck: true },
-			{ key: 'receiveSLocation', colWidth: '', title: '領用倉庫位置', type: 'text', isCheck: true },
+			{ key: 'receiveStorageType', colWidth: '120', title: '領用倉庫類型', type: 'text', isCheck: true },
+			{ key: 'receiveSLocation', colWidth: '120', title: '領用倉庫位置', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -215,7 +219,8 @@ const secondState = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{ label: '申請單號', prop: 'reqNo', required: false, type: 'input' },
-			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
+			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '請購料號', prop: 'reqMatNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{
@@ -247,8 +252,6 @@ const secondState = reactive<TableDemoState>({
 				filterable: true,
 				remote: true,
 				remoteShowSuffix: true,
-				lg: 6,
-				xl: 6,
 			},
 
 			{ label: '發料時間', prop: 'dispatchDate', required: false, type: 'dateRange' },

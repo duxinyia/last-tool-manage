@@ -1,6 +1,13 @@
 <template>
 	<div class="system-menu-dialog-container">
-		<el-dialog destroy-on-close :title="state.dialog.title" v-model="state.dialog.isShowDialog" :width="dialogWidth">
+		<el-dialog
+			draggable
+			:close-on-click-modal="false"
+			destroy-on-close
+			:title="state.dialog.title"
+			v-model="state.dialog.isShowDialog"
+			:width="dialogWidth"
+		>
 			<el-row :gutter="10" v-if="state.dialog.num === 1">
 				<el-col
 					v-for="item in dialogForm"
@@ -94,8 +101,16 @@
 									placeholder="請輸入"
 									clearable
 								></el-input>
+								<!-- 数字输入框 -->
+								<el-input-number
+									v-else-if="item.type === 'number'"
+									style="text-align: center; width: 100%; display: flex; justify-content: center"
+									v-model="state.vendors[scope.$index][item.key]"
+									:min="1"
+									size="small"
+								/>
 								<el-date-picker
-									v-if="item.type === 'time'"
+									v-else-if="item.type === 'time'"
 									value-format="YYYY-MM-DD"
 									:disabled-date="(time:Date) => disabledDate(time, item.isdisabledDate)"
 									v-model="state.vendors[scope.$index][item.key]"
@@ -104,7 +119,7 @@
 									style="height: 30px"
 								/>
 
-								<div v-if="item.type != 'input' && item.type != 'time'" style="text-align: center; width: 100%">
+								<div v-else style="text-align: center; width: 100%">
 									<span>{{ scope.row[item.key] }}</span>
 								</div>
 							</el-form-item>
@@ -143,7 +158,6 @@
 import { defineAsyncComponent, reactive, onMounted, ref, nextTick, computed, onUpdated } from 'vue';
 import { i18n } from '/@/i18n/index';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { getTakeSampleApi } from '/@/api/partno/sampleDelivery';
 import { SampleRecieveApi } from '/@/api/partno/sendReceive';
 const emit = defineEmits(['sampleSuccess', 'selectChange']);
 // 定义父组件传过来的值

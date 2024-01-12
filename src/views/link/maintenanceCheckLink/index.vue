@@ -1,8 +1,25 @@
 <template>
-	<div class="main" :style="!isDialog ? 'height: 330px' : ''">
+	<div class="main" :style="!isDialog ? 'height: 400px' : ''">
 		<div class="table-container" :class="{ 'link-width': !isDialog }">
 			<nav v-if="!isDialog" class="pt10 pb10">維修單驗收詳情</nav>
 			<el-form v-if="state.tableData.form" ref="tableSearchRef" :model="state.tableData.form" size="default" label-width="100px" class="table-form">
+				<el-row :gutter="35">
+					<el-col
+						:xs="val.xs || 24"
+						:sm="val.sm || 12"
+						:md="val.md || 12"
+						:lg="val.lg || 12"
+						:xl="val.xl || 12"
+						v-for="(val, key) in state.tableData.search"
+						:key="key"
+					>
+						<el-form-item :label="val.label" :prop="val.prop">
+							<span v-if="val.type === 'text'" style="width: 100%; font-weight: 700; color: #1890ff">
+								{{ state.tableData.form[val.prop] }}
+							</span></el-form-item
+						>
+					</el-col>
+				</el-row>
 				<Table v-bind="state.tableData" class="table" />
 				<el-button class="mt5" size="default" plain type="primary" @click="clickLink">查看驗收報告</el-button>
 				<div class="describe">
@@ -77,7 +94,14 @@ const state = reactive<TableDemoState>({
 		// 给后端的数据
 		form: {},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-		search: [],
+		search: [
+			{ label: '維修單號:', prop: 'repairNo', type: 'text', required: false },
+			{ label: '驗收單號:', prop: 'repairCheckNo', type: 'text', required: false },
+			// { label: '收貨單號:', prop: 'repairReceiveNo', type: 'text', required: false },
+			// { label: 'PR單號:', prop: 'prNo', type: 'text', required: false },
+			{ label: '收貨人:', prop: 'receiver', type: 'text', required: false },
+			{ label: '提交時間:', prop: 'createTime', type: 'text', required: false },
+		],
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true, disabled: true }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -90,6 +114,9 @@ watch(
 	() => props.IdleNoRef,
 	() => {
 		getTableData();
+	},
+	{
+		deep: true,
 	}
 );
 
@@ -99,6 +126,7 @@ const getTableData = async () => {
 	//link/maintenanceCheckLink?comkey=CSG-2023319001
 	const comkey = props.isDialog ? props.IdleNoRef : route.query.comkey;
 	const res = await getRepairCheckRecordDetailApi(comkey as string);
+	res.data.receiver = `${res.data.receiver} / ${res.data.receiverName}`;
 	state.tableData.form = res.data;
 	state.tableData.data = res.data.details;
 	if (!res.status) {
@@ -132,7 +160,7 @@ onMounted(() => {
 }
 .main {
 	overflow: auto;
-	padding: 0 10%;
+	padding: 0 20%;
 	// width: 100%;
 	background-color: white;
 	display: flex;
@@ -142,6 +170,7 @@ onMounted(() => {
 
 .table-container {
 	width: 100%;
+	height: 100%;
 }
 .link-width {
 	width: 100% !important;
@@ -157,9 +186,11 @@ nav {
 // }
 .describe {
 	display: flex;
-	margin-top: 10px;
+	justify-content: center;
+	padding-top: 5px;
+	line-height: 30px;
 	span {
-		width: 100px;
+		width: 50px;
 	}
 }
 </style>

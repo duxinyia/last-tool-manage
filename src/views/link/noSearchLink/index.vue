@@ -1,8 +1,10 @@
 <template>
-	<div class="main" :style="!isDialog ? 'height: 330px' : ''">
-		<nav v-if="!isDialog" class="pb10">料號詳情</nav>
+	<div class="main" :style="!isDialog ? 'height: 380px' : ''">
+		<nav v-if="!isDialog" class="pb10">
+			料號詳情<el-tag v-if="state.form.runStatus === 77" style="font-weight: 700; font-size: 12px" class="ml10" type="warning">未經試產簽核 </el-tag>
+		</nav>
+
 		<div class="table-container">
-			<!-- <el-card :class="isDialog ? '' : 'box-card'"> -->
 			<el-form v-if="state.form" ref="tableSearchRef" :model="state.form" size="default" label-width="auto" class="table-form" style="display: flex">
 				<div :xs="24" :sm="12" :md="2" :lg="2" :xl="2">
 					<el-image
@@ -24,7 +26,7 @@
 						:lg="val.lg || 12"
 						:xl="val.xl || 12"
 						class="mb10"
-						v-for="(val, key) in state.search"
+						v-for="(val, key) in showForm"
 						:key="key"
 					>
 						<template v-if="val.type !== ''">
@@ -32,7 +34,8 @@
 								<span v-if="val.type === 'text'" style="width: 100%; font-weight: 700; color: #1890ff">
 									{{ state.form[val.prop] }}
 								</span>
-								<el-button type="primary" class="ml20" v-if="val.type === 'btn'" @click="clickLink(val.prop)">查看圖紙</el-button>
+
+								<el-button type="primary" style="margin-left: 60px" v-if="val.type === 'btn'" @click="clickLink(val.prop)">查看圖紙</el-button>
 								<div v-if="val.type == 'tagsarea'">
 									<el-tag v-for="tag in state.form[val.prop]" :key="tag" class="mr10">
 										{{ tag }}
@@ -44,15 +47,13 @@
 				</el-row>
 			</el-form>
 			<el-empty v-else description="數據出錯" />
-
-			<!-- </el-card> -->
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts" name="/partno/noSearch">
 import { useRoute, useRouter } from 'vue-router';
-import { defineAsyncComponent, reactive, ref, onMounted, watch } from 'vue';
+import { defineAsyncComponent, reactive, ref, onMounted, watch, computed } from 'vue';
 import { ElMessage } from 'element-plus';
 import { getMaterialApi } from '/@/api/link/noSearchLink';
 import { useI18n } from 'vue-i18n';
@@ -66,25 +67,26 @@ const props = defineProps({
 		default: () => false,
 	},
 	matNoRef: {
-		type: String,
-		default: () => '',
+		type: Object,
+		default: () => {},
 	},
 });
 const state = reactive<LinkState>({
 	search: [
-		{ label: '料號：', prop: 'matNo', type: 'text' },
-		{ label: '請購料號：', prop: 'reqMatNo', type: 'text' },
-		{ label: 'BU：', prop: 'bu', type: 'text' },
-		{ label: '中文：', prop: 'nameCh', type: 'text' },
-		{ label: '英文：', prop: 'nameEn', type: 'text' },
-		{ label: '圖紙編號：', prop: 'drawNo', type: 'text' },
-		// { label: '规格：', prop: 'specs', type: 'text' },
+		{ label: '料號：', prop: 'matNo', type: 'text', isCheck: true },
+		{ label: '請購料號：', prop: 'reqMatNo', type: 'text', isCheck: true },
+		{ label: 'BU：', prop: 'bu', type: 'text', isCheck: true },
+		{ label: '中文：', prop: 'nameCh', type: 'text', isCheck: true },
+		{ label: '英文：', prop: 'nameEn', type: 'text', isCheck: true },
+		{ label: '圖紙編號：', prop: 'drawNo', type: 'text', isCheck: true },
+		{ label: '规格：', prop: 'specs', type: 'text', isCheck: true },
 		// { label: '厂区：', prop: 'area', type: 'text' },
 		// { label: 'BU：', prop: 'bu', type: 'text' },
 		// { label: '专案代码：', prop: 'projectCode', type: 'text' },
-		{ label: '階段：', prop: 'stage', type: 'text' },
-		{ label: '段位：', prop: 'depart', type: 'text' },
-		{ label: '機種：', prop: 'machineType', type: 'tagsarea', xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
+		{ label: '階段：', prop: 'stage', type: 'text', isCheck: true },
+		{ label: '段位：', prop: 'depart', type: 'text', isCheck: true },
+		{ label: '二維碼管理模式：', prop: 'codeManageModeText', type: 'text', isCheck: true },
+		{ label: '機種：', prop: 'machineType', type: 'tagsarea', xs: 24, sm: 24, md: 24, lg: 24, xl: 24, isCheck: true },
 		{
 			label: '圖紙文件：',
 			prop: 'drawPath',
@@ -94,6 +96,7 @@ const state = reactive<LinkState>({
 			md: 24,
 			lg: 24,
 			xl: 24,
+			isCheck: true,
 		},
 		// {
 		// 	label: '3D圖紙：',
@@ -109,30 +112,47 @@ const state = reactive<LinkState>({
 			label: '備註：',
 			prop: 'describe',
 			placeholder: 'message.pages.placeDescribe',
-			required: false,
-			type: 'textarea',
+			type: 'text',
 			xs: 24,
 			sm: 24,
 			md: 24,
 			lg: 24,
 			xl: 24,
+			isCheck: true,
 		},
 	],
 	searchConfig: false,
 	form: {},
 });
+// 设置 顯示数据
+const showForm = computed(() => {
+	return state.search.filter((v) => v.isCheck);
+});
 watch(
 	() => props.matNoRef,
 	() => {
 		getDetailData();
+	},
+	{
+		deep: true,
 	}
 );
 // 详情数据
 const getDetailData = async () => {
+	// if (route.query.comkey) {
+	// 	state.search.forEach((item) => {
+	// item.isCheck =item.prop === 'describe'?false:true
+	// 	});
+	// }
 	// link/noSearchLink?comkey=CMA23305-52-PM9423-3-001
-	let comkey = props.isDialog ? props.matNoRef : route.query.comkey;
+	const codeManageModeMap: EmptyObjectType = {
+		0: '有碼管理',
+		1: '無碼管理',
+	};
+	let comkey = props.isDialog ? props.matNoRef.matNo : route.query.comkey;
 	const res = await getMaterialApi(comkey);
 	state.form = res.data;
+	state.form.codeManageModeText = codeManageModeMap[state.form.codeManageMode];
 	state.form.picture = (import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl) + res.data.picture;
 	const res1 = await getMachineTypesOfMatApi(comkey);
 	state.form.machineType = res1.data;

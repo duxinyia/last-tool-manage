@@ -5,7 +5,7 @@ export function getQueryNoPageApi(matNo:string) {
   return request({
     url: '/api/Material/QueryNoPage',
     method: 'GET',
-    params:{matNo}
+    params:{matNo,querySignedMatOnly:true}
   });
 }
 // 提交

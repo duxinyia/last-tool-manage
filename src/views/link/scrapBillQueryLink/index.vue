@@ -110,6 +110,9 @@ watch(
 	() => props.UselessNoRef,
 	() => {
 		getTableData();
+	},
+	{
+		deep: true,
 	}
 );
 

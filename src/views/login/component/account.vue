@@ -104,51 +104,58 @@ const onSignIn = (formEl: EmptyObjectType | undefined) => {
 	const { ruleForm } = state;
 	formEl.validate(async (valid: boolean) => {
 		if (valid) {
-			// try {
-			state.loading.signIn = true;
-			let paw = ruleForm.password.trim();
-			// 加密密码
-			// let datapw = encryptData(paw);
-			let datapw = paw;
-			const res = await useLoginApi(ruleForm.userName.trim(), datapw);
-			// 存储 token 到浏览器缓存
-			if (res.status) {
-				Session.set('token', res.data.token);
-				Cookies.set('userName', res.data.userName);
-				Cookies.set('userId', res.data.userId);
-				Cookies.set('userPassword', datapw);
-				// Local.set('datas', res.data.datas);
-				// let home: string[] = [];
-				res.data.datas.unshift({
-					alwaysShow: 'true',
-					path: '/home',
-					name: 'home',
-					component: 'home',
-					redirect: 'noRedirect',
-					meta: { title: '首页', titleEn: 'message.router.home', isAffix: true, icon: 'home' },
-				});
-
-				// 添加是否缓存组件状态
-				const menudatas = addIsKeepAlive(res.data.datas);
-				Local.set('datas', menudatas);
-				// router.push('/home');
-				if (!themeConfig.value.isRequestRoutes) {
-					// 前端控制路由，2、请注意执行顺序
-					const isNoPower = await initFrontEndControlRoutes();
-				} else {
-					// 模拟后端控制路由，isRequestRoutes 为 true，则开启后端控制路由
-					// 添加完动态路由，再进行 router 跳转，否则可能报错 No match found for location with path "/"（目前走的这个）
-					const isNoPower = await initBackEndControlRoutes();
-					// 执行完 initBackEndControlRoutes，再执行 signInSuccess
-					signInSuccess(isNoPower);
+			try {
+				state.loading.signIn = true;
+				let paw = ruleForm.password.trim();
+				// 加密密码
+				// let datapw = encryptData(paw);
+				let datapw = paw;
+				const res = await useLoginApi(ruleForm.userName.trim(), datapw);
+				if (res.data.datas.length <= 0) {
+					state.loading.signIn = false;
+					ElMessage.warning('抱歉，您没有登录权限');
+					Session.clear();
+					return;
 				}
-			} else {
+				// 存储 token 到浏览器缓存
+				else if (res.status) {
+					Session.set('token', res.data.token);
+					Cookies.set('userName', res.data.userName);
+					Cookies.set('userId', res.data.userId);
+					Cookies.set('userPassword', datapw);
+					// Local.set('datas', res.data.datas);
+					// let home: string[] = [];
+					res.data.datas.unshift({
+						alwaysShow: 'true',
+						path: '/home',
+						name: 'home',
+						component: 'home',
+						redirect: 'noRedirect',
+						meta: { title: '首页', titleEn: 'message.router.home', isAffix: true, icon: 'home' },
+					});
+
+					// 添加是否缓存组件状态
+					const menudatas = addIsKeepAlive(res.data.datas);
+					Local.set('datas', menudatas);
+					// router.push('/home');
+					if (!themeConfig.value.isRequestRoutes) {
+						// 前端控制路由，2、请注意执行顺序
+						const isNoPower = await initFrontEndControlRoutes();
+					} else {
+						// 模拟后端控制路由，isRequestRoutes 为 true，则开启后端控制路由
+						// 添加完动态路由，再进行 router 跳转，否则可能报错 No match found for location with path "/"（目前走的这个）
+						const isNoPower = await initBackEndControlRoutes();
+						// 执行完 initBackEndControlRoutes，再执行 signInSuccess
+						signInSuccess(isNoPower);
+					}
+				} else {
+					state.loading.signIn = false;
+				}
+			} catch (err: any) {
 				state.loading.signIn = false;
 			}
-			// } catch (err: any) {
-			// 	state.loading.signIn = false;
-			// }
 		} else {
+			state.loading.signIn = false;
 		}
 	});
 };

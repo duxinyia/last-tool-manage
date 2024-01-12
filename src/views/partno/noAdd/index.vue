@@ -41,7 +41,7 @@
 				@importTableData="onImportTable"
 				@remoteMethod="remoteMethod"
 				:loadingBtn="loadingBtn"
-				labelWidth="110px"
+				labelWidth="120px"
 			/>
 			<el-dialog draggable :close-on-click-modal="false" v-model="matNoDetaildialogVisible" title="料號詳情" width="50%">
 				<matNoDetailDialog :isDialog="true" :matNoRef="matNoRef"
@@ -219,7 +219,7 @@ const state = reactive<TableDemoState>({
 				lg: 24,
 				xl: 24,
 			},
-			{ label: '二維碼管理模式', prop: 'codeManageMode', placeholder: '', required: false, type: 'radio' },
+			{ label: '二維碼管理模式', prop: 'codeManageMode', placeholder: '', required: true, type: 'radio' },
 			// { label: '厂区', prop: 'area', placeholder: '请选择厂区', required: false, type: 'select', options: [] },
 			// { label: 'BU', prop: 'bu', placeholder: '请选择BU', required: false, type: 'select', options: [] },
 			// { label: '专案代码', prop: 'projectCode', placeholder: '请选择专案代码', required: false, type: 'select', options: [] },
@@ -242,12 +242,13 @@ const state = reactive<TableDemoState>({
 				prop: 'draw3dPath',
 				placeholder: 'message.pages.placeDrawPath',
 				required: false,
-				type: 'input3dFile',
+				type: 'inputFile',
 				xs: 24,
 				sm: 24,
 				md: 24,
 				lg: 24,
 				xl: 24,
+				isClearable: true,
 			},
 			{
 				label: 'message.pages.describe',
@@ -275,10 +276,10 @@ const cellStyle = ({ column }: EmptyObjectType) => {
 // 点击料号弹出详情
 const matNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'matNo') {
-		matNoRef.value = row.matNo;
+		matNoRef.value = row;
 		setTimeout(() => {
 			matNoDetaildialogVisible.value = true;
-		}, 100);
+		}, 200);
 	}
 };
 // 选择下拉
@@ -291,7 +292,6 @@ const remoteMethod = (query: string) => {
 	if (query) {
 		setTimeout(async () => {
 			const res = await getMachineTypesApi(query);
-
 			options = res.data.map((item: EmptyObjectType) => {
 				return { value: `${item}`, label: `${item}`, text: `${item}` };
 			});
@@ -357,21 +357,61 @@ const editDialog = async (formData: EmptyObjectType) => {
 // 打开弹窗
 const openDialog = async (type: string, row: EmptyObjectType) => {
 	loadingBtn.value = false;
+	// row.drawPath = row.drawPath.includes('/') ? row.drawPath.split('_')[1] : row.drawPath;
+	// row.draw3dPath = row.draw3dPath.includes('/') ? row.draw3dPath.split('_')[1] : row.draw3dPath;
 	noSearchDialogRef.value.openDialog(type, row);
 };
 // 新增数据  修改数据
 const addData = async (ruleForm: EmptyObjectType, type: string) => {
-	if (ruleForm.drawPath.includes('/')) {
-		loadingBtn.value = true;
-		const res = type === 'add' ? await getAddMaterialApi(ruleForm) : await getModifyMaterialApi(ruleForm);
-		if (res.status) {
-			type === 'add' ? ElMessage.success(`新增成功`) : ElMessage.success(`修改成功`);
-			noSearchDialogRef.value.closeDialog();
-			getTableData();
-		}
-	} else {
-		ElMessage.error(`新增失敗,請點擊上傳文件按鈕進行上傳`);
+	let {
+		nameCh,
+		nameEn,
+		drawNo,
+		specs,
+		drawPathfileUrl,
+		draw3dPathfileUrl,
+		projectCode,
+		area,
+		bu,
+		stage,
+		depart,
+		picture,
+		reqMatNo,
+		codeManageMode,
+		machineTypes,
+		describe,
+		matNo,
+	} = ruleForm;
+	const getData = {
+		matNo,
+		nameCh,
+		nameEn,
+		drawNo,
+		specs,
+		drawPath: drawPathfileUrl || ruleForm.drawPath,
+		draw3dPath: draw3dPathfileUrl || ruleForm.draw3dPath,
+		projectCode,
+		area,
+		bu,
+		stage,
+		depart,
+		picture,
+		reqMatNo,
+		codeManageMode,
+		machineTypes,
+		describe,
+	};
+	// if (ruleForm.drawPath.includes('/')) {
+	loadingBtn.value = true;
+	const res = type === 'add' ? await getAddMaterialApi(getData) : await getModifyMaterialApi(getData);
+	if (res.status) {
+		type === 'add' ? ElMessage.success(`新增成功`) : ElMessage.success(`修改成功`);
+		noSearchDialogRef.value.closeDialog();
+		getTableData();
 	}
+	// } else {
+	// 	ElMessage.error(`新增失敗,請點擊上傳文件按鈕進行上傳`);
+	// }
 	loadingBtn.value = false;
 };
 // 公共数据
@@ -538,5 +578,9 @@ onMounted(() => {
 }
 .buttonBorder {
 	border: 0px !important;
+}
+.dialog-header {
+	display: flex;
+	align-items: center;
 }
 </style>

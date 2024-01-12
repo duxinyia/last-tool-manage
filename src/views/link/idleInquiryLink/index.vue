@@ -105,6 +105,9 @@ watch(
 	() => props.IdleNoRef,
 	() => {
 		getTableData();
+	},
+	{
+		deep: true,
 	}
 );
 

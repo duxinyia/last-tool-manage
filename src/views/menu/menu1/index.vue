@@ -1,5 +1,5 @@
 <template>
-	<div class="layout-pd">菜单一</div>
+	<div class="layout-pd"></div>
 </template>
 
 <script setup lang="ts" name="menu1">

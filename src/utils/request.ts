@@ -39,7 +39,6 @@ service.interceptors.request.use(
 service.interceptors.response.use(
 	(response) => {
 		checkResponse(response);
-		
 		// 对响应数据做点什么
 		const res = response.data;
 		if (res.code && res.code !== 0) {

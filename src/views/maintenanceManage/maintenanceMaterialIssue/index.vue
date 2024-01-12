@@ -74,6 +74,7 @@ const state = reactive<TableDemoState>({
 		header: [
 			{ key: 'repairNo', colWidth: '', title: '維修單號', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'checkTimeStr', colWidth: '', title: '驗收時間', type: 'text', isCheck: true },
@@ -98,6 +99,7 @@ const state = reactive<TableDemoState>({
 		search: [
 			{ label: '維修單號', prop: 'repairNo', required: false, type: 'input' },
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{ label: '驗收人', prop: 'checker', required: false, type: 'input' },
 			{ label: '驗收日期', prop: 'checkDate', required: false, type: 'dateRange', lg: 4, xl: 4 },
@@ -111,6 +113,7 @@ const state = reactive<TableDemoState>({
 		dialogConfig: [
 			{ type: 'text', label: '維修單號', placeholder: '', prop: 'repairNo', required: false },
 			{ type: 'text', label: 'message.pages.matNo', placeholder: '', prop: 'matNo', required: false },
+			{ type: 'text', label: '圖紙編號', placeholder: '', prop: 'drawNo', required: false },
 			{ type: 'text', label: '品名-中文', placeholder: '', prop: 'nameCh', required: false },
 			{ type: 'text', label: '品名-英文', placeholder: '', prop: 'nameEn', required: false },
 			{ type: 'text', label: '驗收時間', placeholder: '', prop: 'checkTimeStr', required: false },
@@ -183,10 +186,11 @@ const secondState = reactive<TableDemoState>({
 			// { key: 'repairCheckDetailId', colWidth: '', title: '維修驗收詳情ID', type: 'text', isCheck: true },
 			{ key: 'repairNo', colWidth: '', title: '維修單號', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'isStored', colWidth: '', title: '是否已入庫', type: 'text', isCheck: true },
-			{ key: 'dispatcher', colWidth: '', title: '發料人', type: 'text', isCheck: true },
+			{ key: 'checker', colWidth: '', title: '驗收人', type: 'text', isCheck: true },
 			{ key: 'dispatchTimeStr', colWidth: '', title: '發料時間', type: 'text', isCheck: true },
 			{ key: 'qty', colWidth: '', title: '發料數量', type: 'text', isCheck: true },
 			{ key: 'receiveStorageType', colWidth: '', title: '領用倉庫類型', type: 'text', isCheck: true },
@@ -209,6 +213,7 @@ const secondState = reactive<TableDemoState>({
 		search: [
 			{ label: '維修單號', prop: 'repairNo', required: false, type: 'input' },
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{
 				label: '是否已入庫',
@@ -242,7 +247,7 @@ const secondState = reactive<TableDemoState>({
 				// lg: 6,
 				// xl: 6,
 			},
-			{ label: '發料人', prop: 'dispatcher', required: false, type: 'input' },
+			{ label: '驗收人', prop: 'checker', required: false, type: 'input' },
 			{ label: '發料時間', prop: 'dispatchDate', required: false, type: 'dateRange' },
 		],
 		searchConfig: {
@@ -424,7 +429,7 @@ const getTableData = async () => {
 		const res = await getQueryDispatchRecordApi(data2);
 		res.data.data.forEach((item: any) => {
 			item.isStored = item.isStored ? '是' : '否';
-			item.dispatcher = `${item.dispatcher} / ${item.dispatcherName}`;
+			item.checker = `${item.checker} / ${item.checkerName}`;
 		});
 		secondState.tableData.data = res.data.data;
 		secondState.tableData.config.total = res.data.total;
