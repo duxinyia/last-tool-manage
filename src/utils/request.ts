@@ -38,9 +38,13 @@ service.interceptors.request.use(
 // 添加响应拦截器
 service.interceptors.response.use(
 	(response) => {
+		console.log(response);
+		
 		checkResponse(response);
 		// 对响应数据做点什么
 		const res = response.data;
+		if(response.request.responseType==='blob')
+			return response;
 		if (res.code && res.code !== 0) {
 			// `token` 过期或者账号已在别处登录
 			if (res.code === 401 || res.code === 4001) {

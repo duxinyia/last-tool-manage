@@ -343,7 +343,7 @@ const onExportTableData = async (row: EmptyObjectType) => {
 		rows.push(row[key].idleno);
 	});
 	const res = await getIdleDownloadApi(rows);
-	const result: any = res;
+	const result: any = res.data;
 	let blob = new Blob([result], {
 		// 这里一定要和后端对应，不然可能出现乱码或者打不开文件
 		type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

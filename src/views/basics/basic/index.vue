@@ -216,7 +216,7 @@ const onExportTableData = async (row: EmptyObjectType) => {
 		rows.push(row[key].runid);
 	});
 	const res: any = await getBaseDownloadApi(rows);
-	let blob = new Blob([res], {
+	let blob = new Blob([res.data], {
 		// 这里一定要和后端对应，不然可能出现乱码或者打不开文件
 		type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 	});
@@ -235,7 +235,7 @@ const onExportTableData = async (row: EmptyObjectType) => {
 // 下载模版
 const ondownloadTemp = async () => {
 	const res: any = await getDownloadTemplateApi();
-	let blob = new Blob([res], {
+	let blob = new Blob([res.data], {
 		// 这里一定要和后端对应，不然可能出现乱码或者打不开文件
 		type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 	});

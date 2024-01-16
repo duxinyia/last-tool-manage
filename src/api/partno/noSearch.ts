@@ -106,6 +106,16 @@ export function getMatnoDownloadApi(matNo:Array<string>) {
     ,
   });
 }
+// 導出更新（最新）
+export function getMatnoExportApi(data:EmptyObjectType) {
+  return request({
+    url: '/api/Export/Mat',
+    method: 'POST',
+    responseType: 'blob', // 设置响应数据类型为 blob
+    data,
+  });
+}
+
 
 
 

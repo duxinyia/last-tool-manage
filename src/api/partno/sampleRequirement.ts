@@ -23,3 +23,12 @@ export function getQueryTakeSampleApi(data:Object) {
   	data:data
   });
 }
+// 廠商模糊查詢下拉
+export function getVendorsApi(vendor:string) {
+  return request({
+    url: '/api/Material/GetVendors',
+    method: 'GET',
+  	params:{vendor}
+  });
+}
+

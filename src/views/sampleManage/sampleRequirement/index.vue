@@ -24,7 +24,7 @@
 				@onOpenOtherDialog="openArriveJobDialog"
 			/>
 		</el-tab-pane>
-		<el-dialog draggable :close-on-click-modal="false" v-model="deliveryDialogVisible" :title="dilogTitle" width="40%">
+		<el-dialog draggable :close-on-click-modal="false" v-model="deliveryDialogVisible" :title="dilogTitle" width="60%">
 			<el-row>
 				<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb15" v-for="(val, key) in dialogState.tableData.search" :key="key">
 					<div v-if="val.type === 'text'">
@@ -63,7 +63,27 @@
 					@addrow="onAddrow"
 					@handleNumberInputChange="changeInput"
 					:cellStyle="cellStyle"
-				/>
+				>
+					<template #topOptions>
+						<el-select
+							style="width: 500px"
+							:clearable="true"
+							v-model="dialogSelect"
+							:filterable="true"
+							placeholder="請輸入廠商代碼或者廠商名稱進行搜索增加"
+							remote
+							:reserve-keyword="false"
+							@change="changeSelect"
+							remote-show-suffix
+							:remote-method="remoteMethod"
+							:loading="loading"
+						>
+							<template v-if="dialogSelectOption">
+								<el-option v-for="i in dialogSelectOption" :key="i.label" :label="i.label" :value="i.value" />
+							</template>
+						</el-select>
+					</template>
+				</Table>
 			</el-form>
 			<template #footer v-if="dilogTitle == '料號送樣'">
 				<span class="dialog-footer">
@@ -80,7 +100,7 @@
 import { defineAsyncComponent, reactive, ref, onMounted, computed, watch, nextTick } from 'vue';
 import { ElMessage, ElMessageBox, FormInstance, TabsPaneContext } from 'element-plus';
 const deliveryDialogVisible = ref(false);
-import { getQuerySampleNeedsApi, getQueryTakeSampleApi, getSampleDetailsForTakeSampleApi } from '/@/api/partno/sampleRequirement';
+import { getQuerySampleNeedsApi, getQueryTakeSampleApi, getSampleDetailsForTakeSampleApi, getVendorsApi } from '/@/api/partno/sampleRequirement';
 // 送样
 import { getTakeSampleApi, getSaveTakeSampleApi, getSubmitTaskSampleApi } from '/@/api/partno/sampleDelivery';
 import { useI18n } from 'vue-i18n';
@@ -96,6 +116,9 @@ const tableRef2 = ref<RefType>();
 const loadingBtn = ref(false);
 const loadingSaveBtn = ref(false);
 const dialogTableRef = ref<RefType>();
+const dialogSelect = ref();
+const dialogSelectOption = ref();
+const loading = ref(false);
 // 单元格样式
 const cellStyle = ref();
 // 弹窗标题
@@ -109,7 +132,7 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
 const header = ref<deliveryDialogHeader>([
 	{ key: 'vendorCode', colWidth: '', title: '廠商代碼', type: 'input', isCheck: true, isRequired: true, sampleType: 'input' },
 	{ key: 'vendorName', colWidth: '', title: '廠商名稱', type: 'input', isCheck: true, isRequired: true, sampleType: 'input' },
-	{ key: 'needsQty', colWidth: '', title: '數量', type: 'number', isCheck: true, isRequired: true, sampleType: 'number' },
+	{ key: 'needsQty', colWidth: '120', title: '數量', type: 'number', isCheck: true, isRequired: true, sampleType: 'number' },
 	{ key: 'describe', colWidth: '', title: '備註', type: 'textarea', isCheck: true, isRequired: false, sampleType: 'textarea' },
 ]);
 const state = reactive<TableDemoState>({
@@ -265,6 +288,39 @@ const dialogState = reactive<TableDemoState>({
 		},
 	},
 });
+// 得到下拉框數據
+const remoteMethod = async (query: string) => {
+	if (query) {
+		loading.value = true;
+		setTimeout(async () => {
+			const res = await getVendorsApi(query);
+			loading.value = false;
+			dialogSelectOption.value = res.data.map((item: EmptyObjectType) => {
+				return { ...item, value: `${item.vendorCode},${item.vendorName}`, label: `廠商代碼：${item.vendorCode}，廠商名稱：${item.vendorName}` };
+			});
+		}, 500);
+	} else {
+		dialogSelectOption.value = [];
+	}
+};
+// 下拉框改變
+const changeSelect = (val: string) => {
+	if (val) {
+		const data = val.split(',');
+		dialogState.tableData.data.push({
+			vendorCode: data[0],
+			vendorName: data[1],
+			needsQtymin: 1,
+			vendorCodedisabled: false,
+			vendorNamedisabled: false,
+		});
+		// dialogSelect.value = '';
+		// 新增的时候超过表格了跟着移动
+		nextTick(() => {
+			dialogTableRef.value.setScrollTop();
+		});
+	}
+};
 // 控制收货数量<=可收货数量
 const changeInput = (val: number, i: number) => {
 	const data = dialogState.tableData.data[i];
@@ -317,11 +373,11 @@ const getTableData = async () => {
 };
 //删除一行
 const onDelRow = (row: EmptyObjectType, i: number) => {
-	if (row.runId) {
-		ElMessage.error(t('不能刪除已有的廠商信息'));
-	} else {
-		dialogState.tableData.data.splice(i, 1);
-	}
+	// if (row.runId) {
+	// 	ElMessage.error(t('不能刪除已有的廠商信息'));
+	// } else {
+	dialogState.tableData.data.splice(i, 1);
+	// }
 };
 // 增加一行
 const onAddrow = () => {
@@ -336,6 +392,7 @@ const openArriveJobDialog = async (scope: EmptyObjectType) => {
 	loadingBtn.value = false;
 	const res = await getSampleDetailsForTakeSampleApi(scope.row.sampleNo);
 	if (activeName.value === 'first') {
+		dialogSelect.value = '';
 		res.data.forEach((item: any) => {
 			item.vendorCodedisabled = item.isReSubmit === 1 ? true : false;
 			item.vendorNamedisabled = item.isReSubmit === 1 ? true : false;

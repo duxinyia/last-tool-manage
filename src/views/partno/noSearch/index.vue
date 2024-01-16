@@ -50,6 +50,7 @@ import {
 	getMachineTypesApi,
 	getMachineTypesOfMatApi,
 	getMatnoDownloadApi,
+	getMatnoExportApi,
 } from '/@/api/partno/noSearch';
 import { useI18n } from 'vue-i18n';
 // 引入组件
@@ -426,13 +427,31 @@ const onSortHeader = (data: TableHeaderType[]) => {
 	state.tableData.header = data;
 };
 // 导出
-const onExportTableData = async (row: EmptyObjectType) => {
+const onExportTableData = async (row: EmptyObjectType, hearder: EmptyObjectType) => {
 	let rows: EmptyArrayType = [];
 	Object.keys(row).forEach((key) => {
 		rows.push(row[key].matNo);
 	});
-	const res = await getMatnoDownloadApi(rows);
-	const result: any = res;
+	const propertyNames: EmptyArrayType = [];
+	const strArr: EmptyObjectType = {
+		Bu: 'BuCode',
+		Picture: 'PictureUrl',
+		MatNo: 'Matno',
+		ReqMatNo: 'ReqMatno',
+		CodeManageModeText: 'CodeManageModeStr',
+	};
+	const imparity = ['Bu', 'Picture', 'MatNo', 'ReqMatNo', 'CodeManageModeText'];
+	hearder.forEach((item: any) => {
+		propertyNames.push(item.key.charAt(0).toUpperCase() + item.key.slice(1));
+	});
+	propertyNames.forEach((item) => {
+		if (imparity.includes(item)) {
+			propertyNames[propertyNames.indexOf(item)] = strArr[item];
+		}
+	});
+	const data = { ids: rows, propertyNames: propertyNames };
+	const res = await getMatnoExportApi(data);
+	const result: any = res.data;
 	let blob = new Blob([result], {
 		// 这里一定要和后端对应，不然可能出现乱码或者打不开文件
 		type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',

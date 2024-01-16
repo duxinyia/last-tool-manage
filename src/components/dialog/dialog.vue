@@ -824,7 +824,9 @@ const inputsubmitUpload = async (prop: string, key?: string) => {
 // 查看上传的文件
 const lookUpload = (prop: string) => {
 	window.open(
-		`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${state.formData[prop + 'fileUrl']}`,
+		`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${
+			state.formData[prop + 'fileUrl'] || state.formData[prop]
+		}`,
 		'_blank'
 	);
 };

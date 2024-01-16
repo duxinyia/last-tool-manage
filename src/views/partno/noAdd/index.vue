@@ -65,6 +65,7 @@ import {
 	getMachineTypesApi,
 	getMachineTypesOfMatApi,
 	getMatnoDownloadApi,
+	getMatnoExportApi,
 } from '/@/api/partno/noSearch';
 import { useI18n } from 'vue-i18n';
 // 引入组件
@@ -504,21 +505,44 @@ const onTablePageChange = (page: TableDemoPageType) => {
 const onSortHeader = (data: TableHeaderType[]) => {
 	state.tableData.header = data;
 };
-// 导出
-const onExportTableData = async (row: EmptyObjectType) => {
+// 導出
+const onExportTableData = async (row: EmptyObjectType, hearder: EmptyObjectType) => {
 	let rows: EmptyArrayType = [];
 	Object.keys(row).forEach((key) => {
 		rows.push(row[key].matNo);
 	});
-	const res = await getMatnoDownloadApi(rows);
-	const result: any = res;
+	const propertyNames: EmptyArrayType = [];
+	const strArr: EmptyObjectType = {
+		Bu: 'BuCode',
+		Picture: 'PictureUrl',
+		MatNo: 'Matno',
+		ReqMatNo: 'ReqMatno',
+		CodeManageModeText: 'CodeManageModeStr',
+	};
+	const imparity = ['Bu', 'Picture', 'MatNo', 'ReqMatNo', 'CodeManageModeText'];
+	hearder.forEach((item: any) => {
+		propertyNames.push(item.key.charAt(0).toUpperCase() + item.key.slice(1));
+	});
+	propertyNames.forEach((item) => {
+		if (imparity.includes(item)) {
+			propertyNames[propertyNames.indexOf(item)] = strArr[item];
+		}
+	});
+	const data = { ids: rows, propertyNames: propertyNames };
+	const res = await getMatnoExportApi(data);
+	const result: any = res.data;
 	let blob = new Blob([result], {
 		// 这里一定要和后端对应，不然可能出现乱码或者打不开文件
 		type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
 	});
 	const link = document.createElement('a');
 	link.href = window.URL.createObjectURL(blob);
-	link.download = `${t('料號')} ${new Date().toLocaleString()}.xlsx`; // 在前端也可以设置文件名字
+	// let fileName = decodeURI(res.headers['Content-Disposition'].split('=')[1]);
+	// const temp = res.headers['content-disposition'].split(';')[1].split('filename=')[1];
+	// console.log('temp:' + temp);
+	// console.log(res);
+
+	// link.download = `${t('料號')} ${new Date().toLocaleString()}.xlsx`; // 在前端也可以设置文件名字
 	link.click();
 	//释放内存
 	window.URL.revokeObjectURL(link.href);

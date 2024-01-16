@@ -20,6 +20,7 @@
 						>
 					</template>
 				</el-popconfirm>
+
 				<el-button
 					@click="onOpentopBtnOther"
 					v-else
@@ -36,6 +37,7 @@
 				<el-button size="default" class="buttonBorder" @click="onAddRow" type="primary" plain
 					><el-icon><ele-Plus /></el-icon>{{ $t('message.allButton.addBtn') }}</el-button
 				>
+				<slot name="topOptions"></slot>
 			</div>
 			<div class="table-top-tool" v-if="config.isTopTool">
 				<!-- <SvgIcon name="iconfont icon-dayinji" :size="19" title="打印" @click="onPrintTable" /> -->
@@ -139,7 +141,7 @@
 							trigger="hover"
 							placement="top"
 							width="auto"
-							:disabled="data[scope.$index][item.key]?.length > 8 ? false : true"
+							:disabled="data[scope.$index][item.key]?.length > 15 ? false : true"
 						>
 							<template #default>
 								<div style="font-size: 12px">{{ data[scope.$index][item.key] }}</div>
@@ -698,7 +700,8 @@ const onExportTable = () => {
 	props.header.forEach((item) => {
 		item.title = t(item.title);
 	});
-	emit('importTable', state.selectlist);
+	const hearder = props.header.filter((v) => v.isCheck);
+	emit('importTable', state.selectlist, hearder);
 };
 
 // 导入表格
