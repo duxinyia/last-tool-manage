@@ -528,6 +528,7 @@ const onExportTableData = async (row: EmptyObjectType, hearder: EmptyObjectType)
 			propertyNames[propertyNames.indexOf(item)] = strArr[item];
 		}
 	});
+	if (propertyNames.length <= 0) return ElMessage.warning('請選擇要導出的列');
 	const data = { ids: rows, propertyNames: propertyNames };
 	const res = await getMatnoExportApi(data);
 	const result: any = res.data;
@@ -537,11 +538,8 @@ const onExportTableData = async (row: EmptyObjectType, hearder: EmptyObjectType)
 	});
 	const link = document.createElement('a');
 	link.href = window.URL.createObjectURL(blob);
-	// let fileName = decodeURI(res.headers['Content-Disposition'].split('=')[1]);
-	// const temp = res.headers['content-disposition'].split(';')[1].split('filename=')[1];
-	// console.log('temp:' + temp);
-	// console.log(res);
-
+	const temp = res.headers['content-disposition'].split(';')[1].split('filename=')[1].replace(new RegExp('"', 'g'), '');
+	link.download = decodeURIComponent(temp);
 	// link.download = `${t('料號')} ${new Date().toLocaleString()}.xlsx`; // 在前端也可以设置文件名字
 	link.click();
 	//释放内存

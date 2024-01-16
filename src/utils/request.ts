@@ -38,8 +38,6 @@ service.interceptors.request.use(
 // 添加响应拦截器
 service.interceptors.response.use(
 	(response) => {
-		console.log(response);
-		
 		checkResponse(response);
 		// 对响应数据做点什么
 		const res = response.data;
