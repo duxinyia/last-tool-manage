@@ -544,7 +544,7 @@ const openReturnDialog = async (scope: EmptyObjectType, type: string) => {
 		scope.row.exitQty = scope.row.codeManageMode === 1 ? res.data.transferQty : res.data.codes?.length;
 		getData = res.data;
 		scope.row.warehouseManager = res.data.inDRI;
-		scope.row.storageId = res.data.inSLocation;
+		scope.row.storageId = res.data.inSLocation + '，' + res.data.inStorageType;
 		scope.row.storageid = res.data.inStorageId;
 	} else {
 		dilogTitle.value = '退庫';
@@ -644,7 +644,7 @@ const remoteMethod = (query: string) => {
 		setTimeout(async () => {
 			const res = await getQueryStoreHouseExceptIdleStoreNoPageApi('', query);
 			options = res.data.map((item: EmptyObjectType) => {
-				return { value: `${item.storeId}`, label: `${item.storeType}`, text: `${item.sLocation}` };
+				return { value: `${item.storeId}`, label: `${item.storeType}`, text: `${item.sLocation}，${item.storeType}` };
 			});
 			dialogConfig?.forEach((item) => {
 				if (item.prop === 'storageId') item.loading = false;

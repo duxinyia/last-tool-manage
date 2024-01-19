@@ -498,6 +498,7 @@ const onSubmit = async (formEl: FormInstance | undefined, type: number) => {
 				draggable: true,
 			})
 				.then(async () => {
+					await getSaveTakeSampleApi(allData);
 					loadingBtn.value = true;
 					const res = await getSubmitTaskSampleApi({ sampleNo: form.sampleNo });
 					if (res.status) {

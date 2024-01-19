@@ -202,7 +202,7 @@
 								:collapse-tags-tooltip="item.collapseTagsTooltip"
 							>
 								<el-option v-for="val in item.options" :key="val.value || val.label" :label="val.text" :value="val.value">
-									<slot name="optionFat" :row="val"></slot>
+									<slot name="optionFat" :row="val" :val="item"></slot>
 								</el-option>
 							</el-select>
 							<el-switch

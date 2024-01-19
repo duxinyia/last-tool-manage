@@ -161,10 +161,11 @@ nav {
 // 	width: 1000px;
 // }
 .describe {
+	line-height: 30px;
 	display: flex;
 	margin-top: 10px;
 	span {
-		width: 100px;
+		width: 50px;
 	}
 }
 </style>

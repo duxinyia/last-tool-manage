@@ -25,6 +25,12 @@
 				@dailogFormButton="onDownLoad"
 				@selectChange="onSelectChange"
 			>
+				<template #optionFat="{ row, val }">
+					<div v-if="val.prop === 'sLocation'">
+						<span style="float: left">{{ row.text }}</span>
+						<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
+					</div>
+				</template>
 			</Dialog>
 		</el-tab-pane>
 		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="樣品發料記錄" name="second">
@@ -276,6 +282,13 @@ const onSelectChange = async (val: string, prop: string, formData: EmptyObjectTy
 	if (prop === 'sLocation') {
 		const res = await getAdminNamesOfStoreHouseApi(formData.sLocation);
 		formData.warehouseManager = res.data;
+		if (!formData.storeType) {
+			option.forEach((item) => {
+				if (item.value === formData.sLocation) {
+					formData.storeType = item.label;
+				}
+			});
+		}
 	} else {
 		formData.sLocation = '';
 		formData.warehouseManager = '';

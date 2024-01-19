@@ -138,7 +138,7 @@ const state = reactive<TableDemoState>({
 			{ type: 'text', label: '圖紙編號', prop: 'drawNo', required: false, placeholder: '' },
 			{ type: 'text', label: '規格', prop: 'specs', required: false, placeholder: '' },
 			{ type: 'number', label: '需求數量', prop: 'needsQty', required: true, placeholder: '', min: 1 },
-			{ type: 'date', label: '需求時間', prop: 'needsDate', required: true, placeholder: '', isdisabledDate: true },
+			{ type: 'date', label: '需求時間', prop: 'needsDate', required: true, placeholder: '' },
 			{
 				label: '採購人員',
 				prop: 'purchaserName',

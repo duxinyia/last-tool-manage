@@ -106,8 +106,8 @@ const state = reactive<TableDemoState>({
 			{ key: 'storageType', colWidth: '', title: '倉庫類型', type: 'text', isCheck: true },
 			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
 			{ key: 'stockqty', colWidth: '', title: '庫存總量', type: 'text', isCheck: true },
-			{ key: 'qrstockqty', colWidth: '', title: '有碼庫存量', type: 'text', isCheck: true },
-			{ key: 'notqrstockqty', colWidth: '', title: '無碼庫存量', type: 'text', isCheck: true },
+			// { key: 'qrstockqty', colWidth: '', title: '有碼庫存量', type: 'text', isCheck: true },
+			// { key: 'notqrstockqty', colWidth: '', title: '無碼庫存量', type: 'text', isCheck: true },
 			{ key: 'codeManageModeText', colWidth: '', title: '二維碼管理模式', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -176,9 +176,9 @@ const state = reactive<TableDemoState>({
 });
 
 // 单元格字体颜色
-const cellStyle = ({ column }: EmptyObjectType) => {
+const cellStyle = ({ row, column }: EmptyObjectType) => {
 	const property = column.property;
-	if (property === 'qrstockqty') {
+	if (property === 'stockqty' && row.codeManageMode === 0) {
 		return { color: 'var(--el-color-primary)', cursor: 'pointer' };
 	}
 };
@@ -251,14 +251,8 @@ const openReturnDialog = (scope: EmptyObjectType) => {
 
 // 点击料号,暂时不做
 const matnoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
-	// if (column.property === 'matno') {
-	// 	matNoRef.value = row.matno;
-	// 	setTimeout(() => {
-	// 		matNoDetaildialogVisible.value = true;
-	// 	}, 100);
-	// } else
-
-	if (column.property === 'qrstockqty') {
+	if (row.codeManageMode === 1) return;
+	if (column.property === 'stockqty') {
 		let res = await GetStockQrListApi(row.runid);
 		if (res.data.length == 0) {
 			ElMessage.error('暫無條碼數據');

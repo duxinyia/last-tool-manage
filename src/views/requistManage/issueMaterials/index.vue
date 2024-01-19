@@ -38,6 +38,12 @@
 			@dailogFormButton="onDownLoad"
 			@selectChange="onChangeStoreType"
 		>
+			<template #optionFat="{ row, val }">
+				<div v-if="val.prop === 'sLocation'">
+					<span style="float: left">{{ row.text }}</span>
+					<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
+				</div>
+			</template>
 		</Dialog>
 	</el-tabs>
 </template>
@@ -324,6 +330,13 @@ const onChangeStoreType = async (val: string, prop: string, form: EmptyObjectTyp
 	} else if (prop === 'sLocation') {
 		const res = await getAdminNamesOfStoreHouseApi(form.sLocation);
 		form.warehouseManager = res.data;
+		if (!form.storeType) {
+			option.forEach((item) => {
+				if (item.value === form.sLocation) {
+					form.storeType = item.label;
+				}
+			});
+		}
 	}
 };
 // 搜索下拉选择

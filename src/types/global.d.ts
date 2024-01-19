@@ -40,6 +40,7 @@ declare type RouteItem<T = any> = {
 	k?: T;
 	meta?: {
 		title?: string;
+		titleEn?: string;
 		isLink?: string;
 		isHide?: boolean;
 		isKeepAlive?: boolean;

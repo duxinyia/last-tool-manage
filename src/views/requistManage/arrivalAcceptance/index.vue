@@ -367,7 +367,7 @@ const currentData = ref<EmptyObjectType>([]);
 // 点击验收按钮
 const openArriveJobDialog = (scope: EmptyObjectType) => {
 	loadingBtn.value = false;
-	arriveJobDialogRef.value.openDialog('samp', scope.row, '收貨');
+	arriveJobDialogRef.value.openDialog('samp', scope.row, '驗收');
 	// 此處填寫的通過數量都會進入發料入庫流程，若要全部退回通過數量請填0
 	scope.row.checkqty = scope.row.qty;
 	state.tableData.dialogConfig?.forEach((item) => {

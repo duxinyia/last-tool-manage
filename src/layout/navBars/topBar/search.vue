@@ -72,7 +72,8 @@ const createFilter = (queryString: string) => {
 		return (
 			restaurant.path.toLowerCase().indexOf(queryString.toLowerCase()) > -1 ||
 			restaurant.meta!.title!.toLowerCase().indexOf(queryString.toLowerCase()) > -1 ||
-			t(restaurant.meta!.title!).indexOf(queryString.toLowerCase()) > -1
+			t(restaurant.meta!.title!).indexOf(queryString.toLowerCase()) > -1 ||
+			t(restaurant.meta!.titleEn!).indexOf(queryString.toLowerCase()) > -1
 		);
 	};
 };
