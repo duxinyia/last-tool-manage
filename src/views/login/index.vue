@@ -38,10 +38,10 @@
 				<div class="author-info">
 					<div>
 						<span class="author">
-							<el-icon class="icon"><ele-UserFilled /></el-icon>劉進/37500
+							<el-icon class="icon"><ele-UserFilled /></el-icon>孫千禧/5060-76343
 						</span>
 						<span class="mail">
-							<el-icon class="icon"><ele-Message /></el-icon>rein.j.liu@mail.foxconn.com
+							<el-icon class="icon"><ele-Message /></el-icon>wwjc-mis-net@mail.foxconn.com
 						</span>
 						&nbsp;&nbsp;
 						<span class="author">

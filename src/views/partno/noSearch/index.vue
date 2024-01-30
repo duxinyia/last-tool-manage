@@ -1,7 +1,13 @@
 <template>
 	<div class="table-container layout-padding">
 		<div class="table-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" labelWidth=" " />
+			<TableSearch
+				:search="state.tableData.search"
+				@search="onSearch"
+				:searchConfig="state.tableData.searchConfig"
+				@remoteMethod="(query) => remoteMethod(query, 1)"
+				labelWidth="70px"
+			/>
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
@@ -24,11 +30,21 @@
 				@editDialog="editDialog"
 				@downloadTemp="ondownloadTemp"
 				@importTableData="onImportTable"
-				@remoteMethod="remoteMethod"
+				@remoteMethod="(query) => remoteMethod(query, 1)"
 				:loadingBtn="loadingBtn"
 				labelWidth="110px"
 			/>
-			<el-dialog draggable :close-on-click-modal="false" v-model="matNoDetaildialogVisible" title="料號詳情" width="50%">
+			<el-dialog
+				v-if="matNoRef && (matNoRef.signStatus === 5 || matNoRef.signStatus === 6)"
+				draggable
+				:close-on-click-modal="false"
+				v-model="matNoDetaildialogVisible"
+				:title="titleDialog + '中'"
+				width="99%"
+			>
+				<matModifySignInfoLink @editDialogTitle="editDialogTitle" :isDialog="true" :matNoRef="matNoRef"
+			/></el-dialog>
+			<el-dialog v-else draggable :close-on-click-modal="false" v-model="matNoDetaildialogVisible" title="料號詳情" width="50%">
 				<matNoDetailDialog :isDialog="true" :matNoRef="matNoRef"
 			/></el-dialog>
 		</div>
@@ -58,6 +74,7 @@ const Table = defineAsyncComponent(() => import('/@/components/table/index.vue')
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
 const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 const matNoDetailDialog = defineAsyncComponent(() => import('/@/views/link/noSearchLink/index.vue'));
+const matModifySignInfoLink = defineAsyncComponent(() => import('/@/views/link/matModifySignInfoLink/index.vue'));
 // 定义变量内容
 const { t } = useI18n();
 const loadingBtn = ref(false);
@@ -65,7 +82,7 @@ const tableRef = ref<RefType>();
 const noSearchDialogRef = ref();
 const matNoRef = ref();
 const matNoDetaildialogVisible = ref(false);
-
+const titleDialog = ref('');
 const state = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
@@ -121,6 +138,19 @@ const state = reactive<TableDemoState>({
 			},
 			{ label: '品名', prop: 'name', placeholder: '', required: false, type: 'input' },
 			{ label: '圖紙編號', prop: 'drawNo', placeholder: '', required: false, type: 'input' },
+			{
+				label: '機種',
+				prop: 'machineType',
+				required: false,
+				type: 'select',
+				placeholder: '請輸入選擇機種',
+				options: [],
+				loading: true,
+				filterable: true,
+				remote: true,
+				remoteShowSuffix: true,
+			},
+			{ label: '請購料號', prop: 'reqMatNo', placeholder: '', required: false, type: 'input' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -139,10 +169,12 @@ const state = reactive<TableDemoState>({
 		// 弹窗表单
 		dialogConfig: [
 			{ label: 'message.pages.matNo', prop: 'matNo', placeholder: 'message.pages.placeMatNo', required: false, type: 'text' },
+			{ label: '請購料號', prop: 'reqMatNo', placeholder: '請輸入請購料號', required: false, type: 'input' },
 			{ label: 'message.pages.nameCh', prop: 'nameCh', placeholder: 'message.pages.placeNameCh', required: true, type: 'input' },
 			{ label: 'message.pages.nameEn', prop: 'nameEn', placeholder: 'message.pages.placeNameEn', required: true, type: 'input' },
 			{ label: 'message.pages.drawNo', prop: 'drawNo', placeholder: 'message.pages.placeDrawNo', required: true, type: 'input' },
-
+			{ label: '圖紙版次', prop: 'revision', placeholder: '請輸入圖紙版次', required: false, type: 'input', maxlength: 5 },
+			{ label: 'message.pages.specs', prop: 'specs', placeholder: 'message.pages.placeSpecs', required: false, type: 'input' },
 			{
 				label: '階段',
 				prop: 'stage',
@@ -169,8 +201,7 @@ const state = reactive<TableDemoState>({
 					{ value: 'SMT', label: 'SMT', text: 'SMT' },
 				],
 			},
-			{ label: '請購料號', prop: 'reqMatNo', placeholder: '請輸入請購料號', required: false, type: 'input' },
-			{ label: 'message.pages.specs', prop: 'specs', placeholder: 'message.pages.placeSpecs', required: false, type: 'input' },
+
 			{
 				label: '機種',
 				prop: 'machineTypes',
@@ -192,7 +223,7 @@ const state = reactive<TableDemoState>({
 				lg: 24,
 				xl: 24,
 			},
-			{ label: '二維碼管理模式', prop: 'codeManageMode', placeholder: '', required: false, type: 'radio' },
+			{ label: '二維碼管理模式', prop: 'codeManageMode', placeholder: '', required: true, type: 'radio' },
 			// { label: '厂区', prop: 'area', placeholder: '请选择厂区', required: false, type: 'select', options: [] },
 			// { label: 'BU', prop: 'bu', placeholder: '请选择BU', required: false, type: 'select', options: [] },
 			// { label: '专案代码', prop: 'projectCode', placeholder: '请选择专案代码', required: false, type: 'select', options: [] },
@@ -215,12 +246,13 @@ const state = reactive<TableDemoState>({
 				prop: 'draw3dPath',
 				placeholder: 'message.pages.placeDrawPath',
 				required: false,
-				type: 'input3dFile',
+				type: 'inputFile',
 				xs: 24,
 				sm: 24,
 				md: 24,
 				lg: 24,
 				xl: 24,
+				isClearable: true,
 			},
 			{
 				label: 'message.pages.describe',
@@ -245,6 +277,10 @@ const cellStyle = ({ column }: EmptyObjectType) => {
 		return { color: 'var(--el-color-primary)', cursor: 'pointer' };
 	}
 };
+// 修改弹窗标题
+const editDialogTitle = (title: string) => {
+	titleDialog.value = title;
+};
 // 点击料号弹出详情
 const matNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'matNo') {
@@ -256,10 +292,10 @@ const matNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 };
 // 选择下拉
 let options: EmptyArrayType = [];
-const remoteMethod = (query: string) => {
-	let dialogConfig = state.tableData.dialogConfig;
+const remoteMethod = (query: string, num: number) => {
+	let dialogConfig = num === 2 ? state.tableData.dialogConfig : state.tableData.search;
 	dialogConfig?.forEach((item) => {
-		if (item.prop === 'machineTypes') item.loading = true;
+		if (item.prop === 'machineTypes' || item.prop === 'machineType') item.loading = true;
 	});
 	if (query) {
 		setTimeout(async () => {
@@ -268,15 +304,17 @@ const remoteMethod = (query: string) => {
 				return { value: `${item}`, label: `${item}`, text: `${item}` };
 			});
 			dialogConfig?.forEach((item) => {
-				if (item.prop === 'machineTypes') item.loading = false;
-				item.options = options.filter((item: EmptyObjectType) => {
-					return item.value.toLowerCase().includes(query.toLowerCase());
-				});
+				if (item.prop === 'machineTypes' || item.prop === 'machineType') {
+					item.loading = false;
+					item.options = options.filter((item: EmptyObjectType) => {
+						return item.value.toLowerCase().includes(query.toLowerCase());
+					});
+				}
 			});
 		}, 500);
 	} else {
 		dialogConfig?.forEach((item) => {
-			if (item.prop === 'machineTypes') item.options = [];
+			if (item.prop === 'machineTypes' || item.prop === 'machineType') item.options = [];
 		});
 	}
 };

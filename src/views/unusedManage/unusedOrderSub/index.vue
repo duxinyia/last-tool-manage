@@ -178,6 +178,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'exitqty', colWidth: '', title: '閒置數量', type: 'text', isCheck: true },
 			{ key: 'exitreason', colWidth: '', title: '閒置原因', type: 'text', isCheck: true },
 			{ key: 'creator', colWidth: '', title: '發起人', type: 'text', isCheck: true },
+			{ key: 'createtime', colWidth: '', title: '閒置時間', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -340,9 +341,9 @@ const remoteMethod = (query: string, prop: string) => {
 	}
 };
 // 单元格字体颜色
-const cellStyle = ({ column }: EmptyObjectType) => {
+const cellStyle = ({ row, column }: EmptyObjectType) => {
 	const property = column.property;
-	if (property === 'matno' || property === 'exitqty') {
+	if (property === 'matno' || (property === 'exitqty' && row.codeManageMode === 0)) {
 		return { color: 'var(--el-color-primary)', cursor: 'pointer' };
 	}
 };
@@ -387,7 +388,7 @@ const matNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'matno') {
 		row.exittype = exitTypeMap[row.exittype];
 		matnoDetailDialogRef.value.openDialog('matno', row, '退庫詳情');
-	} else if (column.property === 'exitqty') {
+	} else if (column.property === 'exitqty' && row.codeManageMode === 0) {
 		let res = await GetExitStoreQrCodeListApi(row.runid);
 		if (res.data.length == 0) {
 			ElMessage.error('暫無條碼數據');

@@ -2,7 +2,7 @@
 	<div class="system-menu-dialog-container">
 		<el-dialog draggable :close-on-click-modal="false" :title="state.dialog.title" v-model="state.dialog.isShowDialog" :width="dialogWidth">
 			<template #header="{}">
-				<slot name="Header" :hearName="state.dialog.title"></slot>
+				<slot name="Header" :hearName="state.dialog.title" :formData="state.formData"></slot>
 			</template>
 			<el-form v-if="state.dialog.type !== 'imp'" ref="dialogFormRef" :model="state.formData" size="default" :label-width="labelWidth || '100px'">
 				<el-row :gutter="35">
@@ -136,10 +136,13 @@
 								</template>
 							</el-input> -->
 							<div v-if="item.type == 'tagsarea'">
-								<el-tag v-for="tag in state.formData[item.prop]" :key="tag" closable class="mr10">
+								<el-tag v-for="tag in state.formData[item.prop]" :key="tag" class="mr10">
 									{{ tag }}
 								</el-tag>
 							</div>
+							<span v-if="item.type === 'link'">
+								<a href="javascript:;" title="請點擊查看文件" @click="clickLink(item.prop)">{{ state.formData[item.prop] }}</a>
+							</span>
 							<!-- <el-input disabled v-if="item.type === 'input3dFile'" v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)" clearable>
 								<template #prepend
 									><el-upload
@@ -177,8 +180,16 @@
 								:limit="1"
 								:on-exceed="imageHandleExceed"
 								:on-change="imageHandleChange"
+								:disabled="item.disabled"
 							>
-								<el-image class="avatar" v-if="imageUrl" :src="imageUrl" fit="contain" style="width: 148px; height: 148px" />
+								<el-image
+									:class="{ uploadImagedisabled: item.disabled }"
+									class="avatar"
+									v-if="imageUrl"
+									:src="imageUrl"
+									fit="contain"
+									style="width: 148px; height: 148px"
+								/>
 								<SvgIcon v-else class="avatar-uploader-icon" name="ele-Plus" />
 							</el-upload>
 							<el-select
@@ -307,6 +318,7 @@
 										v-model="state.formInnerData[item.prop]"
 										:placeholder="$t(item.placeholder)"
 										clearable
+										:maxlength="item.maxlength"
 										@input=" (val:any) => commonInputHandleChange(val,item.prop)"
 										@keyup=" (target:any) => inputNum(target,item.prop)"
 									></el-input>
@@ -470,7 +482,12 @@ const state = reactive<dialogFormState>({
 		isdisable: false,
 	},
 });
-
+// 點擊鏈接
+const clickLink = (prop: string) => {
+	const path = state.formData[prop];
+	if (!path || !path.includes('/')) return ElMessage.warning(`暫無圖紙文件或者圖紙文件路徑錯誤`);
+	window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${path}`, '_blank');
+};
 const ondownloadTemp = () => {
 	emit('downloadTemp');
 };
@@ -988,5 +1005,9 @@ defineExpose({
 	width: 148px;
 	height: 148px;
 	text-align: center;
+}
+.uploadImagedisabled {
+	pointer-events: auto !important;
+	cursor: not-allowed !important;
 }
 </style>

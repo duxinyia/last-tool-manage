@@ -131,16 +131,16 @@ const state = reactive<TableDemoState>({
 			{ label: '倉庫類型', prop: 'storeType', required: false, type: 'select', options: [] },
 			{
 				label: '倉庫位置',
-				prop: 'storageId',
+				prop: 'sLocation',
 				required: false,
-				type: 'select',
-				placeholder: '請輸入選擇倉庫位置',
-				options: [],
-				loading: true,
-				filterable: true,
-				remote: true,
-				remoteShowSuffix: true,
+				type: 'input',
+				placeholder: '請輸入倉庫位置',
 			},
+			// options: [],
+			// 	loading: true,
+			// 	filterable: true,
+			// 	remote: true,
+			// 	remoteShowSuffix: true,
 			{
 				label: '段位',
 				prop: 'depart',
@@ -163,7 +163,7 @@ const state = reactive<TableDemoState>({
 			matNo: '',
 			matName: '',
 			storeType: '',
-			storageId: '',
+			// storageId: '',
 		},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -221,7 +221,7 @@ const getTableData = async () => {
 	option.forEach((item) => {
 		if (item.value === form.sLocation) {
 			// form.sLocation = item.text;
-			form.storageId = item.value;
+			// form.storageId = item.value;
 		}
 	});
 

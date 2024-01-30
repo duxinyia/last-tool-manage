@@ -118,6 +118,7 @@ declare type LinkState = {
 		search: LinkSearchType[];
 		searchConfig:boolean;
 		form: EmptyObjectType;
+		form2: EmptyObjectType;
 };
 // 基础数据类别接口下拉框返回数据类型
 declare type parentIdListType={

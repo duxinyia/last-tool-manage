@@ -212,6 +212,7 @@
 							:collapse-tags="item.collapseTags"
 							:collapse-tags-tooltip="item.collapseTagsTooltip"
 							@focus="selectFocus(scope)"
+							@blur="selectBlur(scope)"
 						>
 							<template v-if="item.rowOption">
 								<el-option v-for="i in data[scope.$index][`${item.key}option`]" :key="i.label" :label="i.text" :value="i.value" />
@@ -459,6 +460,7 @@ const emit = defineEmits([
 	'handlechange',
 	'changeselect',
 	'selectFocus',
+	'selectBlur',
 	'inputData',
 	'inputBlur',
 	'changeData',
@@ -515,6 +517,10 @@ const changeSelect = (index: number, item: Object) => {
 // 下拉框獲取焦點時
 const selectFocus = (scope: EmptyObjectType) => {
 	emit('selectFocus', scope);
+};
+// 下拉框失去焦點
+const selectBlur = (scope: EmptyObjectType) => {
+	emit('selectBlur', scope);
 };
 // 解决翻页组件开始输入中文按enter键之后光标不居中问题
 onMounted(() => {

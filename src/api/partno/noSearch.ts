@@ -60,22 +60,22 @@ export function getSelectListApi(data:Object,list:string) {
   });
 }
 // 提交試產簽核
-export function getSubmitTrialSignApi(comKey:string) {
+export function getSubmitTrialSignApi(matNo:string) {
   return request({
     url: '/api/Material/SubmitTrialSign',
     method: 'POST',
     data: {
-      comKey
+      matNo
     },
   });
 }
 // 提交量產簽核
-export function getSubmitProduceSignApi(comKey:string) {
+export function getSubmitProduceSignApi(matNo:string) {
   return request({
     url: '/api/Material/SubmitProduceSign',
     method: 'POST',
     data: {
-      comKey
+      matNo
     },
   });
 }

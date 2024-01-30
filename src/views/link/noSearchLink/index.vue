@@ -1,9 +1,8 @@
 <template>
-	<div class="main" :style="!isDialog ? 'height: 380px' : ''">
-		<nav v-if="!isDialog" class="pb10">
-			料號詳情<el-tag v-if="state.form.runStatus === 77" style="font-weight: 700; font-size: 12px" class="ml10" type="warning">未經試產簽核 </el-tag>
-		</nav>
-
+	<nav v-if="!isDialog" class="pb10" style="background-color: #fff">
+		料號詳情<el-tag v-if="state.form.runStatus === 77" style="font-weight: 700; font-size: 12px" class="ml10" type="warning">未經試產簽核 </el-tag>
+	</nav>
+	<div class="main" :style="!isDialog ? 'height: 411px' : ''">
 		<div class="table-container">
 			<el-form v-if="state.form" ref="tableSearchRef" :model="state.form" size="default" label-width="auto" class="table-form" style="display: flex">
 				<div :xs="24" :sm="12" :md="2" :lg="2" :xl="2">
@@ -46,7 +45,7 @@
 					</el-col>
 				</el-row>
 			</el-form>
-			<el-empty v-else description="數據出錯" />
+			<!-- <el-empty v-else description="數據出錯" /> -->
 		</div>
 	</div>
 </template>
@@ -55,7 +54,7 @@
 import { useRoute, useRouter } from 'vue-router';
 import { defineAsyncComponent, reactive, ref, onMounted, watch, computed } from 'vue';
 import { ElMessage } from 'element-plus';
-import { getMaterialApi } from '/@/api/link/noSearchLink';
+import { getMaterialApi, getMatModifySignInfoApi, getMatSignInfoApi } from '/@/api/link/noSearchLink';
 import { useI18n } from 'vue-i18n';
 import { getMachineTypesOfMatApi } from '/@/api/partno/noSearch';
 const route = useRoute();
@@ -73,20 +72,46 @@ const props = defineProps({
 });
 const state = reactive<LinkState>({
 	search: [
-		{ label: '料號：', prop: 'matNo', type: 'text', isCheck: true },
-		{ label: '請購料號：', prop: 'reqMatNo', type: 'text', isCheck: true },
-		{ label: 'BU：', prop: 'bu', type: 'text', isCheck: true },
-		{ label: '中文：', prop: 'nameCh', type: 'text', isCheck: true },
-		{ label: '英文：', prop: 'nameEn', type: 'text', isCheck: true },
-		{ label: '圖紙編號：', prop: 'drawNo', type: 'text', isCheck: true },
-		{ label: '规格：', prop: 'specs', type: 'text', isCheck: true },
+		{ label: '料號：', prop: 'matNo', type: 'text', isCheck: true, color: '#1890ff' },
+		{ label: '請購料號：', prop: 'reqMatNo', type: 'text', isCheck: true, color: '#1890ff' },
+		{ label: '品名-中文：', prop: 'nameCh', type: 'text', isCheck: true, color: '#1890ff' },
+		{ label: '品名-英文：', prop: 'nameEn', type: 'text', isCheck: true, color: '#1890ff' },
+		{ label: '圖紙編號：', prop: 'drawNo', type: 'text', isCheck: true, color: '#1890ff' },
+		{ label: '圖紙版次：', prop: 'revision', type: 'text', isCheck: true, color: '#1890ff' },
+		{ label: 'BU：', prop: 'bu', type: 'text', isCheck: true, color: '#1890ff' },
+		{ label: '规格：', prop: 'specs', type: 'text', isCheck: true, color: '#1890ff' },
 		// { label: '厂区：', prop: 'area', type: 'text' },
 		// { label: 'BU：', prop: 'bu', type: 'text' },
 		// { label: '专案代码：', prop: 'projectCode', type: 'text' },
-		{ label: '階段：', prop: 'stage', type: 'text', isCheck: true },
-		{ label: '段位：', prop: 'depart', type: 'text', isCheck: true },
-		{ label: '二維碼管理模式：', prop: 'codeManageModeText', type: 'text', isCheck: true },
-		{ label: '機種：', prop: 'machineType', type: 'tagsarea', xs: 24, sm: 24, md: 24, lg: 24, xl: 24, isCheck: true },
+		{ label: '階段：', prop: 'stage', type: 'text', isCheck: true, color: '#1890ff' },
+		{ label: '段位：', prop: 'depart', type: 'text', isCheck: true, color: '#1890ff' },
+		{ label: '二維碼管理模式：', prop: 'codeManageModeText', type: 'text', isCheck: true, color: '#1890ff' },
+		{
+			label: '備註：',
+			prop: 'describe',
+			placeholder: 'message.pages.placeDescribe',
+			type: 'text',
+			xs: 24,
+			sm: 24,
+			md: 24,
+			lg: 24,
+			xl: 24,
+			isCheck: true,
+			color: '#1890ff',
+		},
+		{
+			label: '機種：',
+			prop: 'machineType',
+			type: 'tagsarea',
+			xs: 24,
+			sm: 24,
+			md: 24,
+			lg: 24,
+			xl: 24,
+			isCheck: true,
+			color: '#1890ff',
+			colorType: 'primary',
+		},
 		{
 			label: '圖紙文件：',
 			prop: 'drawPath',
@@ -108,21 +133,10 @@ const state = reactive<LinkState>({
 		// 	lg: 24,
 		// 	xl: 24,
 		// },
-		{
-			label: '備註：',
-			prop: 'describe',
-			placeholder: 'message.pages.placeDescribe',
-			type: 'text',
-			xs: 24,
-			sm: 24,
-			md: 24,
-			lg: 24,
-			xl: 24,
-			isCheck: true,
-		},
 	],
 	searchConfig: false,
 	form: {},
+	form2: {},
 });
 // 设置 顯示数据
 const showForm = computed(() => {
@@ -145,30 +159,35 @@ const getDetailData = async () => {
 	// 	});
 	// }
 	// link/noSearchLink?comkey=CMA23305-52-PM9423-3-001
+	// CSG24027-001_3
 	const codeManageModeMap: EmptyObjectType = {
 		0: '有碼管理',
 		1: '無碼管理',
 	};
 	let comkey = props.isDialog ? props.matNoRef.matNo : route.query.comkey;
-	const res = await getMaterialApi(comkey);
+	const res = props.isDialog ? await getMaterialApi(comkey) : await getMatSignInfoApi(comkey);
 	state.form = res.data;
+	state.form.machineType = res.data.machineTypes;
+	if (!props.isDialog) state.form.bu = res.data.buCode;
 	state.form.codeManageModeText = codeManageModeMap[state.form.codeManageMode];
 	state.form.picture = (import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl) + res.data.picture;
-	const res1 = await getMachineTypesOfMatApi(comkey);
-	state.form.machineType = res1.data;
-	if (!res.status && !res1.status) {
-		state.form = {};
+	if (props.isDialog) {
+		const res1 = await getMachineTypesOfMatApi(comkey);
+		state.form.machineType = res1.data;
+		if (!res.status && !res1.status) {
+			state.form = {};
+		}
 	}
 };
 // 点击文件
 const clickLink = (prop: string) => {
-	if (prop === 'drawPath') {
+	if (prop === 'drawPath' && state.form.drawPath.includes('/')) {
 		window.open(
 			`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${state.form[prop]}`,
 			'_blank'
 		);
 	} else {
-		ElMessage.warning('暫無圖紙文件');
+		ElMessage.warning('暫無圖紙文件或者文件圖紙路徑錯誤');
 	}
 };
 // 页面加载时
@@ -197,6 +216,11 @@ nav {
 	align-items: center;
 	justify-content: center;
 	font-size: 20px;
+}
+.center-text {
+	color: #27ba9b;
+	font-size: 16px;
+	font-weight: 700;
 }
 // .box-card {
 // 	width: 1000px;

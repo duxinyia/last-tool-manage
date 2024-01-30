@@ -34,6 +34,7 @@
 					@delRow="(row: EmptyObjectType, i: number)=>onDelRow(row,i,state.tableData)"
 					@addrow="onAddRow(state.tableData)"
 					@remoteMethod="(index: number, query: string)=>remoteMethod(index, query,state.tableData)"
+					@selectBlur="(scope: EmptyObjectType)=>onSelectBlur(scope,state.tableData)"
 					@changeselect="changeSelect"
 					@selectFocus="onSelectFocus"
 				/>
@@ -627,9 +628,13 @@ const remoteMethod = (index: number, query: string, datas: EmptyObjectType) => {
 					});
 				}
 			});
-			if (res.data.length === 1) {
-				datas.data[0].matNo = query;
-				changeSelect(0, query);
+			const matNos: EmptyArrayType = [];
+			res.data.forEach((item: any) => {
+				matNos.push(item.matNo);
+			});
+			if (res.data.length === 1 && matNos.includes(query)) {
+				datas.data[index].matNo = query;
+				changeSelect(index, query);
 			}
 			// datas.header[0].option = option.filter((item: EmptyObjectType, index) => {
 			// 	return item.label.toLowerCase().includes(query.toLowerCase());
@@ -665,6 +670,8 @@ const remoteMethod = (index: number, query: string, datas: EmptyObjectType) => {
 // 	data.nameCh = '';
 // 	data.nameEn = '';
 // };
+// 下拉失去焦點
+const onSelectBlur = (scope: EmptyObjectType, datas: EmptyObjectType) => {};
 // // 	在 Input 值改变时触发
 const changeSelect = async (i: number, query: any) => {
 	resDataRef.value.forEach(async (item: any) => {
@@ -741,7 +748,7 @@ const toggleRowExpansion = async (row: EmptyObjectType, falg?: number) => {
 		expandedRowKeys.value.push(row.applyDetailId);
 	}
 	// 先判断该行是否已经展开了
-	if (!row.expand) {
+	if (!row.expand && !isDraft.value) {
 		loading.value = true;
 		const res = await getProgressOfApplyRecordDetailApi(row.applyDetailId);
 		loading.value = false;
@@ -873,11 +880,11 @@ const onSubmit = async (formEl: EmptyObjectType | undefined, type: number, datas
 			if (type === 1) {
 				saveLoading.value = true;
 				const res = await getCreateOrUpdateDraftApi(allData);
+				saveLoading.value = false;
 				if (res.status) {
 					datas.form.reqNo = res.data;
 					ElMessage.success(t('保存草稿成功'));
 				}
-				saveLoading.value = false;
 				getTableData();
 			} else {
 				if (!datas.form.reqNo) return ElMessage.warning(t(`請先保存數據，得到申請單號再提交`));
@@ -888,22 +895,24 @@ const onSubmit = async (formEl: EmptyObjectType | undefined, type: number, datas
 					draggable: true,
 				})
 					.then(async () => {
-						subLoading.value = true;
-						await getCreateOrUpdateDraftApi(allData);
-						const res = await getSubmitDraftApi({ reqNo: datas.form.reqNo });
-						if (res.status) {
-							ElMessage.success(t('提交成功'));
+						const res1 = await getCreateOrUpdateDraftApi(allData);
+						if (res1.status) {
+							subLoading.value = true;
+							const res = await getSubmitDraftApi({ reqNo: datas.form.reqNo });
+							subLoading.value = false;
+							if (res.status) {
+								ElMessage.success(t('提交成功'));
+							}
+							if (activeName.value !== 'first') {
+								detailDialogVisible.value = false;
+							}
+							getTableData();
+							// 清空
+							const tableData = state.tableData;
+							tableData.form = {};
+							tableFormRef.value.resetFields();
+							tableData.data = [{}];
 						}
-						subLoading.value = false;
-						if (activeName.value !== 'first') {
-							detailDialogVisible.value = false;
-						}
-						getTableData();
-						// 清空
-						const tableData = state.tableData;
-						tableData.form = {};
-						tableFormRef.value.resetFields();
-						tableData.data = [{}];
 					})
 					.catch(() => {});
 			}

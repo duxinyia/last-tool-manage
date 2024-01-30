@@ -441,6 +441,14 @@ export const staticRoutes: Array<RouteRecordRaw> = [
 		},
 	},
 	{
+		path: '/link/matModifySignInfoLink',
+		name: 'matModifySignInfoLink',
+		component: () => import('/@/views/link/matModifySignInfoLink/index.vue'),
+		meta: {
+			title: '修改信息對比',
+		},
+	},
+	{
 		path: '/link/arrivalAcceptanceLink',
 		name: 'arrivalAcceptanceLink',
 		component: () => import('/@/views/link/arrivalAcceptanceLink/index.vue'),

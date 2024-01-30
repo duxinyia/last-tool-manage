@@ -33,7 +33,7 @@
 				:loadingBtn="loadingBtn"
 			>
 				<template #optionFat="{ row }" v-if="dilogTitle === '轉倉'">
-					<span style="float: left">{{ row.text }}</span>
+					<span style="float: left">{{ row.text.split('，')[0] }}</span>
 					<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
 				</template>
 				<template #buttonFooter="{ row, data }">
@@ -66,7 +66,7 @@ import {
 	getStockOperDraftModifyStockTransferDraftApi,
 	getStockOperDraftRemoveCodeFromStockTransferDraftApi,
 } from '/@/api/toolsReturn/maintentanceTools';
-import { getAdminNamesOfStoreHouseApi, getQueryStoreHouseExceptIdleStoreNoPageApi, getUserNameApi } from '/@/api/global';
+import { getAdminNamesOfStoreHouseApi, getLegalStoreTypesApi, getQueryStoreHouseExceptIdleStoreNoPageApi, getUserNameApi } from '/@/api/global';
 
 import { useI18n } from 'vue-i18n';
 import type { TabsPaneContext } from 'element-plus';
@@ -115,8 +115,8 @@ const state = reactive<TableDemoState>({
 			{ key: 'storageType', colWidth: '', title: '倉庫類型', type: 'text', isCheck: true },
 			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
 			{ key: 'stockqty', colWidth: '', title: '庫存總量', type: 'text', isCheck: true },
-			{ key: 'qrstockqty', colWidth: '', title: '有碼庫存量', type: 'text', isCheck: true },
-			{ key: 'notqrstockqty', colWidth: '', title: '無碼庫存量', type: 'text', isCheck: true },
+			// { key: 'qrstockqty', colWidth: '', title: '有碼庫存量', type: 'text', isCheck: true },
+			// { key: 'notqrstockqty', colWidth: '', title: '無碼庫存量', type: 'text', isCheck: true },
 			{ key: 'codeManageModeText', colWidth: '', title: '二維碼管理模式', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -139,6 +139,14 @@ const state = reactive<TableDemoState>({
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
 			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'matName', required: false, type: 'input' },
+			{ label: '倉庫類型', prop: 'storeType', required: false, type: 'select', options: [] },
+			{
+				label: '倉庫位置',
+				prop: 'sLocation',
+				required: false,
+				type: 'input',
+				placeholder: '請輸入倉庫位置',
+			},
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -443,6 +451,14 @@ const changeToStyle = (indList: number[]) => {
 	// };
 };
 cellStyle.value = changeToStyle([1]);
+// 下拉框数据
+const getSelect = async () => {
+	const res = await getLegalStoreTypesApi();
+	const option = res.data.map((item: any) => {
+		return { label: item, text: item, value: item };
+	});
+	state.tableData.search[3].options = option;
+};
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;
@@ -544,7 +560,7 @@ const openReturnDialog = async (scope: EmptyObjectType, type: string) => {
 		scope.row.exitQty = scope.row.codeManageMode === 1 ? res.data.transferQty : res.data.codes?.length;
 		getData = res.data;
 		scope.row.warehouseManager = res.data.inDRI;
-		scope.row.storageId = res.data.inSLocation + '，' + res.data.inStorageType;
+		scope.row.storageId = res.data.inStorageId ? res.data.inSLocation + '，' + res.data.inStorageType : '';
 		scope.row.storageid = res.data.inStorageId;
 	} else {
 		dilogTitle.value = '退庫';
@@ -929,6 +945,7 @@ const onSortHeader = (data: TableHeaderType[]) => {
 // 页面加载时
 onMounted(() => {
 	getTableData();
+	getSelect();
 });
 </script>
 

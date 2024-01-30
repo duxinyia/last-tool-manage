@@ -351,6 +351,9 @@ const routePage = (type: number) => {
 		4: '/requistManage/issueMaterials',
 		5: '/maintenanceManage/maintenanceMaterialIssue',
 		6: '/sampleManage/sampleIssue',
+		7: '/toolsReturn/entryJob',
+		8: '/toolsReturn/maintainEntry',
+		9: '/toolsReturn/sampleStorage',
 	};
 	router.push(routeTypeMap[type]);
 };
@@ -372,6 +375,9 @@ const getTodos = async () => {
 		4: '待發料',
 		5: '待發料',
 		6: '待發料',
+		7: '待入庫',
+		8: '待入庫',
+		9: '待入庫',
 	};
 	const noTypeMap: EmptyObjectType = {
 		0: '送樣單',
@@ -381,6 +387,9 @@ const getTodos = async () => {
 		4: '申請單',
 		5: '維修單',
 		6: '送樣單',
+		7: '申請單',
+		8: '維修單',
+		9: '送樣單',
 	};
 	res.data.forEach((item: any) => {
 		let type = item.todoType;

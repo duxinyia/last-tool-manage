@@ -2,7 +2,7 @@ import request from '/@/utils/request';
 // 維修發料查詢
 export function getQueryDispatchedRepairCheckDetailsApi(data:Object) {
   return request({
-    url: '/api/ToolRepair/QueryDispatchedRepairCheckDetails',
+    url: '/api/ToolRepair/QueryDispatchableRepairCheckDetails',
     method: 'POST',
   	data:data
   });
