@@ -206,7 +206,7 @@ const state = reactive({
 			label: 'SOP',
 			value: 'SOP下載',
 			iconColor: '#F72B3F',
-			link: '/Template/治工具系統SOP-V1.pptx',
+			link: '/Template/治工具系統SOP-V2.pptx',
 		},
 		{
 			icon: 'iconfont icon-btn-daoru',

@@ -284,7 +284,7 @@
 						/>
 					</template>
 					<span v-if="!config.isInlineEditing && item.type === 'text'" style="text-align: center; width: 100%">
-						{{ scope.row[item.key] }}
+						{{ item.transfer ? $t(item.transfer[scope.row[item.key]]) : scope.row[item.key] }}
 					</span>
 				</template>
 			</el-table-column>

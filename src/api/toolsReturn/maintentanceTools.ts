@@ -116,3 +116,27 @@ export function getStockOperDraftRemoveCodeFromStockTransferDraftApi(data: Objec
 		data:data
 	});
 }
+//查询退庫記錄
+export function getQueryExitStoreRecordApi(data: Object) {
+	return request({
+		url: '/api/Stock/QueryExitStoreRecord',
+		method: 'POST',
+		data: data,
+	});
+}
+// 轉倉記錄
+export function getQueryTransferStorageRecordApi(data: Object) {
+	return request({
+		url: '/api/Stock/QueryTransferStorageRecord',
+		method: 'POST',
+		data: data,
+	});
+}
+// 查看轉倉二維碼
+export function getStockTransferCodesApi(stockTransferId: Object) {
+	return request({
+		url: '/api/Stock/GetStockTransferCodes',
+		method: 'GET',
+		params: { stockTransferId },
+	});
+}

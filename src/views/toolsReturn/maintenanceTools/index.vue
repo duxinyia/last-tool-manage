@@ -1,47 +1,82 @@
 <template>
-	<div class="table-container layout-padding">
-		<div class="table-padding layout-padding-view layout-padding-auto">
-			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" />
+	<el-tabs v-model="activeName" class="table-container layout-padding" @tab-click="handleClick">
+		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="治工具退庫" name="first">
+			<TableSearch
+				:search="state.tableData.search"
+				@search="(data) => onSearch(data, state.tableData)"
+				:searchConfig="state.tableData.searchConfig"
+			/>
 			<Table
 				ref="tableRef"
 				v-bind="state.tableData"
 				class="table"
-				@pageChange="onTablePageChange"
-				@sortHeader="onSortHeader"
-				@cellclick="matnoClick"
-				:cellStyle="cellStyle"
+				@pageChange="(page) => onTablePageChange(page, state.tableData)"
+				@sortHeader="(data) => onSortHeader(data, state.tableData)"
 				@onOpenOtherDialog="openReturnDialog"
 			/>
-			<Dialog
-				ref="repairReturnDialogRef"
-				:dialogConfig="dialogState.tableData.dialogConfig"
-				:innerDialogConfig="dialogState.tableData.innerDialogConfig"
-				dialogWidth="40%"
-				dialogType="nestDialogConfig"
-				@addData="returnSubmit"
-				@dailogFormButton="scanCodeEntry"
-				@commonInputHandleChange="change"
-				:tagsData="tags"
-				@innnerDialogCancel="innnerDialogCancel"
-				@innnerDialogSubmit="innnerDialogSubmit"
-				@openInnerDialog="openInnerDialog"
-				@handleTagClose="handleTagClose"
-				@selectChange="selectChange"
-				@remoteMethod="remoteMethod"
-				@inputBlur="onInputBlur"
-				@inputFocus="onInputFocus"
-				:loadingBtn="loadingBtn"
-			>
-				<template #optionFat="{ row }" v-if="dilogTitle === '轉倉'">
-					<span style="float: left">{{ row.text.split('，')[0] }}</span>
-					<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
-				</template>
-				<template #buttonFooter="{ row, data }">
-					<el-button v-if="row.type === 'button'" type="primary" plain @click="addButton(data)">{{ row.label }}</el-button>
-				</template>
-			</Dialog>
-		</div>
-	</div>
+		</el-tab-pane>
+		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="退庫記錄" name="second">
+			<TableSearch
+				:search="secondState.tableData.search"
+				@search="(data) => onSearch(data, secondState.tableData)"
+				:searchConfig="secondState.tableData.searchConfig"
+			/>
+			<Table
+				ref="tableRef"
+				v-bind="secondState.tableData"
+				class="table"
+				@pageChange="(page) => onTablePageChange(page, secondState.tableData)"
+				@sortHeader="(data) => onSortHeader(data, secondState.tableData)"
+				@cellclick="qrCodeClick"
+				:cellStyle="cellStyle"
+			/>
+		</el-tab-pane>
+		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="轉倉記錄" name="third">
+			<TableSearch
+				:search="thirdState.tableData.search"
+				@search="(data) => onSearch(data, thirdState.tableData)"
+				:searchConfig="thirdState.tableData.searchConfig"
+			/>
+			<Table
+				ref="tableRef"
+				v-bind="thirdState.tableData"
+				class="table"
+				@pageChange="(page) => onTablePageChange(page, thirdState.tableData)"
+				@sortHeader="(data) => onSortHeader(data, thirdState.tableData)"
+				@cellclick="qrCodeClick"
+				:cellStyle="cellStyle"
+			/>
+		</el-tab-pane>
+		<Dialog
+			ref="repairReturnDialogRef"
+			:dialogConfig="dialogState.tableData.dialogConfig"
+			:innerDialogConfig="dialogState.tableData.innerDialogConfig"
+			dialogWidth="40%"
+			dialogType="nestDialogConfig"
+			@addData="returnSubmit"
+			@dailogFormButton="scanCodeEntry"
+			@commonInputHandleChange="change"
+			:tagsData="tags"
+			@innnerDialogCancel="innnerDialogCancel"
+			@innnerDialogSubmit="innnerDialogSubmit"
+			@openInnerDialog="openInnerDialog"
+			@handleTagClose="handleTagClose"
+			@selectChange="selectChange"
+			@remoteMethod="remoteMethod"
+			@inputBlur="onInputBlur"
+			@inputFocus="onInputFocus"
+			:loadingBtn="loadingBtn"
+		>
+			<template #optionFat="{ row }" v-if="dilogTitle === '轉倉'">
+				<span style="float: left">{{ row.text.split('，')[0] }}</span>
+				<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
+			</template>
+			<template #buttonFooter="{ row, data }">
+				<el-button v-if="row.type === 'button'" type="primary" plain @click="addButton(data)">{{ row.label }}</el-button>
+			</template>
+		</Dialog>
+		<qrCodeDialog ref="inventoryDialogRef" :tags="tags" dialogTitle="庫存條碼" />
+	</el-tabs>
 </template>
 
 <script setup lang="ts" name="/toolsReturn/maintenanceTools">
@@ -65,19 +100,33 @@ import {
 	getStockOperDraftResetCodesOfStockTransferDraftApi,
 	getStockOperDraftModifyStockTransferDraftApi,
 	getStockOperDraftRemoveCodeFromStockTransferDraftApi,
+	getQueryExitStoreRecordApi,
+	getQueryTransferStorageRecordApi,
+	getStockTransferCodesApi,
 } from '/@/api/toolsReturn/maintentanceTools';
 import { getAdminNamesOfStoreHouseApi, getLegalStoreTypesApi, getQueryStoreHouseExceptIdleStoreNoPageApi, getUserNameApi } from '/@/api/global';
 
 import { useI18n } from 'vue-i18n';
 import type { TabsPaneContext } from 'element-plus';
+import { GetExitStoreQrCodeListApi } from '/@/api/maintenanceManage/maintenanceOrderSub';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
 const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
-const activeName = ref('first');
-
+const qrCodeDialog = defineAsyncComponent(() => import('/@/components/dialog/qrCodeDialog.vue'));
+const activeName = ref<string | number>('first');
+const inventoryDialogRef = ref();
 const handleClick = (tab: TabsPaneContext, event: Event) => {
-	// console.log(tab, event);
+	activeName.value = tab.paneName as string | number;
+	let tableForm = state.tableData;
+	if (activeName.value === 'first') {
+		tableForm = state.tableData;
+	} else if (activeName.value === 'second') {
+		tableForm = secondState.tableData;
+	} else {
+		tableForm = thirdState.tableData;
+	}
+	getTableData(tableForm);
 };
 // 定义变量内容
 const { t } = useI18n();
@@ -86,10 +135,7 @@ const tableRef = ref<RefType>();
 const loadingBtn = ref(false);
 const repairReturnDialogRef = ref();
 // tags的数据
-const tags = ref<EmptyArrayType<string>>([]);
-// 单元格样式
-const cellStyle = ref();
-
+const tags = ref<EmptyArrayType>([]);
 // 弹窗标题
 const dilogTitle = ref();
 const header = ref([]);
@@ -162,10 +208,7 @@ const state = reactive<TableDemoState>({
 			},
 		],
 		// 给后端的数据
-		form: {
-			matNo: '',
-			matName: '',
-		},
+		form: {},
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
 			pageNum: 1,
@@ -175,67 +218,214 @@ const state = reactive<TableDemoState>({
 		printName: '表格打印演示',
 	},
 });
-// const secondState = reactive<TableDemoState>({
-// 	tableData: {
-// 		// 列表数据（必传）
-// 		data: [],
-// 		// 表头内容（必传，注意格式）
-// 		header: [
-// 			{ key: 'matno', colWidth: '', title: '料号', type: 'text', isCheck: true },
-// 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
-// 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
-// 			{ key: 'storageType', colWidth: '', title: '倉庫類型', type: 'text', isCheck: true },
-// 			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
-// 			{ key: 'stockqty', colWidth: '', title: '数量', type: 'text', isCheck: true },
-// 			{ key: 'qrstockqty', colWidth: '', title: '原因', type: 'text', isCheck: true },
-// 		],
-// 		// 配置项（必传）
-
-// 		config: {
-// 			total: 0, // 列表总数
-// 			loading: true, // loading 加载
-// 			isBorder: false, // 是否显示表格边框
-// 			isSerialNo: true, // 是否显示表格序号
-// 			isSelection: false, // 是否显示表格多选
-// 			isOperate: true, // 是否显示表格操作栏
-// 			isButton: false, //是否显示表格上面的新增删除按钮
-// 			isInlineEditing: false, //是否是行内编辑
-// 			isTopTool: true, //是否有表格右上角工具
-// 			isPage: true, //是否有分页
-// 			operateWidth: 220, //操作栏宽度，如果操作栏有几个按钮就自己定宽度
-// 		},
-// 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
-// 		search: [
-// 			{ label: '料号', prop: 'matNo', required: false, type: 'input' },
-// 			{ label: '品名', prop: 'matName', required: false, type: 'input' },
-// 		],
-// 		searchConfig: {
-// 			isSearchBtn: true,
-// 		},
-// 		btnConfig: [
-// 			{ type: 'transferStorage', name: '详情', color: '#36C78B', isSure: false, icon: 'ele-Position' },
-// 			{
-// 				type: 'sendReceive',
-// 				name: '送签',
-// 				color: '#e6a23c',
-// 				isSure: false,
-// 				icon: 'ele-EditPen',
-// 			},
-// 		],
-// 		// 给后端的数据
-// 		form: {
-// 			matNo: '',
-// 			matName: '',
-// 		},
-// 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
-// 		page: {
-// 			pageNum: 1,
-// 			pageSize: 10,
-// 		},
-// 		// 打印标题
-// 		printName: '表格打印演示',
-// 	},
-// });
+const thirdState = reactive<TableDemoState>({
+	tableData: {
+		// 列表数据（必传）
+		data: [],
+		// 表头内容（必传，注意格式）
+		header: [
+			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			{ key: 'transferQty', colWidth: '', title: '轉移數量', type: 'text', isCheck: true },
+			{
+				key: 'outStorageType',
+				colWidth: '',
+				title: '轉出倉庫類型',
+				type: 'text',
+				isCheck: true,
+			},
+			{ key: 'outSLocation', colWidth: '', title: '轉出倉庫位置', type: 'text', isCheck: true },
+			{ key: 'outDate', colWidth: '', title: '轉出日期', type: 'text', isCheck: true },
+			{ key: 'describe', colWidth: '', title: '轉出備註', type: 'text', isCheck: true },
+			{
+				key: 'inStorageType',
+				colWidth: '',
+				title: '接收倉庫類型',
+				type: 'text',
+				isCheck: true,
+			},
+			{ key: 'inSLocation', colWidth: '', title: '接收倉庫位置', type: 'text', isCheck: true },
+			{
+				key: 'hasReceived',
+				colWidth: '',
+				title: '是否已接收',
+				type: 'text',
+				isCheck: true,
+				transfer: {
+					true: '是',
+					false: '否',
+				},
+			},
+			{ key: 'inDate', colWidth: '', title: '接收日期', type: 'text', isCheck: true },
+			{ key: 'receiver', colWidth: '', title: '接收人', type: 'text', isCheck: true },
+		],
+		// 配置项（必传）
+		config: {
+			total: 0, // 列表总数
+			loading: true, // loading 加载
+			isBorder: false, // 是否显示表格边框
+			isSerialNo: true, // 是否显示表格序号
+			isSelection: false, // 是否显示表格多选
+			isOperate: false, // 是否显示表格操作栏
+			isButton: false, //是否显示表格上面的新增删除按钮
+			isInlineEditing: false, //是否是行内编辑
+			isTopTool: true, //是否有表格右上角工具
+			isPage: true, //是否有分页
+		},
+		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
+		search: [
+			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
+			{ label: '品名', prop: 'name', required: false, type: 'input' },
+			{
+				label: '轉出倉庫類型',
+				prop: 'outStorageType',
+				required: false,
+				type: 'select',
+				options: [],
+			},
+			{ label: '轉出倉庫位置', prop: 'outSLocation', required: false, type: 'input', placeholder: '請輸入倉庫位置' },
+			{ label: '轉出日期', prop: 'outDate', required: false, type: 'dateRange', lg: 6, xl: 6 },
+			{
+				label: '接收倉庫類型',
+				prop: 'inStorageType',
+				required: false,
+				type: 'select',
+				options: [],
+			},
+			{ label: '接收倉庫位置', prop: 'inSLocation', required: false, type: 'input', placeholder: '請輸入倉庫位置' },
+			{
+				label: '是否已接收',
+				prop: 'hasReceived',
+				required: false,
+				type: 'select',
+				options: [
+					{ value: true, label: '是', text: '是' },
+					{ value: false, label: '否', text: '否' },
+				],
+			},
+		],
+		searchConfig: {
+			isSearchBtn: true,
+		},
+		btnConfig: [],
+		// 给后端的数据
+		form: {},
+		dialogConfig: [],
+		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
+		page: {
+			pageNum: 1,
+			pageSize: 10,
+		},
+	},
+});
+const secondState = reactive<TableDemoState>({
+	tableData: {
+		// 列表数据（必传）
+		data: [],
+		// 表头内容（必传，注意格式）
+		header: [
+			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			{ key: 'storageType', colWidth: '', title: '倉庫類型', type: 'text', isCheck: true },
+			{ key: 'sLocation', colWidth: '', title: '倉庫位置', type: 'text', isCheck: true },
+			{ key: 'exitQty', colWidth: '', title: '退庫數量', type: 'text', isCheck: true },
+			{
+				key: 'exitType',
+				colWidth: '',
+				title: '退庫類型',
+				type: 'text',
+				isCheck: true,
+				transfer: {
+					1: '維修',
+					2: '閒置',
+					3: '報廢',
+				},
+			},
+			{ key: 'exitReason', colWidth: '', title: '退庫原因', type: 'text', isCheck: true },
+			{ key: 'exitStoreTime', colWidth: '', title: '退庫時間', type: 'text', isCheck: true },
+			{ key: 'describe', colWidth: '', title: '備註', type: 'text', isCheck: true },
+			{ key: 'dri', colWidth: '', title: 'DRI', type: 'text', isCheck: true },
+			{
+				key: 'hasProcessed',
+				colWidth: '',
+				title: '是否已提單',
+				type: 'text',
+				isCheck: true,
+				transfer: {
+					true: '是',
+					false: '否',
+				},
+			},
+		],
+		// 配置项（必传）
+		config: {
+			total: 0, // 列表总数
+			loading: true, // loading 加载
+			isBorder: false, // 是否显示表格边框
+			isSerialNo: true, // 是否显示表格序号
+			isSelection: false, // 是否显示表格多选
+			isOperate: false, // 是否显示表格操作栏
+			isButton: false, //是否显示表格上面的新增删除按钮
+			isInlineEditing: false, //是否是行内编辑
+			isTopTool: true, //是否有表格右上角工具
+			isPage: true, //是否有分页
+		},
+		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
+		search: [
+			{
+				label: '退庫類型',
+				prop: 'exitType',
+				required: false,
+				type: 'select',
+				options: [
+					{ value: 1, label: '維修', text: '維修' },
+					{ value: 2, label: '閒置', text: '閒置' },
+					{ value: 3, label: '報廢', text: '報廢' },
+				],
+			},
+			{
+				label: '是否已提單',
+				prop: 'hasProcessed',
+				required: false,
+				type: 'select',
+				options: [
+					{ value: true, label: '是', text: '是' },
+					{ value: false, label: '否', text: '否' },
+				],
+			},
+			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
+			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
+			{ label: '品名', prop: 'name', required: false, type: 'input' },
+			{
+				label: '倉庫類型',
+				prop: 'storageType',
+				required: false,
+				type: 'select',
+				options: [],
+			},
+			{ label: '倉庫位置', prop: 'sLocation', required: false, type: 'input', placeholder: '請輸入倉庫位置' },
+			{ label: 'DRI', prop: 'dri', required: false, type: 'input', placeholder: '請輸入DRI' },
+			{ label: '退庫時間', prop: 'exitStoreTime', required: false, type: 'dateRange' },
+		],
+		searchConfig: {
+			isSearchBtn: true,
+		},
+		btnConfig: [],
+		// 给后端的数据
+		form: {},
+		dialogConfig: [],
+		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
+		page: {
+			pageNum: 1,
+			pageSize: 10,
+		},
+	},
+});
 const dialogState = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
@@ -440,17 +630,12 @@ const dialogState = reactive<TableDemoState>({
 	},
 });
 // 单元格字体颜色
-const changeToStyle = (indList: number[]) => {
-	// return ({ columnIndex }: any) => {
-	// 	for (let j = 0; j < indList.length; j++) {
-	// 		let ind = indList[j];
-	// 		if (columnIndex === ind) {
-	// 			return { color: 'var(--el-color-primary)', cursor: 'pointer' };
-	// 		}
-	// 	}
-	// };
+const cellStyle = ({ row, column }: EmptyObjectType) => {
+	const property = column.property;
+	if ((property === 'exitQty' && row.codeManageMode === 0) || (property === 'transferQty' && row.codeManageMode === 0)) {
+		return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+	}
 };
-cellStyle.value = changeToStyle([1]);
 // 下拉框数据
 const getSelect = async () => {
 	const res = await getLegalStoreTypesApi();
@@ -458,27 +643,68 @@ const getSelect = async () => {
 		return { label: item, text: item, value: item };
 	});
 	state.tableData.search[3].options = option;
+	secondState.tableData.search[5].options = option;
+	thirdState.tableData.search[3].options = option;
+	thirdState.tableData.search[6].options = option;
 };
 // 初始化列表数据
-const getTableData = async () => {
-	const form = state.tableData.form;
+const getTableData = async (datas: EmptyObjectType) => {
+	const form = datas.form;
+	let res = null;
 	const codeManageModeMap: EmptyObjectType = {
 		0: '有碼管理',
 		1: '無碼管理',
 	};
-	let data = {
-		...form,
-		page: state.tableData.page,
-	};
-	const res = await getStockListApi(data);
-	res.data.data.forEach((item: any) => {
-		item.exitQty = item.codeManageMode === 0 ? 0 : null;
-		item.codeManageModeText = codeManageModeMap[item.codeManageMode];
-	});
-	state.tableData.data = res.data.data;
-	state.tableData.config.total = res.data.total;
-	if (res.status) {
-		state.tableData.config.loading = false;
+	if (activeName.value === 'first') {
+		let data = {
+			...form,
+			page: state.tableData.page,
+		};
+		res = await getStockListApi(data);
+		res.data.data.forEach((item: any) => {
+			item.exitQty = item.codeManageMode === 0 ? 0 : null;
+			item.codeManageModeText = codeManageModeMap[item.codeManageMode];
+		});
+	} else if (activeName.value === 'second') {
+		if (form.exitType === '') {
+			form.exitType = null;
+		}
+		if (form.hasProcessed == '') {
+			form.hasProcessed = null;
+		}
+		let data = {
+			...form,
+			page: datas.page,
+			exitStoreTime: form.exitStoreTime,
+			startExitStoreTime: form.exitStoreTime && form.exitStoreTime[0],
+			endExitStoreTime: form.exitStoreTime && form.exitStoreTime[1],
+		};
+		delete data.exitStoreTime;
+		res = await getQueryExitStoreRecordApi(data);
+		res.data.data.forEach((item: any) => {
+			item.dri = `${item.dri} / ${item.driName}`;
+		});
+	} else {
+		if (form.hasReceived === '') {
+			form.hasReceived = null;
+		}
+		let data = {
+			...form,
+			page: datas.page,
+			outDate: form.outDate,
+			startOutDate: form.outDate && form.outDate[0],
+			endOutDate: form.outDate && form.outDate[1],
+		};
+		delete data.outDate;
+		res = await getQueryTransferStorageRecordApi(data);
+		res.data.data.forEach((item: any) => {
+			item.receiver = item.receiver ? `${item.receiver} / ${item.receiverName}` : '';
+		});
+	}
+	datas.data = res!.data.data;
+	datas.config.total = res!.data.total;
+	if (res!.status) {
+		datas.config.loading = false;
 	}
 };
 const exitTypeMap: EmptyObjectType = {
@@ -840,12 +1066,24 @@ const innnerDialogCancel = async (formData: EmptyObjectType, formInnerData: Empt
 		.catch(() => {});
 };
 // 点击料号,暂时不做
-const matnoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
-	// if (column.property === 'matno') {
-	// 	dilogTitle.value = '料号:' + row.matNo;
-	// 	changeStatus(header1.value, 500, false);
-	// 	getDetailData(row.matNo);
-	// }
+const qrCodeClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
+	if (column.property === 'exitQty' && row.codeManageMode === 0) {
+		let res = await GetExitStoreQrCodeListApi(row.exitStoreId);
+		if (res.data.length == 0) {
+			ElMessage.error('暫無條碼數據');
+		} else {
+			tags.value = res.data;
+			inventoryDialogRef.value?.openDialog();
+		}
+	} else if (column.property === 'transferQty' && row.codeManageMode === 0) {
+		let res = await getStockTransferCodesApi(row.stockTransferId);
+		if (res.data.length == 0) {
+			ElMessage.error('暫無條碼數據');
+		} else {
+			tags.value = res.data;
+			inventoryDialogRef.value?.openDialog();
+		}
+	}
 };
 
 // 提交 确认退库
@@ -897,7 +1135,7 @@ const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerDa
 			const res = await getTransferStorageApi(transferStorageData);
 			if (res.status) {
 				ElMessage.success(t('轉倉成功'));
-				getTableData();
+				getTableData(state.tableData);
 				repairReturnDialogRef.value.closeDialog();
 			}
 		} else {
@@ -918,7 +1156,7 @@ const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerDa
 			const res = await ExitStoreApi(exitStoreData);
 			if (res.status) {
 				ElMessage.success(t('退庫成功'));
-				getTableData();
+				getTableData(state.tableData);
 				repairReturnDialogRef.value.closeDialog();
 			}
 		}
@@ -926,25 +1164,25 @@ const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerDa
 	loadingBtn.value = false;
 };
 // 搜索点击时表单回调
-const onSearch = (data: EmptyObjectType) => {
-	state.tableData.form = Object.assign({}, state.tableData.form, { ...data });
+const onSearch = (data: EmptyObjectType, tableData: EmptyObjectType) => {
+	tableData.form = Object.assign({}, tableData.form, { ...data });
 	tableRef.value?.pageReset();
 };
 
 // 分页改变时回调
-const onTablePageChange = (page: TableDemoPageType) => {
-	state.tableData.page.pageNum = page.pageNum;
-	state.tableData.page.pageSize = page.pageSize;
-	getTableData();
+const onTablePageChange = (page: TableDemoPageType, tableData: EmptyObjectType) => {
+	tableData.page.pageNum = page.pageNum;
+	tableData.page.pageSize = page.pageSize;
+	getTableData(tableData);
 };
 // 拖动显示列排序回调
-const onSortHeader = (data: TableHeaderType[]) => {
-	state.tableData.header = data;
+const onSortHeader = (data: TableHeaderType[], tableData: EmptyObjectType) => {
+	tableData.header = data;
 };
 
 // 页面加载时
 onMounted(() => {
-	getTableData();
+	getTableData(state.tableData);
 	getSelect();
 });
 </script>

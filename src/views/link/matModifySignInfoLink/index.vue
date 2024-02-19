@@ -139,6 +139,7 @@ import { ElMessage } from 'element-plus';
 import { getMaterialApi, getMatModifySignInfoApi, getMatSignInfoApi } from '/@/api/link/noSearchLink';
 import { useI18n } from 'vue-i18n';
 import { getMachineTypesOfMatApi } from '/@/api/partno/noSearch';
+import { judementSameArr } from '/@/utils/arrayOperation';
 const route = useRoute();
 const router = useRouter();
 // 定义父组件传过来的值
@@ -267,7 +268,13 @@ const getDetailData = async () => {
 		const modified = res.data.modified;
 		lookFileColor.value = original.drawPath !== modified.drawPath ? true : false;
 		state.search.forEach((item) => {
-			if (original[item.prop] !== modified[item.prop]) {
+			if (item.prop === 'machineType') {
+				// console.log('original', original.machineType);
+				// console.log('modified', modified.machineType);
+				const temp = judementSameArr(modified.machineType, original.machineType);
+				// console.log(temp);
+				item.colorType = temp ? 'primary' : 'danger';
+			} else if (original[item.prop] !== modified[item.prop]) {
 				item.color = 'red';
 				item.colorType = 'danger';
 			}
