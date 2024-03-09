@@ -4,7 +4,7 @@
 			<!-- 新增弹窗按钮以及批量删除按钮 -->
 			<div class="allBtn mt20" v-for="topbtn in topBtnConfig" key="topbtn.name">
 				<el-button
-					v-if="topbtn.type === 'add'"
+					v-if="topbtn.type === 'add' && topbtn.isSure"
 					size="default"
 					class="ml10 buttonBorder"
 					@click="onOpenAdd('add')"
@@ -13,7 +13,7 @@
 					plain
 					><el-icon><ele-Plus /></el-icon>{{ $t('message.allButton.addBtn') }}</el-button
 				>
-				<el-popconfirm v-else-if="topbtn.type === 'bulkDel'" :title="$t('確定刪除選中項嗎？')" @confirm="onBulkDeletion">
+				<el-popconfirm v-else-if="topbtn.type === 'bulkDel' && topbtn.isSure" :title="$t('確定刪除選中項嗎？')" @confirm="onBulkDeletion">
 					<template #reference>
 						<el-button size="default" :disabled="state.selectlist.length <= 0" class="ml10 buttonBorder" color="#D33939" plain
 							><el-icon><ele-Delete /></el-icon>{{ $t('message.allButton.bulkDeletionBtn') }}</el-button
@@ -22,8 +22,8 @@
 				</el-popconfirm>
 
 				<el-button
-					@click="onOpentopBtnOther"
-					v-else
+					@click="onOpentopBtnOther(topbtn.type)"
+					v-else-if="topbtn.isSure"
 					size="default"
 					class="ml10 buttonBorder"
 					:color="topbtn.color"
@@ -106,6 +106,7 @@
 			@cell-click="cellClick"
 			@row-click="rowClick"
 			:cell-style="cellStyle"
+			:header-cell-style="headerCellStyle"
 			:span-method="objectSpanMethod"
 			:expand-row-keys="expandedRowKeys"
 			@expand-change="toggleRowExpansion"
@@ -263,6 +264,8 @@
 							v-else-if="item.type === 'text'"
 							style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center; width: 100%"
 						>
+							<slot name="rowIcon" :row="scope.row" :itemConfig="item"></slot>
+							<!-- <SvgIcon class="mr5" :name="item.icon" /> -->
 							{{ scope.row[item.key] }}
 						</span>
 					</el-form-item>
@@ -296,12 +299,13 @@
 				v-if="config.isOtherBtnOperate"
 			>
 				<template v-slot="scope">
-					<slot name="otherbtn" :row="scope.row"></slot>
+					<slot name="otherbtn" :row="scope.row" :scope="scope"></slot>
 				</template>
 			</el-table-column>
 			<el-table-column
 				fixed="right"
 				align="right"
+				prop="operation"
 				header-align="center"
 				:label="$t('message.pages.operation')"
 				:width="config.operateWidth || 130"
@@ -410,6 +414,13 @@ const props = defineProps({
 	},
 	// 单元格样式
 	cellStyle: {
+		type: Function,
+		default: () => {
+			return Function;
+		},
+	},
+	// 表頭樣式
+	headerCellStyle: {
 		type: Function,
 		default: () => {
 			return Function;
@@ -540,8 +551,8 @@ const onOpenAdd = (type: string) => {
 	emit('openAdd', type);
 };
 // 打开其他弹窗
-const onOpentopBtnOther = () => {
-	emit('onOpentopBtnOther', state.selectlist);
+const onOpentopBtnOther = (type: string) => {
+	emit('onOpentopBtnOther', state.selectlist, type);
 };
 // 打开修改弹窗
 const onOpenEdit = (type: string, row: Object) => {
@@ -668,6 +679,22 @@ const clearSelection = () => {
 const setScrollTop = () => {
 	tableRef.value.$refs.bodyWrapper.getElementsByClassName('el-scrollbar__wrap')[0].scrollTop =
 		tableRef.value.$refs.bodyWrapper.getElementsByClassName('el-scrollbar__wrap')[0].scrollHeight;
+};
+// 滚动条定位到指定行 rowindex：定位到行号，isprecise：是否精确计算行高，默认是false不计算，只有第一行的行高
+const tableScrollToRow = (rowindex: number, isprecise = false) => {
+	const theTableRows = tableRef.value.$el.querySelectorAll('.el-table__body tbody .el-table__row');
+	let scrollTop = 0;
+	for (let i = 0; i < theTableRows.length; i++) {
+		if (i === rowindex) {
+			break;
+		}
+		scrollTop += theTableRows[i].offsetHeight;
+		if (!isprecise) {
+			scrollTop *= rowindex - 2;
+			break;
+		}
+	}
+	tableRef.value.scrollTo(0, scrollTop);
 };
 // 打印
 const onPrintTable = () => {
@@ -801,6 +828,7 @@ defineExpose({
 	pageReset,
 	clearSelection,
 	setScrollTop,
+	tableScrollToRow,
 });
 </script>
 

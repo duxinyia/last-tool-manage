@@ -8,11 +8,12 @@
 				class="table"
 				@pageChange="onTablePageChange"
 				@sortHeader="onSortHeader"
-				@cellclick="reqNoClick"
 				:cellStyle="cellStyle"
+				@cellclick="qrCodeClick"
 				@onOpenOtherDialog="openTransDialog"
 			/>
 			<Dialog ref="transDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="onSubmit" :loadingBtn="loadingBtn" />
+			<qrCodeDialog ref="inventoryDialogRef" :tags="tags" dialogTitle="庫存條碼" />
 		</div>
 	</div>
 </template>
@@ -23,6 +24,9 @@ import { ElMessage } from 'element-plus';
 // 引入接口
 import { getQueryTransferPageApi, getReceiveTransferApi } from '/@/api/toolsReturn/transferReceipt';
 import { useI18n } from 'vue-i18n';
+import { getStockTransferCodesApi } from '/@/api/toolsReturn/maintentanceTools';
+const qrCodeDialog = defineAsyncComponent(() => import('/@/components/dialog/qrCodeDialog.vue'));
+
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
@@ -33,8 +37,9 @@ const { t } = useI18n();
 const tableRef = ref<RefType>();
 const transDialogRef = ref();
 const loadingBtn = ref(false);
-// 单元格样式
-const cellStyle = ref();
+// tags的数据
+const tags = ref<EmptyArrayType>([]);
+const inventoryDialogRef = ref();
 const state = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
@@ -109,7 +114,13 @@ const state = reactive<TableDemoState>({
 		printName: '表格打印演示',
 	},
 });
-
+// 单元格字体颜色
+const cellStyle = ({ row, column }: EmptyObjectType) => {
+	const property = column.property;
+	if (property === 'transferqty' && row.codeManageMode === 0) {
+		return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+	}
+};
 // 单元格字体颜色
 const changeToStyle = (indList: number[]) => {
 	return ({ columnIndex, column }: any) => {
@@ -159,6 +170,18 @@ const openTransDialog = (scope: EmptyObjectType) => {
 };
 // 点击申请单号
 const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {};
+// 點擊轉移總數量
+const qrCodeClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
+	if (column.property === 'transferqty' && row.codeManageMode === 0) {
+		let res = await getStockTransferCodesApi(row.runid);
+		if (res.data.length == 0) {
+			ElMessage.error('暫無條碼數據');
+		} else {
+			tags.value = res.data;
+			inventoryDialogRef.value?.openDialog();
+		}
+	}
+};
 // 提交
 const onSubmit = async (formData: any) => {
 	loadingBtn.value = true;

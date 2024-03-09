@@ -24,7 +24,13 @@
 				@onOpenOtherDialog="openArriveJobDialog"
 			/>
 		</el-tab-pane>
-		<el-dialog draggable :close-on-click-modal="false" v-model="deliveryDialogVisible" :title="dilogTitle" width="60%">
+		<el-dialog
+			draggable
+			:close-on-click-modal="false"
+			v-model="deliveryDialogVisible"
+			:title="dilogTitle"
+			:width="dilogTitle == '料號送樣' ? '60%' : '87%'"
+		>
 			<el-row>
 				<el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb15" v-for="(val, key) in dialogState.tableData.search" :key="key">
 					<div v-if="val.type === 'text'">
@@ -63,6 +69,7 @@
 					@addrow="onAddrow"
 					@handleNumberInputChange="changeInput"
 					:cellStyle="cellStyle"
+					:headerCellStyle="cellStyle"
 				>
 					<template #topOptions>
 						<el-select
@@ -100,7 +107,13 @@
 import { defineAsyncComponent, reactive, ref, onMounted, computed, watch, nextTick } from 'vue';
 import { ElMessage, ElMessageBox, FormInstance, TabsPaneContext } from 'element-plus';
 const deliveryDialogVisible = ref(false);
-import { getQuerySampleNeedsApi, getQueryTakeSampleApi, getSampleDetailsForTakeSampleApi, getVendorsApi } from '/@/api/partno/sampleRequirement';
+import {
+	getQuerySampleNeedsApi,
+	getQueryTakeSampleApi,
+	getSampleDetailProgressApi,
+	getSampleDetailsForTakeSampleApi,
+	getVendorsApi,
+} from '/@/api/partno/sampleRequirement';
 // 送样
 import { getTakeSampleApi, getSaveTakeSampleApi, getSubmitTaskSampleApi } from '/@/api/partno/sampleDelivery';
 import { useI18n } from 'vue-i18n';
@@ -134,6 +147,22 @@ const header = ref<deliveryDialogHeader>([
 	{ key: 'vendorName', colWidth: '', title: '廠商名稱', type: 'input', isCheck: true, isRequired: true, sampleType: 'input' },
 	{ key: 'needsQty', colWidth: '120', title: '數量', type: 'number', isCheck: true, isRequired: true, sampleType: 'number' },
 	{ key: 'describe', colWidth: '', title: '備註', type: 'textarea', isCheck: true, isRequired: false, sampleType: 'textarea' },
+]);
+const header1 = ref<deliveryDialogHeader>([
+	{ key: 'status', colWidth: '', title: '狀態', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'vendorCode', colWidth: '', title: '廠商代碼', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'vendorName', colWidth: '', title: '廠商名稱', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'needsQty', colWidth: '', title: '數量', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'describe', colWidth: '', title: '採購備註', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'receiveSubmitTime', colWidth: '', title: '收貨提交時間', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'engineer', colWidth: '', title: '工程驗收人', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'checkSubmitTime', colWidth: '', title: '驗收提交時間', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'ispass', colWidth: '', title: '是否驗收通過', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'dispatchTime', colWidth: '', title: '發料時間', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'receiveStorageType', colWidth: '', title: '領用倉庫類型', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'receiveSLocation', colWidth: '', title: '領用倉庫位置', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'putStorageTime', colWidth: '', title: '入庫時間', type: 'text', isCheck: true, isRequired: false },
+	{ key: 'putStorageOperator', colWidth: '', title: '入庫人', type: 'text', isCheck: true, isRequired: false },
 ]);
 const state = reactive<TableDemoState>({
 	tableData: {
@@ -341,6 +370,10 @@ const changeToStyle = (indList: number[]) => {
 				return { color: 'red' };
 			}
 		}
+		const col = ['describe', 'engineer', 'ispass', 'receiveSLocation'];
+		if (col.includes(column.property) && activeName.value !== 'first') {
+			return { borderRight: '1px solid #a2d2ff' };
+		}
 	};
 };
 cellStyle.value = changeToStyle([1, 7]);
@@ -390,8 +423,8 @@ const onAddrow = () => {
 // 点击送样按钮弹窗  點擊查看詳情彈窗
 const openArriveJobDialog = async (scope: EmptyObjectType) => {
 	loadingBtn.value = false;
-	const res = await getSampleDetailsForTakeSampleApi(scope.row.sampleNo);
 	if (activeName.value === 'first') {
+		const res = await getSampleDetailsForTakeSampleApi(scope.row.sampleNo);
 		dialogSelect.value = '';
 		res.data.forEach((item: any) => {
 			item.vendorCodedisabled = item.isReSubmit === 1 ? true : false;
@@ -404,14 +437,21 @@ const openArriveJobDialog = async (scope: EmptyObjectType) => {
 		});
 		dilogTitle.value = '料號送樣';
 		changeStatus(header.value, 300, true);
+		dialogState.tableData.data = res.data;
 	} else {
-		header.value.forEach((item) => {
-			item.type = 'text';
-		});
+		const res = await getSampleDetailProgressApi(scope.row.sampleNo);
+		// header.value.forEach((item) => {
+		// 	item.type = 'text';
+		// });
 		dilogTitle.value = '詳情';
-		changeStatus(header.value, 300, false);
+		changeStatus(header1.value, 300, false);
+		dialogState.tableData.data = res.data;
+		dialogState.tableData.data.forEach((item) => {
+			if (item.ispass) item.ispass = item.ispass === true ? '是' : '否';
+			item.engineer = item.engineer ? `${item.engineer} / ${item.engineerName}` : '';
+			item.putStorageOperator = item.putStorageOperator ? `${item.putStorageOperator} / ${item.putStorageOperatorName}` : '';
+		});
 	}
-	dialogState.tableData.data = res.data;
 	dialogState.tableData.form = scope.row;
 	deliveryDialogVisible.value = true;
 };

@@ -64,7 +64,14 @@ export function getSubmitSampleNeedsApi(data:Object) {
   	data:data
   });
 }
-
+// 删除草稿
+export function getDeleteSampleNeedsDraftApi(sampleNo:string) {
+  return request({
+    url: '/api/Material/DeleteSampleNeedsDraft',
+    method: 'DELETE',
+    params:{sampleNo}
+  });
+}
 
 
 

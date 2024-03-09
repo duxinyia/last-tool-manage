@@ -13,6 +13,7 @@
 				@onOpentopBtnOther="onOpenSendRepair"
 			/>
 			<el-dialog
+				:before-close="onClose"
 				ref="presentationDialogRef"
 				v-model="presentationDialogVisible"
 				:title="dilogTitle"
@@ -31,7 +32,7 @@
 									{
 										required: val.isRequired,
 										message: `${t(val.label)}不能為空`,
-										trigger: val.type === 'input' || val.type === 'time' ? 'blur' : 'change',
+										trigger: val.type === 'select' || val.type === 'time' ? 'blur' : 'change',
 									},
 								]"
 							>
@@ -76,7 +77,7 @@
 				</el-form>
 				<!-- 表格 -->
 				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
-					<Table ref="dialogtableRef" v-bind="dialogState.tableData" class="table" @delRow="onDelRow" />
+					<Table ref="dialogtableRef" v-bind="dialogState.tableData" class="table" @delRow="onDelRow" :rowStyle="rowStyle" />
 				</el-form>
 				<div class="describe">
 					<span>備註：</span>
@@ -92,8 +93,12 @@
 				<!-- 提交按钮 -->
 				<template #footer>
 					<span class="dialog-footer">
-						<el-button size="default" auto-insert-space @click="presentationDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(dialogFormRef)" :loading="loadingBtn"> 確定 </el-button>
+						<el-button size="default" auto-insert-space @click="onClose">取消</el-button>
+						<el-button v-if="isHaveDraft" size="default" type="info" auto-insert-space @click="onReset"> 重置 </el-button>
+						<el-button size="default" type="warning" auto-insert-space @click="onSubmit(tableFormRef, 'save')">保存</el-button>
+						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(dialogFormRef, 'submit')" :loading="loadingBtn">
+							提交
+						</el-button>
 					</span>
 				</template>
 			</el-dialog>
@@ -108,13 +113,19 @@
 </template>
 
 <script setup lang="ts" name="maintenanceOrderSub">
-import { defineAsyncComponent, reactive, ref, onMounted, computed, watch } from 'vue';
-import { ElMessage, FormInstance } from 'element-plus';
+import { defineAsyncComponent, reactive, ref, onMounted, computed, watch, nextTick } from 'vue';
+import { ElMessage, ElMessageBox, FormInstance } from 'element-plus';
 const presentationDialogVisible = ref(false);
 // 引入接口
-import { getQueryExitPageApi, GetExitStoreQrCodeListApi } from '/@/api/maintenanceManage/maintenanceOrderSub';
+import { getQueryExitPageApi, GetExitStoreQrCodeListApi, getRepairDraftDeleteApi } from '/@/api/maintenanceManage/maintenanceOrderSub';
 import { getLegalStoreTypesApi, getQueryStoreHouseNoPageApi } from '/@/api/global';
-import { postIdleSubmitApi } from '/@/api/unusedManage/unusedOrderSub';
+import {
+	getIdleDraftApi,
+	getIdleDraftCreateApi,
+	getIdleDraftDeleteApi,
+	getIdleDraftUpdateApi,
+	postIdleSubmitApi,
+} from '/@/api/unusedManage/unusedOrderSub';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -132,6 +143,7 @@ const loadingBtn = ref(false);
 const tableRef = ref<RefType>();
 const dialogtableRef = ref<RefType>();
 const presentationDialogRef = ref();
+const isHaveDraft = ref(false);
 // tags的数据
 let tags = ref<EmptyArrayType>([]);
 
@@ -146,7 +158,7 @@ const header = ref([
 		isCheck: true,
 	},
 	{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
-	{ key: 'machine', colWidth: '', title: '機種', type: 'text', isCheck: true },
+	// { key: 'machine', colWidth: '', title: '機種', type: 'text', isCheck: true },
 	{ key: 'namech', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	{ key: 'nameen', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 	// { key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
@@ -194,7 +206,9 @@ const state = reactive<TableDemoState>({
 			isPage: true, //是否有分页
 		},
 		topBtnConfig: [
-			{ type: 'other', name: '閒置', defaultColor: 'primary', isSure: true, disabled: true, icon: 'ele-Edit', isNoSelcetDisabled: true },
+			{ type: 'other', name: '提單', defaultColor: 'primary', isSure: true, disabled: true, icon: 'ele-Edit', isNoSelcetDisabled: true },
+			{ type: 'addData', name: '添加數據', defaultColor: 'primary', isSure: false, disabled: true, icon: 'ele-Plus', isNoSelcetDisabled: true },
+			{ type: 'continueEdit', name: '繼續編輯', defaultColor: 'primary', isSure: false, disabled: true, icon: 'ele-Edit' },
 		],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
@@ -250,7 +264,7 @@ const dialogState = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '閒置單號', prop: 'matNo', type: 'text', required: false, isRequired: false },
+			// { label: '閒置單號', prop: 'matNo', type: 'text', required: false, isRequired: false },
 			{ label: '閒置日期', prop: 'idleDate', placeholder: '請選擇閒置日期', type: 'time', required: false, isRequired: true },
 			// { label: '班別', prop: 'classes', placeholder: '請輸入班別', type: 'input', required: false, isRequired: false },
 			{
@@ -293,12 +307,29 @@ const exitTypeMap: EmptyObjectType = {
 	2: '閒置',
 	3: '報廢',
 };
+let isChange = false;
+let num = 0;
 // 关闭弹窗清除选中
 watch(
 	() => presentationDialogVisible.value,
 	(val) => {
 		if (val == false) {
 			tableRef.value.clearSelection();
+		} else {
+			watch(
+				[dialogState.tableData.data, dialogState.tableData.form],
+				(val) => {
+					// console.log(num);
+					if (num === 0 && dialogType != 'other') {
+						isChange = false;
+					} else {
+						isChange = true;
+					}
+					num++;
+					// console.log('监听到了');
+				},
+				{ deep: true }
+			);
 		}
 	}
 );
@@ -324,10 +355,12 @@ const remoteMethod = (query: string, prop: string) => {
 				return { value: `${item.storeId}`, label: `${item.storeType}`, text: `${item.sLocation}` };
 			});
 			search?.forEach((item) => {
-				if (item.prop === 'idleStorageId') item.loading = false;
-				item.options = option.filter((item: EmptyObjectType) => {
-					return item.value;
-				});
+				if (item.prop === 'idleStorageId') {
+					item.loading = false;
+					item.options = option.filter((item: EmptyObjectType) => {
+						return item.value;
+					});
+				}
 			});
 
 			// state.tableData.search[1].options = option.filter((item: EmptyObjectType) => {
@@ -347,6 +380,66 @@ const cellStyle = ({ row, column }: EmptyObjectType) => {
 		return { color: 'var(--el-color-primary)', cursor: 'pointer' };
 	}
 };
+// 選中的要編輯的數據變成藍色
+const rowStyle = ({ row, column }: EmptyObjectType) => {
+	if (row.isBorder) {
+		return { color: 'var(--el-color-primary)' };
+	}
+};
+// 得到倉庫位置下拉框
+const getOptionsSlocation = () => {
+	let addoptions: EmptyArrayType = [];
+	let search = dialogState.tableData.search;
+	if (!dialogState.tableData.form.idleStorageId) {
+		search?.forEach((item) => {
+			if (item.prop === 'idleStorageId') item.options = [];
+		});
+		return;
+	}
+	if (isHaveDraft.value) {
+		addoptions = [
+			{
+				value: `${dialogState.tableData.form.idleStorageId}`,
+				label: `${dialogState.tableData.form.idleSLocation}`,
+				text: `${dialogState.tableData.form.idleSLocation}`,
+			},
+		];
+		search?.forEach((item) => {
+			if (item.prop === 'idleStorageId') {
+				item.loading = false;
+				item.options = addoptions.filter((item: EmptyObjectType) => {
+					return item.value;
+				});
+			}
+		});
+	} else {
+		search?.forEach((item) => {
+			if (item.prop === 'idleStorageId') item.options = [];
+		});
+	}
+};
+//获取閒置单草稿
+const getIdleDraftData = async () => {
+	const res = await getIdleDraftApi();
+	if (res.code !== 404) {
+		isHaveDraft.value = true;
+		state.tableData.topBtnConfig?.forEach((item) => {
+			item.isSure = item.type === 'other' ? false : true;
+		});
+		dilogTitle.value = '維修單提報';
+		presentationDialogVisible.value = true;
+		dialogState.tableData.header = header.value;
+		dialogState.tableData.config.loading = false;
+		dialogState.tableData.data = res.data.details;
+		dialogState.tableData.form = Object.assign(dialogState.tableData.form, res.data);
+	} else {
+		isHaveDraft.value = false;
+		state.tableData.topBtnConfig?.forEach((item) => {
+			item.isSure = item.type === 'other' ? true : false;
+		});
+	}
+	getOptionsSlocation();
+};
 // 初始化列表数据
 const getTableData = async () => {
 	const form = state.tableData.form;
@@ -358,6 +451,7 @@ const getTableData = async () => {
 	const res = await getQueryExitPageApi(data);
 	res.data.data.forEach((item: any) => {
 		item.creator = `${item.creator} / ${item.creatorName}`;
+		item.exittype = exitTypeMap[item.exittype];
 	});
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
@@ -369,9 +463,10 @@ const getTableData = async () => {
 const onDelRow = (row: EmptyObjectType, i: number) => {
 	dialogState.tableData.data.splice(i, 1);
 };
-
+let dialogType = '';
 // 点击闲置按钮
-const onOpenSendRepair = (row: EmptyObjectType[]) => {
+const onOpenSendRepair = async (row: EmptyObjectType[], type: string) => {
+	num = 0;
 	loadingBtn.value = false;
 	dialogState.tableData.form = {};
 	presentationDialogVisible.value = true;
@@ -381,12 +476,27 @@ const onOpenSendRepair = (row: EmptyObjectType[]) => {
 	tableData.data = row;
 	tableData.config.loading = false;
 	dilogTitle.value = '閒置單提報';
+	dialogType = type;
+	tableData.data = row;
+	if (type === 'addData') {
+		const res = await getIdleDraftApi();
+		dialogState.tableData.form = Object.assign(dialogState.tableData.form, res.data);
+		dialogState.tableData.data.forEach((item) => {
+			item.isBorder = true;
+		});
+		nextTick(() => {
+			dialogtableRef.value.tableScrollToRow(res.data.details.length, true);
+		});
+		dialogState.tableData.data = res.data.details.concat(dialogState.tableData.data);
+		getOptionsSlocation();
+	} else if (type === 'continueEdit') {
+		getIdleDraftData();
+	}
 };
 
 // 点击料号弹出详情
 const matNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'matno') {
-		row.exittype = exitTypeMap[row.exittype];
 		matnoDetailDialogRef.value.openDialog('matno', row, '退庫詳情');
 	} else if (column.property === 'exitqty' && row.codeManageMode === 0) {
 		let res = await GetExitStoreQrCodeListApi(row.runid);
@@ -398,26 +508,107 @@ const matNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
 		}
 	}
 };
+// 重置
+const onReset = async () => {
+	ElMessageBox.confirm(`確定重置數據嗎？`, '提示', {
+		confirmButtonText: '確 定',
+		cancelButtonText: '取 消',
+		type: 'warning',
+		draggable: true,
+	})
+		.then(async () => {
+			const res = await getIdleDraftDeleteApi();
+			dialogState.tableData.form = {};
+			dialogState.tableData.data = [];
+			getIdleDraftData();
+			getTableData();
+			presentationDialogVisible.value = false;
+			isHaveDraft.value = false;
+			getOptionsSlocation();
+		})
+		.catch(() => {});
+};
 // 提交
-const onSubmit = async (formEl: FormInstance | undefined) => {
+const onSubmit = async (formEl: FormInstance | undefined, type: string) => {
+	if (type !== 'submit') {
+		// 提交按鈕要必填送修時間，保存按鈕不用，如果先點了提交按鈕出現了校驗提示，再點保存按鈕清除校驗提示
+		dialogFormRef.value.clearValidate(`idleStorageId`);
+		dialogFormRef.value.clearValidate(`idleDate`);
+	}
 	if (!formEl) return;
 	await formEl!.validate(async (valid: boolean) => {
-		if (!valid) return ElMessage.warning(t('表格項必填未填'));
+		if (!valid && type === 'submit') return ElMessage.warning(t('表單項必填未填'));
 		// if (!dialogState.tableData.form['idleDate']) return ElMessage.warning(t('請填寫閒置日期'));
-		loadingBtn.value = true;
+		option.forEach((item) => {
+			if (item.value === dialogState.tableData.form.idleStorageId) {
+				dialogState.tableData.form.idleSLocation = item.text;
+			}
+		});
 		let allData: EmptyObjectType = {};
 		allData = { ...dialogState.tableData.form };
 		allData['exitStoreIds'] = dialogState.tableData.data.map((item) => {
-			return item.runid;
+			return item.runid || item.exitStoreId;
 		});
-		const res = await postIdleSubmitApi(allData);
-		if (res.status) {
-			ElMessage.success(t('閒置成功'));
-			presentationDialogVisible.value = false;
+
+		if (type === 'save') {
+			if (!isHaveDraft.value) {
+				// 草稿創建
+				const res = await getIdleDraftCreateApi(allData);
+				if (res.status) {
+					ElMessage.success(t('保存成功'));
+					isChange = false;
+					state.tableData.topBtnConfig?.forEach((item) => {
+						item.isSure = item.type === 'other' ? false : true;
+					});
+					isHaveDraft.value = true;
+				}
+			} else {
+				// 草稿更新
+				const res = await getIdleDraftUpdateApi(allData);
+				if (res.status) {
+					isChange = false;
+					ElMessage.success(t('保存成功'));
+				}
+			}
 			getTableData();
+		} else {
+			loadingBtn.value = true;
+			const res = await postIdleSubmitApi(allData);
+			if (res.status) {
+				ElMessage.success(t('閒置成功'));
+				if (isHaveDraft.value) {
+					const res1 = await getRepairDraftDeleteApi();
+				}
+				state.tableData.topBtnConfig?.forEach((item) => {
+					item.isSure = item.type === 'other' ? true : false;
+				});
+				isHaveDraft.value = false;
+				presentationDialogVisible.value = false;
+				getTableData();
+			}
+			loadingBtn.value = false;
 		}
-		loadingBtn.value = false;
 	});
+};
+// 取消
+const onClose = () => {
+	num = 0;
+	// console.log(isChange);
+	if (isChange) {
+		ElMessageBox.confirm(`未保存確定退出嗎？`, '提示', {
+			confirmButtonText: '確 定',
+			cancelButtonText: '取 消',
+			type: 'warning',
+			draggable: true,
+		})
+			.then(async () => {
+				presentationDialogVisible.value = false;
+				isChange = false;
+			})
+			.catch(() => {});
+	} else {
+		presentationDialogVisible.value = false;
+	}
 };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
@@ -439,6 +630,7 @@ const onSortHeader = (data: TableHeaderType[]) => {
 // 页面加载时
 onMounted(() => {
 	getTableData();
+	getIdleDraftData();
 });
 </script>
 

@@ -33,6 +33,9 @@
 				<span style="float: right; color: var(--el-text-color-secondary); font-size: 13px">{{ row.label }}</span>
 			</template>
 			<template #dialogBtn="{ data, ref }">
+				<el-button v-if="activeName !== 'first' && data.formData.status === 0" type="danger" @click="onDelDraft(data)" size="default"
+					>刪除草稿</el-button
+				>
 				<el-button
 					:disabled="activeName === 'first' || data.formData.status === 0 ? false : true"
 					:loading="loadingSaveBtn"
@@ -54,6 +57,7 @@ import {
 	getAddSampleNeedsApi,
 	getPurchaserGroupApi,
 	getSubmitSampleNeedsApi,
+	getDeleteSampleNeedsDraftApi,
 } from '/@/api/partno/sampleDelivery';
 import { useI18n } from 'vue-i18n';
 import { getQuerySampleNeedsApi } from '/@/api/partno/sampleRequirement';
@@ -346,6 +350,24 @@ const remoteMethod = (query: string) => {
 			if (item.prop === 'purchaserName') item.options = [];
 		});
 	}
+};
+// 删除草稿
+const onDelDraft = async (data: any) => {
+	ElMessageBox.confirm('確定刪除草稿嗎?', '提示', {
+		confirmButtonText: '確 定',
+		cancelButtonText: '取 消',
+		type: 'warning',
+		draggable: true,
+	})
+		.then(async () => {
+			const res = await getDeleteSampleNeedsDraftApi(data.formData.sampleNo);
+			if (res.status) {
+				ElMessage.success(t('刪除草稿成功'));
+				sampleDialogRef.value.closeDialog();
+				getTableData();
+			}
+		})
+		.catch(() => {});
 };
 // 保存
 const onSave = async (data: any, formEl: EmptyObjectType | undefined) => {

@@ -31,4 +31,12 @@ export function getVendorsApi(vendor:string) {
   	params:{vendor}
   });
 }
+// 采购查看送样详情进度
+export function getSampleDetailProgressApi(sampleNo:string) {
+  return request({
+    url: '/api/Material/GetSampleDetailProgress',
+    method: 'GET',
+  	params:{sampleNo}
+  });
+}
 

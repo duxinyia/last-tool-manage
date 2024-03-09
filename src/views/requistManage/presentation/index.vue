@@ -211,7 +211,7 @@
 			<el-form label-width="100px">
 				<el-button size="default" class="buttonBorder mb10" @click="onDownloadTemp" type="primary" plain>{{ $t('下載模板') }}</el-button>
 				<div class="download-form">
-					<el-input disabled v-model="fileListName" placeholder="請點擊瀏覽文件按鈕" />
+					<el-input :readonly="true" v-model="fileListName" placeholder="請點擊瀏覽文件按鈕" />
 					<el-upload
 						v-model:file-list="fileList"
 						:auto-upload="false"

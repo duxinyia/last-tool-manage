@@ -13,6 +13,7 @@
 				@onOpentopBtnOther="onOpenSendRepair"
 			/>
 			<el-dialog
+				:before-close="onClose"
 				ref="presentationDialogRef"
 				v-model="presentationDialogVisible"
 				:title="dilogTitle"
@@ -62,7 +63,7 @@
 				</el-form>
 				<!-- 表格 -->
 				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
-					<Table ref="dialogtableRef" v-bind="dialogState.tableData" class="table" @delRow="onDelRow" />
+					<Table ref="dialogtableRef" v-bind="dialogState.tableData" class="table" @delRow="onDelRow" :rowStyle="rowStyle" />
 				</el-form>
 				<div class="describe">
 					<span>備註：</span>
@@ -78,8 +79,12 @@
 				<!-- 提交按钮 -->
 				<template #footer>
 					<span class="dialog-footer">
-						<el-button size="default" auto-insert-space @click="presentationDialogVisible = false">取消</el-button>
-						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn"> 確定 </el-button>
+						<el-button size="default" auto-insert-space @click="onClose">取消</el-button>
+						<el-button v-if="isHaveDraft" size="default" type="info" auto-insert-space @click="onReset"> 重置 </el-button>
+						<el-button size="default" type="warning" auto-insert-space @click="onSubmit(tableFormRef, 'save')">保存</el-button>
+						<el-button size="default" type="primary" auto-insert-space @click="onSubmit(dialogFormRef, 'submit')" :loading="loadingBtn">
+							提交
+						</el-button>
 					</span>
 				</template>
 			</el-dialog>
@@ -94,11 +99,18 @@
 </template>
 
 <script setup lang="ts" name="scrapSheetSub">
-import { defineAsyncComponent, reactive, ref, onMounted, computed, watch } from 'vue';
-import { ElMessage, FormInstance } from 'element-plus';
+import { defineAsyncComponent, reactive, ref, onMounted, computed, watch, nextTick } from 'vue';
+import { ElMessage, ElMessageBox, FormInstance } from 'element-plus';
 const presentationDialogVisible = ref(false);
 // 引入接口
-import { getQueryExitPageApi, getUselessBackStockApi } from '/@/api/scrapManage/scrapSheetSub';
+import {
+	getQueryExitPageApi,
+	getUselessBackStockApi,
+	getUselessDraftApi,
+	getUselessDraftCreateApi,
+	getUselessDraftDeleteApi,
+	getUselessDraftUpdateApi,
+} from '/@/api/scrapManage/scrapSheetSub';
 import { GetExitStoreQrCodeListApi } from '/@/api/maintenanceManage/maintenanceOrderSub';
 
 import { useI18n } from 'vue-i18n';
@@ -119,7 +131,8 @@ const dialogtableRef = ref<RefType>();
 const presentationDialogRef = ref();
 // tags的数据
 let tags = ref<EmptyArrayType>([]);
-
+const dialogFormRef = ref();
+const isHaveDraft = ref(false);
 // 送修弹窗标题
 const dilogTitle = ref();
 const header = ref([
@@ -131,7 +144,7 @@ const header = ref([
 		isCheck: true,
 	},
 	{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
-	{ key: 'machine', colWidth: '', title: '機種', type: 'text', isCheck: true },
+	// { key: 'machine', colWidth: '', title: '機種', type: 'text', isCheck: true },
 	{ key: 'namech', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	{ key: 'nameen', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 	// { key: 'vendorcode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
@@ -178,7 +191,9 @@ const state = reactive<TableDemoState>({
 			isPage: true, //是否有分页
 		},
 		topBtnConfig: [
-			{ type: 'other', name: '報廢', defaultColor: 'primary', isSure: true, disabled: true, icon: 'ele-Edit', isNoSelcetDisabled: true },
+			{ type: 'other', name: '提單', defaultColor: 'primary', isSure: true, disabled: true, icon: 'ele-Edit', isNoSelcetDisabled: true },
+			{ type: 'addData', name: '添加數據', defaultColor: 'primary', isSure: false, disabled: true, icon: 'ele-Plus', isNoSelcetDisabled: true },
+			{ type: 'continueEdit', name: '繼續編輯', defaultColor: 'primary', isSure: false, disabled: true, icon: 'ele-Edit' },
 		],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
@@ -234,8 +249,8 @@ const dialogState = reactive<TableDemoState>({
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '報廢單號', prop: 'matNo', placeholder: '請輸入報廢單號', type: 'text', required: false, isRequired: false },
-			{ label: '報廢時間', prop: 'uselessdate', type: 'time', required: false, isRequired: true },
+			// { label: '報廢單號', prop: 'matNo', placeholder: '請輸入報廢單號', type: 'text', required: false, isRequired: false },
+			{ label: '報廢時間', prop: 'uselessDate', type: 'time', required: false, isRequired: true },
 			// { label: '班別', prop: 'classes', type: 'input', required: false, isRequired: false },
 			// { label: '站位', prop: 'state', type: 'input', required: false, isRequired: false },
 		],
@@ -265,11 +280,28 @@ const exitTypeMap: EmptyObjectType = {
 	2: '閒置',
 	3: '報廢',
 };
+let isChange = false;
+let num = 0;
 watch(
 	() => presentationDialogVisible.value,
 	(val) => {
 		if (val == false) {
 			tableRef.value.clearSelection();
+		} else {
+			watch(
+				[dialogState.tableData.data, dialogState.tableData.form],
+				(val) => {
+					// console.log(num);
+					if (num === 0 && dialogType != 'other') {
+						isChange = false;
+					} else {
+						isChange = true;
+					}
+					num++;
+					// console.log('监听到了');
+				},
+				{ deep: true }
+			);
 		}
 	}
 );
@@ -281,6 +313,12 @@ const disabledDate = (time: Date) => {
 dialogState.tableData.btnConfig![0].disabled = computed(() => {
 	return dialogState.tableData.data.length <= 1 ? true : false;
 });
+// 選中的要編輯的數據變成藍色
+const rowStyle = ({ row, column }: EmptyObjectType) => {
+	if (row.isBorder) {
+		return { color: 'var(--el-color-primary)' };
+	}
+};
 // 单元格字体颜色
 const cellStyle = ({ row, column }: EmptyObjectType) => {
 	const property = column.property;
@@ -310,6 +348,7 @@ const getTableData = async () => {
 	const res = await getQueryExitPageApi(data);
 	res.data.data.forEach((item: any) => {
 		item.creator = `${item.creator} / ${item.creatorName}`;
+		item.exittype = exitTypeMap[item.exittype];
 	});
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
@@ -317,13 +356,36 @@ const getTableData = async () => {
 		state.tableData.config.loading = false;
 	}
 };
+//获取報廢单草稿
+const getRepairDraftData = async () => {
+	const res = await getUselessDraftApi();
+	if (res.code !== 404) {
+		isHaveDraft.value = true;
+		state.tableData.topBtnConfig?.forEach((item) => {
+			item.isSure = item.type === 'other' ? false : true;
+		});
+		dilogTitle.value = '維修單提報';
+		presentationDialogVisible.value = true;
+		dialogState.tableData.header = header.value;
+		dialogState.tableData.config.loading = false;
+		dialogState.tableData.data = res.data.details;
+		dialogState.tableData.form = Object.assign(dialogState.tableData.form, res.data);
+	} else {
+		isHaveDraft.value = false;
+		state.tableData.topBtnConfig?.forEach((item) => {
+			item.isSure = item.type === 'other' ? true : false;
+		});
+	}
+};
 //删除
 const onDelRow = (row: EmptyObjectType, i: number) => {
 	dialogState.tableData.data.splice(i, 1);
 };
-
+let dialogType = '';
 // 点击报废按钮
-const onOpenSendRepair = (row: EmptyObjectType[]) => {
+const onOpenSendRepair = async (row: EmptyObjectType[], type: string) => {
+	num = 0;
+
 	loadingBtn.value = false;
 	dialogState.tableData.form = {};
 	presentationDialogVisible.value = true;
@@ -333,12 +395,25 @@ const onOpenSendRepair = (row: EmptyObjectType[]) => {
 	tableData.data = row;
 	tableData.config.loading = false;
 	dilogTitle.value = '報廢單提報';
+	dialogType = type;
+	if (type === 'addData') {
+		const res = await getUselessDraftApi();
+		dialogState.tableData.form = Object.assign(dialogState.tableData.form, res.data);
+		dialogState.tableData.data.forEach((item) => {
+			item.isBorder = true;
+		});
+		nextTick(() => {
+			dialogtableRef.value.tableScrollToRow(res.data.details.length, true);
+		});
+		dialogState.tableData.data = res.data.details.concat(dialogState.tableData.data);
+	} else if (type === 'continueEdit') {
+		getRepairDraftData();
+	}
 };
 
 // 点击料号弹出详情
 const matNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'matno') {
-		row.exittype = exitTypeMap[row.exittype];
 		matnoDetailDialogRef.value.openDialog('matno', row, '退庫詳情');
 	} else if (column.property === 'exitqty' && row.codeManageMode === 0) {
 		let res = await GetExitStoreQrCodeListApi(row.runid);
@@ -350,29 +425,110 @@ const matNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
 		}
 	}
 };
-// 提交
-const onSubmit = async (formEl: FormInstance | undefined) => {
+// 重置
+const onReset = async () => {
+	ElMessageBox.confirm(`確定重置數據嗎？`, '提示', {
+		confirmButtonText: '確 定',
+		cancelButtonText: '取 消',
+		type: 'warning',
+		draggable: true,
+	})
+		.then(async () => {
+			const res = await getUselessDraftDeleteApi();
+			dialogState.tableData.form = {};
+			dialogState.tableData.data = [];
+			getRepairDraftData();
+			getTableData();
+			presentationDialogVisible.value = false;
+		})
+		.catch(() => {});
+};
+// 保存或者提交
+const onSubmit = async (formEl: FormInstance | undefined, type: string) => {
+	if (type !== 'submit') {
+		// 提交按鈕要必填送修時間，保存按鈕不用，如果先點了提交按鈕出現了校驗提示，再點保存按鈕清除校驗提示
+		dialogFormRef.value.clearValidate(`uselessDate`);
+	}
 	if (!formEl) return;
 	await formEl.validate(async (valid: boolean) => {
-		if (!valid) return ElMessage.warning(t('表格項必填未填'));
-		if (!dialogState.tableData.form['uselessdate']) return ElMessage.warning(t('請填寫報廢時間'));
-		loadingBtn.value = true;
+		if (!valid && type === 'submit') return ElMessage.warning(t('請填寫報廢時間'));
+		// if (!dialogState.tableData.form['uselessdate']) return ElMessage.warning(t('請填寫報廢時間'));
 		let allData: EmptyObjectType = {};
 		let exitstoreid: EmptyArrayType = [];
 		let data = dialogState.tableData.data;
 		data.forEach((item) => {
-			exitstoreid.push(item.runid);
+			exitstoreid.push(item.runid || item.exitStoreId);
 		});
 		allData = { ...dialogState.tableData.form };
 		allData['exitStoreIds'] = exitstoreid;
-		const res = await getUselessBackStockApi(allData);
-		if (res.status) {
-			ElMessage.success(t('報廢成功'));
-			presentationDialogVisible.value = false;
+		if (type === 'save') {
+			if (!isHaveDraft.value) {
+				// 草稿創建
+				const res = await getUselessDraftCreateApi(allData);
+				if (res.status) {
+					ElMessage.success(t('保存成功'));
+					isChange = false;
+					state.tableData.topBtnConfig?.forEach((item) => {
+						item.isSure = item.type === 'other' ? false : true;
+					});
+					isHaveDraft.value = true;
+				}
+			} else {
+				// 草稿更新
+				const res = await getUselessDraftUpdateApi(allData);
+				if (res.status) {
+					isChange = false;
+					ElMessage.success(t('保存成功'));
+				}
+			}
 			getTableData();
+		} else {
+			loadingBtn.value = true;
+			allData['uselessdate'] = allData.uselessDate;
+			delete allData.uselessDate;
+			const res = await getUselessBackStockApi(allData);
+			if (res.status) {
+				ElMessage.success(t('報廢成功'));
+
+				if (isHaveDraft.value) {
+					const res1 = await getUselessDraftDeleteApi();
+				}
+				state.tableData.topBtnConfig?.forEach((item) => {
+					item.isSure = item.type === 'other' ? true : false;
+				});
+				isHaveDraft.value = false;
+				getTableData();
+				presentationDialogVisible.value = false;
+			}
+			loadingBtn.value = false;
 		}
-		loadingBtn.value = false;
 	});
+};
+// 取消
+const onClose = () => {
+	if (dialogType != 'other') {
+		dialogState.tableData.data.forEach((item) => {
+			item.prItemNo = '';
+		});
+	}
+
+	num = 0;
+	// console.log(isChange);
+	if (isChange) {
+		ElMessageBox.confirm(`未保存確定退出嗎？`, '提示', {
+			confirmButtonText: '確 定',
+			cancelButtonText: '取 消',
+			type: 'warning',
+			draggable: true,
+		})
+			.then(async () => {
+				presentationDialogVisible.value = false;
+				isChange = false;
+			})
+			.catch(() => {});
+	} else {
+		presentationDialogVisible.value = false;
+	}
 };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
@@ -393,6 +549,7 @@ const onSortHeader = (data: TableHeaderType[]) => {
 // 页面加载时
 onMounted(() => {
 	getTableData();
+	getRepairDraftData();
 });
 </script>
 

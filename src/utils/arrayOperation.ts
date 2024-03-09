@@ -14,7 +14,7 @@ export function judementSameArr(newArr: unknown[] | string[], oldArr: string[]):
 			if (olds[i] === news[j]) count++;
 		}
 	}
-	return count === leng ? true : false;
+	return count === leng&&leng=== oldArr.length? true : false;
 }
 
 /**

@@ -420,6 +420,7 @@ const openArriveJobDialog = (scope: EmptyObjectType) => {
 	getDetailData(scope.row.repairNo);
 	dilogTitle.value = '收貨';
 	changeStatus(header.value, 300, true);
+	selectList.value = [];
 };
 // 点击申请单号
 const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {

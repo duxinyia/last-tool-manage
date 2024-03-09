@@ -66,6 +66,7 @@
 			@inputBlur="onInputBlur"
 			@inputFocus="onInputFocus"
 			:loadingBtn="loadingBtn"
+			@onImportQrcodeData="onImportQrcodeData"
 		>
 			<template #optionFat="{ row }" v-if="dilogTitle === '轉倉'">
 				<span style="float: left">{{ row.text.split('，')[0] }}</span>
@@ -1042,6 +1043,12 @@ const change = async (val: any, prop: string, state: any, iscontu: boolean) => {
 		}
 	}
 };
+// 點擊導入二維碼按鈕
+const onImportQrcodeData = (formData: EmptyObjectType) => {
+	formData.draftId = getData.draftId;
+	formData.different = 1;
+	formData.dilogTitle = dilogTitle.value;
+};
 const innnerDialogCancel = async (formData: EmptyObjectType, formInnerData: EmptyObjectType) => {
 	let res = null;
 	if (formInnerData.codeList.length <= 0) return ElMessage.warning('數據已清空');
@@ -1116,7 +1123,7 @@ const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerDa
 		ElMessage.error(`${btnType}數量小於掃碼數量`);
 	} else {
 		// 转仓提交
-		if (ruleForm.storageId) {
+		if (ruleForm.storageId && dilogTitle.value === '轉倉') {
 			options.forEach((item) => {
 				if (item.value === allData.storageId) {
 					allData.storageid = item.value;

@@ -272,7 +272,6 @@ const getDetailData = async () => {
 				// console.log('original', original.machineType);
 				// console.log('modified', modified.machineType);
 				const temp = judementSameArr(modified.machineType, original.machineType);
-				// console.log(temp);
 				item.colorType = temp ? 'primary' : 'danger';
 			} else if (original[item.prop] !== modified[item.prop]) {
 				item.color = 'red';

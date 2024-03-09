@@ -408,6 +408,7 @@ const onSortHeader = (data: TableHeaderType[], tableData: EmptyObjectType) => {
 
 // 打开验收弹窗 1
 const openAcceptanceDialog = async (scope: any) => {
+	selectList.value = [];
 	loadingBtn.value = false;
 	dialogData.formData = { ...scope.row };
 	//清空文件信息

@@ -345,6 +345,24 @@
 					<template #footer v-if="isFootBtn">
 						<span class="dialog-footer">
 							<slot name="dialogFooterBtn" :data="state"></slot>
+							<el-button type="warning" plain size="default" @click="onImportQrcodeData"> 導入二維碼 </el-button>
+							<input id="uploadFile" v-show="false" @change="handleImportChange" ref="inputImportQrcodeFile" type="file" />
+							<!-- <el-upload
+								style="display: inline-flex; margin-right: 10px"
+								v-model:file-list="fileList"
+								:auto-upload="false"
+								ref="uploadRefs"
+								action=""
+								drag
+								accept=".xlsx, .xls"
+								:limit="1"
+								:show-file-list="false"
+								:on-exceed="handleImportExceed"
+								:on-change="handleImportChange"
+							>
+								<el-button type="warning" plain size="default" @click="onImportQrcodeData"> 導入二維碼 </el-button>
+							</el-upload> -->
+
 							<el-button type="success" plain size="default" @click="onExportQrcodeData"> 導出二維碼 </el-button>
 							<el-button @click="innnerDialogCancel" size="default">清 空</el-button>
 							<el-button type="primary" @click="innnerDialogSubmit(innnerDialogFormRef)" size="default">確 定</el-button>
@@ -375,9 +393,13 @@ import { UploadFilled } from '@element-plus/icons-vue';
 import { getUploadFileApi } from '/@/api/global/index';
 import { verifyPhone, verifyTelPhone, verifyEmail, verifiyNumberInteger } from '/@/utils/toolsValidate';
 import { useI18n } from 'vue-i18n';
+import * as XLSX from 'xlsx';
 import table2excel from 'js-table2excel';
 import { useRouter } from 'vue-router';
 import { FolderOpened } from '@element-plus/icons-vue';
+import { getStockOperDraftAddCodesApi } from '/@/api/toolsReturn/sampleStorage';
+import { getStockOperDraftAddCodesToExitStoreDraftApi, getStockOperDraftAddCodesToStockTransferDraftApi } from '/@/api/toolsReturn/maintentanceTools';
+
 const router = useRouter();
 // 引入组件
 const IconSelector = defineAsyncComponent(() => import('/@/components/iconSelector/index.vue'));
@@ -390,6 +412,7 @@ const emit = defineEmits([
 	'commonInputHandleChange',
 	'handleTagClose',
 	'innnerDialogCancel',
+	'onImportQrcodeData',
 	'selectChange',
 	'innnerDialogSubmit',
 	'openInnerDialog',
@@ -454,6 +477,7 @@ const imagefileList = ref<UploadUserFile[]>([]);
 const fileListName = ref();
 // 定义变量内容
 const dialogFormRef = ref();
+const inputImportQrcodeFile = ref();
 const innnerDialogFormRef = ref();
 const uploadForm = ref();
 const inputuploadForm = ref();
@@ -546,7 +570,7 @@ const disabledDate = (time: Date, isdisabledDate: boolean) => {
 	}
 };
 // 打开弹窗
-const openDialog = (type: string, row?: any, title?: string, formInnerData?: any) => {
+const openDialog = (type: string, row?: any, title?: string, formInnerData?: any, submitTxt?: string) => {
 	if (type === 'add') {
 		state.dialog.isdisable = false;
 		state.dialog.title = '新增';
@@ -588,7 +612,7 @@ const openDialog = (type: string, row?: any, title?: string, formInnerData?: any
 		state.dialog.submitTxt = '開始上傳';
 	} else {
 		state.dialog.title = title;
-		state.dialog.submitTxt = '提 交';
+		state.dialog.submitTxt = submitTxt || '提 交';
 		nextTick(() => {
 			state.formData = JSON.parse(JSON.stringify(row));
 			dialogFormRef.value && dialogFormRef.value.resetFields();
@@ -631,6 +655,134 @@ const onExportQrcodeData = () => {
 		`${meta.title}- ${state.dialog.title}二維碼 ${new Date().toLocaleString()}.xls`
 	);
 };
+// 導入二維碼
+const onImportQrcodeData = () => {
+	emit('onImportQrcodeData', state.formInnerData);
+	inputImportQrcodeFile.value.click();
+};
+//导入二维码的改变文件
+const handleImportChange = (e: any) => {
+	const file = e.target.files[0];
+	const fileName = file.name.substring(file.name.lastIndexOf('.') + 1);
+	if (fileName !== 'xlsx' && fileName !== 'xls') {
+		ElMessage.error('文件格式错误');
+		return;
+	}
+	const reader = new FileReader();
+	reader.readAsBinaryString(file);
+	reader.onload = (e) => {
+		const result = e.target!.result;
+		if (!result) {
+			ElMessage.error('此文件没有数据');
+			return;
+		}
+		handleSinglePageExcel(result);
+	};
+	e.target.value = '';
+	reader.onerror = (err) => {
+		throw new Error('UpLoadError: ' + err);
+	};
+};
+// 单个 sheet
+const handleSinglePageExcel = async (data: any) => {
+	const wb = XLSX.read(data, {
+		type: 'binary',
+		cellDates: true,
+	});
+	const sheet = wb.SheetNames[0];
+	const importData: EmptyArrayType = XLSX.utils.sheet_to_json(wb.Sheets[sheet], {
+		range: -1,
+	});
+	// if (importData[0].__EMPTY != '二維碼編碼') {
+	// 	ElMessage.warning('文件內容格式錯誤');
+	// 	return;
+	// }
+	// 刪除表头
+	// delete importData[0];
+	// 将表格对象数组变成数组
+	const flatArray = importData.reduce((acc, obj) => {
+		const values = Object.values(obj);
+		return acc.concat(values);
+	}, []);
+	// 重复的条码
+	let repetitionCode: EmptyArrayType = [];
+	// 导入的剩下的不重复的条码
+	let importNoRepetitionCode: EmptyArrayType = [];
+	for (let i = 0; i < flatArray.length; i++) {
+		if (state.formInnerData.codeList.includes(flatArray[i])) {
+			repetitionCode.push(flatArray[i]);
+		} else {
+			importNoRepetitionCode.push(flatArray[i]);
+		}
+	}
+	// 最后去重了条码加上现有的条码集合的长度
+	const flatArrayLength = [...new Set(state.formInnerData.codeList.concat(flatArray))].length;
+	if (flatArrayLength > state.formData.dispatchQty || flatArrayLength > state.formData.qty) {
+		ElMessage.error(`此文件中的條碼數量加上现有的掃碼數量超過發料數量，請勿導入`);
+		return;
+	} else if (state.formInnerData.different === 1 && flatArrayLength > state.formData.stockqty) {
+		ElMessage.error(`此文件中的條碼數量加上现有的掃碼數量超過庫存總量，請勿導入`);
+		return;
+	}
+	if (importNoRepetitionCode.length <= 0) {
+		ElMessage.error(`此文件所有條碼與現有條碼全部重複，請勿重複導入`);
+		return;
+	}
+	let res = null;
+	// console.log(state.formInnerData);
+	if (state.formInnerData.different === 1) {
+		if (state.formInnerData.dilogTitle === '退庫') {
+			res = await getStockOperDraftAddCodesToExitStoreDraftApi({
+				draftId: state.formInnerData.draftId,
+				codesToAdd: importNoRepetitionCode,
+			});
+		}
+		// 轉倉
+		else {
+			res = await getStockOperDraftAddCodesToStockTransferDraftApi({
+				draftId: state.formInnerData.draftId,
+				codesToAdd: importNoRepetitionCode,
+			});
+		}
+	}
+	// 其他
+	else {
+		res = await getStockOperDraftAddCodesApi({
+			draftId: state.formInnerData.draftId,
+			codesToAdd: importNoRepetitionCode,
+		});
+	}
+	if (res!.status) {
+		if (repetitionCode.length > 0) {
+			ElMessageBox.confirm(
+				`這些條碼已存在，請勿重複導入：<span style="color:red">${repetitionCode.join(',')}</span>,已給您清除重複的條碼導入了`,
+				'注意',
+				{
+					confirmButtonText: '確 定',
+					showCancelButton: false,
+					showClose: false,
+					dangerouslyUseHTMLString: true, // 注意此属性
+					type: 'warning',
+					draggable: true,
+				}
+			)
+				.then(async () => {})
+				.catch(() => {});
+		}
+		// 最后去重了条码加上现有的条码集合
+		state.formInnerData.codeList = [...new Set(state.formInnerData.codeList.concat(flatArray))];
+		// 增加条码后更改数量
+		if (state.formInnerData.different === 1) {
+			state.formInnerData.exitQty = state.formInnerData.codeList.length;
+			state.formData.exitQty = state.formInnerData.codeList.length;
+		} else {
+			state.formInnerData.stockqty = state.formInnerData.codeList.length;
+			state.formData.stockqty = state.formInnerData.codeList.length;
+		}
+		ElMessage.success(`導入成功，共导入${importNoRepetitionCode.length}条`);
+	}
+};
+
 const innnerDialogCancel = () => {
 	emit('innnerDialogCancel', state.formData, state.formInnerData);
 	// closeInnerDialog();
@@ -867,6 +1019,7 @@ const clearUpload = (prop: string) => {
 		})
 		.catch(() => {});
 };
+
 const handleChange: UploadProps['onChange'] = (uploadFile, uploadFiles) => {
 	fileListName.value = uploadFile.name;
 	uploadForm.value = uploadFile;

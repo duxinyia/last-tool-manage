@@ -51,6 +51,7 @@
 			@commonInputHandleChange="change"
 			:tagsData="tags"
 			@innnerDialogCancel="innnerDialogCancel"
+			@onImportQrcodeData="onImportQrcodeData"
 			@innnerDialogSubmit="innnerDialogSubmit"
 			@openInnerDialog="openInnerDialog"
 			@handleTagClose="handleTagClose"
@@ -665,6 +666,10 @@ const handleTagClose = async (tag: any, state: EmptyObjectType) => {
 		formData['stockqty'] = formInnerData.codeList.length;
 		ElMessage.success('刪除成功');
 	}
+};
+// 點擊導入二維碼按鈕
+const onImportQrcodeData = (formData: EmptyObjectType) => {
+	formData.draftId = draftId;
 };
 let draftId = '';
 // 打开入库弹窗

@@ -51,6 +51,7 @@
 			:loadingBtn="loadingBtn"
 			@inputBlur="onInputBlur"
 			@inputFocus="onInputFocus"
+			@onImportQrcodeData="onImportQrcodeData"
 		>
 			<template #optionFat="{ row }">
 				<span style="float: left; margin-right: 35px">{{ row.text }}</span>
@@ -635,6 +636,10 @@ const openLookQrcodeDialog = async (scope: any) => {
 		qrCode.value = res.data;
 		inventoryDialogRef.value?.openDialog();
 	}
+};
+// 點擊導入二維碼按鈕
+const onImportQrcodeData = (formData: EmptyObjectType) => {
+	formData.draftId = draftId;
 };
 let draftId = '';
 // 打开入库弹窗

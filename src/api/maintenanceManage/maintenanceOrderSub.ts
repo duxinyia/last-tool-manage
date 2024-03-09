@@ -39,4 +39,36 @@ export function getRepairRecordDetailApi(repairNo: string) {
 		params: { repairNo },
 	});
 }
+//获取维修单草稿
+export function getRepairDraftApi() {
+	return request({
+		url: '/api/RepairDraft/Get',
+		method: 'GET',
+	});
+}
+// 创建维修单草稿
+export function getRepairDraftCreateApi(data: Object) {
+	return request({
+		url: '/api/RepairDraft/Create',
+		method: 'POST',
+		data: data,
+	});
+}
+// 更新维修单草稿
+export function getRepairDraftUpdateApi(data: Object) {
+	return request({
+		url: '/api/RepairDraft/Update',
+		method: 'POST',
+		data: data,
+	});
+}
+// 重置維修單草稿
+export function getRepairDraftDeleteApi() {
+	return request({
+		url: '/api/RepairDraft/Delete',
+		method: 'DELETE',
+	});
+}
+
+
 

@@ -55,6 +55,7 @@
 			@openInnerDialog="openInnerDialog"
 			@handleTagClose="handleTagClose"
 			:loadingBtn="loadingBtn"
+			@onImportQrcodeData="onImportQrcodeData"
 			@inputBlur="onInputBlur"
 			@inputFocus="onInputFocus"
 		>
@@ -574,6 +575,10 @@ const change = async (val: any, prop: string, state: any, iscontu: boolean) => {
 			formData['stockqty'] = formInnerData.codeList.length;
 		}
 	}
+};
+// 點擊導入二維碼按鈕
+const onImportQrcodeData = (formInnerData: EmptyObjectType) => {
+	formInnerData.draftId = draftId;
 };
 // 清空條碼
 const innnerDialogCancel = async (formData: EmptyObjectType, formInnerData: EmptyObjectType) => {
