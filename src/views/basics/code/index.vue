@@ -44,11 +44,11 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'area', colWidth: '', title: '廠區', type: 'text', isCheck: true },
+			{ key: 'area', colWidth: '', title: 'message.pages.factoryarea', type: 'text', isCheck: true },
 			{ key: 'bu', colWidth: '', title: 'BU', type: 'text', isCheck: true },
-			{ key: 'projectcode', colWidth: '', title: '專案代碼', type: 'text', isCheck: true },
-			{ key: 'stage', colWidth: '', title: '階段', type: 'text', isCheck: true },
-			{ key: 'machinetype', colWidth: '', title: '機種', type: 'text', isCheck: true },
+			{ key: 'projectcode', colWidth: '', title: 'message.pages.projectCode', type: 'text', isCheck: true },
+			{ key: 'stage', colWidth: '', title: 'message.pages.phase', type: 'text', isCheck: true },
+			{ key: 'machinetype', colWidth: '', title: 'message.pages.machineType', type: 'text', isCheck: true },
 			// { key: 'creator', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
 			// { key: 'createtime', title: 'message.pages.creationTime', type: 'text', isCheck: true },
 		],
@@ -77,9 +77,9 @@ const state = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{
-				label: '廠區',
+				label: 'message.pages.factoryarea',
 				prop: 'area',
-				placeholder: '請選擇廠區',
+				placeholder: '',
 				required: false,
 				type: 'select',
 				options: [
@@ -91,7 +91,7 @@ const state = reactive<TableDemoState>({
 			{
 				label: 'BU',
 				prop: 'bu',
-				placeholder: '請選擇BU',
+				placeholder: '',
 				required: false,
 				type: 'select',
 				options: [
@@ -101,16 +101,16 @@ const state = reactive<TableDemoState>({
 				],
 			},
 			{
-				label: '專案代碼',
+				label: 'message.pages.projectCode',
 				prop: 'projectcode',
-				placeholder: '請輸入專案代碼',
+				placeholder: '',
 				required: false,
 				type: 'input',
 			},
 			{
-				label: '階段',
+				label: 'message.pages.phase',
 				prop: 'stage',
-				placeholder: '請選擇階段',
+				placeholder: '',
 				required: false,
 				type: 'select',
 				options: [
@@ -122,9 +122,9 @@ const state = reactive<TableDemoState>({
 				],
 			},
 			{
-				label: '機種',
+				label: 'message.pages.machineType',
 				prop: 'machinetype',
-				placeholder: '請輸入機種',
+				placeholder: '',
 				required: false,
 				type: 'input',
 			},
@@ -142,13 +142,13 @@ const state = reactive<TableDemoState>({
 			pageSize: 10,
 		},
 		// 打印标题
-		printName: '表格打印演示',
+		printName: '',
 		// 弹窗表单
 		dialogConfig: [
 			{
-				label: '廠區',
+				label: 'message.pages.factoryarea',
 				prop: 'area',
-				placeholder: '請選擇廠區',
+				placeholder: '',
 				required: true,
 				type: 'select',
 				options: [
@@ -160,7 +160,7 @@ const state = reactive<TableDemoState>({
 			{
 				label: 'BU',
 				prop: 'bu',
-				placeholder: '請選擇BU',
+				placeholder: '',
 				required: true,
 				type: 'select',
 				options: [
@@ -169,11 +169,11 @@ const state = reactive<TableDemoState>({
 					{ value: 'CMC', label: 'CMC', text: 'CMC' },
 				],
 			},
-			{ label: '專案代碼', prop: 'projectcode', placeholder: '請輸入專案代碼', required: true, type: 'input' },
+			{ label: 'message.pages.projectCode', prop: 'projectcode', placeholder: '', required: true, type: 'input' },
 			{
-				label: '階段',
+				label: 'message.pages.phase',
 				prop: 'stage',
-				placeholder: '請選擇階段',
+				placeholder: '',
 				required: true,
 				type: 'select',
 				options: [
@@ -184,7 +184,7 @@ const state = reactive<TableDemoState>({
 					{ value: 'MP', label: 'MP', text: 'MP' },
 				],
 			},
-			{ label: '機種', prop: 'machinetype', placeholder: '請輸入機種', required: true, type: 'input' },
+			{ label: 'message.pages.machineType', prop: 'machinetype', placeholder: '', required: true, type: 'input' },
 		],
 	},
 });
@@ -222,7 +222,7 @@ const addData = async (ruleForm: object, type: string) => {
 	loadingBtn.value = true;
 	const res = type === 'add' ? await getBaseMachineAddApi(ruleForm) : await getBaseMachineUpdateApi(ruleForm);
 	if (res.status) {
-		type === 'add' ? ElMessage.success(`新增成功`) : ElMessage.success(`修改成功`);
+		type === 'add' ? ElMessage.success(t(`message.hint.addedSuccess`)) : ElMessage.success(t(`message.hint.editSuccess`));
 		codeDialogRef.value.closeDialog();
 		getTableData();
 	}
@@ -237,7 +237,7 @@ const onTableDelRow = async (row: EmptyObjectType, type: string) => {
 		});
 		const res = await getDeleteBaseMachineBatchApi(rows);
 		if (res.status) {
-			ElMessage.success(`${t('批量刪除成功')}`);
+			ElMessage.success(`${t('message.hint.batchDelSucceeded')}`);
 			getTableData();
 		}
 	} else {

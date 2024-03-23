@@ -11,7 +11,7 @@
 				<el-breadcrumb-item v-for="(v, k) in state.breadcrumbList" :key="!v.meta.tagsViewName ? v.meta.title : v.meta.tagsViewName">
 					<span v-if="k === state.breadcrumbList.length - 1" class="layout-navbars-breadcrumb-span">
 						<SvgIcon :name="v.meta.icon" class="layout-navbars-breadcrumb-iconfont" v-if="themeConfig.isBreadcrumbIcon" />
-						<div v-if="!v.meta.tagsViewName">{{ v.meta.titleEn ? $t(v.meta.titleEn) : $t(v.meta.title) }}</div>
+						<div v-if="!v.meta.tagsViewName || v.meta.title == '首页'">{{ v.meta.titleEn ? $t(v.meta.titleEn) : $t(v.meta.title) }}</div>
 						<div v-else>{{ v.meta.tagsViewName }}</div>
 					</span>
 					<a v-else @click.prevent="onBreadcrumbClick(v)">

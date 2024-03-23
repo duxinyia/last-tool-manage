@@ -5,6 +5,7 @@
 				:search="state.tableData.search"
 				@search="(data) => onSearch(data, state.tableData)"
 				:searchConfig="state.tableData.searchConfig"
+				labelWidth=" "
 			/>
 			<Table
 				ref="tableRef"
@@ -21,6 +22,7 @@
 				:search="secondState.tableData.search"
 				@search="(data) => onSearch(data, secondState.tableData)"
 				:searchConfig="secondState.tableData.searchConfig"
+				labelWidth=" "
 			/>
 			<Table
 				ref="tableRef"

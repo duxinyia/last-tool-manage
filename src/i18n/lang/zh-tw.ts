@@ -4,7 +4,7 @@ export default {
 		home: '首頁',
 		mainHead: '治工具系統',
 		basics: '基本資料維護',
-		basicsPurchase: '采購群組',
+		basicsPurchase: '採購群組',
 		basicsObject: '工程群組',
 		basicsBasic: '基礎數據',
 		basicsCode: '機種與專案代碼',

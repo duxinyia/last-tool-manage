@@ -17,7 +17,7 @@
 				>
 					<div :xs="24" :sm="12" :md="2" :lg="2" :xl="2">
 						<el-image
-							title="點擊查看大圖"
+							:title="$t('message.pages.clickForLargerImage')"
 							:style="{ width: `241px`, height: `277px` }"
 							:src="`${state.form.picture}`"
 							:preview-src-list="[state.form.picture]"
@@ -44,9 +44,9 @@
 										{{ state.form[val.prop] }}
 									</span>
 
-									<el-button type="primary" style="margin-left: 60px" v-if="val.type === 'btn'" @click="clickLink(val.prop, state.form)"
-										>查看圖紙</el-button
-									>
+									<el-button type="primary" style="margin-left: 60px" v-if="val.type === 'btn'" @click="clickLink(val.prop, state.form)">{{
+										$t('message.pages.viewTheDrawing')
+									}}</el-button>
 									<div v-if="val.type == 'tagsarea'">
 										<el-tag v-for="tag in state.form[val.prop]" :key="tag" class="mr10">
 											{{ tag }}
@@ -61,12 +61,12 @@
 					v-if="!isDialog || props.matNoRef.signStatus === 5 || props.matNoRef.signStatus === 6"
 					style="display: flex; align-items: center; margin: 0 5px; width: 130px; margin-top: -93px; height: 100%"
 				>
-					<span class="center-text">修改前</span>
+					<span class="center-text">{{ $t('message.pages.beforeEdit') }}</span>
 					<!-- <el-icon size="24" style="border: 1px solid #ccc; border-radius: 50%; background-color: #1890ff; color: #fff; margin: 0 5px"
 						><ele-Right
 					/></el-icon> -->
 					<el-divider direction="vertical" style="height: 100%" />
-					<span class="center-text">修改后</span>
+					<span class="center-text">{{ $t('message.pages.afterEdit') }}</span>
 				</div>
 				<div class="" v-if="!isDialog || props.matNoRef.signStatus === 5 || props.matNoRef.signStatus === 6">
 					<el-form
@@ -80,7 +80,7 @@
 					>
 						<div :xs="24" :sm="12" :md="2" :lg="2" :xl="2">
 							<el-image
-								title="點擊查看大圖"
+								:title="$t('message.pages.clickForLargerImage')"
 								:style="{ width: `241px`, height: `277px` }"
 								:src="`${state.form2.picture}`"
 								:preview-src-list="[state.form2.picture]"
@@ -112,7 +112,7 @@
 											style="margin-left: 60px"
 											v-if="val.type === 'btn'"
 											@click="clickLink(val.prop, state.form2)"
-											>查看圖紙</el-button
+											>{{ $t('message.pages.viewTheDrawing') }}</el-button
 										>
 										<div v-if="val.type == 'tagsarea'">
 											<el-tag :type="val.colorType" v-for="tag in state.form2[val.prop]" :key="tag" class="mr10">
@@ -140,6 +140,7 @@ import { getMaterialApi, getMatModifySignInfoApi, getMatSignInfoApi } from '/@/a
 import { useI18n } from 'vue-i18n';
 import { getMachineTypesOfMatApi } from '/@/api/partno/noSearch';
 import { judementSameArr } from '/@/utils/arrayOperation';
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 // 定义父组件传过来的值
@@ -157,22 +158,22 @@ const emit = defineEmits(['editDialogTitle']);
 const lookFileColor = ref(false);
 const state = reactive<LinkState>({
 	search: [
-		{ label: '料號：', prop: 'matNo', type: 'text', isCheck: true, color: '#1890ff' },
-		{ label: '請購料號：', prop: 'reqMatNo', type: 'text', isCheck: true, color: '#1890ff' },
-		{ label: '品名-中文：', prop: 'nameCh', type: 'text', isCheck: true, color: '#1890ff' },
-		{ label: '品名-英文：', prop: 'nameEn', type: 'text', isCheck: true, color: '#1890ff' },
-		{ label: '圖紙編號：', prop: 'drawNo', type: 'text', isCheck: true, color: '#1890ff' },
-		{ label: '圖紙版次：', prop: 'revision', type: 'text', isCheck: true, color: '#1890ff' },
+		{ label: 'message.pages.matNo', prop: 'matNo', type: 'text', isCheck: true, color: '#1890ff' },
+		{ label: 'message.pages.materialPurchaseNumber', prop: 'reqMatNo', type: 'text', isCheck: true, color: '#1890ff' },
+		{ label: 'message.pages.nameCh', prop: 'nameCh', type: 'text', isCheck: true, color: '#1890ff' },
+		{ label: 'message.pages.nameEn', prop: 'nameEn', type: 'text', isCheck: true, color: '#1890ff' },
+		{ label: 'message.pages.drawNo', prop: 'drawNo', type: 'text', isCheck: true, color: '#1890ff' },
+		{ label: 'message.pages.layoutDrawing', prop: 'revision', type: 'text', isCheck: true, color: '#1890ff' },
 		{ label: 'BU：', prop: 'bu', type: 'text', isCheck: true, color: '#1890ff' },
-		{ label: '规格：', prop: 'specs', type: 'text', isCheck: true, color: '#1890ff' },
+		{ label: 'message.pages.specs', prop: 'specs', type: 'text', isCheck: true, color: '#1890ff' },
 		// { label: '厂区：', prop: 'area', type: 'text' },
 		// { label: 'BU：', prop: 'bu', type: 'text' },
 		// { label: '专案代码：', prop: 'projectCode', type: 'text' },
-		{ label: '階段：', prop: 'stage', type: 'text', isCheck: true, color: '#1890ff' },
-		{ label: '段位：', prop: 'depart', type: 'text', isCheck: true, color: '#1890ff' },
-		{ label: '二維碼管理模式：', prop: 'codeManageModeText', type: 'text', isCheck: true, color: '#1890ff' },
+		{ label: 'message.pages.phase', prop: 'stage', type: 'text', isCheck: true, color: '#1890ff' },
+		{ label: 'message.pages.segmentPosition', prop: 'depart', type: 'text', isCheck: true, color: '#1890ff' },
+		{ label: 'message.pages.qrCodeManagementMode', prop: 'codeManageModeText', type: 'text', isCheck: true, color: '#1890ff' },
 		{
-			label: '備註：',
+			label: 'message.pages.describe',
 			prop: 'describe',
 			placeholder: 'message.pages.placeDescribe',
 			type: 'text',
@@ -185,7 +186,7 @@ const state = reactive<LinkState>({
 			color: '#1890ff',
 		},
 		{
-			label: '機種：',
+			label: 'message.pages.machineType',
 			prop: 'machineType',
 			type: 'tagsarea',
 			xs: 24,
@@ -198,7 +199,7 @@ const state = reactive<LinkState>({
 			colorType: 'primary',
 		},
 		{
-			label: '圖紙文件：',
+			label: 'message.pages.drawPath',
 			prop: 'drawPath',
 			type: 'btn',
 			xs: 24,
@@ -246,8 +247,8 @@ const getDetailData = async () => {
 	// link/noSearchLink?comkey=CMA23305-52-PM9423-3-001
 	// CSG24027-001_3
 	const codeManageModeMap: EmptyObjectType = {
-		0: '有碼管理',
-		1: '無碼管理',
+		0: 'message.pages.codedManagement',
+		1: 'message.pages.noCodeManagement',
 	};
 	if (!props.isDialog || props.matNoRef.signStatus === 5 || props.matNoRef.signStatus === 6) {
 		let comkey = props.isDialog ? `${props.matNoRef.matNo}_${props.matNoRef.modificationCount}` : route.query.comkey;
@@ -256,8 +257,8 @@ const getDetailData = async () => {
 		state.form2 = res.data.modified;
 		state.form.bu = res.data.original.buCode;
 		state.form2.bu = res.data.modified.buCode;
-		state.form.codeManageModeText = codeManageModeMap[state.form.codeManageMode];
-		state.form2.codeManageModeText = codeManageModeMap[state.form2.codeManageMode];
+		state.form.codeManageModeText = t(codeManageModeMap[state.form.codeManageMode]);
+		state.form2.codeManageModeText = t(codeManageModeMap[state.form2.codeManageMode]);
 		state.form.machineType = res.data.original.machineTypes;
 		state.form2.machineType = res.data.modified.machineTypes;
 		state.form.picture =
@@ -302,7 +303,7 @@ const clickLink = (prop: string, form: EmptyObjectType) => {
 	if (prop === 'drawPath' && form.drawPath.includes('/')) {
 		window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${form[prop]}`, '_blank');
 	} else {
-		ElMessage.warning('暫無圖紙文件或者文件圖紙路徑錯誤');
+		ElMessage.warning(t('message.hint.info2'));
 	}
 };
 // 页面加载时

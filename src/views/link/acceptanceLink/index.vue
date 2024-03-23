@@ -2,7 +2,7 @@
 	<div :class="{ main: !isDialog }" class="main-detail" :style="!isDialog ? 'height: 420px' : ''">
 		<div class="table-container" :class="{ 'link-width': !isDialog }">
 			<nav v-if="!isDialog" class="pb10">樣品驗收單詳情</nav>
-			<el-form v-if="state.tableData.form" ref="tableSearchRef" :model="state.tableData.form" size="default" label-width="100px">
+			<el-form v-if="state.tableData.form" ref="tableSearchRef" :model="state.tableData.form" label-width="100px">
 				<el-row :gutter="35">
 					<el-col
 						:xs="val.xs || 24"

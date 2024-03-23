@@ -34,7 +34,7 @@
 						<!-- <span>{{ state.time.txt }}</span> -->
 					</div>
 					<div class="up-center">
-						<span>治工具系統</span>
+						<span>{{ $t('message.router.mainHead') }}</span>
 					</div>
 				</div>
 			</el-col>
@@ -48,10 +48,10 @@
 							:size="20"
 							><ele-Memo
 						/></el-icon>
-						<span class="home-card-item-title ml10">待辦事項</span>
+						<span class="home-card-item-title ml10">{{ $t('message.pages.toDoList') }}</span>
 					</div>
 					<div style="height: 100%; display: flex; justify-content: center">
-						<el-empty v-if="!activities.length" description="暫無待辦事項" />
+						<el-empty v-if="activities.length <= 0" :description="$t('message.pages.noTodoListYet')" />
 						<div class="time-line pl10" v-else>
 							<el-timeline class="mt20">
 								<el-timeline-item
@@ -62,12 +62,18 @@
 									size="large"
 									:timestamp="activity.generateTime"
 								>
-									<span>{{ activity.no }}</span>
-									<span class="cursor-pointer" style="color: #1890ff; font-weight: 700" title="點擊跳轉頁面" @click="routePage(activity.type)">{{
-										activity.keyNo
-									}}</span>
-									<span>{{ activity.content }}</span>
-									<el-icon color="#1890ff" title="點擊複製該單號" class="ml10" @click="copyText(activity.keyNo)"><ele-CopyDocument /></el-icon>
+									<span>{{ $t(activity.no) }}：</span>
+									<span
+										class="cursor-pointer"
+										style="color: #1890ff; font-weight: 700"
+										:title="$t('message.pages.clickToPage')"
+										@click="routePage(activity.type)"
+										>{{ activity.keyNo }}</span
+									>
+									<span>{{ $t(activity.content) }}</span>
+									<el-icon color="#1890ff" :title="$t('message.pages.clickToCopyNo')" class="ml10" @click="copyText(activity.keyNo)"
+										><ele-CopyDocument
+									/></el-icon>
 								</el-timeline-item>
 							</el-timeline>
 						</div>
@@ -76,7 +82,7 @@
 			</el-col>
 			<el-col :xs="24" :sm="10" :md="10" :lg="9" :xl="9">
 				<div class="home-card-item">
-					<span class="home-card-item-title">模板下載</span>
+					<span class="home-card-item-title">{{ $t('message.pages.templateDownload') }}</span>
 					<div class="home-monitor">
 						<div class="flex-warp">
 							<div class="flex-warp-item" v-for="(v, k) in state.homeThree" :key="k">
@@ -84,8 +90,8 @@
 									<div class="flex-margin">
 										<!-- <i :class="v.icon" :style="{ color: v.iconColor }"></i> -->
 										<el-icon :style="{ color: v.iconColor }"><ele-Download /></el-icon>
-										<span class="pl5">{{ v.label }}</span>
-										<div class="mt10">{{ v.value }}</div>
+										<span class="pl5">{{ $t(v.label) }}</span>
+										<div class="mt10">{{ $t(v.value) }}</div>
 									</div>
 								</div>
 							</div>
@@ -111,7 +117,9 @@
 
 <script setup lang="ts" name="homes">
 // markRaw
-import { reactive, onMounted, ref, watch, nextTick, onActivated } from 'vue';
+import { reactive, onMounted, ref, watch, nextTick, computed, onActivated } from 'vue';
+import { useI18n } from 'vue-i18n';
+
 // import * as echarts from 'echarts';
 import { storeToRefs } from 'pinia';
 import { useThemeConfig } from '/@/stores/themeConfig';
@@ -123,6 +131,7 @@ import { ElMessage } from 'element-plus';
 import commonFunction from '/@/utils/commonFunction';
 import { useRouter } from 'vue-router';
 // 定义变量内容
+const { t } = useI18n();
 const { copyText } = commonFunction();
 // 定义变量内容
 const router = useRouter();
@@ -204,14 +213,14 @@ const state = reactive({
 		{
 			icon: 'iconfont icon-btn-daoru',
 			label: 'SOP',
-			value: 'SOP下載',
+			value: 'message.pages.sopDownload',
 			iconColor: '#F72B3F',
 			link: '/Template/治工具系統SOP-V2.pptx',
 		},
 		{
 			icon: 'iconfont icon-btn-daoru',
-			label: '模板下載',
-			value: '驗收報告導入',
+			label: 'message.pages.templateDownload',
+			value: 'message.pages.acceptanceReportTmport',
 			iconColor: '#88D565',
 			link: '/Template/ToolCheckReport.pptx',
 		},
@@ -329,7 +338,7 @@ const downloadTemp = (link: string) => {
 	if (link) {
 		window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${link}`, '_blank');
 	} else {
-		ElMessage.warning('暫時沒有下載的模板');
+		ElMessage.warning(`${t('message.allButton.noTemplateDownload')}`);
 	}
 };
 // 初始化数字滚动
@@ -368,38 +377,38 @@ const getTodos = async () => {
 	// 	icon: MoreFilled,
 	// },
 	const todoTypeMap: EmptyObjectType = {
-		0: '待採購送樣',
-		1: '待驗收',
-		2: '待驗收',
-		3: '待驗收',
-		4: '待發料',
-		5: '待發料',
-		6: '待發料',
-		7: '待入庫',
-		8: '待入庫',
-		9: '待入庫',
+		0: 'message.pages.samplesPurchased',
+		1: 'message.pages.waitAcceptance',
+		2: 'message.pages.waitAcceptance',
+		3: 'message.pages.waitAcceptance',
+		4: 'message.pages.materialWaitIssued',
+		5: 'message.pages.materialWaitIssued',
+		6: 'message.pages.materialWaitIssued',
+		7: 'message.pages.stockPending',
+		8: 'message.pages.stockPending',
+		9: 'message.pages.stockPending',
 	};
 	const noTypeMap: EmptyObjectType = {
-		0: '送樣單',
-		1: '送樣單',
-		2: '申請單',
-		3: '維修收貨單',
-		4: '申請單',
-		5: '維修單',
-		6: '送樣單',
-		7: '申請單',
-		8: '維修單',
-		9: '送樣單',
+		0: 'message.pages.sampleSubmission',
+		1: 'message.pages.sampleSubmission',
+		2: 'message.pages.applicationForm',
+		3: 'message.pages.applicationForm',
+		4: 'message.pages.maintenanceReceipt',
+		5: 'message.pages.maintenanceBill',
+		6: 'message.pages.sampleSubmission',
+		7: 'message.pages.applicationForm',
+		8: 'message.pages.maintenanceBill',
+		9: 'message.pages.sampleSubmission',
 	};
 	res.data.forEach((item: any) => {
 		let type = item.todoType;
 		item['type'] = `${item.todoType}`;
 		item.todoType = todoTypeMap[item.todoType];
-		item['no'] = `${noTypeMap[type]}：`;
+		item['no'] = `${noTypeMap[type]}`;
 		item['keyNo'] = `${item.keyNo}`;
-		item['content'] = `${item.todoType}`;
+		item['content'] = item.todoType;
 	});
-	activities.value = res.data;
+	activities.value = Object.assign([], res.data);
 };
 
 // 页面加载时

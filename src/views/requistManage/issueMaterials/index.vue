@@ -234,6 +234,7 @@ const secondState = reactive<TableDemoState>({
 				prop: 'isStored',
 				required: false,
 				clearable: false,
+				placeholder: '',
 				type: 'select',
 				options: [
 					{ value: true, label: '是', text: '是' },
@@ -244,6 +245,7 @@ const secondState = reactive<TableDemoState>({
 				label: '領用倉庫類型',
 				prop: 'receiveStorageType',
 				required: false,
+				placeholder: '',
 				type: 'select',
 				options: [],
 			},

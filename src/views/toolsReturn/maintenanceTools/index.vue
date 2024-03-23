@@ -29,7 +29,23 @@
 				@sortHeader="(data) => onSortHeader(data, secondState.tableData)"
 				@cellclick="qrCodeClick"
 				:cellStyle="cellStyle"
-			/>
+			>
+				<template #rowIcons="{ row, itemConfig }">
+					<!-- circleBlueColor: row.isUnderWarranty === null, -->
+					<div
+						class="circle"
+						:class="{
+							circleRedColor: row.isUnderWarranty === false,
+							circleGreenColor: row.isUnderWarranty === true,
+						}"
+						v-if="itemConfig.key === 'matNo' && (row.isUnderWarranty === true || row.isUnderWarranty === false)"
+					>
+						<!-- <span v-if="row.isUnderWarranty === null"></span> -->
+						<span v-if="row.isUnderWarranty === true">保內</span>
+						<span v-if="row.isUnderWarranty === false">保外</span>
+					</div>
+				</template>
+			</Table>
 		</el-tab-pane>
 		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="轉倉記錄" name="third">
 			<TableSearch
@@ -76,12 +92,50 @@
 				<el-button v-if="row.type === 'button'" type="primary" plain @click="addButton(data)">{{ row.label }}</el-button>
 			</template>
 		</Dialog>
-		<qrCodeDialog ref="inventoryDialogRef" :tags="tags" dialogTitle="庫存條碼" />
+		<qrCodeDialog :color="colorType" ref="inventoryDialogRef" :tags="tags" dialogTitle="庫存條碼" />
+		<el-dialog v-model="qrcodeDialogVisible" width="40%">
+			<div class="codesofWarranty-style">
+				<div v-if="codesofWarranty.codesUnderWarranty.length > 0">
+					保固期內的二維碼共：<span
+						style="color: #67c23a; font-weight: 700"
+						class="cursor-pointer"
+						title="點擊查看保固期內的二維碼"
+						@click="lookCodesofWarranty('success')"
+						>{{ codesofWarranty.codesUnderWarranty.length }}</span
+					>
+					個
+				</div>
+				<div v-if="codesofWarranty.codesOutofWarranty.length > 0">
+					保固期外的二維碼共：<span
+						class="cursor-pointer"
+						style="color: #f56c6c; font-weight: 700"
+						title="點擊查看保固期外的二維碼"
+						@click="lookCodesofWarranty('danger')"
+						>{{ codesofWarranty.codesOutofWarranty.length }}</span
+					>
+					個
+				</div>
+				<div>
+					將生成
+					<span style="font-weight: 700; color: #1890ff">
+						{{ codesofWarranty.codesUnderWarranty.length > 0 && codesofWarranty.codesOutofWarranty.length > 0 ? 2 : 1 }}</span
+					>
+					筆退庫數據，確定提交碼？
+				</div>
+			</div>
+
+			<template #footer>
+				<div class="dialog-footer">
+					<el-button @click="qrcodeDialogVisible = false">取消</el-button>
+					<el-button type="primary" @click="onCodesofWarrantySubmit"> 確定 </el-button>
+				</div>
+			</template>
+		</el-dialog>
 	</el-tabs>
 </template>
 
 <script setup lang="ts" name="/toolsReturn/maintenanceTools">
-import { defineAsyncComponent, reactive, ref, onMounted, computed, nextTick } from 'vue';
+import { defineAsyncComponent, reactive, ref, onMounted, computed, nextTick, toRefs } from 'vue';
 import { ElMessageBox, FormInstance } from 'element-plus';
 
 import { ElMessage } from 'element-plus';
@@ -104,6 +158,7 @@ import {
 	getQueryExitStoreRecordApi,
 	getQueryTransferStorageRecordApi,
 	getStockTransferCodesApi,
+	getStockPreExitStoreApi,
 } from '/@/api/toolsReturn/maintentanceTools';
 import { getAdminNamesOfStoreHouseApi, getLegalStoreTypesApi, getQueryStoreHouseExceptIdleStoreNoPageApi, getUserNameApi } from '/@/api/global';
 
@@ -135,10 +190,12 @@ const tableFormRef = ref();
 const tableRef = ref<RefType>();
 const loadingBtn = ref(false);
 const repairReturnDialogRef = ref();
+const qrcodeDialogVisible = ref(false);
 // tags的数据
 const tags = ref<EmptyArrayType>([]);
 // 弹窗标题
 const dilogTitle = ref();
+const colorType = ref();
 const header = ref([]);
 const header1 = ref([
 	{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'text', isCheck: true },
@@ -186,7 +243,7 @@ const state = reactive<TableDemoState>({
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
 			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
 			{ label: '品名', prop: 'matName', required: false, type: 'input' },
-			{ label: '倉庫類型', prop: 'storeType', required: false, type: 'select', options: [] },
+			{ label: '倉庫類型', prop: 'storeType', required: false, type: 'select', options: [], placeholder: '' },
 			{
 				label: '倉庫位置',
 				prop: 'sLocation',
@@ -285,6 +342,7 @@ const thirdState = reactive<TableDemoState>({
 				prop: 'outStorageType',
 				required: false,
 				type: 'select',
+				placeholder: '',
 				options: [],
 			},
 			{ label: '轉出倉庫位置', prop: 'outSLocation', required: false, type: 'input', placeholder: '請輸入倉庫位置' },
@@ -293,6 +351,7 @@ const thirdState = reactive<TableDemoState>({
 				label: '接收倉庫類型',
 				prop: 'inStorageType',
 				required: false,
+				placeholder: '',
 				type: 'select',
 				options: [],
 			},
@@ -302,6 +361,7 @@ const thirdState = reactive<TableDemoState>({
 				prop: 'hasReceived',
 				required: false,
 				type: 'select',
+				placeholder: '',
 				options: [
 					{ value: true, label: '是', text: '是' },
 					{ value: false, label: '否', text: '否' },
@@ -383,6 +443,7 @@ const secondState = reactive<TableDemoState>({
 				prop: 'exitType',
 				required: false,
 				type: 'select',
+				placeholder: '',
 				options: [
 					{ value: 1, label: '維修', text: '維修' },
 					{ value: 2, label: '閒置', text: '閒置' },
@@ -394,6 +455,7 @@ const secondState = reactive<TableDemoState>({
 				prop: 'hasProcessed',
 				required: false,
 				type: 'select',
+				placeholder: '',
 				options: [
 					{ value: true, label: '是', text: '是' },
 					{ value: false, label: '否', text: '否' },
@@ -407,6 +469,7 @@ const secondState = reactive<TableDemoState>({
 				prop: 'storageType',
 				required: false,
 				type: 'select',
+				placeholder: '',
 				options: [],
 			},
 			{ label: '倉庫位置', prop: 'sLocation', required: false, type: 'input', placeholder: '請輸入倉庫位置' },
@@ -633,7 +696,14 @@ const dialogState = reactive<TableDemoState>({
 // 单元格字体颜色
 const cellStyle = ({ row, column }: EmptyObjectType) => {
 	const property = column.property;
-	if ((property === 'exitQty' && row.codeManageMode === 0) || (property === 'transferQty' && row.codeManageMode === 0)) {
+	// 退庫記錄
+	if (property === 'exitQty' && row.codeManageMode === 0) {
+		let color = '';
+		color = row.isUnderWarranty ? '#67c23a' : 'red';
+		return { color: color, cursor: 'pointer' };
+	}
+	// 轉倉記錄
+	else if (property === 'transferQty' && row.codeManageMode === 0) {
 		return { color: 'var(--el-color-primary)', cursor: 'pointer' };
 	}
 };
@@ -813,7 +883,8 @@ const openReturnDialog = async (scope: EmptyObjectType, type: string) => {
 		if (scope.row.exitType) {
 			selectChange(scope.row.exitType, 'exitType', scope.row);
 		}
-		scope.row.reasonId = res.data.exitReason;
+		scope.row.reasonId = res.data.reasonId;
+		// || res.data.reasonId;
 	}
 	repairReturnDialogRef.value.openDialog('return', scope.row, dilogTitle.value, { codeList: res!.data.codes || [] });
 };
@@ -834,7 +905,8 @@ const onInputBlur = async (formData: EmptyObjectType, item: EmptyObjectType) => 
 			ElMessage.warning('請重新輸入DRI');
 		}
 	}
-	const { draftId, dri, exitType, reasonId, exitReason, exitQty, describe, outDate } = formData;
+	const { draftId, dri, exitType, reasonId, exitQty, describe, outDate } = formData;
+	let exitReason: string | number = '';
 	if (
 		dilogTitle.value === '退庫' &&
 		((item.prop === 'dri' && oldData.dri != formData.dri) ||
@@ -843,6 +915,16 @@ const onInputBlur = async (formData: EmptyObjectType, item: EmptyObjectType) => 
 			(item.prop === 'reasonId' && oldData.reasonId != formData.reasonId) ||
 			(item.prop === 'exitQty' && oldData.exitQty != formData.exitQty))
 	) {
+		dialogState.tableData.dialogConfig?.forEach(async (item, index) => {
+			// 拿到對應的退庫原因
+			if (item.prop == 'reasonId') {
+				item.options?.forEach((p) => {
+					if (p.value === reasonId) {
+						exitReason = p.label;
+					}
+				});
+			}
+		});
 		const res = await getStockOperDraftModifyExitStoreDraftApi({
 			draftId,
 			dri,
@@ -922,7 +1004,18 @@ const innnerDialogSubmit = async (formInnerData: any, formData: any) => {
 			}
 		});
 	if (dilogTitle.value === '退庫') {
-		const { draftId, dri, exitType, reasonId, exitReason, exitQty, describe } = formData;
+		const { draftId, dri, exitType, reasonId, exitQty, describe } = formData;
+		let exitReason: string | number = '';
+		dialogState.tableData.dialogConfig?.forEach(async (item, index) => {
+			// 拿到對應的退庫原因
+			if (item.prop == 'reasonId') {
+				item.options?.forEach((p) => {
+					if (p.value === reasonId) {
+						exitReason = p.label;
+					}
+				});
+			}
+		});
 		const res = await getStockOperDraftModifyExitStoreDraftApi({
 			draftId,
 			dri,
@@ -1072,9 +1165,22 @@ const innnerDialogCancel = async (formData: EmptyObjectType, formInnerData: Empt
 		})
 		.catch(() => {});
 };
+// 點擊保固期二維碼
+const lookCodesofWarranty = (type: string) => {
+	colorType.value = type;
+	tags.value = type === 'success' ? codesofWarranty.value.codesUnderWarranty : codesofWarranty.value.codesOutofWarranty;
+	inventoryDialogRef.value?.openDialog();
+};
 // 点击料号,暂时不做
 const qrCodeClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
+	colorType.value = '';
 	if (column.property === 'exitQty' && row.codeManageMode === 0) {
+		if (row.isUnderWarranty === true) {
+			colorType.value = 'success';
+		} else if (row.isUnderWarranty === false) {
+			colorType.value = 'danger';
+		}
+		// colorType.value=
 		let res = await GetExitStoreQrCodeListApi(row.exitStoreId);
 		if (res.data.length == 0) {
 			ElMessage.error('暫無條碼數據');
@@ -1092,7 +1198,8 @@ const qrCodeClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
 		}
 	}
 };
-
+let codesofWarranty: EmptyObjectType = ref({});
+let stockIdGlobal = '';
 // 提交 确认退库
 const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerData: EmptyObjectType) => {
 	let allData: EmptyObjectType = { ...ruleForm };
@@ -1147,26 +1254,47 @@ const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerDa
 			}
 		} else {
 			// 退库提交
-			// delete submitData.transferQty;
-			let exitStoreData = {
-				stockId: submitData.stockId,
-				// exitType: submitData.exitType,
-				// reasonId: submitData.reasonId,
-				// exitReason: submitData.exitReason,
-				// exitQty: submitData.exitQty,
-				// describe: submitData.describe,
-				// dri: submitData.dri,
-				// codeList: formInnerData.codeList,
-			};
-			// console.log('退庫成功', exitStoreData);
-			loadingBtn.value = true;
-			const res = await ExitStoreApi(exitStoreData);
-			if (res.status) {
-				ElMessage.success(t('退庫成功'));
-				getTableData(state.tableData);
-				repairReturnDialogRef.value.closeDialog();
+			if (ruleForm.codeManageMode === 0) {
+				const res = await getStockPreExitStoreApi({ stockId: submitData.stockId });
+				if (res.status) {
+					qrcodeDialogVisible.value = true;
+					stockIdGlobal = submitData.stockId;
+					codesofWarranty.value = res.data;
+				}
+			} else {
+				// delete submitData.transferQty;
+				let exitStoreData = {
+					stockId: submitData.stockId,
+					// exitType: submitData.exitType,
+					// reasonId: submitData.reasonId,
+					// exitReason: submitData.exitReason,
+					// exitQty: submitData.exitQty,
+					// describe: submitData.describe,
+					// dri: submitData.dri,
+					// codeList: formInnerData.codeList,
+				};
+				// console.log('退庫成功', exitStoreData);
+				loadingBtn.value = true;
+				const res = await ExitStoreApi(exitStoreData);
+				if (res.status) {
+					ElMessage.success(t('退庫成功'));
+					getTableData(state.tableData);
+					repairReturnDialogRef.value.closeDialog();
+				}
+				loadingBtn.value = false;
 			}
 		}
+	}
+};
+// 退庫提交確定二維碼信息的提交
+const onCodesofWarrantySubmit = async () => {
+	loadingBtn.value = true;
+	const res = await ExitStoreApi({ stockId: stockIdGlobal });
+	if (res.status) {
+		qrcodeDialogVisible.value = false;
+		ElMessage.success(t('退庫成功'));
+		getTableData(state.tableData);
+		repairReturnDialogRef.value.closeDialog();
 	}
 	loadingBtn.value = false;
 };
@@ -1224,5 +1352,38 @@ onMounted(() => {
 :deep(.el-tabs__item) {
 	font-weight: 700;
 	font-size: 14px;
+}
+.codesofWarranty-style {
+	width: 100%;
+	text-align: center;
+	font-size: 15px;
+}
+.codesofWarranty-style div {
+	padding: 10px 0;
+}
+.circle {
+	display: inline-block;
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	// border: 1px solid red;
+	// color: red;
+	margin-right: 3px;
+}
+.circleRedColor {
+	border: 1px solid red;
+	color: red;
+}
+.circleGreenColor {
+	border: 1px solid #67c23a;
+	color: #67c23a;
+}
+.circleBlueColor {
+	border: 1px solid #1890ff;
+	color: #1890ff;
+}
+.circle span {
+	font-size: 10px;
+	padding: 0 1px;
 }
 </style>

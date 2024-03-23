@@ -159,6 +159,7 @@ const state = reactive<TableDemoState>({
 				prop: 'receiveStorageType',
 				required: false,
 				type: 'select',
+				placeholder: '',
 				options: [],
 			},
 			{
@@ -394,6 +395,7 @@ const secondState = reactive<TableDemoState>({
 				label: '倉庫類型',
 				prop: 'storageType',
 				required: false,
+				placeholder: '',
 				type: 'select',
 				options: [],
 			},

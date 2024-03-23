@@ -139,6 +139,7 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
 };
 const header = ref<deliveryDialogHeader>([
 	{ key: 'matNo', colWidth: '250', title: 'message.pages.matNo', type: 'text', isCheck: true },
+	{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 	// { key: 'machinetype', colWidth: '', title: '机种', type: 'text', isCheck: true },
 	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	// { key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
@@ -159,6 +160,7 @@ const header1 = ref<deliveryDialogHeader>([
 		type: 'text',
 		isCheck: true,
 	},
+	{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 	{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 	{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 	// { key: 'vendorCode', colWidth: '', title: '厂商代码', type: 'text', isCheck: true },
@@ -265,6 +267,7 @@ const secondState = reactive<TableDemoState>({
 				required: false,
 				clearable: false,
 				type: 'select',
+				placeholder: '',
 				options: [
 					{ value: true, label: '是', text: '是' },
 					{ value: false, label: '否', text: '否' },
@@ -314,7 +317,7 @@ const dialogState = reactive<TableDemoState>({
 			{ label: '收貨單號', prop: 'sendNo', required: false, type: 'text' },
 			{ label: '維修單號', prop: 'repairNo', required: false, type: 'text' },
 			{ label: 'PR單號', prop: 'prNo', required: false, type: 'text' },
-			{ label: '工程驗收人', prop: 'engineer', required: false, type: 'select', options: [], isRequired: true },
+			{ label: '工程驗收人', prop: 'engineer', required: false, type: 'select', options: [], placeholder: '', isRequired: true },
 			// { label: '收货时间', prop: 'sendTime', required: false, type: 'time', isRequired: true },
 		],
 		btnConfig: [],

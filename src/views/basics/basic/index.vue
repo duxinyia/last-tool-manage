@@ -91,9 +91,9 @@ const state = reactive<TableDemoState>({
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
 			{
-				label: '類別',
+				label: 'message.pages.category',
 				prop: 'parentid',
-				placeholder: '請輸入類別',
+				placeholder: '',
 				required: false,
 				type: 'select',
 				options: [],
@@ -115,22 +115,22 @@ const state = reactive<TableDemoState>({
 			pageSize: 10,
 		},
 		// 打印标题
-		printName: '表格打印演示',
+		printName: '',
 		// 弹窗表单
 		dialogConfig: [
 			{
-				label: '類別',
+				label: 'message.pages.category',
 				prop: 'parentid',
-				placeholder: '請選擇類別',
+				placeholder: '',
 				required: true,
 				type: 'select',
 				options: [],
 				editDisable: true,
 			},
 			{
-				label: '名稱',
+				label: 'message.pages.name1',
 				prop: 'dataname',
-				placeholder: '請輸入名稱',
+				placeholder: '',
 				required: true,
 				type: 'input',
 			},
@@ -176,7 +176,7 @@ const addData = async (ruleForm: object, type: string) => {
 	loadingBtn.value = true;
 	const res = type === 'add' ? await getBaseDaInsertApi(ruleForm) : await getBaseDaUpdateApi(ruleForm);
 	if (res.status) {
-		type === 'add' ? ElMessage.success(`新增成功`) : ElMessage.success(`修改成功`);
+		type === 'add' ? ElMessage.success(t(`message.hint.addedSuccess`)) : ElMessage.success(t(`message.hint.editSuccess`));
 		basicDialogRef.value.closeDialog();
 		getTableData();
 	}
@@ -245,7 +245,7 @@ const ondownloadTemp = async () => {
 	// else {
 	const link = document.createElement('a');
 	link.href = window.URL.createObjectURL(blob);
-	link.download = `${t('message.router.basicsBasic')} ${new Date().toLocaleString()}模版.xlsx`; // 在前端也可以设置文件名字
+	link.download = `${t('message.router.basicsBasic')} ${new Date().toLocaleString()}${t('message.pages.template')}.xlsx`; // 在前端也可以设置文件名字
 	link.click();
 	//释放内存
 	window.URL.revokeObjectURL(link.href);
@@ -256,7 +256,7 @@ const ondownloadTemp = async () => {
 const onImportTable = async (raw: EmptyObjectType) => {
 	const res = await getImportDataApi(raw.raw);
 	if (res.status) {
-		ElMessage.success('導入數據成功！');
+		ElMessage.success(t('message.hint.dataImportSuccess'));
 		getTableData();
 		basicDialogRef.value.closeDialog();
 	}

@@ -20,7 +20,7 @@
 						>
 					</el-col>
 				</el-row>
-				<Table v-bind="state.tableData" class="table" />
+				<Table v-bind="state.tableData" class="table" :cellStyle="cellStyle" @cellclick="uselessCodeClick" />
 				<el-button class="mt5" size="default" plain type="primary" @click="clickLink">查看驗收報告</el-button>
 				<div class="describe">
 					<span>備註：</span>
@@ -29,6 +29,8 @@
 			</el-form>
 			<el-empty v-else description="數據出錯" />
 		</div>
+		<!-- 二維碼彈窗 -->
+		<qrCodeDialog color="danger" ref="inventoryDialogRef" :tags="tags" dialogTitle="報廢數量" />
 	</div>
 </template>
 
@@ -42,6 +44,7 @@ import { useI18n } from 'vue-i18n';
 import { getRepairCheckRecordDetailApi } from '/@/api/maintenanceManage/maintenanceCheck';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
+const qrCodeDialog = defineAsyncComponent(() => import('/@/components/dialog/qrCodeDialog.vue'));
 const route = useRoute();
 const router = useRouter();
 // 定义父组件传过来的值
@@ -55,12 +58,16 @@ const props = defineProps({
 		default: () => '',
 	},
 });
+const inventoryDialogRef = ref();
+// tags的数据
+let tags = ref<EmptyArrayType>([]);
 const state = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
+			{ key: 'prItemNo', colWidth: '', title: 'PR項次', type: 'text', isCheck: true },
 			{
 				key: 'matNo',
 				colWidth: '240',
@@ -68,20 +75,22 @@ const state = reactive<TableDemoState>({
 				type: 'text',
 				isCheck: true,
 			},
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'checkDate', colWidth: '', title: '驗收日期', type: 'text', isCheck: true },
 			{ key: 'checkQty', colWidth: '', title: '驗收數量', type: 'text', isCheck: true },
 			{ key: 'passQty', colWidth: '', title: '通過數量', type: 'text', isCheck: true },
-			{ key: 'failQty', colWidth: '100', title: '未通過數量', type: 'text', isCheck: true },
-			{ key: 'prItemNo', colWidth: '', title: 'PR項次', type: 'text', isCheck: true },
+			{ key: 'reRepairQty', colWidth: '', title: '返修數量', type: 'text', isCheck: true },
+			{ key: 'uselessQty', colWidth: '', title: '報廢數量', type: 'text', isCheck: true },
+			{ key: 'failReasons', colWidth: '240', title: '驗收不通過原因', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
 			total: 0, // 列表总数
 			loading: true, // loading 加载
 			isBorder: false, // 是否显示表格边框
-			isSerialNo: true, // 是否显示表格序号
+			isSerialNo: false, // 是否显示表格序号
 			isSelection: false, // 是否显示表格多选
 			isOperate: false, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
@@ -119,15 +128,32 @@ watch(
 		deep: true,
 	}
 );
-
+// 单元格字体颜色
+const cellStyle = ({ row, column }: EmptyObjectType) => {
+	const property = column.property;
+	if (property === 'uselessQty' && row.uselessCodes && row.uselessCodes.length > 0) {
+		return { color: 'red', cursor: 'pointer' };
+	}
+};
+// 點擊報廢數量
+const uselessCodeClick = (row: EmptyObjectType, column: EmptyObjectType) => {
+	if (column.property === 'uselessQty' && row.uselessCodes && row.uselessCodes.length > 0) {
+		tags.value = row.uselessCodes;
+		inventoryDialogRef.value?.openDialog();
+	}
+};
 // 初始化数据
 const getTableData = async () => {
 	// state.tableData.config['height'] = props.isDialog ? 400 : 200;
 	//link/maintenanceCheckLink?comkey=CSG-2023319001
 	const comkey = props.isDialog ? props.IdleNoRef : route.query.comkey;
+	state.tableData.config.loading = true;
 	const res = await getRepairCheckRecordDetailApi(comkey as string);
 	res.data.receiver = `${res.data.receiver} / ${res.data.receiverName}`;
 	state.tableData.form = res.data;
+	res.data.details.forEach((item: any) => {
+		item.failReasons = item.failReasons.join(' | ');
+	});
 	state.tableData.data = res.data.details;
 	if (!res.status) {
 		state.tableData.form = {};
@@ -160,7 +186,7 @@ onMounted(() => {
 }
 .main {
 	overflow: auto;
-	padding: 0 20%;
+	padding: 0 15%;
 	// width: 100%;
 	background-color: white;
 	display: flex;

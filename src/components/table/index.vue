@@ -13,7 +13,11 @@
 					plain
 					><el-icon><ele-Plus /></el-icon>{{ $t('message.allButton.addBtn') }}</el-button
 				>
-				<el-popconfirm v-else-if="topbtn.type === 'bulkDel' && topbtn.isSure" :title="$t('確定刪除選中項嗎？')" @confirm="onBulkDeletion">
+				<el-popconfirm
+					v-else-if="topbtn.type === 'bulkDel' && topbtn.isSure"
+					:title="$t('message.hint.sureDeleteSelected')"
+					@confirm="onBulkDeletion"
+				>
 					<template #reference>
 						<el-button size="default" :disabled="state.selectlist.length <= 0" class="ml10 buttonBorder" color="#D33939" plain
 							><el-icon><ele-Delete /></el-icon>{{ $t('message.allButton.bulkDeletionBtn') }}</el-button
@@ -42,7 +46,7 @@
 			<div class="table-top-tool" v-if="config.isTopTool">
 				<!-- <SvgIcon name="iconfont icon-dayinji" :size="19" title="打印" @click="onPrintTable" /> -->
 				<!-- <SvgIcon name="iconfont icon-btn-daoru" :size="22" :title="$t('message.tooltip.import')" @click="onImportTable('imp')" /> -->
-				<el-icon v-if="config.exportIcon" name="iconfont icon-btn-daochu" :size="22" :title="$t('下載')" @click="onExportTable"
+				<el-icon v-if="config.exportIcon" name="iconfont icon-btn-daochu" :size="22" :title="$t('message.tooltip.download')" @click="onExportTable"
 					><ele-Download
 				/></el-icon>
 				<!-- <SvgIcon v-if="config.exportIcon" name="iconfont icon-btn-daochu" :size="22" :title="$t('message.tooltip.export')" @click="onExportTable" /> -->
@@ -134,6 +138,7 @@
 					<span class="pl5">{{ $t(item.title) }}</span>
 				</template>
 				<template v-slot="scope">
+					<slot v-if="item.type === 'slot'" name="slotCol" :row="scope.row"></slot>
 					<!-- :rules="[{ required: item.isRequired, message: '不能為空', trigger: item.type === 'time' ? 'blur' : 'change' }]" -->
 					<el-form-item v-if="config.isInlineEditing" :prop="`data.${scope.$index}.${item.key}`" :rules="allRules(item)">
 						<el-popover
@@ -174,13 +179,14 @@
 						></el-input>
 						<!-- 数字输入框 -->
 						<el-input-number
+							:disabled="data[scope.$index][`${item.key}disabled`]"
 							style="text-align: center; width: 100%; display: flex; justify-content: center"
 							v-else-if="item.type === 'number'"
 							v-model="data[scope.$index][item.key]"
 							:min="data[scope.$index][`${item.key}min`] || 0"
 							:max="data[scope.$index][`${item.key}max`]"
 							size="small"
-							@change="(value:number)=>handleNumberInputChange(value,scope.$index)"
+							@change="(value:number)=>handleNumberInputChange(value,scope.$index,item)"
 							@blur="(value:number)=>handleNumberInputBlur(value, scope.$index)"
 						/>
 						<!-- 自动补全输入框 -->
@@ -259,11 +265,7 @@
 							:disabled-date="(time:Date) => disabledDate(time, item.isdisabledDate)"
 							style="height: 30px; max-width: 167px"
 						/>
-
-						<span
-							v-else-if="item.type === 'text'"
-							style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center; width: 100%"
-						>
+						<span v-else-if="item.type === 'text'" style="overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center">
 							<slot name="rowIcon" :row="scope.row" :itemConfig="item"></slot>
 							<!-- <SvgIcon class="mr5" :name="item.icon" /> -->
 							{{ scope.row[item.key] }}
@@ -271,7 +273,9 @@
 					</el-form-item>
 					<!-- 不能行内编辑 -->
 					<template v-if="item.type === 'status'" style="text-align: center; width: 100%">
-						<el-tag :type="item.color || 'success'" v-if="scope.row.runstatus || scope.row.applyCheckId">{{ item.successText || '啟用' }}</el-tag>
+						<el-tag :type="item.color || 'success'" v-if="scope.row.runstatus || scope.row.applyCheckId">{{
+							item.successText || $t('message.allButton.enable')
+						}}</el-tag>
 						<el-tag type="info" v-else-if="scope.row.runstatus == ''">{{ item.infoText || '禁用' }}</el-tag>
 					</template>
 					<!-- 图片 -->
@@ -286,6 +290,7 @@
 							fit="cover"
 						/>
 					</template>
+					<slot name="rowIcons" :row="scope.row" :itemConfig="item" :scopes="scope"></slot>
 					<span v-if="!config.isInlineEditing && item.type === 'text'" style="text-align: center; width: 100%">
 						{{ item.transfer ? $t(item.transfer[scope.row[item.key]]) : scope.row[item.key] }}
 					</span>
@@ -505,8 +510,8 @@ const tableRowClassName = (scope: EmptyObjectType) => {
 const querySearchAsync = (queryString: string, cb: (arg: any) => void) => {
 	emit('querysearchasync', queryString, cb);
 };
-const handleNumberInputChange = (value: number, index: number) => {
-	emit('handleNumberInputChange', value, index);
+const handleNumberInputChange = (value: number, index: number, item: Object) => {
+	emit('handleNumberInputChange', value, index, item);
 };
 // 状态改变
 const handlestatus1Change = (value: number, index: number, key: string) => {

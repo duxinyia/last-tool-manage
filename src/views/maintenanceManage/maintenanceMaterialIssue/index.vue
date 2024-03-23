@@ -85,7 +85,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'checkTimeStr', colWidth: '', title: '驗收時間', type: 'text', isCheck: true },
 			{ key: 'checkQty', colWidth: '', title: '驗收數量', type: 'text', isCheck: true },
-			{ key: 'passQty', colWidth: '', title: '合格數量', type: 'text', isCheck: true },
+			{ key: 'passQty', colWidth: '', title: '通过數量', type: 'text', isCheck: true },
 			{ key: 'checker', colWidth: '', title: '驗收人', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -124,7 +124,7 @@ const state = reactive<TableDemoState>({
 			{ type: 'text', label: '品名-英文', placeholder: '', prop: 'nameEn', required: false },
 			{ type: 'text', label: '驗收時間', placeholder: '', prop: 'checkTimeStr', required: false },
 			{ type: 'text', label: '驗收數量', placeholder: '', prop: 'checkQty', required: false },
-			{ type: 'text', label: '合格數量', placeholder: '', prop: 'passQty', required: false },
+			{ type: 'text', label: '通过數量', placeholder: '', prop: 'passQty', required: false },
 			{ type: 'text', label: '驗收人', placeholder: '', prop: 'checker', required: false },
 
 			{ type: 'button', label: '查看驗收報告', placeholder: '', prop: 'accepReportUrl', required: false, xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
@@ -227,6 +227,7 @@ const secondState = reactive<TableDemoState>({
 				required: false,
 				clearable: false,
 				type: 'select',
+				placeholder: '',
 				options: [
 					{ value: true, label: '是', text: '是' },
 					{ value: false, label: '否', text: '否' },
@@ -237,6 +238,7 @@ const secondState = reactive<TableDemoState>({
 				prop: 'receiveStorageType',
 				required: false,
 				type: 'select',
+				placeholder: '',
 				options: [],
 			},
 			{

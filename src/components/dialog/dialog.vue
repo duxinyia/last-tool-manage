@@ -21,7 +21,7 @@
 								:maxlength="item.maxlength"
 								v-if="item.type === 'input'"
 								v-model="state.formData[item.prop]"
-								:placeholder="$t(item.placeholder)"
+								:placeholder="$t(item.placeholder) || `${$t('message.pages.pleaseEnter')} ${$t(item.label)}`"
 								clearable
 								@blur="(FocusEvent: Event)=>inputBlur(item,FocusEvent)"
 								@focus="(FocusEvent: Event)=>inputFocus(item,FocusEvent)"
@@ -196,7 +196,7 @@
 								@blur="(FocusEvent: Event)=>inputBlur(item,FocusEvent)"
 								@focus="(FocusEvent: Event)=>inputFocus(item,FocusEvent)"
 								v-model="state.formData[item.prop]"
-								:placeholder="$t(item.placeholder)"
+								:placeholder="$t(item.placeholder) || `${$t('message.pages.pleaseSelect')} ${$t(item.label)}`"
 								:clearable="item.clearable"
 								v-if="item.type === 'select'"
 								style="width: 100%"
@@ -372,7 +372,7 @@
 			</template>
 			<template #footer v-if="isFootBtn">
 				<span class="dialog-footer">
-					<el-button @click="onCancel" size="default">取 消</el-button>
+					<el-button @click="onCancel" size="default">{{ $t('message.allButton.cancel') }}</el-button>
 					<slot name="dialogBtn" :data="state" :ref="dialogFormRef"></slot>
 					<el-button :disabled="footBtnDisabled" :loading="loadingBtn" type="primary" @click="onSubmit(dialogFormRef)" size="default">{{
 						state.dialog.submitTxt
@@ -573,8 +573,12 @@ const disabledDate = (time: Date, isdisabledDate: boolean) => {
 const openDialog = (type: string, row?: any, title?: string, formInnerData?: any, submitTxt?: string) => {
 	if (type === 'add') {
 		state.dialog.isdisable = false;
-		state.dialog.title = '新增';
-		state.dialog.submitTxt = '新 增';
+		state.dialog.title = t('message.allButton.addBtn') || t('message.allButton.addBtn');
+		if (submitTxt) {
+			state.dialog.submitTxt = t(submitTxt);
+		} else {
+			state.dialog.submitTxt = t('message.allButton.addSubmit');
+		}
 		// 清空表单，此项需加表单验证才能使用
 		nextTick(() => {
 			if (imageUrl.value) {
@@ -591,8 +595,8 @@ const openDialog = (type: string, row?: any, title?: string, formInnerData?: any
 		nextTick(() => {
 			dialogFormRef.value?.clearValidate();
 		});
-		state.dialog.title = '修改';
-		state.dialog.submitTxt = '修 改';
+		state.dialog.title = t('message.allButton.editBtn') || t('message.allButton.editBtn');
+		state.dialog.submitTxt = t('message.allButton.editSubmit');
 		// 解决表单重置不成功的问题
 		nextTick(() => {
 			state.formData = JSON.parse(JSON.stringify(row));

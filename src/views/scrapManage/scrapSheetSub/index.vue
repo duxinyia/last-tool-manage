@@ -11,7 +11,21 @@
 				@cellclick="matNoClick"
 				:cellStyle="cellStyle"
 				@onOpentopBtnOther="onOpenSendRepair"
-			/>
+			>
+				<template #rowIcons="{ row, itemConfig }">
+					<div
+						class="circle"
+						:class="{
+							circleRedColor: row.isUnderWarranty === false,
+							circleGreenColor: row.isUnderWarranty === true,
+						}"
+						v-if="itemConfig.key === 'matno' && (row.isUnderWarranty === true || row.isUnderWarranty === false)"
+					>
+						<span v-if="row.isUnderWarranty === true">保內</span>
+						<span v-if="row.isUnderWarranty === false">保外</span>
+					</div>
+				</template>
+			</Table>
 			<el-dialog
 				:before-close="onClose"
 				ref="presentationDialogRef"
@@ -63,7 +77,21 @@
 				</el-form>
 				<!-- 表格 -->
 				<el-form ref="tableFormRef" :model="dialogState.tableData" size="default">
-					<Table ref="dialogtableRef" v-bind="dialogState.tableData" class="table" @delRow="onDelRow" :rowStyle="rowStyle" />
+					<Table ref="dialogtableRef" v-bind="dialogState.tableData" class="table" @delRow="onDelRow" :rowStyle="rowStyle">
+						<template #rowIcons="{ row, itemConfig }">
+							<div
+								class="circle"
+								:class="{
+									circleRedColor: row.isUnderWarranty === false,
+									circleGreenColor: row.isUnderWarranty === true,
+								}"
+								v-if="itemConfig.key === 'matno'"
+							>
+								<span v-if="row.isUnderWarranty === true">保內</span>
+								<span v-if="row.isUnderWarranty === false">保外</span>
+							</div>
+						</template>
+					</Table>
 				</el-form>
 				<div class="describe">
 					<span>備註：</span>
@@ -89,11 +117,12 @@
 				</template>
 			</el-dialog>
 			<Dialog ref="matnoDetailDialogRef" :isFootBtn="false" :dialogConfig="dialogMatnoDetail" />
-			<el-dialog v-model="inventoryDialogRef" title="庫存條碼" width="30%" draggable>
+			<qrCodeDialog :color="colorType" ref="inventoryDialogRef" :tags="tags" dialogTitle="庫存條碼" />
+			<!-- <el-dialog v-model="inventoryDialogRef" title="庫存條碼" width="30%" draggable>
 				<el-tag v-for="tag in tags" :key="tag.code" class="mr10 mb10" :type="tag.runstatus === 1 ? '' : 'danger'">
 					{{ tag.code }}
 				</el-tag>
-			</el-dialog>
+			</el-dialog> -->
 		</div>
 	</div>
 </template>
@@ -117,9 +146,8 @@ import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
-// 引入组件
 const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
-
+const qrCodeDialog = defineAsyncComponent(() => import('/@/components/dialog/qrCodeDialog.vue'));
 // 定义变量内容
 const { t } = useI18n();
 const tableFormRef = ref();
@@ -236,7 +264,7 @@ const dialogState = reactive<TableDemoState>({
 			isSelection: false, // 是否显示表格多选
 			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
-			isInlineEditing: true, //是否是行内编辑
+			isInlineEditing: false, //是否是行内编辑
 			isTopTool: false, //是否有表格右上角工具
 			isPage: false, //是否有分页
 			isDialogTab: true, //是否是弹窗里面的表格
@@ -322,8 +350,12 @@ const rowStyle = ({ row, column }: EmptyObjectType) => {
 // 单元格字体颜色
 const cellStyle = ({ row, column }: EmptyObjectType) => {
 	const property = column.property;
-	if (property === 'matno' || (property === 'exitqty' && row.codeManageMode === 0)) {
+	if (property === 'matno') {
 		return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+	} else if (property === 'exitqty' && row.codeManageMode === 0) {
+		let color = '';
+		color = row.isUnderWarranty ? '#67c23a' : 'red';
+		return { color: color, cursor: 'pointer' };
 	}
 };
 // const changeToStyle = (indList: number[]) => {
@@ -410,18 +442,24 @@ const onOpenSendRepair = async (row: EmptyObjectType[], type: string) => {
 		getRepairDraftData();
 	}
 };
-
+const colorType = ref();
 // 点击料号弹出详情
 const matNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
+	colorType.value = '';
 	if (column.property === 'matno') {
 		matnoDetailDialogRef.value.openDialog('matno', row, '退庫詳情');
 	} else if (column.property === 'exitqty' && row.codeManageMode === 0) {
+		if (row.isUnderWarranty === true) {
+			colorType.value = 'success';
+		} else if (row.isUnderWarranty === false) {
+			colorType.value = 'danger';
+		}
 		let res = await GetExitStoreQrCodeListApi(row.runid);
 		if (res.data.length == 0) {
 			ElMessage.error('暫無條碼數據');
 		} else {
-			tags = res.data;
-			inventoryDialogRef.value = true;
+			tags.value = res.data;
+			inventoryDialogRef.value?.openDialog();
 		}
 	}
 };
@@ -572,5 +610,28 @@ onMounted(() => {
 }
 .buttonBorder {
 	border: 0px !important;
+}
+.circle {
+	display: inline-block;
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	margin-right: 3px;
+}
+.circleRedColor {
+	border: 1px solid red;
+	color: red;
+}
+.circleGreenColor {
+	border: 1px solid #67c23a;
+	color: #67c23a;
+}
+.circleBlueColor {
+	border: 1px solid #1890ff;
+	color: #1890ff;
+}
+.circle span {
+	font-size: 10px;
+	padding: 0 1px;
 }
 </style>

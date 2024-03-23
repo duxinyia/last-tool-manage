@@ -240,6 +240,7 @@ const secondState = reactive<TableDemoState>({
 				prop: 'receiveStorageType',
 				required: false,
 				type: 'select',
+				placeholder: '',
 				options: [],
 			},
 			{ label: '領用倉庫位置', prop: 'receiveSLocation', required: false, type: 'input' },
@@ -249,6 +250,7 @@ const secondState = reactive<TableDemoState>({
 				required: false,
 				clearable: false,
 				type: 'select',
+				placeholder: '',
 				options: [
 					{ value: true, label: '是', text: '是' },
 					{ value: false, label: '否', text: '否' },

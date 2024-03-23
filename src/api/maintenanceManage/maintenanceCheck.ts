@@ -22,6 +22,15 @@ export function getCheckApi(data:Object) {
   	data:data
   });
 }
+// 重新驗收接口
+export function getRecheckApi(data:Object) {
+  return request({
+    url: '/api/ToolRepair/Recheck',
+    method: 'POST',
+  	data:data
+  });
+}
+
 // 驗收記錄查询接口
 export function getQueryRepairCheckRecordApi(data:Object) {
   return request({
@@ -36,5 +45,12 @@ export function getRepairCheckRecordDetailApi(repairCheckNo:string) {
     url: `/api/ToolRepair/GetRepairCheckRecordDetail`,
     method: 'GET',
     params:{repairCheckNo}
+  });
+}
+export function getWithdrawnCheckDetailsForRecheckApi(withdrawnCheckNo:string) {
+  return request({
+    url: `/api/ToolRepair/GetWithdrawnCheckDetailsForRecheck/${withdrawnCheckNo}`,
+    method: 'GET',
+ 
   });
 }

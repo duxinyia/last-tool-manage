@@ -50,7 +50,7 @@
 					</div>
 				</el-col>
 			</el-row>
-			<el-form ref="dialogTableFormRef" :model="dialogState.tableData" size="default">
+			<el-form ref="dialogTableFormRef" :model="dialogState.tableData">
 				<Table
 					ref="tableRef2"
 					v-bind="dialogState.tableData"
@@ -111,7 +111,6 @@ import { getUploadFileApi } from '/@/api/global/index';
 import { ElMessage, ElMessageBox, genFileId, TabsPaneContext, UploadRawFile } from 'element-plus';
 import { GetCheckTaskApi, SampleCheckApi, GetSampleWaitCheckDetailApi, getQuerySampleCheckRecordApi } from '/@/api/partno/acceptance';
 import { getExitReasonApi } from '/@/api/toolsReturn/maintentanceTools';
-import { GetSampleDetailApi } from '/@/api/partno/sendReceive';
 import { useI18n } from 'vue-i18n';
 import type { UploadInstance, UploadProps, UploadUserFile } from 'element-plus';
 const acceptanceDetailDialog = defineAsyncComponent(() => import('/@/views/link/acceptanceLink/index.vue'));

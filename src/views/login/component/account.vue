@@ -131,7 +131,7 @@ const onSignIn = (formEl: EmptyObjectType | undefined) => {
 						name: 'home',
 						component: 'home',
 						redirect: 'noRedirect',
-						meta: { title: '首页', titleEn: 'message.router.home', isAffix: true, icon: 'home' },
+						meta: { title: '首页', titleEn: 'message.router.home', isAffix: true, icon: 'home', tagsViewName: 'message.router.home' },
 					});
 
 					// 添加是否缓存组件状态

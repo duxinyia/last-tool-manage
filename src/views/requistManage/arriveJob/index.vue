@@ -121,6 +121,7 @@ const state = reactive<TableDemoState>({
 				prop: 'isReapply',
 				required: false,
 				clearable: false,
+				placeholder: '',
 				type: 'select',
 				options: [
 					{ value: true, label: '是', text: '是' },
@@ -235,6 +236,7 @@ const secondState = reactive<TableDemoState>({
 				required: false,
 				clearable: false,
 				type: 'select',
+				placeholder: '',
 				options: [
 					{ value: true, label: '是', text: '是' },
 					{ value: false, label: '否', text: '否' },

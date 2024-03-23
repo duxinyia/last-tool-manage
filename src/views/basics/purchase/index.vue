@@ -46,7 +46,16 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'grouptype', colWidth: '', title: 'message.pages.groupType', type: 'text', isCheck: true },
+			{
+				key: 'grouptype',
+				colWidth: '',
+				title: 'message.pages.groupType',
+				type: 'text',
+				isCheck: true,
+				transfer: {
+					1: 'message.pages.purchase',
+				},
+			},
 			{ key: 'area', colWidth: '', title: 'message.pages.factoryarea', type: 'text', isCheck: true },
 			{ key: 'bucode', colWidth: '', title: 'message.pages.bu', type: 'text', isCheck: true },
 			{ key: 'username', colWidth: '', title: 'message.pages.name', type: 'text', isCheck: true },
@@ -74,8 +83,8 @@ const state = reactive<TableDemoState>({
 		],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: 'message.pages.workno', prop: 'userid', placeholder: 'message.account.accountPlaceholder1', required: false, type: 'input' },
-			{ label: 'message.pages.name', prop: 'username', placeholder: 'message.pages.placename', required: false, type: 'input' },
+			{ label: 'message.pages.workno', prop: 'userid', required: false, type: 'input' },
+			{ label: 'message.pages.name', prop: 'username', required: false, type: 'input' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -92,11 +101,11 @@ const state = reactive<TableDemoState>({
 			username: '',
 		},
 		// 打印标题
-		printName: '表格打印演示',
+		printName: '',
 		// 弹窗表单
 		dialogConfig: [
-			{ label: '工號', prop: 'UserId', placeholder: '請輸入工號', required: true, type: 'input', md: 20, lg: 20, xl: 20 },
-			{ label: '姓名', prop: 'username', placeholder: '', required: false, type: 'text', md: 20, lg: 20, xl: 20 },
+			{ label: 'message.pages.workno', prop: 'UserId', placeholder: '', required: true, type: 'input', md: 20, lg: 20, xl: 20 },
+			{ label: 'message.pages.name', prop: 'username', placeholder: '', required: false, type: 'text', md: 20, lg: 20, xl: 20 },
 		],
 	},
 });
@@ -112,9 +121,6 @@ const getTableData = async () => {
 		page: state.tableData.page,
 	};
 	const res = await getGroupListApi(data);
-	res.data.data.forEach((item: EmptyObjectType) => {
-		item.grouptype = '採購';
-	});
 	state.tableData.data = res.data.data;
 
 	state.tableData.config.total = res.data.total;
@@ -141,7 +147,7 @@ const onInputBlur = async (formData: EmptyObjectType) => {
 		} else {
 			formData.UserId = '';
 			formData.username = '';
-			ElMessage.warning('請重新輸入工號');
+			ElMessage.warning(t('message.hint.reEnterWorkNumber'));
 		}
 	} else {
 		formData.username = '';
@@ -153,7 +159,7 @@ const addData = async (ruleForm: EmptyObjectType) => {
 	const { UserId } = ruleForm;
 	const res = await getAddGroupMemberApi({ UserId, GroupType: 1 });
 	if (res.status) {
-		ElMessage.success(`新增成功`);
+		ElMessage.success(`${t('message.hint.addedSuccess')}`);
 		purchaseDialogRef.value.closeDialog();
 		getTableData();
 	}

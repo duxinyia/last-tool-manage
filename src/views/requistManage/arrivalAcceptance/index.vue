@@ -306,6 +306,7 @@ const secondState = reactive<TableDemoState>({
 				prop: 'isDispatched',
 				required: false,
 				clearable: false,
+				placeholder: '',
 				type: 'select',
 				options: [
 					{ value: true, label: '是', text: '是' },
@@ -318,9 +319,10 @@ const secondState = reactive<TableDemoState>({
 				prop: 'signStatus',
 				required: false,
 				clearable: false,
+				placeholder: '',
 				type: 'select',
 				options: [
-					{ value: 0, label: '簽核撤回', text: '簽核撤回', selected: false },
+					{ value: 0, label: '簽核抽回', text: '簽核抽回', selected: false },
 					{ value: 1, label: '簽核中', text: '簽核中', selected: false },
 					{ value: 2, label: '簽核完成', text: '簽核完成', selected: false },
 				],

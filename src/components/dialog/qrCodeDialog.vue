@@ -2,7 +2,7 @@
 	<el-dialog :destroy-on-close="true" draggable :close-on-click-modal="false" :title="dialogTitle" v-model="isShowDialog" :width="dialogWidth">
 		<div style="height: 400px">
 			<el-tag
-				:type="(i.runStatus !== 9 || i.runstatus) && i ? '' : 'danger'"
+				:type="color || ((i.runStatus !== 9 || i.runstatus) && i ? '' : 'danger')"
 				class="mr10 mb10"
 				v-for="i in dialogConfig.slice((state.page.pageNum - 1) * state.page.pageSize, state.page.pageNum * state.page.pageSize)"
 				:key="i"
@@ -94,6 +94,10 @@ const props = defineProps({
 	dialogTitle: {
 		type: String,
 		default: () => '二維碼編號',
+	},
+	color: {
+		type: String,
+		default: () => '',
 	},
 });
 watch(

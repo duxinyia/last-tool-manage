@@ -140,3 +140,12 @@ export function getStockTransferCodesApi(stockTransferId: Object) {
 		params: { stockTransferId },
 	});
 }
+// 有碼管理提交之前調的接口
+export function getStockPreExitStoreApi(data: Object) {
+	return request({
+		url: '/api/Stock/PreExitStore',
+		method: 'POST',
+		data: data,
+	});
+}
+

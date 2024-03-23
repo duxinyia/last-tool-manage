@@ -128,7 +128,7 @@ const state = reactive<TableDemoState>({
 		search: [
 			{ label: '料號', prop: 'matNo', required: false, type: 'input', lg: 6, xl: 6 },
 			{ label: '品名', prop: 'matName', required: false, type: 'input' },
-			{ label: '倉庫類型', prop: 'storeType', required: false, type: 'select', options: [] },
+			{ label: '倉庫類型', prop: 'storeType', required: false, type: 'select', options: [], placeholder: '' },
 			{
 				label: '倉庫位置',
 				prop: 'sLocation',
@@ -146,6 +146,7 @@ const state = reactive<TableDemoState>({
 				prop: 'depart',
 				required: false,
 				type: 'select',
+				placeholder: '',
 				options: [
 					{ value: 'FOL', label: 'FOL', text: 'FOL' },
 					{ value: 'EOL', label: 'EOL', text: 'EOL' },

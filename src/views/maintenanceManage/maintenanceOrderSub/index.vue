@@ -16,7 +16,21 @@
 				@cellclick="matNoClick"
 				:cellStyle="cellStyle"
 				@onOpentopBtnOther="onOpenSendRepair"
-			/>
+			>
+				<template #rowIcons="{ row, itemConfig }">
+					<div
+						class="circle"
+						:class="{
+							circleRedColor: row.isUnderWarranty === false,
+							circleGreenColor: row.isUnderWarranty === true,
+						}"
+						v-if="itemConfig.key === 'matno' && (row.isUnderWarranty === true || row.isUnderWarranty === false)"
+					>
+						<span v-if="row.isUnderWarranty === true">保內</span>
+						<span v-if="row.isUnderWarranty === false">保外</span>
+					</div>
+				</template>
+			</Table>
 		</el-tab-pane>
 		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="維修記錄" name="second">
 			<TableSearch
@@ -100,9 +114,12 @@
 					:indexMethod="indexMethod"
 					:objectSpanMethod="objectSpanMethod"
 					@onOpenOtherDialog="openChangeMatno"
+					:cellStyle="oldcellStyle"
 				>
 					<template #rowIcon="{ row, itemConfig }">
-						<span class="circle" v-if="row.isNew && (itemConfig.key === 'matno' || itemConfig.key === 'matNo')">新</span>
+						<span class="circleNew" v-if="row.isNew && (itemConfig.key === 'matno' || itemConfig.key === 'matNo')">新</span>
+						<span class="circleIn" v-if="(itemConfig.key === 'exitqty' || itemConfig.key === 'qty') && row.isUnderWarranty === true">保內</span>
+						<span class="circleOut" v-if="(itemConfig.key === 'exitqty' || itemConfig.key === 'qty') && row.isUnderWarranty === false">保外</span>
 					</template>
 				</Table>
 			</el-form>
@@ -134,7 +151,7 @@
 			</template>
 		</el-dialog>
 		<Dialog ref="matnoDetailDialogRef" :isFootBtn="false" :dialogConfig="dialogMatnoDetail" />
-		<qrCodeDialog ref="inventoryDialogRef" :tags="tags" dialogTitle="庫存條碼" />
+		<qrCodeDialog :color="colorType" ref="inventoryDialogRef" :tags="tags" dialogTitle="庫存條碼" />
 		<!-- 更改料號彈窗 -->
 		<Dialog
 			ref="changeMatDialogRef"
@@ -146,6 +163,14 @@
 		>
 			<template #dialogBtn="{ data }">
 				<el-button v-if="data.formData.isShowDelMatBtn" type="danger" @click="onDelMat(data)" size="default"> 撤回變更料號</el-button>
+			</template>
+		</Dialog>
+		<!-- 返修記錄彈窗 -->
+		<Dialog ref="rerepairRecordsDialogRef" :isFootBtn="false" dialogWidth="60%">
+			<template #dialogTable="{}">
+				<el-form :model="rerepairRecordsdialogState.tableData" size="default">
+					<Table v-bind="rerepairRecordsdialogState.tableData" class="table-dialog"> </Table>
+				</el-form>
 			</template>
 		</Dialog>
 	</el-tabs>
@@ -192,11 +217,10 @@ const dialogtableRef = ref<RefType>();
 const dialogFormRef = ref();
 const presentationDialogRef = ref();
 const changeMatDialogRef = ref();
-// 单元格样式
-// const cellStyle = ref();
 // tags的数据
 let tags = ref<EmptyArrayType>([]);
 const resDataRef = ref([]);
+const rerepairRecordsDialogRef = ref();
 // 送修弹窗标题
 const dilogTitle = ref();
 const activeName = ref<string | number>('first');
@@ -234,6 +258,7 @@ const header1 = ref([
 		type: 'text',
 		isCheck: true,
 	},
+	{ key: 'drawNo', colWidth: '100', title: '圖紙編號', type: 'text', isCheck: true },
 	{ key: 'nameCh', colWidth: '100', title: '品名-中文', type: 'text', isCheck: true },
 	{ key: 'nameEn', colWidth: '100', title: '品名-英文', type: 'text', isCheck: true },
 	{ key: 'qty', colWidth: '100', title: '維修數量', type: 'text', isCheck: true },
@@ -243,7 +268,7 @@ const header1 = ref([
 	{ key: 'pendingCheckQty', colWidth: '110', title: '待驗收數量', type: 'text', isCheck: true },
 	{ key: 'pendingStorageQty', colWidth: '110', title: '待入庫數量', type: 'text', isCheck: true },
 	{ key: 'storedQty', colWidth: '110', title: '已入庫數量', type: 'text', isCheck: true },
-	{ key: 'checkUnqualifiedQty', colWidth: '140', title: '驗收不合格數量', type: 'text', isCheck: true },
+	{ key: 'uselessQty', colWidth: '140', title: '報廢數量', type: 'text', isCheck: true },
 ]);
 const state = reactive<TableDemoState>({
 	tableData: {
@@ -269,6 +294,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'exitreason', colWidth: '', title: '退庫原因', type: 'text', isCheck: true },
 			{ key: 'creator', colWidth: '', title: '發起人', type: 'text', isCheck: true },
 			{ key: 'createtime', colWidth: '', title: '退庫時間', type: 'text', isCheck: true },
+			{ key: 'describe', colWidth: '', title: '退庫備註', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -431,8 +457,47 @@ const dialogMatnoDetail = ref([
 	{ label: '退庫類型:', prop: 'exittype', type: 'text' },
 	{ label: '退庫原因:', prop: 'exitreason', type: 'text' },
 	{ label: '退庫數量:', prop: 'exitqty', type: 'text' },
-	{ label: '備註:', prop: 'describe', type: 'text', lg: 24, xl: 24 },
+	// { label: '備註:', prop: 'describe', type: 'text', lg: 24, xl: 24 },
 ]);
+const rerepairRecordsdialogState = reactive<TableDemoState>({
+	tableData: {
+		// 列表数据（必传）
+		data: [],
+		// 表头内容（必传，注意格式）
+		header: [
+			{ key: 'effectiveTime', colWidth: '', title: '返修提報時間', type: 'text', isCheck: true },
+			{ key: 'rerepairQty', colWidth: '', title: '返修數量', type: 'text', isCheck: true },
+			{ key: 'checker', colWidth: '', title: '返修發起人', type: 'text', isCheck: true },
+		],
+		// 配置项（必传）
+		config: {
+			total: 0, // 列表总数
+			loading: false, // loading 加载
+			isBorder: false, // 是否显示表格边框
+			isSerialNo: true, // 是否显示表格序号
+			isSelection: false, // 是否显示表格多选
+			isOperate: false, // 是否显示表格操作栏
+			isButton: false, //是否显示表格上面的新增删除按钮
+			isInlineEditing: false, //是否是行内编辑
+			isTopTool: false, //是否有表格右上角工具
+			isPage: false, //是否有分页
+			height: 500,
+		},
+		topBtnConfig: [],
+		btnConfig: [],
+		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
+		search: [],
+		searchConfig: {
+			isSearchBtn: true,
+		},
+		// 给后端的数据
+		form: {},
+		page: {
+			pageNum: 1,
+			pageSize: 10,
+		},
+	},
+});
 const exitTypeMap: EmptyObjectType = {
 	1: '維修',
 	2: '閒置',
@@ -466,9 +531,17 @@ watch(
 let openChangeMatRow: EmptyObjectType = {};
 // 打開更改料號彈簧
 const openChangeMatno = (scope: EmptyObjectType, type: string) => {
-	changeMatDialogRef.value.openDialog(type, scope.row, '變更料號', {}, '修改');
-	openChangeMatRow = scope.row;
-	scope.row.isShowDelMatBtn = scope.row.changedMatNo ? true : false;
+	if (type === 'editMat') {
+		changeMatDialogRef.value.openDialog(type, scope.row, '變更料號', {}, '修改');
+		openChangeMatRow = scope.row;
+		scope.row.isShowDelMatBtn = scope.row.changedMatNo ? true : false;
+	} else {
+		rerepairRecordsDialogRef.value.openDialog(type, {}, '返修記錄', {});
+		scope.row.rerepairRecords.forEach((item: any) => {
+			item.checker = `${item.checker} / ${item.checkerName}`;
+		});
+		rerepairRecordsdialogState.tableData.data = scope.row.rerepairRecords;
+	}
 };
 // 改變下拉框的值
 const changeSelect = async (query: any, prop: string, data: EmptyObjectType) => {
@@ -508,7 +581,7 @@ const onDelMat = (formData: EmptyObjectType) => {
 // 更改料號提交
 const onSubmitChangeMat = (formData: EmptyObjectType) => {
 	dialogState.tableData.data.forEach((item, index) => {
-		// 如果已有新的料號更改新的料號，否則追加一行新的
+		// 如果已有新的料號就更改新的料號，否則追加一行新的并合併單元格展示（屎一樣的需求,旧的料號有什麼好看的，都修改了，亂七八糟！煩人）
 		if (item.isNew && item.exitStoreId === openChangeMatRow.exitStoreId && formData.isShowDelMatBtn) {
 			item.namech = formData.changedNameCh;
 			item.nameen = formData.changedNameEn;
@@ -599,11 +672,23 @@ const rowStyle = ({ row, column }: EmptyObjectType) => {
 		return { color: 'var(--el-color-primary)' };
 	}
 };
+// 舊的料號字體顏色
+const oldcellStyle = ({ row, column }: EmptyObjectType) => {
+	const property = column.property;
+	let changeColorProperty = ['matno', 'namech', 'nameen', 'drawNo'];
+	let detailChangeColorProperty = ['matNo', 'nameCh', 'nameEn', 'drawNo'];
+	if ((changeColorProperty.includes(property) || detailChangeColorProperty.includes(property)) && !row.isNew && (row.changedMatNo || row.oldManNo)) {
+		return { color: '#909399' };
+	}
+};
 // 单元格字体颜色
 const cellStyle = ({ row, column }: EmptyObjectType) => {
 	const property = column.property;
-	if (property === 'matno' || (property === 'exitqty' && row.codeManageMode === 0)) {
-		return { color: 'var(--el-color-primary)', cursor: 'pointer' };
+	// property === 'matno' ||
+	let color = '';
+	if (property === 'exitqty' && row.codeManageMode === 0) {
+		color = row.isUnderWarranty ? '#67c23a' : 'red';
+		return { color: color, cursor: 'pointer' };
 	}
 };
 // 初始化列表数据
@@ -715,6 +800,7 @@ const getRepairDraftData = async (selectlist?: EmptyArrayType) => {
 		dialogState.tableData.data = res.data.details;
 		let copy = Object.assign([], res.data.details);
 		dialogState.tableData.form = Object.assign(dialogState.tableData.form, res.data);
+		// 在這拆了我又要合，合了我又要拆了之後傳給你，就不能一條一條給我嗎，你方便我也方便,煩人
 		for (let i = 0; i < copy.length; i++) {
 			let cur = copy[i];
 			if (cur.changedMatNo) {
@@ -755,17 +841,20 @@ const getRepairDraftData = async (selectlist?: EmptyArrayType) => {
 const onDelRow = (row: EmptyObjectType, i: number) => {
 	dialogState.tableData.data.splice(i, row.changedMatNo ? 2 : 1);
 };
-// 查看詳情
+// 查看詳情（又是不一樣的參數名，煩人）
 const openDetailDialog = async (row: EmptyObjectType) => {
 	dialogState.tableData.config.loading = true;
 	dilogTitle.value = '詳情';
 	presentationDialogVisible.value = true;
 	let tableData = dialogState.tableData;
-	changeDialogStatus(false);
+	changeDialogStatus(false, [{ type: 'detail', name: '查看返修記錄', color: '#e6a23c', isSure: false, disabled: false }], 160);
 	tableData.header = header1.value;
 	const res = await getRepairRecordDetailApi(row.row.repairNo);
 	res.data.details.forEach((item: any) => {
 		item.exitStoreOperator = `${item.exitStoreOperator} / ${item.exitStoreOperatorName}`;
+		if (item.rerepairRecords.length <= 0) {
+			item.disabled = true;
+		}
 	});
 	tableData.data = res.data.details;
 	tableData.form['describe'] = res.data.describe;
@@ -773,7 +862,7 @@ const openDetailDialog = async (row: EmptyObjectType) => {
 	copy.forEach((item: any, index: number) => {
 		if (item.oldManNo) {
 			item.isNew = true;
-			dialogState.tableData.data.splice(dialogState.tableData.data.length - (copy.length - index) + 1, 0, {
+			dialogState.tableData.data.splice(dialogState.tableData.data.length - (copy.length - index), 0, {
 				...item,
 				drawNo: item.oldDrawNo,
 				matNo: item.oldManNo,
@@ -783,18 +872,19 @@ const openDetailDialog = async (row: EmptyObjectType) => {
 			});
 		}
 	});
-	// 计算合并的行'exitqty', 'exitreason', 'prItemNo',
+	// 计算合并的行
 	mergeArr.value = colMethod(
 		[
 			'prItemNo',
 			'pendingStorageQty',
 			'pendingReceiptQty',
 			'exitStoreOperator',
-			'checkUnqualifiedQty',
+			'uselessQty',
 			'qty',
 			'reason',
 			'storedQty',
 			'pendingCheckQty',
+			'operation',
 		],
 		dialogState.tableData.data
 	);
@@ -812,7 +902,14 @@ const onOpenSendRepair = async (selectlist: EmptyObjectType[], type: string) => 
 	presentationDialogVisible.value = true;
 	let tableData = dialogState.tableData;
 	tableData.header = header.value;
-	changeDialogStatus(true);
+	changeDialogStatus(
+		true,
+		[
+			{ type: 'editMat', name: '變更料號', color: '#e6a23c', isSure: false, disabled: false },
+			{ type: 'del', name: '移除', color: '#D33939', isSure: true, disabled: false },
+		],
+		230
+	);
 	tableData.config.loading = false;
 	dilogTitle.value = '維修單提報';
 	dialogType = type;
@@ -821,25 +918,45 @@ const onOpenSendRepair = async (selectlist: EmptyObjectType[], type: string) => 
 	if (type === 'addData') {
 		dialogState.tableData.data.forEach((item) => {
 			item.isBorder = true;
+			item.changedNameCh = '';
+			item.changedNameEn = '';
+			item.changedDrawNo = '';
+			item.changedMatNo = '';
 		});
 		getRepairDraftData(selectlist);
 	} else if (type === 'continueEdit') {
 		getRepairDraftData();
 	} else {
+		dialogState.tableData.data.forEach((item) => {
+			item.changedNameCh = '';
+			item.changedNameEn = '';
+			item.changedDrawNo = '';
+			item.changedMatNo = '';
+		});
 	}
 	// 计算合并的行'exitqty', 'exitreason', 'prItemNo',
 	mergeArr.value = colMethod(['exitqty', 'exitreason', 'prItemNo', 'exitStoreId', 'operation'], dialogState.tableData.data);
 	indexobj(); //排列序号
 };
-const changeDialogStatus = (isShow: boolean) => {
+const changeDialogStatus = (isShow: boolean, btn: EmptyArrayType, operateWidth: number) => {
 	let tableData = dialogState.tableData;
-	tableData.config.isSerialNo = tableData.config.isOperate = isShow;
+	tableData.config.isSerialNo = isShow;
+	tableData.btnConfig = btn;
+	tableData.config.operateWidth = operateWidth;
 };
-// 点击料号弹出详情
+// 点击退庫數量查看二維碼
+const colorType = ref();
 const matNoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
-	if (column.property === 'matno') {
-		matnoDetailDialogRef.value.openDialog('matno', row, '退庫詳情');
-	} else if (column.property === 'exitqty' && row.codeManageMode === 0) {
+	// if (column.property === 'matno') {
+	// 	matnoDetailDialogRef.value.openDialog('matno', row, '退庫詳情');
+	// } else
+	colorType.value = '';
+	if (column.property === 'exitqty' && row.codeManageMode === 0) {
+		if (row.isUnderWarranty === true) {
+			colorType.value = 'success';
+		} else if (row.isUnderWarranty === false) {
+			colorType.value = 'danger';
+		}
 		let res = await GetExitStoreQrCodeListApi(row.runid);
 		if (res.data.length == 0) {
 			ElMessage.error('暫無條碼數據');
@@ -1006,11 +1123,48 @@ onMounted(() => {
 .buttonBorder {
 	border: 0px !important;
 }
-.circle {
+.circleNew {
 	border: 1px solid red;
 	border-radius: 50%;
 	color: red;
 	font-size: 12px;
 	padding: 4px 3px 2px 4px;
+}
+.circleOut {
+	border: 1px solid red;
+	border-radius: 50%;
+	color: red;
+	font-size: 10px;
+	padding: 6px 1.5px 5px 2px;
+}
+.circleIn {
+	border: 1px solid #67c23a;
+	border-radius: 50%;
+	color: #67c23a;
+	font-size: 10px;
+	padding: 6px 1.5px 5px 2px;
+}
+.circle {
+	display: inline-block;
+	width: 26px;
+	height: 26px;
+	border-radius: 50%;
+	margin-right: 3px;
+}
+.circleRedColor {
+	border: 1px solid red;
+	color: red;
+}
+.circleGreenColor {
+	border: 1px solid #67c23a;
+	color: #67c23a;
+}
+.circleBlueColor {
+	border: 1px solid #1890ff;
+	color: #1890ff;
+}
+.circle span {
+	font-size: 10px;
+	padding: 0 1px;
 }
 </style>

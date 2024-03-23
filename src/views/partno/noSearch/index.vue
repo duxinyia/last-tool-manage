@@ -44,7 +44,14 @@
 			>
 				<matModifySignInfoLink @editDialogTitle="editDialogTitle" :isDialog="true" :matNoRef="matNoRef"
 			/></el-dialog>
-			<el-dialog v-else draggable :close-on-click-modal="false" v-model="matNoDetaildialogVisible" title="料號詳情" width="50%">
+			<el-dialog
+				v-else
+				draggable
+				:close-on-click-modal="false"
+				v-model="matNoDetaildialogVisible"
+				:title="$t('message.pages.partNumberDetails')"
+				width="50%"
+			>
 				<matNoDetailDialog :isDialog="true" :matNoRef="matNoRef"
 			/></el-dialog>
 		</div>
@@ -90,16 +97,26 @@ const state = reactive<TableDemoState>({
 		// 表头内容（必传，注意格式）
 		header: [
 			{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'text', isCheck: true },
-			{ key: 'reqMatNo', colWidth: '', title: '請購料號', type: 'text', isCheck: true },
-			{ key: 'depart', colWidth: '', title: '段位', type: 'text', isCheck: true },
+			{ key: 'reqMatNo', colWidth: '', title: 'message.pages.materialPurchaseNumber', type: 'text', isCheck: true },
+			{ key: 'depart', colWidth: '', title: 'message.pages.segmentPosition', type: 'text', isCheck: true },
 			{ key: 'bu', colWidth: '', title: 'BU', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
 			{ key: 'drawNo', colWidth: '', title: 'message.pages.drawNo', type: 'text', isCheck: true },
 			{ key: 'specs', colWidth: '', title: 'message.pages.specs', type: 'text', isCheck: true },
-			{ key: 'signStatusStr', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
-			{ key: 'codeManageModeText', colWidth: '', title: '二維碼管理模式', type: 'text', isCheck: true },
-			{ key: 'picture', colWidth: '', title: '圖片', width: '70', height: '40', type: 'uploadImage', isCheck: true },
+			{ key: 'signStatusStr', colWidth: '', title: 'message.pages.signatureStatus', type: 'text', isCheck: true },
+			{
+				key: 'codeManageMode',
+				colWidth: '',
+				title: 'message.pages.qrCodeManagementMode',
+				type: 'text',
+				isCheck: true,
+				transfer: {
+					0: 'message.pages.codedManagement',
+					1: 'message.pages.noCodeManagement',
+				},
+			},
+			{ key: 'picture', colWidth: '', title: 'message.pages.picture', width: '70', height: '40', type: 'uploadImage', isCheck: true },
 			// { key: 'creator', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
 			// { key: 'createtime', title: 'message.pages.creationTime', type: 'text', isCheck: true },
 		],
@@ -122,10 +139,10 @@ const state = reactive<TableDemoState>({
 		btnConfig: [],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
-			{ label: '料號', prop: 'matNo', placeholder: '請輸入料號', required: false, type: 'input' },
+			{ label: 'message.pages.matNo', prop: 'matNo', placeholder: '', required: false, type: 'input' },
 			{ label: 'BU', prop: 'bu', placeholder: '', required: false, type: 'input' },
 			{
-				label: '段位',
+				label: 'message.pages.segmentPosition',
 				prop: 'depart',
 				placeholder: '',
 				required: false,
@@ -136,21 +153,21 @@ const state = reactive<TableDemoState>({
 					{ value: 'SMT', label: 'SMT', text: 'SMT' },
 				],
 			},
-			{ label: '品名', prop: 'name', placeholder: '', required: false, type: 'input' },
-			{ label: '圖紙編號', prop: 'drawNo', placeholder: '', required: false, type: 'input' },
+			{ label: 'message.pages.nameProduct', prop: 'name', placeholder: '', required: false, type: 'input' },
+			{ label: 'message.pages.drawNo', prop: 'drawNo', placeholder: '', required: false, type: 'input' },
 			{
-				label: '機種',
+				label: 'message.pages.machineType',
 				prop: 'machineType',
 				required: false,
 				type: 'select',
-				placeholder: '請輸入選擇機種',
+				placeholder: 'message.pages.pleaseEnterTheSelectionModel',
 				options: [],
 				loading: true,
 				filterable: true,
 				remote: true,
 				remoteShowSuffix: true,
 			},
-			{ label: '請購料號', prop: 'reqMatNo', placeholder: '', required: false, type: 'input' },
+			{ label: 'message.pages.materialPurchaseNumber', prop: 'reqMatNo', placeholder: '', required: false, type: 'input' },
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -165,7 +182,7 @@ const state = reactive<TableDemoState>({
 			pageSize: 10,
 		},
 		// 打印标题
-		printName: '表格打印演示',
+		printName: '',
 		// 弹窗表单
 		dialogConfig: [
 			{ label: 'message.pages.matNo', prop: 'matNo', placeholder: 'message.pages.placeMatNo', required: false, type: 'text' },
@@ -328,13 +345,13 @@ const getTableData = async () => {
 		queryType: 1,
 	};
 	const codeManageModeMap: EmptyObjectType = {
-		0: '有碼管理',
-		1: '無碼管理',
+		0: 'message.pages.codedManagement',
+		1: 'message.pages.noCodeManagement',
 	};
 	const res = await getMaterialListApi(data);
 	res.data.data.forEach((item: any) => {
 		item.picture = `${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${item.picture}`;
-		item.codeManageModeText = codeManageModeMap[item.codeManageMode];
+		// item.codeManageModeText = t(codeManageModeMap[item.codeManageMode]);
 	});
 	state.tableData.data = res.data.data;
 	state.tableData.config.total = res.data.total;
