@@ -317,6 +317,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 							roles: ['admin'],
 						},
 					},
+					
 					// {
 					// 	path: '/partno/sampleDelivery',
 					// 	name: 'partnoSampleDelivery',
@@ -375,9 +376,25 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					// 	},
 					// },
 				],
+				
 			},
 		],
 	},
+	// {
+	// 	path: '/partno/driMatDetail',
+	// 	name: 'dirManageDetail',
+	// 	component: () => import('/@/views/partno/driMatDetail/index.vue'),
+	// 	meta: {
+	// 		title: 'message.router.paramsCommonDetails',
+	// 		isLink: '',
+	// 		isHide: true,
+	// 		isKeepAlive: true,
+	// 		isAffix: false,
+	// 		isIframe: false,
+	// 		roles: ['admin'],
+	// 		icon: 'ele-Comment',
+	// 	},
+	// },
 ];
 
 /**
@@ -414,6 +431,7 @@ export const notFoundAndNoPower = [
 			isHide: false,
 		},
 	},
+	
 ];
 
 /**
@@ -453,7 +471,7 @@ export const staticRoutes: Array<RouteRecordRaw> = [
 		name: 'arrivalAcceptanceLink',
 		component: () => import('/@/views/link/arrivalAcceptanceLink/index.vue'),
 		meta: {
-			title: '請購驗收單详情',
+			title: '請購驗收簽核',
 		},
 	},
 	{
@@ -480,6 +498,7 @@ export const staticRoutes: Array<RouteRecordRaw> = [
 			title: '報廢單详情',
 		},
 	},
+
 	// {
 	// 	path: '/link/404',
 	// 	name: '404',

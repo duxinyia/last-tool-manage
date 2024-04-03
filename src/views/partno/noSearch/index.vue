@@ -117,7 +117,7 @@ const state = reactive<TableDemoState>({
 				},
 			},
 			{ key: 'picture', colWidth: '', title: 'message.pages.picture', width: '70', height: '40', type: 'uploadImage', isCheck: true },
-			// { key: 'creator', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
+			{ key: 'dri', colWidth: '', title: 'DRI', type: 'text', isCheck: true },
 			// { key: 'createtime', title: 'message.pages.creationTime', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
@@ -168,6 +168,22 @@ const state = reactive<TableDemoState>({
 				remoteShowSuffix: true,
 			},
 			{ label: 'message.pages.materialPurchaseNumber', prop: 'reqMatNo', placeholder: '', required: false, type: 'input' },
+			{
+				label: '簽核狀態',
+				prop: 'signStatus',
+				placeholder: '',
+				required: false,
+				type: 'select',
+				options: [
+					{ value: 0, label: '未送簽', text: '未送簽' },
+					{ value: 1, label: '試產簽核中', text: '試產簽核中' },
+					{ value: 2, label: '試產簽核完成', text: '試產簽核完成' },
+					{ value: 3, label: '量產簽核中', text: '量產簽核中' },
+					{ value: 4, label: '量產簽核完成', text: '量產簽核完成' },
+					{ value: 5, label: '試產料號修改簽核中', text: '試產料號修改簽核中' },
+					{ value: 6, label: '量產料號修改簽核中', text: '量產料號修改簽核中' },
+				],
+			},
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -339,6 +355,7 @@ const remoteMethod = (query: string, num: number) => {
 const getTableData = async () => {
 	state.tableData.config.loading = true;
 	const form = state.tableData.form;
+	if (form.signStatus === '') form.signStatus = null;
 	let data = {
 		...form,
 		page: state.tableData.page,
@@ -350,6 +367,7 @@ const getTableData = async () => {
 	};
 	const res = await getMaterialListApi(data);
 	res.data.data.forEach((item: any) => {
+		item.dri = item.dri + ' / ' + item.driName;
 		item.picture = `${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${item.picture}`;
 		// item.codeManageModeText = t(codeManageModeMap[item.codeManageMode]);
 	});
@@ -493,9 +511,9 @@ const onExportTableData = async (row: EmptyObjectType, hearder: EmptyObjectType)
 		Picture: 'PictureUrl',
 		MatNo: 'Matno',
 		ReqMatNo: 'ReqMatno',
-		CodeManageModeText: 'CodeManageModeStr',
+		CodeManageMode: 'CodeManageModeStr',
 	};
-	const imparity = ['Bu', 'Picture', 'MatNo', 'ReqMatNo', 'CodeManageModeText'];
+	const imparity = ['Bu', 'Picture', 'MatNo', 'ReqMatNo', 'CodeManageMode'];
 	hearder.forEach((item: any) => {
 		propertyNames.push(item.key.charAt(0).toUpperCase() + item.key.slice(1));
 	});

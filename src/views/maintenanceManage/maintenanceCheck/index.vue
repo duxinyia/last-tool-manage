@@ -53,13 +53,14 @@
 			/>
 		</el-tab-pane>
 		<el-dialog
+			destroy-on-close
 			draggable
 			:close-on-click-modal="false"
 			v-model="maintenanceCheckDialogVisible"
 			:title="dilogTitle"
-			:width="dilogTitle == '驗收' || dilogTitle == '重新驗收' ? '80%' : '70%'"
+			:width="titleType == 'sendReceive' || titleType == 'reReceive' ? '80%' : '70%'"
 		>
-			<el-row v-if="dilogTitle == '驗收' || dilogTitle == '重新驗收'">
+			<el-row v-if="titleType == 'sendReceive' || titleType == 'reReceive'">
 				<el-col :xs="24" :sm="12" :md="11" :lg="11" :xl="11" class="mb10" v-for="(val, key) in dialogState.tableData.search" :key="key">
 					<div v-if="val.type === 'text'">
 						{{ val.label }}：<span style="color: red" class="ml10">{{ dialogState.tableData.form[val.prop] }}</span>
@@ -81,30 +82,30 @@
 					@cellclick="uselessCodeClick"
 				>
 					<template #slotCol="{ row }">
-						<el-tooltip
-							v-if="
-								(row.codeManageMode === 0 && row.passQty < row.checkQty) ||
-								(row.passQty != 0 && row.passQty < row.checkQty && row.codeManageMode === 0)
-							"
-							class="box-item"
-							effect="dark"
-							content="錄入二維碼"
-							placement="top"
+						<span
+							v-if="row.codeManageMode === 1 || row.passQty >= row.checkQty || row.passQty + row.reRepairQty >= row.checkQty"
+							style="text-align: center; width: 100%"
 						>
-							<span style="text-align: center; width: 100%; cursor: pointer; color: #0047c5" @click="onEnterQrcode(row)"> {{ row.uselessQty }} </span>
-						</el-tooltip>
-						<span v-else-if="row.codeManageMode === 1 || row.passQty >= row.checkQty || row.passQty == 0" style="text-align: center; width: 100%">
 							{{ row.uselessQty }}
 						</span>
+						<!-- v-if="
+								(row.codeManageMode === 0 && row.passQty < row.checkQty) ||
+								(row.passQty != 0 && row.passQty < row.checkQty && row.codeManageMode === 0)
+							" -->
+						<el-tooltip v-else class="box-item" effect="dark" content="錄入二維碼" placement="top">
+							<span style="text-align: center; width: 100%; cursor: pointer; color: #0047c5" @click="onEnterQrcode(row)">
+								{{ row.uselessQty || 0 }}
+							</span>
+						</el-tooltip>
 					</template>
 				</Table>
 			</el-form>
-			<template v-if="dilogTitle == '驗收' || dilogTitle == '詳情' || dilogTitle == '重新驗收'">
-				<div style="display: flex; align-items: center" v-if="dilogTitle == '驗收' || dilogTitle == '重新驗收'" class="mt10">
+			<template v-if="titleType == 'sendReceive' || titleType == 'reReceive' || dilogTitle == '詳情'">
+				<div style="display: flex; align-items: center" v-if="titleType == 'sendReceive' || titleType == 'reReceive'" class="mt10">
 					<span>收貨備註：</span>
 					<div style="font-weight: 700; color: #1890ff">{{ dialogState.tableData.form['describe'] }}</div>
 				</div>
-				<div class="describe up-file" v-if="dilogTitle == '驗收' || dilogTitle == '重新驗收'">
+				<div class="describe up-file" v-if="titleType == 'sendReceive' || titleType == 'reReceive'">
 					<span>驗收報告：</span>
 					<el-upload
 						style="width: 100%"
@@ -125,11 +126,11 @@
 					<el-button size="default" plain type="primary" @click="lookUpload">查看驗收報告</el-button>
 				</div>
 				<el-button class="mt5" v-if="dilogTitle == '詳情'" size="default" plain type="primary" @click="lookUpload">查看驗收報告</el-button>
-				<div :class="{ describe: dilogTitle == '驗收' || dilogTitle == '重新驗收' }" class="mt10">
+				<div :class="{ describe: titleType == 'sendReceive' || titleType == 'reReceive' }" class="mt10">
 					<span>驗收備註：</span>
 					<el-input
 						style="width: 120%"
-						v-if="dilogTitle == '驗收' || dilogTitle == '重新驗收'"
+						v-if="titleType == 'sendReceive' || titleType == 'reReceive'"
 						class="input-textarea"
 						show-word-limit
 						v-model="dialogState.tableData.form['describe1']"
@@ -142,7 +143,7 @@
 			</template>
 
 			<template #footer>
-				<span class="dialog-footer" v-if="dilogTitle == '驗收' || dilogTitle == '重新驗收'">
+				<span class="dialog-footer" v-if="titleType == 'sendReceive' || titleType == 'reReceive'">
 					<el-button size="default" auto-insert-space @click="maintenanceCheckDialogVisible = false">取消</el-button>
 					<el-button :disabled="isSureDisabled" size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef)" :loading="loadingBtn">
 						確定
@@ -533,8 +534,11 @@ const innnerDialogSubmit = async (formData: any) => {
 		if (outTableRow.repairReceiveDetailId === item.repairReceiveDetailId && outTableRow.repairCheckDetailId === item.repairCheckDetailId) {
 			item.uselessCodes = formData.codeList;
 			item.uselessQty = formData.codeList.length;
-			item.passQtymax = item.checkQty - formData.codeList.length - item.reRepairQty;
-			item.reRepairQtymax = item.checkQty - item.passQty - formData.codeList.length;
+			if (item.uselessQty === item.checkQty) {
+				item.passQty = item.reRepairQty = 0;
+			}
+			item.passQtymax = item.checkQty - formData.codeList.length - (item.reRepairQty || 0);
+			item.reRepairQtymax = item.checkQty - (item.passQty || 0) - formData.codeList.length;
 		}
 	});
 	if (formData.codeList.length > 0) ElMessage.success(`錄入成功`);
@@ -544,11 +548,13 @@ const changeInput = (val: number, i: number, item: EmptyObjectType) => {
 	const data = dialogState.tableData.data[i];
 	data.passQtymin = 0;
 	if (data.codeManageMode === 1) {
-		data.passQtymax = data.checkQty - data.reRepairQty >= 0 ? data.checkQty - data.reRepairQty : data.checkQty;
-		data.reRepairQtymax = data.checkQty - data.passQty >= 0 ? data.checkQty - data.passQty : data.checkQty;
+		data.passQtymax = data.checkQty - (data.reRepairQty || 0) >= 0 ? data.checkQty - (data.reRepairQty || 0) : data.checkQty;
+		data.reRepairQtymax = data.checkQty - (data.passQty || 0) >= 0 ? data.checkQty - (data.passQty || 0) : data.checkQty;
 	} else {
-		data.passQtymax = data.checkQty - data.reRepairQty - data.uselessQty >= 0 ? data.checkQty - data.reRepairQty - data.uselessQty : data.checkQty;
-		data.reRepairQtymax = data.checkQty - data.passQty - data.uselessQty >= 0 ? data.checkQty - data.passQty - data.uselessQty : data.checkQty;
+		data.passQtymax =
+			data.checkQty - (data.reRepairQty || 0) - data.uselessQty >= 0 ? data.checkQty - (data.reRepairQty || 0) - data.uselessQty : data.checkQty;
+		data.reRepairQtymax =
+			data.checkQty - (data.passQty || 0) - data.uselessQty >= 0 ? data.checkQty - (data.passQty || 0) - data.uselessQty : data.checkQty;
 	}
 
 	if (data.checkQty && data.passQty && data.checkQty <= data.passQty) {
@@ -563,7 +569,7 @@ const changeInput = (val: number, i: number, item: EmptyObjectType) => {
 		data.passQtymax = 0;
 	}
 	if (data.codeManageMode === 1) {
-		data.uselessQty = data.checkQty - data.reRepairQty - data.passQty || 0;
+		data.uselessQty = data.checkQty - (data.reRepairQty || 0) - (data.passQty || 0) || 0;
 	}
 	data.uselessQtydisabled = data.reRepairQtydisabled = data.failReasonIdsdisabled = data.checkQty <= data.passQty ? true : false;
 };
@@ -667,6 +673,7 @@ const onDelRow = (row: EmptyObjectType, i: number) => {
 };
 // 點擊第二個頁面詳情彈窗按鈕
 const openSecondDetailDialog = async (scope: EmptyObjectType) => {
+	titleType.value = 'detail';
 	dilogTitle.value = '詳情';
 	maintenanceCheckDialogVisible.value = true;
 	changeStatus(header2.value, 300, false);
@@ -685,7 +692,7 @@ const openSecondDetailDialog = async (scope: EmptyObjectType) => {
 		dialogState.tableData.config.loading = false;
 	}
 };
-let titleType = ref('');
+const titleType = ref('');
 // 点击验收按钮
 const openArriveJobDialog = async (scope: EmptyObjectType, type: string) => {
 	titleType.value = type;
@@ -704,6 +711,7 @@ const openArriveJobDialog = async (scope: EmptyObjectType, type: string) => {
 // 点击收货单号
 const reqNoClick = (row: EmptyObjectType, column: EmptyObjectType) => {
 	if (column.property === 'repairReceiveNo') {
+		titleType.value = 'receiptNumber';
 		dilogTitle.value = '收貨單號:' + row.repairReceiveNo;
 		getDetailData(row.repairReceiveNo);
 		changeStatus(header1.value, 300, false);
@@ -731,7 +739,7 @@ const getDetailData = async (data: string) => {
 	dialogState.tableData.data = res.data.details;
 	dialogState.tableData.data.forEach((item) => {
 		item.checkQty = item.receiptQty;
-		item.passQty = item.reRepairQty = item.uselessQty = 0;
+		item.uselessQty = 0;
 	});
 	if (res.status) {
 		dialogState.tableData.config.loading = false;

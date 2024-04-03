@@ -171,7 +171,7 @@ const commonInputHandleChange = debounce((val: any, prop: string) => {
 		if (formData.codeList.includes(val)) {
 			ElMessage.warning(`該條碼已存在，請勿重複掃碼`);
 		} else if (
-			formData.codeList.length + 1 > outTableRow.checkQty - outTableRow.passQty - outTableRow.reRepairQty ||
+			formData.codeList.length + 1 > outTableRow.checkQty - (outTableRow.passQty || 0) - (outTableRow.reRepairQty || 0) ||
 			formData.codeList.length + 1 > outTableRow.checkQty
 		) {
 			ElMessage.error(`掃碼數量超過可錄入數量，請勿繼續掃碼`);
@@ -183,13 +183,14 @@ const commonInputHandleChange = debounce((val: any, prop: string) => {
 	}
 	emit('commonInputHandleChange', val, prop, state);
 }, 500);
+
 // 手動輸入
 const dailogFormButton = (btnConfig: EmptyObjectType) => {
 	if (!state.formData['inputQty']) return;
 	if (state.formData.codeList.includes(state.formData['inputQty'])) {
 		ElMessage.warning(`該條碼已存在，請勿重複掃碼`);
 	} else if (
-		state.formData.codeList.length + 1 > outTableRow.checkQty - outTableRow.passQty - outTableRow.reRepairQty ||
+		state.formData.codeList.length + 1 > outTableRow.checkQty - (outTableRow.passQty || 0) - (outTableRow.reRepairQty || 0) ||
 		state.formData.codeList.length + 1 > outTableRow.checkQty
 	) {
 		ElMessage.error(`掃碼數量超過可錄入數量，請勿繼續掃碼`);
@@ -305,7 +306,10 @@ const handleSinglePageExcel = async (data: any) => {
 	}
 	// 最后去重了条码加上现有的条码集合的长度
 	const flatArrayLength = [...new Set(state.formData.codeList.concat(flatArray))].length;
-	if (flatArrayLength > outTableRow.checkQty - outTableRow.passQty - outTableRow.reRepairQty || flatArrayLength > outTableRow.checkQty) {
+	if (
+		flatArrayLength > outTableRow.checkQty - (outTableRow.passQty || 0) - (outTableRow.reRepairQty || 0) ||
+		flatArrayLength > outTableRow.checkQty
+	) {
 		ElMessage.error(`此文件中的條碼數量加上现有的掃碼數量超過可錄入數量，請勿導入`);
 		return;
 	}

@@ -41,9 +41,12 @@ service.interceptors.response.use(
 		checkResponse(response);
 		// 对响应数据做点什么
 		const res = response.data;
-		if(response.request.responseType==='blob')
-			return response;
-		if (res.code && res.code !== 0) {
+	
+		if(response.request.responseType==='blob'){
+						return response;
+		}
+
+		if (res.code && res.code !== 0||res.Code) {
 			// `token` 过期或者账号已在别处登录
 			if (res.code === 401 || res.code === 4001) {
 				 ElMessageBox.alert('登錄過期,您已被登出,請重新登錄', '提示', {})
@@ -54,7 +57,9 @@ service.interceptors.response.use(
 				// 使用 reload 时，不需要调用 resetRoute() 重置路由
 				window.location.reload();
 			}else if(res.code===500||res.Code===500){
+				
 				ElMessage.error(res.message||res.Message);
+				
 			}
 			return res;
 		} else {
@@ -79,7 +84,17 @@ service.interceptors.response.use(
 			// window.location.href = '/'; // 去登录页
 		}else if(error.response.data.code===500||error.response.data.Code===500){
 			ElMessage.error(error.response.data.message||error.response.data.Message);
-		}
+		}else if(error.response.data.type === 'application/json') {
+      const reader = new FileReader();
+      reader.readAsText(error.response.data, 'utf-8');
+      reader.onload = function () {
+        const _res= JSON.parse(reader.result as string);
+        // console.log(_res); // 此处为接口返回值
+				if(_res.Code===500){
+					ElMessage.error(_res.Message);
+				}
+      }
+    } 
 		else {
 			if (error.response.data) ElMessage.error(error.response.statusText)
 			else ElMessage.error('接口路徑找不到');

@@ -465,9 +465,9 @@ const rerepairRecordsdialogState = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
-			{ key: 'effectiveTime', colWidth: '', title: '返修提報時間', type: 'text', isCheck: true },
+			{ key: 'effectiveTime', colWidth: '', title: '返修確認時間', type: 'text', isCheck: true },
 			{ key: 'rerepairQty', colWidth: '', title: '返修數量', type: 'text', isCheck: true },
-			{ key: 'checker', colWidth: '', title: '返修發起人', type: 'text', isCheck: true },
+			{ key: 'checker', colWidth: '', title: '返修發起人（工程）', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {

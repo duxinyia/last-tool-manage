@@ -31,9 +31,6 @@
 				<div class="copyright">
 					<el-icon class="icon"><ele-CollectionTag /></el-icon>
 					Copyright © 2023. Foxconn All rights reserved
-					<!-- <a class="location" @click="toLocation">
-						{{ port == '8085' ? '正式地址' : '测试地址' }}
-					</a> -->
 				</div>
 				<div class="author-info">
 					<div>
@@ -59,13 +56,17 @@
 						</span>
 					</div>
 				</div>
+				<div class="address">
+					{{ textAddress }}系統地址：
+					<a target="" :title="`點擊跳轉到${textAddress}系統地址`" :href="systemAddress">{{ systemAddress }}</a>
+				</div>
 			</div>
 		</transition>
 	</div>
 </template>
 
 <script setup lang="ts" name="loginIndex">
-import { defineAsyncComponent, onMounted, reactive, computed } from 'vue';
+import { defineAsyncComponent, onMounted, reactive, computed, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useThemeConfig } from '/@/stores/themeConfig';
 import { NextLoading } from '/@/utils/loading';
@@ -82,7 +83,8 @@ const state = reactive({
 	tabsActiveName: 'account',
 	isScan: false,
 });
-
+const systemAddress = ref('');
+const textAddress = ref('');
 // 获取布局配置信息
 const getThemeConfig = computed(() => {
 	return themeConfig.value;
@@ -90,6 +92,8 @@ const getThemeConfig = computed(() => {
 // 页面加载时
 onMounted(() => {
 	NextLoading.done();
+	systemAddress.value = window.webConfig.systemAddress;
+	textAddress.value = window.webConfig.text;
 });
 </script>
 
@@ -234,6 +238,13 @@ onMounted(() => {
 		.author {
 			margin-right: 10px;
 		}
+	}
+}
+.address {
+	margin-top: 15px;
+	a {
+		color: yellow;
+		cursor: pointer;
 	}
 }
 </style>

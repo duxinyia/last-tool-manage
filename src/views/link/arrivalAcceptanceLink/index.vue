@@ -1,7 +1,7 @@
 <template>
-	<div :class="{ main: !isDialog }" :style="!isDialog ? 'height: 420px' : ''">
+	<div :class="{ main: !isDialog }" :style="!isDialog ? 'height: 475px' : ''">
 		<div class="table-container" :class="{ 'link-width': !isDialog }">
-			<nav v-if="!isDialog" class="pb10">請購驗收單詳情</nav>
+			<nav v-if="!isDialog" class="pb10">請購驗收簽核</nav>
 			<el-form v-if="state.tableData.form" ref="tableSearchRef" :model="state.tableData.form" size="default" label-width="120px" class="table-form">
 				<el-row :gutter="35">
 					<el-col

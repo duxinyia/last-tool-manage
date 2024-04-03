@@ -19,11 +19,10 @@ import zhcnLocale from 'element-plus/es/locale/lang/zh-cn';
 import zhtwLocale from 'element-plus/es/locale/lang/zh-tw';
 
 // 定义变量内容
-const messages= {};
-const element = { en: enLocale, 'zh-cn': zhcnLocale, 'zh-tw': zhtwLocale };
-const itemize = { en: [], 'zh-cn': [], 'zh-tw': [] };
+const messages:EmptyObjectType= {};
+const element:EmptyObjectType = { en: enLocale, 'zh-cn': zhcnLocale, 'zh-tw': zhtwLocale };
+const itemize:any = { en: [], 'zh-cn': [], 'zh-tw': [] };
 const modules: Record<string, any> = import.meta.glob('./**/*.ts', { eager: true });
-
 // 对自动引入的 modules 进行分类 en、zh-cn、zh-tw
 // https://vitejs.cn/vite3-cn/guide/features.html#glob-import
 for (const path in modules) {
@@ -33,7 +32,7 @@ for (const path in modules) {
 }
 
 // 合并数组对象（非标准数组对象，数组中对象的每项 key、value 都不同）
-function mergeArrObj<T>(list: T, key: string) {
+function mergeArrObj<T>(list: EmptyObjectType, key: string) {
 	let obj = {};
 	list[key].forEach((i: EmptyObjectType) => {
 		obj = Object.assign({}, obj, i);
@@ -57,12 +56,12 @@ const { themeConfig } = storeToRefs(stores);
 // 导出语言国际化
 // https://vue-i18n.intlify.dev/guide/essentials/fallback.html#explicit-fallback-with-one-locale
 export const i18n = createI18n({
-	legacy: false,
-	silentTranslationWarn: true,
+	legacy: false,// 使用Composition API模式
+	silentTranslationWarn: true,// 静默翻译警告
 	missingWarn: false,
 	silentFallbackWarn: true,
 	fallbackWarn: false,
-	locale: themeConfig.value.globalI18n,
-	fallbackLocale: zhcnLocale.name,
-	messages,
+	locale: themeConfig.value.globalI18n,// 设置默认语言
+	fallbackLocale: zhcnLocale.name,// 设置后备语言
+	messages,// 设置翻译消息
 });

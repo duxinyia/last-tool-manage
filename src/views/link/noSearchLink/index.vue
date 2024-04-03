@@ -29,14 +29,15 @@
 						:key="key"
 					>
 						<template v-if="val.type !== ''">
-							<el-form-item :label="val.prop !== 'drawPath' ? $t(val.label) : ''" :prop="val.prop">
+							<el-form-item :label="val.prop !== 'drawPath' && val.prop !== 'draw3dPath' ? $t(val.label) : ''" :prop="val.prop">
 								<span v-if="val.type === 'text'" style="width: 100%; font-weight: 700; color: #1890ff">
 									{{ state.form[val.prop] }}
 								</span>
 
 								<el-button type="primary" style="margin-left: 60px" v-if="val.type === 'btn'" @click="clickLink(val.prop)">{{
-									$t('message.pages.viewTheDrawing')
+									$t(val.label)
 								}}</el-button>
+
 								<div v-if="val.type == 'tagsarea'">
 									<el-tag v-for="tag in state.form[val.prop]" :key="tag" class="mr10">
 										{{ tag }}
@@ -116,26 +117,27 @@ const state = reactive<LinkState>({
 			colorType: 'primary',
 		},
 		{
-			label: 'message.pages.drawPath',
+			label: '查看圖紙',
 			prop: 'drawPath',
 			type: 'btn',
-			xs: 24,
-			sm: 24,
-			md: 24,
-			lg: 24,
-			xl: 24,
+			xs: 12,
+			sm: 12,
+			md: 12,
+			lg: 12,
+			xl: 12,
 			isCheck: true,
 		},
-		// {
-		// 	label: '3D圖紙：',
-		// 	prop: 'draw3dPath',
-		// 	type: 'text',
-		// 	xs: 24,
-		// 	sm: 24,
-		// 	md: 24,
-		// 	lg: 24,
-		// 	xl: 24,
-		// },
+		{
+			label: '查看3D圖紙',
+			prop: 'draw3dPath',
+			type: 'btn',
+			xs: 12,
+			sm: 12,
+			md: 12,
+			lg: 12,
+			xl: 12,
+			isCheck: true,
+		},
 	],
 	searchConfig: false,
 	form: {},
@@ -167,6 +169,11 @@ const getDetailData = async () => {
 		0: 'message.pages.codedManagement',
 		1: 'message.pages.noCodeManagement',
 	};
+	state.search.forEach((item) => {
+		if (item.prop === 'draw3dPath' && props.isDialog) {
+			item.isCheck = false;
+		}
+	});
 	let comkey = props.isDialog ? props.matNoRef.matNo : route.query.comkey;
 	const res = props.isDialog ? await getMaterialApi(comkey) : await getMatSignInfoApi(comkey);
 	state.form = res.data;
@@ -185,6 +192,11 @@ const getDetailData = async () => {
 // 点击文件
 const clickLink = (prop: string) => {
 	if (prop === 'drawPath' && state.form.drawPath.includes('/')) {
+		window.open(
+			`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${state.form[prop]}`,
+			'_blank'
+		);
+	} else if (prop === 'draw3dPath' && state.form.drawPath.includes('/')) {
 		window.open(
 			`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${state.form[prop]}`,
 			'_blank'

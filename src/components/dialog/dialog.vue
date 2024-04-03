@@ -1,6 +1,13 @@
 <template>
 	<div class="system-menu-dialog-container">
-		<el-dialog draggable :close-on-click-modal="false" :title="state.dialog.title" v-model="state.dialog.isShowDialog" :width="dialogWidth">
+		<el-dialog
+			draggable
+			:close-on-click-modal="false"
+			:title="state.dialog.title"
+			v-model="state.dialog.isShowDialog"
+			:width="dialogWidth"
+			@close="close"
+		>
 			<template #header="{}">
 				<slot name="Header" :hearName="state.dialog.title" :formData="state.formData"></slot>
 			</template>
@@ -424,6 +431,7 @@ const emit = defineEmits([
 	'inputFocus',
 	'inputHandleExceed',
 	'inputHandleChange',
+	'close',
 ]);
 // 定义父组件传过来的值
 const props = defineProps({
@@ -506,6 +514,10 @@ const state = reactive<dialogFormState>({
 		isdisable: false,
 	},
 });
+// 關閉彈窗
+const close = () => {
+	emit('close');
+};
 // 點擊鏈接
 const clickLink = (prop: string) => {
 	const path = state.formData[prop];

@@ -131,8 +131,6 @@ const state = reactive<TableDemoState>({
 			{ key: 'signStatusStr', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
 			{ key: 'codeManageModeText', colWidth: '', title: '二維碼管理模式', type: 'text', isCheck: true },
 			{ key: 'picture', colWidth: '', title: '圖片', width: '70', height: '40', type: 'uploadImage', isCheck: true },
-			// { key: 'creator', colWidth: '', title: 'message.pages.creator', type: 'text', isCheck: true },
-			// { key: 'createtime', title: 'message.pages.creationTime', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -191,8 +189,22 @@ const state = reactive<TableDemoState>({
 				remoteShowSuffix: true,
 			},
 			{ label: '請購料號', prop: 'reqMatNo', placeholder: '', required: false, type: 'input' },
-
-			// { label: '是否包含其他用戶創建的料號', prop: 'isContainsOther', placeholder: '', required: false, type: 'status', lg: 5, xl: 5 },
+			{
+				label: '簽核狀態',
+				prop: 'signStatus',
+				placeholder: '',
+				required: false,
+				type: 'select',
+				options: [
+					{ value: 0, label: '未送簽', text: '未送簽' },
+					{ value: 1, label: '試產簽核中', text: '試產簽核中' },
+					{ value: 2, label: '試產簽核完成', text: '試產簽核完成' },
+					{ value: 3, label: '量產簽核中', text: '量產簽核中' },
+					{ value: 4, label: '量產簽核完成', text: '量產簽核完成' },
+					{ value: 5, label: '試產料號修改簽核中', text: '試產料號修改簽核中' },
+					{ value: 6, label: '量產料號修改簽核中', text: '量產料號修改簽核中' },
+				],
+			},
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -373,6 +385,7 @@ const remoteMethod = (query: string, num: number) => {
 const getTableData = async () => {
 	state.tableData.config.loading = true;
 	const form = state.tableData.form;
+	if (form.signStatus === '') form.signStatus = null;
 	let data = {
 		...form,
 		page: state.tableData.page,

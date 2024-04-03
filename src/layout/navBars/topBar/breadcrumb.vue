@@ -60,7 +60,7 @@ const onBreadcrumbClick = (v: RouteItem) => {
 	if (v.path === '/') return;
 	const { redirect, path, children } = v;
 	// // if (redirect) router.push(redirect);
-	v.path === '/home' ? router.push(v.path) : router.push(children[0].path);
+	v.path === '/home' || v.path === '/partno/dirManage' ? router.push(v.path) : router.push(children[0].path);
 };
 // 展开/收起左侧菜单点击
 const onThemeConfigChange = () => {
@@ -79,6 +79,8 @@ const getBreadcrumbList = (arr: RouteItems) => {
 		state.routeSplit.forEach((v: string, k: number, arrs: string[]) => {
 			if (state.routeSplitFirst === item.path && item.path != '/home') {
 				state.breadcrumbList.shift();
+				if (state.routeSplit.includes('driMatDetail')) {
+				}
 				state.routeSplitFirst += `/${arrs[state.routeSplitIndex]}`;
 				state.breadcrumbList.push(item);
 				state.routeSplitIndex++;

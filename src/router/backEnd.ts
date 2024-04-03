@@ -131,7 +131,11 @@ export function dynamicImport(dynamicViewsModules: Record<string, Function>, com
 		const k = key.replace(/..\/views|../, '');
 		return k.startsWith(`${component}`) || k.startsWith(`/${component}`);
 	});
-	if (matchKeys?.length >= 1) {
+	if (matchKeys?.length > 1) {
+		const matchKey = matchKeys[1];
+		return dynamicViewsModules[matchKey];
+	}
+	if (matchKeys?.length>= 1) {
 		// 拿到菜单路径
 		let matchKeysIndex = (matchKeys || []).findIndex((item) => item.includes('index'));
 		const matchKey = matchKeys[matchKeysIndex];
@@ -140,4 +144,5 @@ export function dynamicImport(dynamicViewsModules: Record<string, Function>, com
 	if (matchKeys?.length < 1) {
 		return false;
 	}
+
 }
