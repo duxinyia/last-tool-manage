@@ -2,14 +2,32 @@
 	<el-tabs v-model="activeName" class="table-container layout-padding" @tab-click="handleClick">
 		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="到貨驗收" name="first">
 			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" labelWidth=" " />
-			<Table
-				ref="tableRef"
-				v-bind="state.tableData"
-				class="table"
-				@pageChange="onTablePageChange"
-				@sortHeader="onSortHeader"
-				@onOpenOtherDialog="openArriveJobDialog"
-			/>
+			<div style="overflow: overlay">
+				<Table
+					v-if="state1.tableData.data.length > 0"
+					ref="tableRef"
+					v-bind="state1.tableData"
+					style="height: auto"
+					class=""
+					@sortHeader="(data) => onSortHeader(data, state1.tableData)"
+					@pageChange="(page) => onTablePageChange(page, state1.tableData)"
+					@onOpenOtherDialog="openArriveJobDialog"
+				>
+					<template #rowIcons="{ row, itemConfig }">
+						<div class="circle" v-if="itemConfig.key === 'applyReceiveId'">
+							<span>簽核抽回</span>
+						</div>
+					</template>
+				</Table>
+				<Table
+					ref="tableRef"
+					v-bind="state.tableData"
+					class="table"
+					@sortHeader="(data) => onSortHeader(data, state.tableData)"
+					@pageChange="(page) => onTablePageChange(page, state.tableData)"
+					@onOpenOtherDialog="openArriveJobDialog"
+				/>
+			</div>
 		</el-tab-pane>
 		<el-tab-pane label="驗收記錄" name="second" class="table-padding layout-padding-view layout-padding-auto">
 			<TableSearch :search="secondState.tableData.search" @search="onSearch2" :searchConfig="secondState.tableData.searchConfig" labelWidth="90px" />
@@ -17,8 +35,8 @@
 				ref="tableRef2"
 				v-bind="secondState.tableData"
 				class="table"
-				@pageChange="onTablePageChange"
-				@sortHeader="onSortHeader"
+				@sortHeader="(data) => onSortHeader(data, secondState.tableData)"
+				@pageChange="(page) => onTablePageChange(page, secondState.tableData)"
 				@onOpenOtherDialog="openDetailDialog"
 			/>
 		</el-tab-pane>
@@ -41,6 +59,9 @@
 				</div>
 			</template>
 		</Dialog>
+		<el-dialog draggable :close-on-click-modal="false" v-model="detaildialogVisible" :title="dilogTitle" width="50%"
+			><checkNoDetailDialog :isDialog="true" :checkNoRef="checkNoRef"
+		/></el-dialog>
 		<!-- 详情 -->
 		<!-- <Dialog
 			ref="detaildialogRef"
@@ -51,9 +72,6 @@
 		>
 		</Dialog> -->
 
-		<el-dialog draggable :close-on-click-modal="false" v-model="detaildialogVisible" :title="dilogTitle" width="50%"
-			><checkNoDetailDialog :isDialog="true" :checkNoRef="checkNoRef"
-		/></el-dialog>
 		<!-- 驗收記錄詳情彈窗 -->
 		<!-- <el-dialog v-model="detaildialogVisible" :title="dilogTitle" width="50%">
 			<checkNoDetailDialog :isDialog="true" :checkNoRef="checkNoRef" />
@@ -71,10 +89,16 @@
 
 <script setup lang="ts" name="/requistManage/arrivalAcceptance">
 import { defineAsyncComponent, reactive, ref, onMounted } from 'vue';
-import { ElMessage, TabsPaneContext } from 'element-plus';
+import { ElMessage, ElMessageBox, TabsPaneContext } from 'element-plus';
 
 // 引入接口
-import { getIToolReceivePageListApi, getTInsertCheckApi, getQueryCheckPageApi, getSubmitSignApi } from '/@/api/requistManage/arrivalAcceptance';
+import {
+	postToolApplyQueryCheckTaskApi,
+	getTInsertCheckApi,
+	getQueryCheckPageApi,
+	getSubmitSignApi,
+	postToolApplyRecheckApi,
+} from '/@/api/requistManage/arrivalAcceptance';
 import { getExitReasonApi } from '/@/api/toolsReturn/maintentanceTools';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
@@ -119,8 +143,6 @@ const state = reactive<TableDemoState>({
 			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'machineType', colWidth: '', title: '機種', type: 'text', isCheck: true },
-			// { key: 'companyId', colWidth: '', title: '法人', type: 'text', isCheck: true },
-			{ key: 'buCode', colWidth: '', title: 'BU', type: 'text', isCheck: true },
 			{ key: 'qty', colWidth: '', title: '收貨數量', type: 'text', isCheck: true },
 			{ key: 'receiver', colWidth: '', title: '收貨人', type: 'text', isCheck: true },
 			{ key: 'receiveDate', colWidth: '', title: '收貨日期', type: 'text', isCheck: true },
@@ -138,6 +160,7 @@ const state = reactive<TableDemoState>({
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
+			height: 618,
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
@@ -163,17 +186,17 @@ const state = reactive<TableDemoState>({
 			{ type: 'text', label: '品名-中文', placeholder: '', prop: 'nameCh', required: false },
 			{ type: 'text', label: '品名-英文', placeholder: '', prop: 'nameEn', required: false },
 			{ type: 'text', label: '機種', placeholder: '', prop: 'machineType', required: false },
-			{ type: 'text', label: 'BU', placeholder: '', prop: 'buCode', required: false },
+
 			{ type: 'text', label: '收貨數量', placeholder: '', prop: 'qty', required: false },
 			{ type: 'text', label: '收貨人', placeholder: '', prop: 'receiver', required: false },
 			{ type: 'text', label: '收貨日期', placeholder: '', prop: 'receiveDate', required: false },
 			{ type: 'text', label: '驗收數量', placeholder: '', prop: 'checkqty', required: true },
 			{ type: 'date', label: '驗收時間', placeholder: '', prop: 'checkDate', required: true, isdisabledDate: true },
-			{ type: 'number', label: '通過數量', placeholder: '', prop: 'passqty', required: true },
-			{ type: 'text', label: '不通過數量', placeholder: '', prop: 'failqty', required: false },
+			{ type: 'number', label: '通過數量', placeholder: '', prop: 'passQty', required: true },
+			{ type: 'text', label: '不通過數量', placeholder: '', prop: 'failQty', required: false },
 			{
 				label: '驗收不通過原因',
-				prop: 'failReasonIds',
+				prop: 'failReasons',
 				placeholder: '請選擇驗收不通過原因',
 				required: false,
 				type: 'select',
@@ -187,7 +210,7 @@ const state = reactive<TableDemoState>({
 
 			{
 				label: '驗收報告',
-				prop: 'drawPath',
+				prop: 'accepReportUrl',
 				key: 'accepreporturlName',
 				placeholder: '請點擊此處上傳文件',
 				required: false,
@@ -254,6 +277,53 @@ const state = reactive<TableDemoState>({
 		},
 		// 打印标题
 		printName: '表格打印演示',
+	},
+});
+const state1 = reactive<TableDemoState>({
+	tableData: {
+		// 列表数据（必传）
+		data: [],
+		// 表头内容（必传，注意格式）
+		header: [
+			{ key: 'applyReceiveId', colWidth: '200', title: '單號', type: 'text', isCheck: true },
+			{ key: 'reqNo', colWidth: '', title: '申請單號', type: 'text', isCheck: true },
+			{ key: 'matNo', title: 'message.pages.matNo', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			{ key: 'machineType', colWidth: '', title: '機種', type: 'text', isCheck: true },
+			{ key: 'qty', colWidth: '', title: '收貨數量', type: 'text', isCheck: true },
+			{ key: 'receiver', colWidth: '', title: '收貨人', type: 'text', isCheck: true },
+			{ key: 'receiveDate', colWidth: '', title: '收貨日期', type: 'text', isCheck: true },
+		],
+		// 配置项（必传）
+		config: {
+			total: 0, // 列表总数
+			loading: true, // loading 加载
+			isBorder: false, // 是否显示表格边框
+			isSerialNo: true, // 是否显示表格序号
+			isSelection: false, // 是否显示表格多选
+			isOperate: true, // 是否显示表格操作栏
+			isButton: false, //是否显示表格上面的新增删除按钮
+			isInlineEditing: false, //是否是行内编辑
+			isTopTool: true, //是否有表格右上角工具
+			isPage: false, //是否有分页
+		},
+		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
+		search: [],
+		searchConfig: {
+			isSearchBtn: true,
+		},
+		btnConfig: [{ type: 'reReceive', name: '重新驗收', color: '#e6a23c', isSure: false, icon: '' }],
+		// 给后端的数据
+		form: {},
+		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
+		page: {
+			pageNum: 1,
+			pageSize: 10,
+		},
+		// 打印标题
+		printName: '',
 	},
 });
 const secondState = reactive<TableDemoState>({
@@ -366,27 +436,35 @@ const secondState = reactive<TableDemoState>({
 });
 
 const currentData = ref<EmptyObjectType>([]);
+let dialogType = '';
 // 点击验收按钮
-const openArriveJobDialog = (scope: EmptyObjectType) => {
+const openArriveJobDialog = (scope: EmptyObjectType, type: string) => {
+	dialogType = type;
+	if (scope.row.failReasons && scope.row.failReasons.length > 0 && scope.row.failReasons[0].failReason) {
+		scope.row.failReasons = scope.row.failReasons.map((item: any) => {
+			return item.failReasonId;
+		});
+	}
 	loadingBtn.value = false;
-	arriveJobDialogRef.value.openDialog('samp', scope.row, '驗收');
+	scope.row.failReasonsdisabled = scope.row.failQty === 0 ? true : false;
+	arriveJobDialogRef.value.openDialog(type, scope.row, type === 'reReceive' ? '重新驗收' : '驗收');
 	// 此處填寫的通過數量都會進入發料入庫流程，若要全部退回通過數量請填0
 	scope.row.checkqty = scope.row.qty;
 	state.tableData.dialogConfig?.forEach((item) => {
-		if (item.prop === 'passqty') {
+		if (item.prop === 'passQty') {
 			item.max = scope.row.qty;
 		}
 	});
-
 	currentData.value = scope.row;
 };
 // 點擊按鈕
 const onButton = (formData: EmptyObjectType, btnConfig: EmptyObjectType) => {
 	// 清空報告
 	if (btnConfig.prop === 'clearUrl') {
-		if (!formData.drawPath && !formData.fileUrl) {
+		if (!formData.drawPath && !formData.fileUrl && !formData.accepReportUrl) {
 			ElMessage.warning(t('沒有清空內容，請選擇文件'));
 		} else {
+			formData.accepReportUrl = '';
 			formData.drawPath = '';
 			formData.fileUrl = '';
 			ElMessage.success(t('清空成功'));
@@ -399,17 +477,17 @@ const onButton = (formData: EmptyObjectType, btnConfig: EmptyObjectType) => {
 const changeInput = (val: number, formData: EmptyObjectType) => {
 	// const dialogData = currentData.value;
 	if (val > formData.qty) {
-		formData.passqty = formData.checkqty;
+		formData.passQty = formData.checkqty;
 	}
-	formData.failqty = formData.checkqty - formData.passqty;
-	formData.failReasonIdsdisabled = formData.failqty === 0 ? true : false;
-	if (formData.failReasonIdsdisabled) formData.failReasonIds = [];
+	formData.failQty = formData.checkqty - formData.passQty;
+	formData.failReasonsdisabled = formData.failQty === 0 ? true : false;
+	if (formData.failReasonsdisabled) formData.failReasons = [];
 };
 // 获取验收不通過原因下拉
 const getFailReason = async () => {
 	let res = await getExitReasonApi('CheckFail');
 	state.tableData.dialogConfig?.forEach((item) => {
-		if (item.prop === 'failReasonIds') {
+		if (item.prop === 'failReasons') {
 			item.options = res.data.map((item: any) => {
 				return { text: item.dataname, value: item.runid };
 			});
@@ -440,14 +518,19 @@ const getTableData = async () => {
 	};
 	delete data2.checkDate;
 	if (activeName.value === 'first') {
-		const res = await getIToolReceivePageListApi(data);
-		res.data.data.forEach((item: any) => {
+		state.tableData.config.loading = true;
+		state1.tableData.config.loading = true;
+		const res = await postToolApplyQueryCheckTaskApi(data);
+		res.data.checkableApplyReceivePage.data.forEach((item: any) => {
 			item.receiver = `${item.receiver} / ${item.receiverName}`;
 		});
-		state.tableData.data = res.data.data;
-		state.tableData.config.total = res.data.total;
+		state.tableData.data = res.data.checkableApplyReceivePage.data;
+		state.tableData.config.total = res.data.checkableApplyReceivePage.total;
+		state1.tableData.data = res!.data.withdrawnApplyChecks;
+		state1.tableData.config.total = res!.data.withdrawnApplyChecks.total;
 		if (res.status) {
 			state.tableData.config.loading = false;
+			state1.tableData.config.loading = false;
 		}
 	} else {
 		// const signStatusMap: EmptyObjectType = {
@@ -466,6 +549,7 @@ const getTableData = async () => {
 		res.data.data.forEach((item: any) => {
 			item.isDispatched = item.isDispatched ? '是' : '否';
 			item.receiver = `${item.receiver} / ${item.receiverName}`;
+			item.failReasons = item.failReasons?.join(' | ');
 		});
 		secondState.tableData.data = res.data.data;
 		secondState.tableData.config.total = res.data.total;
@@ -487,7 +571,7 @@ const openDetailDialog = (scope: EmptyObjectType) => {
 };
 // 查看验收报告单
 const arriveList = (formData: EmptyObjectType) => {
-	const url = formData.accepReportUrl || formData.fileUrl;
+	const url = formData.fileUrl || formData.accepReportUrl;
 	if (url) {
 		window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${url}`, '_blank');
 	} else {
@@ -507,21 +591,38 @@ const arriveList = (formData: EmptyObjectType) => {
 // };
 // 提交
 const onSubmit = async (formData: any) => {
+	const { applyReceiveId, failQty, checkDescribe, checkDate, fileUrl, accepReportUrl, failReasons, applyCheckId } = formData;
 	loadingBtn.value = true;
-	const getData = {
-		applyReceiveId: formData.applyReceiveId,
-		failQty: formData.failqty,
-		describe: formData.checkDescribe,
-		checkDate: formData.checkDate,
-		accepReportUrl: formData.fileUrl,
-		failReasonIds: formData.failReasonIds,
+	let getData: EmptyObjectType = {
+		applyReceiveId,
+		failQty,
+		describe: checkDescribe,
+		checkDate,
+		accepReportUrl: fileUrl || accepReportUrl,
+		failReasonIds: failReasons,
 	};
-	// console.log(getData);
-	const res = await getTInsertCheckApi(getData);
+	let getData1: EmptyObjectType = {
+		applyCheckId,
+		failQty,
+		checkDescribe,
+		checkDate,
+		accepReportUrl: fileUrl || accepReportUrl,
+		failReasonIds: failReasons,
+	};
+
+	// console.log(getData1);
+	const res = dialogType === 'reReceive' ? await postToolApplyRecheckApi(getData1) : await getTInsertCheckApi(getData);
 	if (res.status) {
-		ElMessage.success(t('驗收成功'));
+		ElMessage.success(dialogType === 'reReceive' ? t('重新驗收成功') : t('驗收成功'));
 		arriveJobDialogRef.value.closeDialog();
 		getTableData();
+		ElMessageBox.confirm(`請至簽核平台提交簽核，簽核通過后才會生效`, '提示', {
+			confirmButtonText: '確 定',
+			showCancelButton: false,
+			showClose: false,
+			type: 'warning',
+			draggable: true,
+		});
 	}
 	loadingBtn.value = false;
 };
@@ -545,20 +646,14 @@ const onSearch2 = (data: EmptyObjectType) => {
 };
 
 // 分页改变时回调
-const onTablePageChange = (page: TableDemoPageType) => {
-	if (activeName.value === 'first') {
-		state.tableData.page.pageNum = page.pageNum;
-		state.tableData.page.pageSize = page.pageSize;
-	} else {
-		secondState.tableData.page.pageNum = page.pageNum;
-		secondState.tableData.page.pageSize = page.pageSize;
-	}
-
+const onTablePageChange = (page: TableDemoPageType, tableData: EmptyObjectType) => {
+	tableData.page.pageNum = page.pageNum;
+	tableData.page.pageSize = page.pageSize;
 	getTableData();
 };
 // 拖动显示列排序回调
-const onSortHeader = (data: TableHeaderType[]) => {
-	state.tableData.header = data;
+const onSortHeader = (data: TableHeaderType[], tableData: EmptyObjectType) => {
+	tableData.header = data;
 };
 
 // 页面加载时
@@ -598,5 +693,15 @@ onMounted(() => {
 .header {
 	display: flex;
 	align-items: center;
+}
+.circle {
+	display: inline-block;
+	border: 1px solid red;
+	color: red;
+	width: 54px;
+	height: 22px;
+	font-size: 12px;
+	border-radius: 7px;
+	margin-right: 3px;
 }
 </style>

@@ -16,6 +16,14 @@ export function SampleCheckApi(data: Object) {
 		data: data,
 	});
 }
+// 重新驗收
+export function SampleRecheckApi(data: Object) {
+	return request({
+		url: '/api/Material/SampleRecheck',
+		method: 'POST',
+		data: data,
+	});
+}
 
 // 点击送样获取送样弹窗表格详情
 export function GetSampleWaitCheckDetailApi(sampleNo: string) {
@@ -25,6 +33,15 @@ export function GetSampleWaitCheckDetailApi(sampleNo: string) {
 		params: { sampleNo },
 	});
 }
+// 重新驗收詳情
+export function getWithdrawnSampleCheckDetailVMForRecheckApi(checkNo: string) {
+	return request({
+		url: '/api/Material/GetWithdrawnSampleCheckDetailVMForRecheck',
+		method: 'get',
+		params: { checkNo },
+	});
+}
+
 // 查詢樣品驗收記錄
 export function getQuerySampleCheckRecordApi(data: Object) {
 	return request({

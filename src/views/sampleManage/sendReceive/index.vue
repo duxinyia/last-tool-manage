@@ -243,7 +243,7 @@ const dialogData = reactive({
 		{ type: 'text', label: '品名-中文', prop: 'nameCh', value: '' },
 		{ type: 'text', label: '品名-英文', prop: 'nameEn', value: '' },
 		{ type: 'select', label: '工程驗收人', prop: 'engineerNo', value: '', options: [], isRequired: true, lg: 9, xl: 9 },
-		{ type: 'text', label: '送樣時間', prop: 'needsDate', value: '' },
+		{ type: 'text', label: '需求時間', prop: 'needsDate', value: '' },
 		// { type: 'text', label: '送樣數量', prop: 'needsQty', value: '' },
 	],
 	//进行送样、收货还是验收操作

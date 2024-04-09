@@ -615,7 +615,9 @@ const onCheckChange = () => {
 };
 //为行设置独有key
 const selRowKey = (row: EmptyObjectType) => {
-	return row.applyDetailId || row.runid || row.runId || row.matNo || row.reqNo || row.repairNo || row.idleno || row.uselessno;
+	return (
+		row.sampleCheckDetailId || row.applyDetailId || row.runid || row.runId || row.matNo || row.reqNo || row.repairNo || row.idleno || row.uselessno
+	);
 };
 // const remove = (array: any[], val: any) => {
 // 	const index = array.indexOf(val);

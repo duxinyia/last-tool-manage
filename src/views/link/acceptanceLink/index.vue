@@ -1,6 +1,6 @@
 <template>
-	<div :class="{ main: !isDialog }" class="main-detail" :style="!isDialog ? 'height: 420px' : ''">
-		<div class="table-container" :class="{ 'link-width': !isDialog }">
+	<div :class="{ main: !isDialog }" class="main-detail" :style="!isDialog ? 'height: 650px' : ''">
+		<div class="table-container-1" :class="{ 'link-width': !isDialog }">
 			<nav v-if="!isDialog" class="pb10">樣品驗收單詳情</nav>
 			<el-form v-if="state.tableData.form" ref="tableSearchRef" :model="state.tableData.form" label-width="100px">
 				<el-row :gutter="35">
@@ -50,7 +50,7 @@
 	</div>
 </template>
 
-<script setup lang="ts" name="arrivalAcceptanceLink">
+<script setup lang="ts" name="acceptanceLink">
 import { useRoute, useRouter } from 'vue-router';
 import { defineAsyncComponent, reactive, ref, onMounted, watch } from 'vue';
 import { ElMessage } from 'element-plus';
@@ -91,6 +91,7 @@ const state = reactive<TableDemoState>({
 			{ key: 'checktime', colWidth: '', title: '驗收日期', type: 'text', isCheck: true },
 			{ key: 'isPass', colWidth: '120', title: '是否驗收通過', type: 'text', isCheck: true },
 			{ key: 'isDispatched', colWidth: '', title: '是否已發料', type: 'text', isCheck: true },
+			{ key: 'failReasons', colWidth: '250', title: '驗收不通過原因', type: 'text', isCheck: false },
 		],
 		// 配置项（必传）
 		config: {
@@ -111,8 +112,14 @@ const state = reactive<TableDemoState>({
 		form: {},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
+			{ type: 'text', label: '驗收單號', placeholder: '', prop: 'checkNo', required: false },
+			{ type: 'text', label: '送樣單號', placeholder: '', prop: 'sampleNo', required: false },
+			{ type: 'text', label: '料號', placeholder: '', prop: 'matNo', required: false },
+			{ type: 'text', label: '圖紙編號', placeholder: '', prop: 'drawNo', required: false },
 			{ type: 'text', label: '品名-中文', placeholder: '', prop: 'nameCh', required: false },
 			{ type: 'text', label: '品名-英文', placeholder: '', prop: 'nameEn', required: false },
+			{ type: 'text', label: '送樣提報人', placeholder: '', prop: 'sampleSubmitter', required: false },
+			{ type: 'text', label: '驗收提交時間', placeholder: '', prop: 'checkSubmitTime', required: false },
 		],
 		dialogConfig: [
 			// { type: 'text', label: '驗收單號', placeholder: '', prop: 'checkNo', required: false },
@@ -160,18 +167,29 @@ const clickLink = () => {
 // link/arrivalAcceptanceLink?comkey=AC-R2023332008-001
 const getTableData = async () => {
 	state.tableData.config.loading = true;
-	// state.tableData.config['height'] = props.isDialog ? 400 : 200;
+	state.tableData.header.forEach((item) => {
+		if (item.key === 'isDispatched' && !props.isDialog) {
+			item.isCheck = false;
+		} else if (item.key === 'failReasons' && !props.isDialog) {
+			item.isCheck = true;
+		}
+	});
+	state.tableData.config['height'] = props.isDialog ? 300 : 'auto';
 	let comkey = props.isDialog ? props.checkNoRef.checkNo : route.query.comkey;
 	// let comkey = route.query.comkey;
 	// if (comkey && !props.isDialog) {
 	// let data = { checkNo: comkey };
-	state.tableData.form = props.checkNoRef;
 	const res = await getSampleCheckRecordDetailApi(comkey);
-	res.data.forEach((item: any) => {
+	state.tableData.form = res.data;
+	res.data.sampleSubmitter = res.data.sampleSubmitter + ' / ' + res.data.sampleSubmitterName;
+	res.data.details.forEach((item: any) => {
 		item.isDispatched = item.isDispatched === true ? '是' : '否';
 		item.isPass = item.isPass === true ? '是' : '否';
+		if (item.failReasons) {
+			item.failReasons = item.failReasons.join(' / ');
+		}
 	});
-	state.tableData.data = res.data;
+	state.tableData.data = res.data.details;
 	if (!res.status) {
 		state.tableData.form = {};
 	} else {
@@ -202,7 +220,7 @@ onMounted(() => {
 	justify-content: center;
 }
 
-.table-container {
+.table-container-1 {
 	width: 100%;
 	height: 100%;
 }

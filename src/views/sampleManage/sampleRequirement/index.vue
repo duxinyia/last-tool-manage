@@ -514,7 +514,7 @@ const onSubmit = async (formEl: FormInstance | undefined, type: number) => {
 				vendorName: item.vendorName,
 				vendorCode: item.vendorCode,
 				needsQty: item.needsQty,
-				runId: item.runId,
+				runId: item.isReSubmit ? item.runId : '',
 				describe: item.describe,
 			};
 		});

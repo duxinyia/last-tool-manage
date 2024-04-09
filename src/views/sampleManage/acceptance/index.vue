@@ -7,15 +7,33 @@
 				:searchConfig="state.tableData.searchConfig"
 				labelWidth=" "
 			/>
-			<Table
-				ref="tableRef"
-				v-bind="state.tableData"
-				class="table"
-				@pageChange="(page) => onTablePageChange(page, state.tableData)"
-				@onOpenOtherDialog="openAcceptanceDialog"
-				:cellStyle="cellStyle"
-				@sortHeader="(data) => onSortHeader(data, state.tableData)"
-			/>
+			<div style="overflow: overlay">
+				<Table
+					v-if="state1.tableData.data.length > 0"
+					ref="tableRef"
+					v-bind="state1.tableData"
+					style="height: auto"
+					class=""
+					@sortHeader="(data) => onSortHeader(data, state1.tableData)"
+					@pageChange="(page) => onTablePageChange(page, state1.tableData)"
+					@onOpenOtherDialog="openAcceptanceDialog"
+				>
+					<template #rowIcons="{ row, itemConfig }">
+						<div class="circle" v-if="itemConfig.key === 'checkNo'">
+							<span>簽核抽回</span>
+						</div>
+					</template>
+				</Table>
+				<Table
+					ref="tableRef"
+					v-bind="state.tableData"
+					class="table"
+					@pageChange="(page) => onTablePageChange(page, state.tableData)"
+					@onOpenOtherDialog="openAcceptanceDialog"
+					:cellStyle="cellStyle"
+					@sortHeader="(data) => onSortHeader(data, state.tableData)"
+				/>
+			</div>
 		</el-tab-pane>
 		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="驗收記錄" name="second">
 			<TableSearch
@@ -33,7 +51,14 @@
 				@onOpenOtherDialog="openDetailDialog"
 			/>
 		</el-tab-pane>
-		<el-dialog draggable :close-on-click-modal="false" v-model="dialogData.dialogVisible" title="驗收" width="70%" destroy-on-close>
+		<el-dialog
+			draggable
+			:close-on-click-modal="false"
+			v-model="dialogData.dialogVisible"
+			:title="titleType === 'reReceive' ? '重新驗收' : '驗收'"
+			width="70%"
+			destroy-on-close
+		>
 			<el-row :gutter="10">
 				<el-col
 					v-for="item in dialogData.dialogForm"
@@ -75,7 +100,7 @@
 					:on-exceed="inputHandleExceed"
 					:on-change="inputHandleChange"
 				>
-					<el-input style="height: 35px" v-model="dialogData.fileInfo.name" placeholder="請點擊此處上傳文件"> > </el-input>
+					<el-input style="height: 35px" v-model="dialogData.fileInfo.accepReportUrl" placeholder="請點擊此處上傳文件"> > </el-input>
 				</el-upload>
 				<el-button size="default" plain @click="onClearFile" type="primary" class="ml10">清空驗收報告</el-button>
 				<el-button size="default" plain type="primary" @click="lookUpload">查看驗收報告</el-button>
@@ -109,7 +134,14 @@
 import { defineAsyncComponent, reactive, ref, onMounted, watch } from 'vue';
 import { getUploadFileApi } from '/@/api/global/index';
 import { ElMessage, ElMessageBox, genFileId, TabsPaneContext, UploadRawFile } from 'element-plus';
-import { GetCheckTaskApi, SampleCheckApi, GetSampleWaitCheckDetailApi, getQuerySampleCheckRecordApi } from '/@/api/partno/acceptance';
+import {
+	GetCheckTaskApi,
+	SampleCheckApi,
+	GetSampleWaitCheckDetailApi,
+	getQuerySampleCheckRecordApi,
+	getWithdrawnSampleCheckDetailVMForRecheckApi,
+	SampleRecheckApi,
+} from '/@/api/partno/acceptance';
 import { getExitReasonApi } from '/@/api/toolsReturn/maintentanceTools';
 import { useI18n } from 'vue-i18n';
 import type { UploadInstance, UploadProps, UploadUserFile } from 'element-plus';
@@ -132,6 +164,7 @@ const dialogTableFormRef = ref();
 const inputuploadRefs = ref<UploadInstance>();
 const inputfileList = ref<UploadUserFile[]>([]);
 const inputuploadForm = ref();
+const titleType = ref('');
 const activeName = ref<string | number>('first');
 const handleClick = (tab: TabsPaneContext, event: Event) => {
 	activeName.value = tab.paneName as string | number;
@@ -143,15 +176,15 @@ const state = reactive<TableDemoState>({
 		data: [],
 		// 表头内容（必传，注意格式）
 		header: [
+			{ key: 'sampleNo', colWidth: '', title: 'message.pages.sampleNo', type: 'text', isCheck: true },
 			{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'text', isCheck: true },
 			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
-			{ key: 'sampleNo', colWidth: '', title: 'message.pages.sampleNo', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
 			// { key: 'engineer', colWidth: '', title: 'message.pages.engineer', type: 'text', isCheck: true },
 			// { key: 'engineerName', colWidth: '', title: 'message.pages.engineerName', type: 'text', isCheck: true },
 			{ key: 'needor', colWidth: '', title: '需求人', type: 'text', isCheck: true },
-			{ key: 'runStatus', colWidth: '', title: 'message.pages.state', type: 'text', isCheck: true },
+			// { key: 'runStatus', colWidth: '', title: 'message.pages.state', type: 'text', isCheck: true },
 		],
 		// 表格配置项（必传）
 		config: {
@@ -165,14 +198,15 @@ const state = reactive<TableDemoState>({
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
+			height: 640,
 		},
 
 		btnConfig: [{ type: 'acceptance', name: '驗收', color: '#e6a23c', isSure: false }],
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
+			{ label: '送樣單號', prop: 'sampleNo', placeholder: '請輸入送樣單號', required: false, type: 'input' },
 			{ label: '料號', prop: 'matNo', required: false, type: 'input' },
 			{ label: '圖紙編號', prop: 'drawNo', required: false, type: 'input' },
-			{ label: '送樣單號', prop: 'sampleNo', placeholder: '請輸入送樣單號', required: false, type: 'input' },
 			{ label: '品名', prop: 'matName', required: false, type: 'input' },
 			{ label: '需求人', prop: 'needor', required: false, type: 'input' },
 		],
@@ -190,6 +224,51 @@ const state = reactive<TableDemoState>({
 		},
 	},
 });
+const state1 = reactive<TableDemoState>({
+	tableData: {
+		// 列表数据（必传）
+		data: [],
+		// 表头内容（必传，注意格式）
+		header: [
+			{ key: 'checkNo', colWidth: '200', title: '驗收單號', type: 'text', isCheck: true },
+			{ key: 'withdrawTime', colWidth: '', title: '抽回時間', type: 'text', isCheck: true },
+			{ key: 'sampleNo', colWidth: '', title: 'message.pages.sampleNo', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
+			{ key: 'needor', colWidth: '', title: '需求人', type: 'text', isCheck: true },
+		],
+		// 配置项（必传）
+		config: {
+			total: 0, // 列表总数
+			loading: true, // loading 加载
+			isBorder: false, // 是否显示表格边框
+			isSerialNo: true, // 是否显示表格序号
+			isSelection: false, // 是否显示表格多选
+			isOperate: true, // 是否显示表格操作栏
+			isButton: false, //是否显示表格上面的新增删除按钮
+			isInlineEditing: false, //是否是行内编辑
+			isTopTool: true, //是否有表格右上角工具
+			isPage: false, //是否有分页
+		},
+		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
+		search: [],
+		searchConfig: {
+			isSearchBtn: true,
+		},
+		btnConfig: [{ type: 'reReceive', name: '重新驗收', color: '#e6a23c', isSure: false, icon: '' }],
+		// 给后端的数据
+		form: {},
+		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
+		page: {
+			pageNum: 1,
+			pageSize: 10,
+		},
+		// 打印标题
+		printName: '',
+	},
+});
 const secondState = reactive<TableDemoState>({
 	tableData: {
 		// 列表数据（必传）
@@ -204,7 +283,7 @@ const secondState = reactive<TableDemoState>({
 			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
 			{ key: 'receiver', colWidth: '', title: '收貨人', type: 'text', isCheck: true },
 			{ key: 'createTime', colWidth: '', title: '提交時間', type: 'text', isCheck: true },
-			// { key: 'signStatusStr', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
+			{ key: 'signStatusStr', colWidth: '', title: '簽核狀態', type: 'text', isCheck: true },
 		],
 		// 配置项（必传）
 		config: {
@@ -228,18 +307,19 @@ const secondState = reactive<TableDemoState>({
 			{ label: '品名', prop: 'name', required: false, type: 'input' },
 			{ label: '收貨人', prop: 'receiver', required: false, type: 'input' },
 			{ label: '提交時間', prop: 'createTime', required: false, type: 'dateRange' },
-			// {
-			// 	label: '簽核狀態',
-			// 	prop: 'signStatus',
-			// 	required: false,
-			// 	clearable: false,
-			// 	type: 'select',
-			// 	options: [
-			// 		{ value: 0, label: '簽核撤回', text: '簽核撤回', selected: false },
-			// 		{ value: 1, label: '簽核中', text: '簽核中', selected: false },
-			// 		{ value: 2, label: '簽核完成', text: '簽核完成', selected: false },
-			// 	],
-			// },
+			{
+				label: '簽核狀態',
+				prop: 'signStatus',
+				required: false,
+				clearable: false,
+				placeholder: '',
+				type: 'select',
+				options: [
+					{ value: 0, label: '簽核抽回', text: '簽核抽回', selected: false },
+					{ value: 1, label: '簽核中', text: '簽核中', selected: false },
+					{ value: 2, label: '簽核完成', text: '簽核完成', selected: false },
+				],
+			},
 		],
 		searchConfig: {
 			isSearchBtn: true,
@@ -267,10 +347,10 @@ const dialogState = reactive<TableDemoState>({
 			// { key: 'needsQty', colWidth: '', title: '需求送样数量', type: 'text', isCheck: true },
 			{ key: 'sampleTime', colWidth: '', title: '收貨日期', type: 'text', isCheck: true },
 			{ key: 'sampleQty', colWidth: '', title: '收貨數量', type: 'text', isCheck: true },
-			{ key: 'checkTime', colWidth: '150', title: '驗收時間', type: 'time', isCheck: true, isRequired: true, isdisabledDate: true },
+			{ key: 'sampleTime', colWidth: '150', title: '驗收日期', type: 'time', isCheck: true, isRequired: true, isdisabledDate: true },
 			// { key: 'checkQty', colWidth: '', title: '驗收數量', type: 'input', isCheck: true, isRequired: true },
-			{ key: 'isPass', colWidth: '', title: '是否驗收通過', type: 'status1', isCheck: true, isRequired: true },
-			{ key: 'failReasonIds', colWidth: '180', title: '驗收失敗原因', type: 'multipleSelect', isCheck: true, options: [] },
+			{ key: 'ispass', colWidth: '', title: '是否驗收通過', type: 'status1', isCheck: true, isRequired: true },
+			{ key: 'failReasons', colWidth: '250', title: '驗收失敗原因', type: 'multipleSelect', isCheck: true, options: [] },
 			// { key: 'isStorage', colWidth: '', title: '是否入庫', type: 'status1', isCheck: true, isRequired: true },
 			{ key: 'isResubmit', colWidth: '', title: '是否重送', type: 'status1', isCheck: true, isRequired: false },
 		],
@@ -344,6 +424,7 @@ const dialogData = reactive<EmptyObjectType>({
 // 初始化列表数据
 const getTableData = async (datas: EmptyObjectType) => {
 	datas.config.loading = true;
+	state1.tableData.config.loading = true;
 	const form = datas.form;
 	let res = null;
 	if (activeName.value === 'first') {
@@ -352,6 +433,10 @@ const getTableData = async (datas: EmptyObjectType) => {
 			page: datas.page,
 		};
 		res = await GetCheckTaskApi(data);
+		datas.data = res!.data.checkableSampleHeads.data;
+		datas.config.total = res!.data.checkableSampleHeads.total;
+		state1.tableData.data = res!.data.withdrawnCheckHeads;
+		state1.tableData.config.total = res!.data.withdrawnCheckHeads.total;
 	} else {
 		let data = {
 			...form,
@@ -361,30 +446,32 @@ const getTableData = async (datas: EmptyObjectType) => {
 			endCreateTime: form.createTime && form.createTime[1],
 		};
 		delete data.createTime;
-		// if (data.signStatus === '') data.signStatus = null;
+		if (data.signStatus === '') data.signStatus = null;
 		res = await getQuerySampleCheckRecordApi(data);
 		res.data.data.forEach((item: any) => {
 			item.receiver = `${item.receiver} / ${item.receiverName}`;
 		});
+		datas.data = res!.data.data;
+		datas.config.total = res!.data.total;
 	}
-	datas.data = res!.data.data;
-	datas.config.total = res!.data.total;
+
 	if (res!.status) {
 		datas.config.loading = false;
+		state1.tableData.config.loading = false;
 	}
 };
 //改变是否验收通过
 const handlestatus1Change = (value: number, index: number, key: string) => {
 	let dataIndex = dialogState.tableData.data[index];
-	if (key === 'isPass') {
+	if (key === 'ispass') {
 		if (value === 1) {
 			dataIndex.isResubmit = 0;
 			dataIndex.isResubmitdisabled = true;
-			dataIndex.failReasonIdsdisabled = true;
-			dialogState.tableData.data[index].failReasonIds = '';
+			dataIndex.failReasonsdisabled = true;
+			dialogState.tableData.data[index].failReasons = '';
 		} else if (value === 0) {
 			dataIndex.isResubmitdisabled = false;
-			dataIndex.failReasonIdsdisabled = false;
+			dataIndex.failReasonsdisabled = false;
 		}
 	}
 };
@@ -406,53 +493,57 @@ const onSortHeader = (data: TableHeaderType[], tableData: EmptyObjectType) => {
 };
 
 // 打开验收弹窗 1
-const openAcceptanceDialog = async (scope: any) => {
+const openAcceptanceDialog = async (scope: any, type: string) => {
+	titleType.value = type;
 	selectList.value = [];
+	let res;
+	if (type === 'reReceive') {
+		if (scope.row.failReasons && scope.row.failReasons.length > 0 && scope.row.failReasons[0].failReason) {
+			scope.row.failReasons = scope.row.failReasons.map((item: any) => {
+				return item.failReasonId;
+			});
+		}
+		dialogState.tableData.config.loading = true;
+		res = await getWithdrawnSampleCheckDetailVMForRecheckApi(scope.row.checkNo);
+		res.data.forEach((item: any) => {
+			item.ispass = item.ispass ? 1 : 0;
+			item.isResubmit = item.isResubmit ? 1 : 0;
+			if (item.ispass) {
+				item.isResubmitdisabled = true;
+				item.failReasonsdisabled = true;
+			}
+		});
+		dialogState.tableData.data = res.data;
+		dialogState.tableData.data.forEach((item) => {
+			if (item.failReasons && item.failReasons.length > 0 && item.failReasons[0].failReason) {
+				item.failReasons = item.failReasons.map((item: any) => {
+					return item.failReasonId;
+				});
+			}
+		});
+	} else {
+		//清空文件信息
+		dialogData.fileInfo = {
+			accepReportUrl: '',
+			drawPath: '',
+		};
+		dialogState.tableData.config.loading = true;
+		res = await GetSampleWaitCheckDetailApi(scope.row.sampleNo);
+		dialogState.tableData.data = res!.data.vendorDetails;
+	}
 	loadingBtn.value = false;
 	dialogData.formData = { ...scope.row };
-	//清空文件信息
-	dialogData.fileInfo = {
-		name: '',
-		drawPath: '',
-	};
+	dialogData.describe = scope.row.describe;
+	dialogData.fileInfo.accepReportUrl = scope.row.accepReportUrl;
 	dialogData.dialogVisible = true;
-
-	// let res = {
-	// 	status: true,
-	// 	code: 0,
-	// 	message: 'string',
-	// 	data: {
-	// 		matNo: 'string',
-	// 		sampleNo: 'string',
-	// 		nameEn: 'string',
-	// 		nameCh: 'string',
-	// 		vendorDetails: [
-	// 			{
-	// 				sampleQty: 0,
-	// 				sampleTime: '2023-08-15',
-	// 				vendorCode: 'string',
-	// 				vendorName: 'string',
-	// 				needsTime: '2023-08-15',
-	// 				needsQty: 0,
-	// 			},
-	// 		],
-	// 	},
-	// };
-
-	const res = await GetSampleWaitCheckDetailApi(scope.row.sampleNo);
-	dialogState.tableData.data = res.data.vendorDetails;
-	//获取验收失败原因
-	let res1 = await getExitReasonApi('CheckFail');
-	dialogState.tableData.header[6].options = res1.data.map((item: any) => {
-		return { value: item.runid, label: item.dataname };
-	});
+	dialogState.tableData.config.loading = false;
 	dialogState.tableData.data.forEach((item) => {
 		if (item.isStorage != 0 || item.isStorage != 1) {
 			item.isStorage = 0;
 		}
-		if (item.isPass != 0 || item.isPass != 1) {
-			item.isPass = 0;
-		}
+		// if (item.ispass != 0 || item.ispass != 1) {
+		// 	item.ispass = 0;
+		// }
 	});
 };
 // 点击查看详情按钮
@@ -466,7 +557,7 @@ const onDelRow = (row: EmptyObjectType, i: number) => {
 };
 //上传文件里面的数据
 const inputHandleChange: UploadProps['onChange'] = async (uploadFile, uploadFiles) => {
-	dialogData.fileInfo.name = uploadFile.name;
+	dialogData.fileInfo.accepReportUrl = uploadFile.name;
 	inputuploadForm.value = uploadFile;
 	const res = await getUploadFileApi(4, inputuploadForm.value.raw);
 	dialogData.fileInfo['drawPath'] = res.data;
@@ -481,17 +572,17 @@ const inputHandleExceed: UploadProps['onExceed'] = (files) => {
 };
 // 清空文件
 const onClearFile = async () => {
-	if (!dialogData.fileInfo['drawPath'] && !dialogData.fileInfo.name) {
+	if (!dialogData.fileInfo['drawPath'] && !dialogData.fileInfo.accepReportUrl) {
 		ElMessage.warning(t('沒有清空內容，請選擇文件'));
 	} else {
 		dialogData.fileInfo['drawPath'] = '';
-		dialogData.fileInfo.name = '';
+		dialogData.fileInfo.accepReportUrl = '';
 		ElMessage.success(t('清空成功'));
 	}
 };
 // 查看上传的文件
 const lookUpload = () => {
-	const url = dialogData.fileInfo['drawPath'];
+	const url = dialogData.fileInfo['drawPath'] || dialogData.fileInfo.accepReportUrl;
 	if (url) {
 		window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${url}`, '_blank');
 	} else {
@@ -508,10 +599,10 @@ const onSelectionChange = (selectlist: EmptyArrayType) => {
 	dialogState.tableData.data.forEach((item: any, index: number) => {
 		selectlist.forEach((list) => {
 			if (item.runId === list.runId) {
-				validateFieldList.push(`data.${index}.checkTime`);
+				validateFieldList.push(`data.${index}.sampleTime`);
 				validateFieldList.push(`data.${index}.checkQty`);
 			} else {
-				dialogTableFormRef.value.clearValidate(`data.${index}.checkTime`);
+				dialogTableFormRef.value.clearValidate(`data.${index}.sampleTime`);
 				dialogTableFormRef.value.clearValidate(`data.${index}.checkQty`);
 			}
 		});
@@ -520,31 +611,12 @@ const onSelectionChange = (selectlist: EmptyArrayType) => {
 // 提交
 const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 	let data = selectList.value;
+	let res;
 	if (data.length <= 0) return ElMessage.warning(t('請選擇要驗收的廠商'));
 	if (!formEl) return;
 	formEl.validateField(validateFieldList, async (errorMessage: any) => {
 		if (errorMessage) {
 			// 验证失败
-			let checkDetails = data.map((item) => {
-				return {
-					runId: item.runId,
-					vendorCode: item.vendorCode,
-					vendorName: item.vendorName,
-					checkTime: item.checkTime,
-					checkQty: item.checkQty,
-					isPass: item.isPass,
-					isStorage: item.isStorage,
-					isResubmit: item.isResubmit,
-					failReasonIds: item.failReasonIds || [],
-				};
-			});
-			let submitparams = {
-				sampleNo: dialogData.formData.sampleNo,
-				matNo: dialogData.formData.matNo,
-				describe: dialogData.describe,
-				accepReportUrl: dialogData.fileInfo.drawPath,
-				checkDetails: checkDetails,
-			};
 			ElMessageBox.confirm('確定提交嗎?', '提示', {
 				confirmButtonText: '確 定',
 				cancelButtonText: '取 消',
@@ -553,13 +625,50 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 			})
 				.then(async () => {
 					loadingBtn.value = true;
-					// console.log(submitparams);
-					let res = await SampleCheckApi(submitparams);
+					if (titleType.value != 'reReceive') {
+						let checkDetails = data.map((item) => {
+							return {
+								sampleDetailId: item.runId,
+								checkTime: item.sampleTime,
+								// checkQty: item.checkQty,
+								isPass: item.ispass ? true : false,
+								// isStorage: item.isStorage,
+								isResubmit: item.isResubmit ? true : false,
+								failReasonIds: item.failReasons || [],
+							};
+						});
+						let submitparams = {
+							sampleNo: dialogData.formData.sampleNo,
+							// matNo: dialogData.formData.matNo,
+							describe: dialogData.describe,
+							accepReportUrl: dialogData.fileInfo.drawPath || dialogData.fileInfo.accepReportUrl,
+							checkDetails: checkDetails,
+						};
+						res = await SampleCheckApi(submitparams);
+					} else {
+						let checkDetails = data.map((item) => {
+							return {
+								sampleCheckDetailId: item.sampleCheckDetailId,
+								checkTime: item.sampleTime,
+								isPass: item.ispass ? true : false,
+								isResubmit: item.isResubmit ? true : false,
+								failReasonIds: item.failReasons || [],
+							};
+						});
+						let submitReparams = {
+							checkNo: dialogData.formData.checkNo,
+							describe: dialogData.describe,
+							accepReportUrl: dialogData.fileInfo.drawPath || dialogData.fileInfo.accepReportUrl,
+							checkDetails: checkDetails,
+						};
+						res = await SampleRecheckApi(submitReparams);
+					}
 					if (res.status) {
-						ElMessage.success('驗收成功');
-						ElMessageBox.confirm(`驗收單號：${res.data}`, '提示', {
+						ElMessage.success(titleType.value === 'reReceive' ? '重新驗收成功' : '驗收成功');
+						ElMessageBox.confirm(`驗收單號：${res.data || dialogData.formData.checkNo}<br/>請至簽核平台提交簽核，簽核通過后才會生效`, '提示', {
 							confirmButtonText: '確 定',
 							showCancelButton: false,
+							dangerouslyUseHTMLString: true, // 注意此属性
 							showClose: false,
 							type: 'success',
 							draggable: true,
@@ -580,8 +689,13 @@ const onSubmit = async (formEl: EmptyObjectType | undefined) => {
 	});
 };
 // 页面加载时
-onMounted(() => {
+onMounted(async () => {
 	getTableData(state.tableData);
+	//获取验收失败原因
+	let res1 = await getExitReasonApi('CheckFail');
+	dialogState.tableData.header[6].options = res1.data.map((item: any) => {
+		return { value: item.runid, label: item.dataname };
+	});
 });
 </script>
 
@@ -616,5 +730,15 @@ onMounted(() => {
 	span {
 		line-height: 30px;
 	}
+}
+.circle {
+	display: inline-block;
+	border: 1px solid red;
+	color: red;
+	width: 54px;
+	height: 22px;
+	font-size: 12px;
+	border-radius: 7px;
+	margin-right: 3px;
 }
 </style>

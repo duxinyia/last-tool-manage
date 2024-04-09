@@ -1,5 +1,5 @@
 <template>
-	<div :class="{ main: !isDialog }" :style="!isDialog ? 'height: 475px' : ''">
+	<div :class="{ main: !isDialog }" :style="!isDialog ? 'height:506px' : ''">
 		<div class="table-container" :class="{ 'link-width': !isDialog }">
 			<nav v-if="!isDialog" class="pb10">請購驗收簽核</nav>
 			<el-form v-if="state.tableData.form" ref="tableSearchRef" :model="state.tableData.form" size="default" label-width="120px" class="table-form">
@@ -94,6 +94,8 @@ const state = reactive<TableDemoState>({
 			{ type: 'text', label: '收貨人', placeholder: '', prop: 'receiver', required: false },
 			{ type: 'text', label: '實際提交日期', placeholder: '', prop: 'createTime', required: false },
 			{ type: 'text', label: '是否已發料', placeholder: '', prop: 'isDispatched', required: false },
+			{ type: 'text', label: '驗收不通過原因', placeholder: '', prop: 'failReasons', required: false, xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
+
 			{ type: 'text', label: '備註', placeholder: '', prop: 'describe', required: false, xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
 			{ type: 'text', label: '簽核狀態', placeholder: '', prop: 'signStatusStr', required: false },
 			{ type: 'button', label: '查看驗收報告', placeholder: '', prop: 'accepReportUrl', required: false },
@@ -137,8 +139,10 @@ const getTableData = async () => {
 	if (comkey && !props.isDialog) {
 		let data = { applyCheckId: comkey };
 		const res = await getCheckRecordApi(data);
+		res.failReasons = res.failReasons?.join(' | ');
 		state.tableData.form = res;
 	} else {
+		console.log(props.checkNoRef);
 		state.tableData.form = props.checkNoRef;
 	}
 

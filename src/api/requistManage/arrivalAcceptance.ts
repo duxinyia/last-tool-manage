@@ -1,9 +1,17 @@
 import request from '/@/utils/request';
-// 查询
+// 查询（不用了）
 export function getIToolReceivePageListApi(data:Object) {
   return request({
     url:'/api/ToolApply/QueryCheckableApplyReceive',
     // url: '/api/ToolCheck/IToolReceivePageList',
+    method: 'POST',
+  	data:data
+  });
+}
+// 查詢（新）
+export function postToolApplyQueryCheckTaskApi(data:Object) {
+  return request({
+    url:'/api/ToolApply/QueryCheckTask',
     method: 'POST',
   	data:data
   });
@@ -21,6 +29,14 @@ export function getTInsertCheckApi(data:Object) {
   return request({
     url:'/api/ToolApply/ApplyCheck',
     // url: '/api/ToolCheck/InsertCheck',
+    method: 'POST',
+  	data:data
+  });
+}
+// 重新驗收
+export function postToolApplyRecheckApi(data:Object) {
+  return request({
+    url:'/api/ToolApply/Recheck',
     method: 'POST',
   	data:data
   });

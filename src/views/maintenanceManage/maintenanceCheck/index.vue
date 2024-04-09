@@ -7,7 +7,7 @@
 				:searchConfig="state.tableData.searchConfig"
 				labelWidth=" "
 			/>
-			<div style="overflow: scroll">
+			<div style="overflow: overlay">
 				<Table
 					v-if="state1.tableData.data.length > 0"
 					ref="tableRef"

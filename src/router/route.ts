@@ -498,6 +498,14 @@ export const staticRoutes: Array<RouteRecordRaw> = [
 			title: '報廢單详情',
 		},
 	},
+	{
+		path: '/link/acceptanceLink',
+		name: 'acceptanceLink',
+		component: () => import('/@/views/link/acceptanceLink/index.vue'),
+		meta: {
+			title: '樣品驗收單詳情',
+		},
+	},
 
 	// {
 	// 	path: '/link/404',
