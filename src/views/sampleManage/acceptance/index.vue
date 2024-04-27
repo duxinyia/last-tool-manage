@@ -150,14 +150,11 @@ const acceptanceDetailDialog = defineAsyncComponent(() => import('/@/views/link/
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 // 引入上面的表单组件
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
-// 引入收货弹窗组件
-const Dialog = defineAsyncComponent(() => import('../sampleDelivery/component/dialog.vue'));
 
 // 定义变量内容
 const { t } = useI18n();
 const detaildialogVisible = ref(false);
 const checkNoRef = ref();
-const sendReceiveDialogRef = ref();
 const loadingBtn = ref(false);
 const tableRef = ref<RefType>();
 const dialogTableFormRef = ref();

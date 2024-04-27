@@ -105,6 +105,9 @@
 					<span>收貨備註：</span>
 					<div style="font-weight: 700; color: #1890ff">{{ dialogState.tableData.form['describe'] }}</div>
 				</div>
+				<el-button class="mt5" v-if="titleType == 'sendReceive'" size="default" type="success" auto-insert-space @click="lookAttachments">
+					查看收貨附件
+				</el-button>
 				<div class="describe up-file" v-if="titleType == 'sendReceive' || titleType == 'reReceive'">
 					<span>驗收報告：</span>
 					<el-upload
@@ -191,7 +194,7 @@ import {
 	getRecheckApi,
 } from '/@/api/maintenanceManage/maintenanceCheck';
 import { getExitReasonApi } from '/@/api/toolsReturn/maintentanceTools';
-import { getUploadFileApi } from '/@/api/global/index';
+import { getOperAttachmentApi, getUploadFileApi } from '/@/api/global/index';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -520,6 +523,13 @@ const dialogState = reactive<TableDemoState>({
 		},
 	},
 });
+// 查看附件
+const lookAttachments = async () => {
+	const res = await getOperAttachmentApi(13, detailRows.repairReceiveNo);
+	if (res.status) {
+		window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${res.data}`, '_blank');
+	}
+};
 let outTableRow: EmptyObjectType = {};
 // 彈出錄入二維碼彈窗
 const onEnterQrcode = (row: EmptyObjectType) => {
@@ -730,12 +740,14 @@ const getWithdrawnCheckDetailData = async (data: string) => {
 		isSureDisabled.value = true;
 	}
 };
+let detailRows: EmptyObjectType = {};
 // 详情接口
 const getDetailData = async (data: string) => {
 	dialogState.tableData.config.loading = true;
 	maintenanceCheckDialogVisible.value = true;
 	const res = await getRepariReceiveDetailsForCheckApi(data);
 	dialogState.tableData.form = res.data.head;
+	detailRows = res.data.head;
 	dialogState.tableData.data = res.data.details;
 	dialogState.tableData.data.forEach((item) => {
 		item.checkQty = item.receiptQty;

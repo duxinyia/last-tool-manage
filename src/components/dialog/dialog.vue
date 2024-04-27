@@ -20,7 +20,7 @@
 						:lg="item.lg || 12"
 						:xl="item.xl || 12"
 						class="mb20"
-						v-for="item in dialogConfig"
+						v-for="item in setShowData"
 						:key="item.prop"
 					>
 						<el-form-item v-if="item.type != 'button' && item.type != 'null'" :label="$t(item.label)" :prop="item.prop" :rules="allRules(item)">
@@ -103,7 +103,7 @@
 							>
 								<el-input v-model="state.formData[item.prop]" :placeholder="$t(item.placeholder)" :readonly="true" :suffix-icon="FolderOpened">
 									<template #append v-if="state.formData[item.prop]">
-										<text v-if="item.prop === 'draw3dPath'" class="look-file mr10" @click.stop="clearUpload(item.prop)">清空文件</text>
+										<text v-if="!item.required" class="look-file mr10" @click.stop="clearUpload(item.prop)">清空文件</text>
 										<text class="look-file" @click.stop="lookUpload(item.prop)">查看文件</text>
 									</template>
 									>
@@ -113,7 +113,7 @@
 							<el-dialog v-model="showProgress" title="上传进度" width="30%" :close-on-click-modal="false" :modal="false" :show-close="false">
 								<div class="">
 									<!-- 上传的文件名字 -->
-									<div>{{ state.formData[item.prop] }}</div>
+									<!-- <div>{{ state.formData[item.prop] }}</div> -->
 									<div class="">
 										<!-- 进度条百分比 -->
 										<el-progress :percentage="uploadPercentage" :format="format" max="100"></el-progress>
@@ -391,7 +391,7 @@
 </template>
 
 <script setup lang="ts" name="systemMenuDialog">
-import { defineAsyncComponent, reactive, onMounted, ref, nextTick, watch } from 'vue';
+import { defineAsyncComponent, reactive, onMounted, ref, nextTick, watch, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { debounce } from '/@/utils/debounceAndThrottle';
 import { ElMessage, genFileId, UploadRawFile, FormRules, FormInstance, ElMessageBox } from 'element-plus';
@@ -898,7 +898,7 @@ const inputHandleChange: UploadProps['onChange'] = (uploadFile, prop) => {
 	if (props == 'programFilePath' && state.formData.error === 0) {
 		return;
 	}
-	inputuploadForm.value = uploadFile;
+	inputuploadForm.value = uploadFile.raw;
 	getFileData(uploadFile, prop);
 };
 // 優化的
@@ -908,8 +908,8 @@ const newInputHandleChange: UploadProps['onChange'] = async (uploadFile, uploadF
 			state.formData[v.prop] = uploadFile.name;
 		}
 	});
-	inputuploadForm.value = uploadFile;
-	const res = await getUploadFileApi(2, inputuploadForm.value.raw);
+	inputuploadForm.value = uploadFile.raw;
+	const res = await getUploadFileApi(2, inputuploadForm.value);
 	state.formData['fileUrl'] = res.data;
 	res.status && ElMessage.success(`上傳成功`);
 };
@@ -928,6 +928,7 @@ const inputHandleExceed: UploadProps['onExceed'] = (files, prop) => {
 	const file = files[0] as UploadRawFile;
 	file.uid = genFileId();
 	upload_list[0]!.handleStart(file);
+	inputuploadForm.value = files[0];
 	getFileData(files[0], prop);
 	emit('inputHandleExceed', files, prop, state.formData);
 	flag = true;
@@ -946,7 +947,7 @@ const getFileData = async (uploadFile: EmptyObjectType, prop: any) => {
 	}, 1000);
 
 	const uploadTypeMap: EmptyObjectType = { drawPath: 0, draw3dPath: 1 };
-	const res = await getUploadFileApi(uploadTypeMap[prop + ''], inputuploadForm.value.raw);
+	const res = await getUploadFileApi(uploadTypeMap[prop + ''], inputuploadForm.value);
 	if (res.status) {
 		uploadPercentage.value = 100;
 		ElMessage.success(`上傳成功`);
@@ -991,7 +992,7 @@ const newInputHandleExceed: UploadProps['onExceed'] = (files) => {
 };
 // 上传文件
 const inputsubmitUpload = async (prop: string, key?: string) => {
-	let value = prop == 'drawPath' ? inputuploadForm.value.raw : input3duploadForm.value.raw;
+	let value = prop == 'drawPath' ? inputuploadForm.value : input3duploadForm.value.raw;
 	let funcType = 0;
 	if (key === 'accepreporturl') {
 		funcType = 2;
@@ -1108,6 +1109,10 @@ const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
 	// }
 	return true;
 };
+// 设置顯示的数据false:顯示；true:隱藏
+const setShowData = computed(() => {
+	return props.dialogConfig.filter((v) => !v.isCheck);
+});
 // 页面加载时
 onMounted(() => {
 	initFormField();

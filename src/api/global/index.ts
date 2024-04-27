@@ -85,3 +85,11 @@ export function getAdminNamesOfStoreHouseApi(storeId: string) {
 		params: {storeId},
 	});
 }
+// 獲取附件URL
+export function getOperAttachmentApi(OperType: number,OperId:string) {
+	return request({
+		url: '/api/OperAttachment/Get',
+		method: 'GET',
+		params: {OperType,OperId},
+	});
+}

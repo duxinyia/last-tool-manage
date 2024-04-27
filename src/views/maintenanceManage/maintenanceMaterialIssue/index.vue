@@ -26,7 +26,7 @@
 				class="table"
 				@pageChange="onTablePageChange"
 				@sortHeader="onSortHeader"
-				@onOpenOtherDialog="openDetailDialog"
+				@onOpenOtherDialog="lookAttachments"
 			/>
 		</el-tab-pane>
 		<Dialog
@@ -57,7 +57,12 @@ import {
 	getToolRepairDispatchApi,
 	getQueryDispatchRecordApi,
 } from '/@/api/maintenanceManage/maintenanceMaterialIssue';
-import { getAdminNamesOfStoreHouseApi, getLegalStoreTypesExceptIdleStoreApi, getQueryStoreHouseExceptIdleStoreNoPageApi } from '/@/api/global';
+import {
+	getAdminNamesOfStoreHouseApi,
+	getLegalStoreTypesExceptIdleStoreApi,
+	getOperAttachmentApi,
+	getQueryStoreHouseExceptIdleStoreNoPageApi,
+} from '/@/api/global';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -161,6 +166,18 @@ const state = reactive<TableDemoState>({
 				lg: 24,
 				xl: 24,
 			},
+			{
+				label: '附件',
+				prop: 'attachment',
+				placeholder: 'message.pages.placeDrawPath',
+				required: false,
+				type: 'inputFile',
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
+			},
 			// {
 			// 	type: 'text',
 			// 	label: '描述說明',
@@ -209,7 +226,7 @@ const secondState = reactive<TableDemoState>({
 			isBorder: false, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
 			isSelection: false, // 是否显示表格多选
-			isOperate: false, // 是否显示表格操作栏
+			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
@@ -261,7 +278,7 @@ const secondState = reactive<TableDemoState>({
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [],
+		btnConfig: [{ type: 'sendReceive', name: '查看附件', color: '#438df5', isSure: false, icon: 'ele-View' }],
 		// 给后端的数据
 		form: {
 			// checkNo: '',
@@ -316,8 +333,13 @@ const openArriveJobDialog = (scope: EmptyObjectType) => {
 	issueMaterialsDialogRef.value.openDialog('samp', scope.row, '發料');
 	currentData.value = scope.row;
 };
-// 點擊詳情
-const openDetailDialog = () => {};
+// 查看附件
+const lookAttachments = async (scope: EmptyObjectType) => {
+	const res = await getOperAttachmentApi(15, scope.row.repairCheckDetailId);
+	if (res.status) {
+		window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${res.data}`, '_blank');
+	}
+};
 // 改變倉庫類型清空倉庫位置
 const onChangeStoreType = async (val: string, prop: string, form: EmptyObjectType) => {
 	if (prop === 'storeType') {
@@ -460,12 +482,14 @@ const onSubmit = async (formData: any) => {
 	const getData = {
 		repairCheckDetailId: formData.repairCheckDetailId,
 		storageId: '',
+		attachmentUrl: formData.attachmentfileUrl,
 	};
 	option.forEach((item) => {
 		if (item.value === formData.sLocation) {
 			getData['storageId'] = item.value;
 		}
 	});
+	// console.log(getData);
 	const res = await getToolRepairDispatchApi(getData);
 	if (res.status) {
 		ElMessage.success(t('發料成功'));

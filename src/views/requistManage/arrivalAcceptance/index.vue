@@ -102,6 +102,7 @@ import {
 import { getExitReasonApi } from '/@/api/toolsReturn/maintentanceTools';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
+import { getOperAttachmentApi } from '/@/api/global';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
@@ -191,6 +192,31 @@ const state = reactive<TableDemoState>({
 			{ type: 'text', label: '收貨人', placeholder: '', prop: 'receiver', required: false },
 			{ type: 'text', label: '收貨日期', placeholder: '', prop: 'receiveDate', required: false },
 			{ type: 'text', label: '驗收數量', placeholder: '', prop: 'checkqty', required: true },
+			{
+				type: 'text',
+				label: '收貨備註',
+				placeholder: '',
+				prop: 'describe',
+				required: false,
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
+			},
+			{
+				type: 'button',
+				label: '查看收貨附件',
+				placeholder: '',
+				prop: 'attachments',
+				required: false,
+				isCheck: false,
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
+			},
 			{ type: 'date', label: '驗收時間', placeholder: '', prop: 'checkDate', required: true, isdisabledDate: true },
 			{ type: 'number', label: '通過數量', placeholder: '', prop: 'passQty', required: true },
 			{ type: 'text', label: '不通過數量', placeholder: '', prop: 'failQty', required: false },
@@ -245,18 +271,7 @@ const state = reactive<TableDemoState>({
 				lg: 4,
 				xl: 4,
 			},
-			{
-				type: 'text',
-				label: '收貨備註',
-				placeholder: '',
-				prop: 'describe',
-				required: false,
-				xs: 24,
-				sm: 24,
-				md: 24,
-				lg: 24,
-				xl: 24,
-			},
+
 			{
 				type: 'textarea',
 				label: '備註',
@@ -448,6 +463,7 @@ const openArriveJobDialog = (scope: EmptyObjectType, type: string) => {
 	loadingBtn.value = false;
 	scope.row.failReasonsdisabled = scope.row.failQty === 0 ? true : false;
 	arriveJobDialogRef.value.openDialog(type, scope.row, type === 'reReceive' ? '重新驗收' : '驗收');
+	state.tableData.dialogConfig![11].isCheck = type === 'reReceive' ? true : false;
 	// 此處填寫的通過數量都會進入發料入庫流程，若要全部退回通過數量請填0
 	scope.row.checkqty = scope.row.qty;
 	state.tableData.dialogConfig?.forEach((item) => {
@@ -458,7 +474,7 @@ const openArriveJobDialog = (scope: EmptyObjectType, type: string) => {
 	currentData.value = scope.row;
 };
 // 點擊按鈕
-const onButton = (formData: EmptyObjectType, btnConfig: EmptyObjectType) => {
+const onButton = async (formData: EmptyObjectType, btnConfig: EmptyObjectType) => {
 	// 清空報告
 	if (btnConfig.prop === 'clearUrl') {
 		if (!formData.drawPath && !formData.fileUrl && !formData.accepReportUrl) {
@@ -468,6 +484,12 @@ const onButton = (formData: EmptyObjectType, btnConfig: EmptyObjectType) => {
 			formData.drawPath = '';
 			formData.fileUrl = '';
 			ElMessage.success(t('清空成功'));
+		}
+	} else if (btnConfig.prop === 'attachments') {
+		// 查看附件
+		const res = await getOperAttachmentApi(8, formData.applyReceiveId);
+		if (res.status) {
+			window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${res.data}`, '_blank');
 		}
 	} else {
 		// 查看報告
@@ -689,6 +711,9 @@ onMounted(() => {
 }
 :deep(.el-input-group__prepend) {
 	padding: 0;
+}
+:deep(.el-dialog__body .el-button) {
+	margin-left: 47px !important;
 }
 .header {
 	display: flex;

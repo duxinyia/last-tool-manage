@@ -76,7 +76,7 @@ import {
 } from '/@/api/toolsReturn/maintainEntry';
 import { GetUserManagedStoreHouseApi } from '/@/api/requistManage/entryJob';
 import { useI18n } from 'vue-i18n';
-import { getLegalStoreTypesExceptIdleStoreApi } from '/@/api/global';
+import { getLegalStoreTypesExceptIdleStoreApi, getOperAttachmentApi } from '/@/api/global';
 import {
 	getOrCreatePutStorageDraftApi,
 	getStockOperDraftAddCodesApi,
@@ -246,6 +246,18 @@ const state = reactive<TableDemoState>({
 			// 	type: 'select',
 			// 	options: [],
 			// },
+			{
+				type: 'button',
+				label: '查看發料附件',
+				placeholder: '',
+				prop: 'attachments',
+				required: false,
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
+			},
 			{
 				type: 'textarea',
 				label: '備註:',
@@ -662,8 +674,16 @@ const openEntryDialog = async (scope: any) => {
 	scope.row.stockqty = res.data.codes?.length || 0;
 	entryJobDialogRef.value.openDialog('entry', scope.row, '入庫', { codeList: res.data.codes || [] });
 };
-const scanCodeEntry = () => {
-	entryJobDialogRef.value.openInnerDialog('掃碼錄入');
+const scanCodeEntry = async (formData: EmptyObjectType, btnConfig: EmptyObjectType) => {
+	if (btnConfig.prop === 'scan') {
+		entryJobDialogRef.value.openInnerDialog('掃碼錄入');
+	} else {
+		// 查看附件
+		const res = await getOperAttachmentApi(15, formData.repairCheckDetailId);
+		if (res.status) {
+			window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${res.data}`, '_blank');
+		}
+	}
 };
 //点击确认入库
 const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyObjectType) => {

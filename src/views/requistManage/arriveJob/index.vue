@@ -46,6 +46,7 @@
 				ref="tableRef"
 				v-bind="secondState.tableData"
 				class="table"
+				@onOpenOtherDialog="lookAttachments"
 				@pageChange="(page) => onTablePageChange(page, secondState.tableData)"
 				@sortHeader="(data) => onSortHeader(data, secondState.tableData)"
 			/>
@@ -54,11 +55,11 @@
 </template>
 
 <script setup lang="ts" name="/requistManage/arriveJob">
-import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
+import { defineAsyncComponent, reactive, ref, onMounted, computed, watch } from 'vue';
 import { ElMessage, FormInstance, TabsPaneContext } from 'element-plus';
 // 引入接口
 import { getGetWaitRecievePageListApi, getAddReceiveApi, getQueryReceiveRecordApi } from '/@/api/requistManage/arriveJob';
-import { getEngieerGroupApi } from '/@/api/global/index';
+import { getEngieerGroupApi, getOperAttachmentApi } from '/@/api/global/index';
 import { useI18n } from 'vue-i18n';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -180,6 +181,18 @@ const state = reactive<TableDemoState>({
 				lg: 24,
 				xl: 24,
 			},
+			{
+				label: '附件',
+				prop: 'attachment',
+				placeholder: 'message.pages.placeDrawPath',
+				required: false,
+				type: 'inputFile',
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
+			},
 		],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
@@ -218,7 +231,7 @@ const secondState = reactive<TableDemoState>({
 			isBorder: false, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
 			isSelection: false, // 是否显示表格多选
-			isOperate: false, // 是否显示表格操作栏
+			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
@@ -250,7 +263,7 @@ const secondState = reactive<TableDemoState>({
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [],
+		btnConfig: [{ type: 'sendReceive', name: '查看附件', color: '#438df5', isSure: false, icon: 'ele-View' }],
 		// 给后端的数据
 		form: {},
 		dialogConfig: [],
@@ -300,6 +313,13 @@ const secondState = reactive<TableDemoState>({
 // 		},
 // 	},
 // });
+// 查看附件
+const lookAttachments = async (scope: EmptyObjectType) => {
+	const res = await getOperAttachmentApi(8, scope.row.applyReceiveId);
+	if (res.status) {
+		window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${res.data}`, '_blank');
+	}
+};
 // 点击收货弹窗
 const isApplyCheckId = ref(false);
 const currentData = ref<EmptyObjectType>([]);
@@ -398,7 +418,9 @@ const onSubmit = async (formData: any) => {
 		receiveDate: formData.receiveDate,
 		engineer: formData.engineer,
 		describe: formData.describe,
+		attachmentUrl: formData.attachmentfileUrl,
 	};
+
 	// options.forEach((item) => {
 	// 	if (item.value === formData.purchaserName) {
 	// 		getData['purchaser'] = item.label;

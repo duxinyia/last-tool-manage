@@ -97,6 +97,7 @@ const state = reactive<TableDemoState>({
 				options: [
 					{ value: 'CMA', label: 'CMA', text: 'CMA' },
 					{ value: 'DP', label: 'DP', text: 'DP' },
+					{ value: 'CMB', label: 'CMB', text: 'CMB' },
 					{ value: 'CMC', label: 'CMC', text: 'CMC' },
 				],
 			},
@@ -166,6 +167,7 @@ const state = reactive<TableDemoState>({
 				options: [
 					{ value: 'CMA', label: 'CMA', text: 'CMA' },
 					{ value: 'DP', label: 'DP', text: 'DP' },
+					{ value: 'CMB', label: 'CMB', text: 'CMB' },
 					{ value: 'CMC', label: 'CMC', text: 'CMC' },
 				],
 			},

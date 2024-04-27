@@ -50,6 +50,32 @@
 					maxlength="150"
 				></el-input>
 			</div>
+			<!-- 上傳文件優化 -->
+			<div class="describe">
+				<span>附件：</span>
+				<el-upload
+					style="width: 100%"
+					v-model:file-list="file"
+					:auto-upload="false"
+					ref="inputuploadRefs"
+					action="#"
+					class="upload"
+					drag
+					:limit="1"
+					:show-file-list="false"
+					:on-exceed="inputHandleExceed"
+					:on-change="inputHandleChange"
+				>
+					<el-input v-model="attachmentName" :placeholder="$t('點擊選擇附件')" :readonly="true" :suffix-icon="FolderOpened">
+						<template #append v-if="attachmentName">
+							<text class="look-file mr10" @click.stop="clearUpload">清空文件</text>
+							<text class="look-file" @click.stop="lookUpload">查看文件</text>
+						</template>
+						>
+					</el-input>
+				</el-upload>
+			</div>
+
 			<!-- 提交按钮 -->
 			<span class="table-bottom">
 				<el-button :loading="saveLoading" type="info" @click="onClearData" size="default">重置</el-button>
@@ -68,6 +94,15 @@
 				@onOpenOtherDialog="openDetailDialog"
 			/>
 		</el-tab-pane>
+		<!-- 上传进度条弹窗 -->
+		<el-dialog v-model="showProgress" title="上傳進度" width="30%" :close-on-click-modal="false" :modal="false" :show-close="false">
+			<div>
+				<div>
+					<!-- 进度条百分比 -->
+					<el-progress :percentage="uploadPercentage" :format="format" max="100"></el-progress>
+				</div>
+			</div>
+		</el-dialog>
 		<!-- 彈窗 -->
 		<el-dialog draggable :close-on-click-modal="false" :destroy-on-close="true" v-model="detailDialogVisible" title="詳情" width="95%">
 			<el-form ref="dialogFormRef" :model="dialogState.tableData.form" size="default" label-width="100px">
@@ -181,6 +216,37 @@
 				></el-input>
 				<span v-else style="color: #1890ff; font-weight: 700; width: 100%">{{ dialogState.tableData.form['describe'] }}</span>
 			</div>
+			<!-- 上傳文件優化 -->
+			<div class="describe" v-if="isDraft">
+				<span>附件：</span>
+				<el-upload
+					style="width: 100%"
+					v-model:file-list="fileDetail"
+					:auto-upload="false"
+					ref="inputuploadDetailRefs"
+					action="#"
+					class="upload"
+					drag
+					:limit="1"
+					:show-file-list="false"
+					:on-exceed="inputHandleExceed"
+					:on-change="inputHandleChange"
+				>
+					<el-input
+						v-model="dialogState.tableData.form['attachmentUrl']"
+						:placeholder="$t('點擊選擇附件')"
+						:readonly="true"
+						:suffix-icon="FolderOpened"
+					>
+						<template #append v-if="dialogState.tableData.form['attachmentUrl']">
+							<text class="look-file mr10" @click.stop="clearUpload">清空文件</text>
+							<text class="look-file" @click.stop="lookUpload">查看文件</text>
+						</template>
+						>
+					</el-input>
+				</el-upload>
+			</div>
+			<el-button class="mt5" v-else size="default" type="success" auto-insert-space @click="lookUpload"> 查看附件 </el-button>
 			<template #footer>
 				<span class="dialog-footer" v-if="isDraft">
 					<el-button size="default" auto-insert-space @click="detailDialogVisible = false">取 消</el-button>
@@ -246,6 +312,7 @@
 
 <script setup lang="ts" name="requistManagepresentation">
 import { defineAsyncComponent, reactive, ref, onMounted, watch, nextTick } from 'vue';
+import { FolderOpened } from '@element-plus/icons-vue';
 import {
 	ElMessage,
 	ElMessageBox,
@@ -273,7 +340,7 @@ import {
 	getSubmitDraftApi,
 } from '/@/api/requistManage/presentation';
 import { getMachineTypesOfMatApi } from '/@/api/partno/noSearch';
-import { getImportApplyDetailsApi } from '/@/api/global';
+import { getImportApplyDetailsApi, getUploadFileApi } from '/@/api/global';
 import { useRoute } from 'vue-router';
 import { getCodesOfApplyPutStorageApi } from '/@/api/requistManage/entryJob';
 const route = useRoute();
@@ -297,7 +364,12 @@ const fileListName = ref();
 const loading = ref(false);
 const fileList = ref<UploadUserFile[]>([]);
 const uploadRefs = ref<UploadInstance>();
+const inputuploadRefs = ref<UploadInstance>();
+const inputuploadDetailRefs = ref<UploadInstance>();
 const singleTableRef = ref();
+const attachmentName = ref('');
+const file = ref();
+const fileDetail = ref();
 const activeName = ref<string | number>((route.query.page as string) || 'first');
 const uploadForm = ref();
 const handleClick = (tab: TabsPaneContext, event: Event) => {
@@ -345,7 +417,7 @@ const state = reactive<EmptyObjectType>({
 			isInlineEditing: true, //是否是行内编辑
 			isTopTool: false, //是否有表格右上角工具
 			isPage: false, //是否有分页
-			height: 500,
+			height: 470,
 			isAddRowBtn: true, //是否有添加行按钮
 		},
 		// 表头内容（必传，注意格式）
@@ -828,6 +900,17 @@ const onAddRow = (datas: EmptyObjectType) => {
 // 	},
 // 	{ deep: true }
 // );
+// 上传百分比
+const uploadPercentage = ref(0);
+watch(
+	() => uploadPercentage.value,
+	() => {
+		if (uploadPercentage.value >= 90) clearInterval(times!);
+	},
+	{
+		deep: true,
+	}
+);
 //删除
 const onDelRow = (row: EmptyObjectType, i: number, datas: EmptyObjectType) => {
 	datas.data.splice(i, 1);
@@ -932,6 +1015,84 @@ const onDownloadTemp = () => {
 		'_blank'
 	);
 };
+// 改變文件
+const inputHandleExceed: UploadProps['onExceed'] = (files) => {
+	let inputRef = activeName.value === 'first' ? inputuploadRefs.value : inputuploadDetailRefs.value;
+	inputRef!.clearFiles();
+	const file = files[0] as UploadRawFile;
+	file.uid = genFileId();
+	inputRef!.handleStart(file);
+};
+// 文件input框里面的数据
+const inputHandleChange: UploadProps['onChange'] = (uploadFile) => {
+	if (activeName.value === 'first') {
+		attachmentName.value = uploadFile.name;
+	}
+	getFileData(uploadFile.raw);
+};
+const showProgress = ref(false);
+// 格式化进度，使用百分比进行展示
+const format = (percentage: any) => `${percentage}%`;
+
+let times = null;
+const getFileData = async (uploadFileRaw: UploadRawFile | undefined) => {
+	// 打开进度条弹窗
+	showProgress.value = true;
+	uploadPercentage.value = 0;
+	times = setInterval(() => {
+		uploadPercentage.value = (uploadPercentage.value % 100) + 10;
+	}, 1000);
+
+	const res = await getUploadFileApi(6, uploadFileRaw);
+	if (res.status) {
+		uploadPercentage.value = 100;
+		ElMessage.success(`上傳成功`);
+		if (activeName.value === 'first') {
+			state.tableData.form['attachmentUrl'] = res.data;
+		} else {
+			dialogState.tableData.form['attachmentUrl'] = res.data;
+		}
+		showProgress.value = false;
+	} else {
+		attachmentName.value = '';
+		file.value = [];
+		showProgress.value = false;
+	}
+};
+// 查看上传的文件
+const lookUpload = () => {
+	if (state.tableData.form['attachmentUrl'] || dialogState.tableData.form['attachmentUrl']) {
+		window.open(
+			`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${
+				activeName.value === 'first' ? state.tableData.form['attachmentUrl'] : dialogState.tableData.form['attachmentUrl']
+			}`,
+			'_blank'
+		);
+	} else {
+		ElMessage.warning(`暫無附件`);
+	}
+};
+// 清除文件
+const clearUpload = () => {
+	ElMessageBox.confirm('確定清除文件嗎?', '提示', {
+		confirmButtonText: '確 定',
+		cancelButtonText: '取 消',
+		type: 'warning',
+		draggable: true,
+	})
+		.then(async () => {
+			if (activeName.value === 'first') {
+				attachmentName.value = '';
+				file.value = [];
+				state.tableData.form['attachmentUrl'] = '';
+			} else {
+				fileDetail.value = [];
+				dialogState.tableData.form['attachmentUrl'] = '';
+			}
+			ElMessage.success(`清空文件成功`);
+		})
+		.catch(() => {});
+};
 //可以在选中时自动替换上一个文件
 const handleExceed: UploadProps['onExceed'] = (files) => {
 	uploadRefs.value!.clearFiles();
@@ -1026,5 +1187,8 @@ onMounted(() => {
 	100% {
 		opacity: 1;
 	}
+}
+.look-file {
+	color: var(--el-color-primary) !important;
 }
 </style>
