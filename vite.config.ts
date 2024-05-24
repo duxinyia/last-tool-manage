@@ -38,11 +38,12 @@ const viteConfig = defineConfig((mode: ConfigEnv) => {
 			open: JSON.parse(env.VITE_OPEN),
 			hmr: true,
 			proxy: {
+				// 如果/gitee是这个前缀的走代理
 				// '/gitee': {
-				// 	target: 'https://gitee.com',
+					// target: 'https://gitee.com',请求转发给谁
 				// 	ws: true,
-				// 	changeOrigin: true,
-				// 	rewrite: (path) => path.replace(/^\/gitee/, ''),
+				// 	changeOrigin: true,默认值false，控制服务器收到的请求头中Host字段的值
+				// 	rewrite: (path) => path.replace(/^\/gitee/, ''),重写请求路径 将加的/gitee置空 必写
 				// },
 			},
 		},

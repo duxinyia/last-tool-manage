@@ -39,6 +39,7 @@
 					@selectFocus="onSelectFocus"
 				/>
 			</el-form>
+
 			<div class="describe">
 				<span>備註：</span>
 				<el-input
@@ -203,6 +204,7 @@
 					</template>
 				</Table>
 			</el-form>
+
 			<div class="describe">
 				<span>備註：</span>
 				<el-input
@@ -247,6 +249,7 @@
 				</el-upload>
 			</div>
 			<el-button class="mt5" v-else size="default" type="success" auto-insert-space @click="lookUpload"> 查看附件 </el-button>
+
 			<template #footer>
 				<span class="dialog-footer" v-if="isDraft">
 					<el-button size="default" auto-insert-space @click="detailDialogVisible = false">取 消</el-button>
@@ -417,7 +420,7 @@ const state = reactive<EmptyObjectType>({
 			isInlineEditing: true, //是否是行内编辑
 			isTopTool: false, //是否有表格右上角工具
 			isPage: false, //是否有分页
-			height: 470,
+			height: 400,
 			isAddRowBtn: true, //是否有添加行按钮
 		},
 		// 表头内容（必传，注意格式）
@@ -829,7 +832,7 @@ const toggleRowExpansion = async (row: EmptyObjectType, falg?: number) => {
 			if (item.applyDetailId === row.applyDetailId) {
 				dialogState.tableData.data[index].child = res.data;
 				const signStatusMap: EmptyObjectType = {
-					0: '簽核撤回',
+					0: '簽核抽回',
 					1: '簽核中',
 					2: '簽核完成',
 				};
@@ -1132,6 +1135,8 @@ onMounted(() => {
 <style scoped lang="scss">
 .table-container {
 	.table-padding {
+		height: 100%;
+		overflow: overlay;
 		padding: 15px;
 		.table {
 			flex: 1;
@@ -1147,11 +1152,13 @@ onMounted(() => {
 }
 .describe {
 	display: flex;
+	align-items: center;
 	margin-top: 10px;
 	span {
 		width: 50px;
 	}
 }
+
 .table-bottom {
 	display: flex;
 	justify-content: flex-end;

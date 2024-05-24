@@ -222,13 +222,13 @@ const state = reactive<TableDemoState>({
 		printName: '表格打印演示',
 		// 弹窗表单
 		dialogConfig: [
-			{ label: 'message.pages.matNo', prop: 'matNo', placeholder: 'message.pages.placeMatNo', required: false, type: 'text', othersType: 'text' },
+			{ label: 'message.pages.matNo', prop: 'matNo', placeholder: '', required: false, type: 'text', othersType: 'text' },
 			{ label: '請購料號', prop: 'reqMatNo', placeholder: '請輸入請購料號', required: false, type: 'input', othersType: 'input' },
-			{ label: 'message.pages.nameCh', prop: 'nameCh', placeholder: 'message.pages.placeNameCh', required: true, type: 'input', othersType: 'input' },
-			{ label: 'message.pages.nameEn', prop: 'nameEn', placeholder: 'message.pages.placeNameEn', required: true, type: 'input', othersType: 'input' },
-			{ label: 'message.pages.drawNo', prop: 'drawNo', placeholder: 'message.pages.placeDrawNo', required: true, type: 'input', othersType: 'input' },
+			{ label: 'message.pages.nameCh', prop: 'nameCh', placeholder: '', required: true, type: 'input', othersType: 'input' },
+			{ label: 'message.pages.nameEn', prop: 'nameEn', placeholder: '', required: true, type: 'input', othersType: 'input' },
+			{ label: 'message.pages.drawNo', prop: 'drawNo', placeholder: '', required: true, type: 'input', othersType: 'input' },
 			{ label: '圖紙版次', prop: 'revision', placeholder: '請輸入圖紙版次', required: false, type: 'input', maxlength: 5, othersType: 'input' },
-			{ label: 'message.pages.specs', prop: 'specs', placeholder: 'message.pages.placeSpecs', required: false, type: 'input', othersType: 'input' },
+			{ label: 'message.pages.specs', prop: 'specs', placeholder: '', required: false, type: 'input', othersType: 'input' },
 			// {
 			// 	label: '階段',
 			// 	prop: 'stage',

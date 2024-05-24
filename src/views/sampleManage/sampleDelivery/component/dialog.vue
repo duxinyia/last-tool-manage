@@ -22,6 +22,11 @@
 					<div v-if="item.type === 'text'">
 						{{ item.label }}：<span style="color: red; line-height: 30px" class="ml10">{{ state.formData[item.prop] }}</span>
 					</div>
+					<span v-if="item.type === 'button'">
+						<el-button :disabled="item.disabled" type="primary" plain size="default" v-if="item.type === 'button'" @click="dailogFormButton(item)">{{
+							item.label
+						}}</el-button>
+					</span>
 					<div v-if="item.type === 'select'">
 						<span v-if="item.isRequired" class="color-danger mr5">*</span>
 						<span style="width: 96px" class="mr10">{{ item.label }}</span>
@@ -159,6 +164,7 @@ import { defineAsyncComponent, reactive, onMounted, ref, nextTick, computed, onU
 import { i18n } from '/@/i18n/index';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { SampleRecieveApi } from '/@/api/partno/sendReceive';
+import { getOperAttachmentApi } from '/@/api/global';
 const emit = defineEmits(['sampleSuccess', 'selectChange']);
 // 定义父组件传过来的值
 const props = defineProps({
@@ -266,6 +272,13 @@ const onAddRow = () => {
 // 删除行
 const onDelRow = (i: number) => {
 	state.vendors.splice(i, 1);
+};
+// 點擊附件按鈕
+const dailogFormButton = async (btnConfig: EmptyObjectType) => {
+	const res = await getOperAttachmentApi(2, state.formData.sampleNo);
+	if (res.status) {
+		window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${res.data}`, '_blank');
+	}
 };
 // 打开弹窗
 const openDialog = (scope: EmptyObjectType, n: number, tit: string, data: EmptyArrayType) => {

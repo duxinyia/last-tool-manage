@@ -27,6 +27,7 @@
 			@remoteMethod="remoteMethod"
 			:loadingBtn="loadingBtn"
 			:footBtnDisabled="footBtnDisabled"
+			@dailogFormButton="onDailogFormButton"
 		>
 			<template #optionFat="{ row }">
 				<span style="float: left">{{ row.text }}</span>
@@ -61,6 +62,7 @@ import {
 } from '/@/api/partno/sampleDelivery';
 import { useI18n } from 'vue-i18n';
 import { getQuerySampleNeedsApi } from '/@/api/partno/sampleRequirement';
+import { getOperAttachmentApi } from '/@/api/global';
 
 // 引入表格组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
@@ -165,6 +167,18 @@ const state = reactive<TableDemoState>({
 				validateForm: 'number',
 				message: '請輸入正確的電話格式',
 				maxlength: 20,
+			},
+			{
+				label: '附件',
+				prop: 'attachment',
+				placeholder: 'message.pages.placeDrawPath',
+				required: false,
+				type: 'inputFile',
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
 			},
 		],
 		// 给后端的数据
@@ -385,6 +399,7 @@ const onSave = async (data: any, formEl: EmptyObjectType | undefined) => {
 			purchaserName: formData.purchaserName,
 			needor: formData.needor,
 			needorTel: formData.needorTel,
+			attachmentUrl: formData.attachmentfileUrl || formData.attachment,
 		};
 		options.forEach((item) => {
 			if (item.value === formData.purchaserName) {
@@ -392,6 +407,8 @@ const onSave = async (data: any, formEl: EmptyObjectType | undefined) => {
 				getData['purchaserName'] = item.text;
 			}
 		});
+		// console.log(getData);
+
 		const res = await getAddSampleNeedsApi(getData);
 		if (res.status) {
 			ElMessage.success(t('保存成功'));
@@ -422,6 +439,7 @@ const onSubmit = (formData: any) => {
 				purchaserName: formData.purchaserName,
 				needor: formData.needor,
 				needorTel: formData.needorTel,
+				attachmentUrl: formData.attachmentfileUrl || formData.attachment,
 			};
 			options.forEach((item) => {
 				if (item.value === formData.purchaserName) {
@@ -460,12 +478,25 @@ const onTablePageChange = (page: TableDemoPageType) => {
 	}
 	getTableData();
 };
-
+// 点击查看附件
+const onDailogFormButton = async (scope: any) => {
+	const res = await getOperAttachmentApi(1, scope.sampleNo);
+	if (res.status) {
+		window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${res.data}`, '_blank');
+	}
+};
 // 打开样品需求弹窗 1
-const openSampleDialog = (scope: EmptyObjectType, type: string) => {
+const openSampleDialog = async (scope: EmptyObjectType, type: string) => {
 	loadingBtn.value = false;
 	footBtnDisabled.value = activeName.value === 'first' || scope.row.status === 0 ? false : true;
+	if (scope.row.status === 0) {
+		const res = await getOperAttachmentApi(1, scope.row.sampleNo);
+		scope.row.attachment = res.data;
+	}
 	sampleDialogRef.value.openDialog('samp', scope.row, activeName.value === 'first' ? '樣品需求' : '提交送樣');
+	let dialogConfig = state.tableData.dialogConfig;
+	dialogConfig![dialogConfig!.length - 1].type = activeName.value === 'first' || scope.row.status === 0 ? 'inputFile' : 'button';
+	dialogConfig![dialogConfig!.length - 1].label = activeName.value === 'first' || scope.row.status === 0 ? '附件' : '查看附件';
 };
 // 点击料号 2
 const matnoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {

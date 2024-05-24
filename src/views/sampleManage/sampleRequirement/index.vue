@@ -52,7 +52,7 @@
 						<span v-if="val.isRequired" class="color-danger mr5">*</span>
 						<span style="width: 96px" class="mr10">{{ val.label }}</span>
 					</div>
-					<div v-if="val.type === 'button'">
+					<div v-if="val.type === 'button' && !val.isCheck">
 						<el-button class="buttonBorder" type="primary" size="default" @click="downLoadFile(val.prop)"
 							><el-icon><ele-Download /></el-icon>{{ val.label }}
 						</el-button>
@@ -92,6 +92,36 @@
 					</template>
 				</Table>
 			</el-form>
+			<!-- 上傳文件優化 -->
+			<div class="describe" v-if="dilogType == 'sendReceive'">
+				<span>附件：</span>
+				<el-upload
+					style="width: 100%"
+					v-model:file-list="file"
+					:auto-upload="false"
+					ref="inputuploadRefs"
+					action="#"
+					class="upload"
+					drag
+					:limit="1"
+					:show-file-list="false"
+					:on-exceed="inputHandleExceed"
+					:on-change="inputHandleChange"
+				>
+					<el-input
+						v-model="dialogState.tableData.form['attachmentUrl']"
+						:placeholder="$t('點擊選擇附件')"
+						:readonly="true"
+						:suffix-icon="FolderOpened"
+					>
+						<template #append v-if="dialogState.tableData.form['attachmentUrl']">
+							<text class="look-file mr10" @click.stop="clearUpload">清空文件</text>
+							<text class="look-file" @click.stop="lookUpload">查看文件</text>
+						</template>
+						>
+					</el-input>
+				</el-upload>
+			</div>
 			<template #footer v-if="dilogTitle == '料號送樣'">
 				<span class="dialog-footer">
 					<el-button size="default" auto-insert-space @click="deliveryDialogVisible = false">取 消</el-button>
@@ -100,12 +130,22 @@
 				</span>
 			</template>
 		</el-dialog>
+		<!-- 上传进度条弹窗 -->
+		<el-dialog v-model="showProgress" title="上傳進度" width="30%" :close-on-click-modal="false" :modal="false" :show-close="false">
+			<div>
+				<div>
+					<!-- 进度条百分比 -->
+					<el-progress :percentage="uploadPercentage" :format="format" max="100"></el-progress>
+				</div>
+			</div>
+		</el-dialog>
 	</el-tabs>
 </template>
 
 <script setup lang="ts" name="sampleRequirement">
 import { defineAsyncComponent, reactive, ref, onMounted, computed, watch, nextTick } from 'vue';
-import { ElMessage, ElMessageBox, FormInstance, TabsPaneContext } from 'element-plus';
+import { ElMessage, ElMessageBox, FormInstance, genFileId, TabsPaneContext, UploadInstance, UploadProps, UploadRawFile } from 'element-plus';
+import { FolderOpened } from '@element-plus/icons-vue';
 const deliveryDialogVisible = ref(false);
 import {
 	getQuerySampleNeedsApi,
@@ -117,6 +157,7 @@ import {
 // 送样
 import { getTakeSampleApi, getSaveTakeSampleApi, getSubmitTaskSampleApi } from '/@/api/partno/sampleDelivery';
 import { useI18n } from 'vue-i18n';
+import { getOperAttachmentApi, getUploadFileApi } from '/@/api/global';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
@@ -136,6 +177,8 @@ const loading = ref(false);
 const cellStyle = ref();
 // 弹窗标题
 const dilogTitle = ref();
+const inputuploadRefs = ref<UploadInstance>();
+const file = ref();
 const activeName = ref<string | number>('first');
 const handleClick = (tab: TabsPaneContext, event: Event) => {
 	activeName.value = tab.paneName as string | number;
@@ -308,6 +351,8 @@ const dialogState = reactive<TableDemoState>({
 			{ label: '開單人', prop: 'creator', required: false, type: 'text' },
 			{ label: '下載查看圖紙', prop: 'drawPathProp', required: false, type: 'button' },
 			{ label: '下載查看3d圖紙', prop: 'draw3dPathProp', required: false, type: 'button' },
+			{ label: '送樣需求附件', prop: 'requireAtt', required: false, type: 'button', isCheck: false },
+			{ label: '採購送樣附件', prop: 'deliveryAtt', required: false, type: 'button', isCheck: true },
 		],
 		btnConfig: [{ type: 'del', name: 'message.allButton.deleteBtn', color: '#D33939', isSure: true }],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
@@ -317,6 +362,82 @@ const dialogState = reactive<TableDemoState>({
 		},
 	},
 });
+// 上传百分比
+const uploadPercentage = ref(0);
+watch(
+	() => uploadPercentage.value,
+	() => {
+		if (uploadPercentage.value >= 90) clearInterval(times!);
+	},
+	{
+		deep: true,
+	}
+);
+// 改變文件
+const inputHandleExceed: UploadProps['onExceed'] = (files) => {
+	let inputRef = inputuploadRefs.value;
+	inputRef!.clearFiles();
+	const file = files[0] as UploadRawFile;
+	file.uid = genFileId();
+	inputRef!.handleStart(file);
+};
+// 文件input框里面的数据
+const inputHandleChange: UploadProps['onChange'] = (uploadFile) => {
+	dialogState.tableData.form['attachmentUrl'] = uploadFile.name;
+	getFileData(uploadFile.raw);
+};
+const showProgress = ref(false);
+// 格式化进度，使用百分比进行展示
+const format = (percentage: any) => `${percentage}%`;
+let times = null;
+const getFileData = async (uploadFileRaw: UploadRawFile | undefined) => {
+	// 打开进度条弹窗
+	showProgress.value = true;
+	uploadPercentage.value = 0;
+	times = setInterval(() => {
+		uploadPercentage.value = (uploadPercentage.value % 100) + 10;
+	}, 1000);
+
+	const res = await getUploadFileApi(6, uploadFileRaw);
+	if (res.status) {
+		uploadPercentage.value = 100;
+		ElMessage.success(`上傳成功`);
+		dialogState.tableData.form['attachmentUrl'] = res.data;
+		showProgress.value = false;
+	} else {
+		file.value = [];
+		dialogState.tableData.form['attachmentUrl'] = '';
+		showProgress.value = false;
+	}
+};
+// 查看上传的文件
+const lookUpload = () => {
+	if (dialogState.tableData.form['attachmentUrl']) {
+		window.open(
+			`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${
+				dialogState.tableData.form['attachmentUrl']
+			}`,
+			'_blank'
+		);
+	} else {
+		ElMessage.warning(`暫無附件`);
+	}
+};
+// 清除文件
+const clearUpload = () => {
+	ElMessageBox.confirm('確定清除文件嗎?', '提示', {
+		confirmButtonText: '確 定',
+		cancelButtonText: '取 消',
+		type: 'warning',
+		draggable: true,
+	})
+		.then(async () => {
+			file.value = [];
+			dialogState.tableData.form['attachmentUrl'] = '';
+			ElMessage.success(`清空文件成功`);
+		})
+		.catch(() => {});
+};
 // 得到下拉框數據
 const remoteMethod = async (query: string) => {
 	if (query) {
@@ -421,9 +542,17 @@ const onAddrow = () => {
 	});
 };
 // 点击送样按钮弹窗  點擊查看詳情彈窗
-const openArriveJobDialog = async (scope: EmptyObjectType) => {
+let dilogType = ref('');
+let dialogScope: EmptyObjectType = {};
+const openArriveJobDialog = async (scope: EmptyObjectType, type: string) => {
 	loadingBtn.value = false;
+	dilogType.value = type;
+	dialogScope = scope;
+	dialogState.tableData.search[13].isCheck = type === 'sendReceive' ? true : false;
 	if (activeName.value === 'first') {
+		dialogState.tableData.form['attachmentUrl'] = '';
+		file.value = [];
+		dialogState.tableData.form['attachmentUrl'] = '';
 		const res = await getSampleDetailsForTakeSampleApi(scope.row.sampleNo);
 		dialogSelect.value = '';
 		res.data.forEach((item: any) => {
@@ -444,7 +573,7 @@ const openArriveJobDialog = async (scope: EmptyObjectType) => {
 		// 	item.type = 'text';
 		// });
 		dilogTitle.value = '詳情';
-		changeStatus(header1.value, 300, false);
+		changeStatus(header1.value, 400, false);
 		dialogState.tableData.data = res.data;
 		dialogState.tableData.data.forEach((item) => {
 			if (item.ispass) item.ispass = item.ispass === true ? '是' : '否';
@@ -465,20 +594,27 @@ const changeStatus = (header: EmptyArrayType, height: number, isShow: boolean) =
 	config.isInlineEditing = isShow;
 };
 // 查看图纸
-const downLoadFile = (prop: string) => {
-	const drawPath = dialogState.tableData.form.drawPath;
-	const draw3dPath = dialogState.tableData.form.draw3dPath;
-	const drawMap: EmptyObjectType = {
-		drawPathProp: drawPath,
-		draw3dPathProp: draw3dPath,
-	};
-	if (drawMap[prop]) {
-		window.open(
-			`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${drawMap[prop]}`,
-			'_blank'
-		);
+const downLoadFile = async (prop: string) => {
+	if (prop === 'drawPathProp' || prop === 'draw3dPathProp') {
+		const drawPath = dialogState.tableData.form.drawPath;
+		const draw3dPath = dialogState.tableData.form.draw3dPath;
+		const drawMap: EmptyObjectType = {
+			drawPathProp: drawPath,
+			draw3dPathProp: draw3dPath,
+		};
+		if (drawMap[prop]) {
+			window.open(
+				`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${drawMap[prop]}`,
+				'_blank'
+			);
+		} else {
+			prop === 'drawPathProp' ? ElMessage.warning(t('沒有圖紙')) : ElMessage.warning(t('沒有3d圖紙'));
+		}
 	} else {
-		prop === 'drawPathProp' ? ElMessage.warning(t('沒有圖紙')) : ElMessage.warning(t('沒有3d圖紙'));
+		const res = await getOperAttachmentApi(prop === 'requireAtt' ? 1 : 2, dialogScope.row.sampleNo);
+		if (res.status) {
+			window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${res.data}`, '_blank');
+		}
 	}
 };
 // 点击申请单号
@@ -507,7 +643,7 @@ const onSubmit = async (formEl: FormInstance | undefined, type: number) => {
 		if (!valid) return ElMessage.warning(t('表格項必填未填'));
 		let allData: EmptyObjectType = {};
 		let form = dialogState.tableData.form;
-		allData = { sampleNo: form.sampleNo, matNo: form.matNo };
+		allData = { sampleNo: form.sampleNo, matNo: form.matNo, attachmentUrl: form.attachmentUrl };
 		let data = dialogState.tableData.data;
 		data = data.map((item) => {
 			return {
@@ -523,6 +659,7 @@ const onSubmit = async (formEl: FormInstance | undefined, type: number) => {
 			ElMessage.warning(t('請新增廠商數據'));
 		} else if (type === 1) {
 			loadingSaveBtn.value = true;
+			// console.log(allData);
 			const res = await getSaveTakeSampleApi(allData);
 			if (res.status) {
 				ElMessage.success(t('保存成功'));
@@ -596,6 +733,23 @@ onMounted(() => {
 			overflow: hidden;
 		}
 	}
+}
+.describe {
+	display: flex;
+	align-items: center;
+	margin-top: 10px;
+	span {
+		width: 50px;
+	}
+}
+:deep(.el-upload-dragger) {
+	border: 0;
+	padding: 0;
+	background-color: transparent;
+	border-radius: unset;
+}
+.look-file {
+	color: var(--el-color-primary) !important;
 }
 .buttonBorder {
 	border: 0px !important;
