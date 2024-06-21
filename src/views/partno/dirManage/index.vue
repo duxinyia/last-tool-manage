@@ -185,7 +185,7 @@ const getAdminData = async (buCode: string) => {
 let openAdminDialogRow: EmptyObjectType = {};
 const openAdminDialog = async (scope: EmptyObjectType) => {
 	const params: EmptyObjectType = { dri: scope.row.dri };
-	params.tagsViewName = `${scope.row.dri} / ${scope.row.driName}`;
+	params.tagsViewName = `${scope.row.dri}/${scope.row.driName}`;
 	router.push({
 		path: '/partno/dirManage/driMatDetail',
 		query: params,

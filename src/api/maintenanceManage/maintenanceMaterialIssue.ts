@@ -23,3 +23,19 @@ export function getQueryDispatchRecordApi(data:Object) {
   	data:data
   });
 }
+// 查詢退回的數據
+export function getToolRepairRejectedDispatchApi() {
+  return request({
+    url:'/api/ToolRepair/GetRejectedDispatch',
+    method: 'GET',
+  });
+}
+// 重新提交
+export function getResubmitDispatchApi(data:Object) {
+  return request({
+    url:'/api/ToolRepair/ResubmitDispatch',
+    method: 'POST',
+  	data:data
+  });
+}
+

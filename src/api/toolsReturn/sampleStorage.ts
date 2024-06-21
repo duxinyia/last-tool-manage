@@ -69,5 +69,21 @@ export function getCodesOfSamplePutStorageRecordApi(samplePutStorageNo: string) 
 		method: 'GET',
 	});
 }
+// 退回
+export function getToolApplyRejectDispatchApi(data: Object) {
+	return request({
+		url: '/api/ToolApply/RejectDispatch',
+		method: 'POST',
+		data: data,
+	});
+}
+// 样品发料退回
+export function getRejectSampleDispatchApi(data: Object) {
+	return request({
+		url: '/api/Material/RejectSampleDispatch',
+		method: 'POST',
+		data: data,
+	});
+}
 
 

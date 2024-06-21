@@ -7,14 +7,26 @@
 				:searchConfig="state.tableData.searchConfig"
 				labelWidth="70px"
 			/>
-			<Table
-				ref="tableRef"
-				v-bind="state.tableData"
-				class="table"
-				@pageChange="(page) => onTablePageChange(page, state.tableData)"
-				@sortHeader="(data) => onSortHeader(data, state.tableData)"
-				@onOpenOtherDialog="openArriveJobDialog"
-			/>
+			<div style="overflow: overlay">
+				<Table
+					v-if="state1.tableData.data.length > 0"
+					ref="tableRef"
+					v-bind="state1.tableData"
+					style="height: auto"
+					@onOpenOtherDialog="openArriveJobDialog"
+					class="return-table"
+				>
+				</Table>
+				<Table
+					ref="tableRef"
+					v-bind="state.tableData"
+					class="table"
+					@pageChange="(page) => onTablePageChange(page, state.tableData)"
+					@sortHeader="(data) => onSortHeader(data, state.tableData)"
+					@onOpenOtherDialog="openArriveJobDialog"
+				/>
+			</div>
+
 			<Dialog
 				ref="arriveJobDialogRef"
 				:dialogConfig="state.tableData.dialogConfig"
@@ -63,7 +75,13 @@ import {
 	getQueryStoreHouseExceptIdleStoreNoPageApi,
 } from '/@/api/global/index';
 import { useI18n } from 'vue-i18n';
-import { getQueryDispatchableCheckDetailsApi, getQuerySampleDispatchRecordApi, getSampleDispatchApi } from '/@/api/sampleManage/sampleIssue';
+import {
+	getQueryDispatchableCheckDetailsApi,
+	getQuerySampleDispatchRecordApi,
+	getRejectedSampleDispatchApi,
+	getSampleDispatchApi,
+	postResubmitSampleDispatchApi,
+} from '/@/api/sampleManage/sampleIssue';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
@@ -141,6 +159,20 @@ const state = reactive<TableDemoState>({
 			{ type: 'text', label: '驗收日期', placeholder: '', prop: 'checktime', required: false },
 			{ type: 'text', label: '驗收提交時間', placeholder: '', prop: 'createTime', required: false },
 			{ type: 'text', label: '驗收備註', placeholder: '', prop: 'headDescribe', required: false },
+			{ type: 'text', label: '退單時間', prop: 'modifytime', required: false, placeholder: '', isCheck: true },
+			{
+				type: 'text',
+				label: '退單原因',
+				prop: 'rejectReason',
+				required: false,
+				placeholder: '',
+				isCheck: true,
+				// xs: 24,
+				// sm: 24,
+				// md: 24,
+				// lg: 24,
+				// xl: 24,
+			},
 			{ type: 'button', label: '查看驗收報告', placeholder: '', prop: 'accepReportUrl', required: false, xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
 			{
 				label: '倉庫類型',
@@ -207,6 +239,55 @@ const state = reactive<TableDemoState>({
 		},
 		// 打印标题
 		printName: '表格打印演示',
+	},
+});
+const state1 = reactive<TableDemoState>({
+	tableData: {
+		// 列表数据（必传）
+		data: [],
+		// 表头内容（必传，注意格式）
+		header: [
+			{ key: 'returnData', colWidth: '70', title: '退回', type: 'text', isCheck: true },
+			{ key: 'sampleNo', colWidth: '', title: '送樣單號', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			{ key: 'vendorCode', colWidth: '', title: '廠商代碼', type: 'text', isCheck: true },
+			{ key: 'vendorName', colWidth: '', title: '廠商名稱', type: 'text', isCheck: true },
+			{ key: 'checkQty', colWidth: '', title: '驗收數量', type: 'text', isCheck: true },
+			{ key: 'checker', colWidth: '', title: '驗收人', type: 'text', isCheck: true },
+			{ key: 'checktime', colWidth: '', title: '驗收日期', type: 'text', isCheck: true },
+			{ key: 'createTime', colWidth: '120', title: '驗收提交時間', type: 'text', isCheck: true },
+			{ key: 'headDescribe', colWidth: '', title: '驗收備註', type: 'text', isCheck: true },
+		],
+		// 配置项（必传）
+		config: {
+			total: 0, // 列表总数
+			loading: true, // loading 加载
+			isBorder: false, // 是否显示表格边框
+			isSerialNo: false, // 是否显示表格序号
+			isSelection: false, // 是否显示表格多选
+			isOperate: true, // 是否显示表格操作栏
+			isButton: false, //是否显示表格上面的新增删除按钮
+			isInlineEditing: false, //是否是行内编辑
+			isTopTool: false, //是否有表格右上角工具
+			isPage: false, //是否有分页
+		},
+		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
+		search: [],
+		searchConfig: {
+			isSearchBtn: true,
+		},
+		btnConfig: [{ type: 'others', name: '编辑', color: '#67c23a', isSure: false, icon: '' }],
+		// 给后端的数据
+		form: {},
+		dialogConfig: [],
+		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
+		page: {
+			pageNum: 1,
+			pageSize: 10,
+		},
 	},
 });
 const secondState = reactive<TableDemoState>({
@@ -292,10 +373,28 @@ const secondState = reactive<TableDemoState>({
 // 点击發料弹窗
 const isApplyCheckId = ref(false);
 const currentData = ref<EmptyObjectType>([]);
-const openArriveJobDialog = (scope: EmptyObjectType) => {
+let dialogType = '';
+const openArriveJobDialog = async (scope: EmptyObjectType, type: string) => {
+	dialogType = type;
 	isApplyCheckId.value = scope.row.applyCheckId ? true : false;
 	loadingBtn.value = false;
-	arriveJobDialogRef.value.openDialog('samp', scope.row, '發料');
+	let rows = scope.row;
+	// 倉庫類型
+	rows.storeType = rows.receiveStorageType ? rows.receiveStorageType : rows.storeType;
+	rows.sLocation = rows.receiveSLocation ? rows.receiveSLocation : rows.sLocation;
+	rows.describe = rows.dispatchDescribe ? rows.dispatchDescribe : rows.describe;
+	state.tableData.dialogConfig?.forEach((item) => {
+		if (item.prop === 'modifytime' || item.prop === 'rejectReason') {
+			item.isCheck = type === 'others' ? false : true;
+		}
+	});
+	if (type === 'others') {
+		const res = await getAdminNamesOfStoreHouseApi(rows.receiveStorageId);
+		rows.warehouseManager = res.data;
+		const res1 = await getOperAttachmentApi(5, rows.sampleCheckDetailId);
+		rows.attachment = res1.data || '';
+	}
+	arriveJobDialogRef.value.openDialog('samp', scope.row, type === 'others' ? '编辑' : '發料', {}, type === 'others' ? '重新提交' : '提交');
 	currentData.value = scope.row;
 };
 const onSelectChange = async (val: string, prop: string, formData: EmptyObjectType) => {
@@ -426,20 +525,24 @@ const onSubmit = async (formData: any) => {
 		sampleCheckDetailId: formData.sampleCheckDetailId,
 		storageId: '',
 		describe: formData.describe,
-		attachmentUrl: formData.attachmentfileUrl,
+		attachmentUrl: formData.attachmentfileUrl || formData.attachment,
 	};
 	option.forEach((item) => {
 		if (item.value === formData.sLocation) {
 			getData['storageId'] = item.value;
 		}
 	});
+	if (formData.receiveStorageId) {
+		getData['storageId'] = formData.receiveStorageId;
+	}
 	loadingBtn.value = true;
 	// console.log(getData);
-	const res = await getSampleDispatchApi(getData);
+	const res = dialogType === 'others' ? await postResubmitSampleDispatchApi(getData) : await getSampleDispatchApi(getData);
 	if (res.status) {
 		ElMessage.success(t('發料成功'));
 		arriveJobDialogRef.value.closeDialog();
 		getTableData(state.tableData);
+		getReturnTableData();
 	}
 	loadingBtn.value = false;
 };
@@ -460,8 +563,18 @@ const onSortHeader = (data: TableHeaderType[], tableData: EmptyObjectType) => {
 	tableData.header = data;
 };
 
+// 得到退回的數據
+const getReturnTableData = async () => {
+	state1.tableData.config.loading = true;
+	const res = await getRejectedSampleDispatchApi();
+	state1.tableData.data = res.data;
+	if (res.status) {
+		state1.tableData.config.loading = false;
+	}
+};
 // 页面加载时
 onMounted(() => {
+	getReturnTableData();
 	getTableData(state.tableData);
 	getSelect();
 });
@@ -487,5 +600,12 @@ onMounted(() => {
 .header {
 	display: flex;
 	align-items: center;
+}
+.return-table {
+	:deep(.el-table th.el-table__cell:first-child .cell) {
+		border-radius: 10px;
+		border: 1px solid red;
+		color: red;
+	}
 }
 </style>

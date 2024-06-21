@@ -72,6 +72,32 @@ export function getDeleteSampleNeedsDraftApi(sampleNo:string) {
     params:{sampleNo}
   });
 }
+// 退回的數據
+export function getRejectedSampleNeedsApi() {
+  return request({
+    url: '/api/Material/GetRejectedSampleNeeds',
+    method: 'GET',
+  });
+}
+// 重新提交
+export function postResubmitSampleNeedApi(data:Object) {
+  return request({
+    url: '/api/Material/ResubmitSampleNeed',
+    method: 'POST',
+  	data:data
+  });
+}
+// 作廢
+export function getCancelSampleNeedApi(sampleNo:string) {
+  return request({
+    url: '/api/Material/CancelSampleNeed',
+    method: 'DELETE',
+    params:{sampleNo}
+  });
+}
+
+
+
 
 
 

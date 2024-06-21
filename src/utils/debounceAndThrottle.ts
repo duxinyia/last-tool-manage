@@ -26,3 +26,4 @@ export function throttle(fn: Function, delay = 100) {
 		}, delay);
 	};
 }
+

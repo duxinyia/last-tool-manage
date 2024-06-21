@@ -88,7 +88,7 @@ const state = reactive<TableDemoState>({
 			},
 			{ key: 'vendorName', colWidth: '', title: '廠商名稱', type: 'text', isCheck: true },
 			{ key: 'checkQty', colWidth: '', title: '驗收數量', type: 'text', isCheck: true },
-			{ key: 'checktime', colWidth: '', title: '驗收日期', type: 'text', isCheck: true },
+			{ key: 'checkDate', colWidth: '', title: '驗收日期', type: 'text', isCheck: true },
 			{ key: 'isPass', colWidth: '120', title: '是否驗收通過', type: 'text', isCheck: true },
 			{ key: 'isDispatched', colWidth: '', title: '是否已發料', type: 'text', isCheck: true },
 			{ key: 'failReasons', colWidth: '250', title: '驗收不通過原因', type: 'text', isCheck: false },
@@ -164,7 +164,7 @@ const clickLink = () => {
 	}
 };
 // 初始化数据
-// link/arrivalAcceptanceLink?comkey=AC-R2023332008-001
+// link/acceptanceLink?comkey=SC24117-001
 const getTableData = async () => {
 	state.tableData.config.loading = true;
 	state.tableData.header.forEach((item) => {

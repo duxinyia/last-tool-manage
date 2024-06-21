@@ -32,3 +32,11 @@ export function getCodesOfRepairPutStorageApi(repairPutNo: string) {
 		method: 'GET',
 	});
 }
+// 退库操作
+export function postRejectDispatchApi(data: Object) {
+	return request({
+		url: '/api/ToolRepair/RejectDispatch',
+		method: 'POST',
+		data: data,
+	});
+}

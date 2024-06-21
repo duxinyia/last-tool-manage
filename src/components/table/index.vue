@@ -320,7 +320,7 @@
 					<slot name="btn" :row="scope.row"></slot>
 					<template v-for="btn in btnConfig" :key="btn.type">
 						<el-button
-							:disabled="scope.row.disabled"
+							:disabled="scope.row[`${btn.type}disabled`] || scope.row.disabled"
 							v-if="!btn.isSure"
 							@click="btn.type === 'edit' ? onOpenEdit(btn.type, scope.row) : onOpenOther(scope, btn.type)"
 							:color="btn.color"

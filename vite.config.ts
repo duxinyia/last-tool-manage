@@ -1,6 +1,7 @@
 import vue from '@vitejs/plugin-vue';
 import { resolve } from 'path';
 import path from 'path'
+// defineConfig支持 TS 配置文件
 import { defineConfig, loadEnv, ConfigEnv } from 'vite';
 import vueSetupExtend from 'vite-plugin-vue-setup-extend-plus';
 import viteCompression from 'vite-plugin-compression';
@@ -65,6 +66,7 @@ const viteConfig = defineConfig((mode: ConfigEnv) => {
 			},
 		},
 		css: { preprocessorOptions: { css: { charset: false } } },
+		// 注意 Vite 默认是不加载 .env 文件的，因为这些文件需要在执行完 Vite 配置后才能确定加载哪一个，你可以使用 Vite 导出的 loadEnv 函数来加载指定的 .env 文件。
 		define: {
 			__VUE_I18N_LEGACY_API__: JSON.stringify(false),
 			__VUE_I18N_FULL_INSTALL__: JSON.stringify(false),

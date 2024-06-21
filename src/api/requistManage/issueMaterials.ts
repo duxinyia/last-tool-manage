@@ -23,3 +23,20 @@ export function getQueryDispatchRecordApi(data:Object) {
   	data:data
   });
 }
+// 退回的数据
+export function getRejectedDispatchApi() {
+  return request({
+    url: '/api/ToolApply/GetRejectedDispatch',
+    method: 'GET',
+
+  });
+}
+// 重新發料
+export function postResubmitDispatchApi(data:Object) {
+  return request({
+    url:'/api/ToolApply/ResubmitDispatch',
+    method: 'POST',
+  	data:data
+  });
+}
+

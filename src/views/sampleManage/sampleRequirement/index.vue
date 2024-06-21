@@ -125,6 +125,7 @@
 			<template #footer v-if="dilogTitle == '料號送樣'">
 				<span class="dialog-footer">
 					<el-button size="default" auto-insert-space @click="deliveryDialogVisible = false">取 消</el-button>
+					<el-button size="default" type="warning" auto-insert-space @click="onReturn"> 退 回 </el-button>
 					<el-button size="default" type="success" auto-insert-space @click="onSubmit(tableFormRef, 1)" :loading="loadingSaveBtn"> 保 存 </el-button>
 					<el-button size="default" type="primary" auto-insert-space @click="onSubmit(tableFormRef, 2)" :loading="loadingBtn"> 提 交 </el-button>
 				</span>
@@ -150,6 +151,7 @@ const deliveryDialogVisible = ref(false);
 import {
 	getQuerySampleNeedsApi,
 	getQueryTakeSampleApi,
+	getRejectSampleNeedApi,
 	getSampleDetailProgressApi,
 	getSampleDetailsForTakeSampleApi,
 	getVendorsApi,
@@ -550,9 +552,6 @@ const openArriveJobDialog = async (scope: EmptyObjectType, type: string) => {
 	dialogScope = scope;
 	dialogState.tableData.search[13].isCheck = type === 'sendReceive' ? true : false;
 	if (activeName.value === 'first') {
-		dialogState.tableData.form['attachmentUrl'] = '';
-		file.value = [];
-		dialogState.tableData.form['attachmentUrl'] = '';
 		const res = await getSampleDetailsForTakeSampleApi(scope.row.sampleNo);
 		dialogSelect.value = '';
 		res.data.forEach((item: any) => {
@@ -567,6 +566,10 @@ const openArriveJobDialog = async (scope: EmptyObjectType, type: string) => {
 		dilogTitle.value = '料號送樣';
 		changeStatus(header.value, 300, true);
 		dialogState.tableData.data = res.data;
+		dialogState.tableData.form = scope.row;
+		file.value = [];
+		const res1 = await getOperAttachmentApi(2, scope.row.sampleNo);
+		dialogState.tableData.form['attachmentUrl'] = res1.data || '';
 	} else {
 		const res = await getSampleDetailProgressApi(scope.row.sampleNo);
 		// header.value.forEach((item) => {
@@ -580,8 +583,9 @@ const openArriveJobDialog = async (scope: EmptyObjectType, type: string) => {
 			item.engineer = item.engineer ? `${item.engineer} / ${item.engineerName}` : '';
 			item.putStorageOperator = item.putStorageOperator ? `${item.putStorageOperator} / ${item.putStorageOperatorName}` : '';
 		});
+		dialogState.tableData.form = scope.row;
 	}
-	dialogState.tableData.form = scope.row;
+
 	deliveryDialogVisible.value = true;
 };
 // 根据弹出窗不一样展现的配置不一样
@@ -635,7 +639,24 @@ const getDetailData = async (data: string) => {
 	// 	dialogState.tableData.config.loading = false;
 	// }
 };
-
+// 退回
+const onReturn = () => {
+	ElMessageBox.prompt('請輸入退回原因', '提示', {
+		confirmButtonText: '確定',
+		cancelButtonText: '取消',
+		draggable: true,
+	})
+		.then(async ({ value }) => {
+			let form = dialogState.tableData.form;
+			const res = await getRejectSampleNeedApi({ sampleNo: form.sampleNo, rejectReason: value });
+			if (res.status) {
+				ElMessage.success(t('退回成功'));
+				deliveryDialogVisible.value = false;
+				getTableData();
+			}
+		})
+		.catch(() => {});
+};
 // 提交
 const onSubmit = async (formEl: FormInstance | undefined, type: number) => {
 	if (!formEl) return;

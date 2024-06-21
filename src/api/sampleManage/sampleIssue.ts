@@ -23,4 +23,20 @@ export function getQuerySampleDispatchRecordApi(data:Object) {
   	data:data
   });
 }
+// 查询被退回的样品发料
+export function getRejectedSampleDispatchApi() {
+  return request({
+    url: '/api/Material/GetRejectedSampleDispatch',
+    method: 'GET',
+  });
+}
+// 重新提交
+export function postResubmitSampleDispatchApi(data:Object) {
+  return request({
+    url: '/api/Material/ResubmitSampleDispatch',
+    method: 'POST',
+  	data:data
+  });
+}
+
 

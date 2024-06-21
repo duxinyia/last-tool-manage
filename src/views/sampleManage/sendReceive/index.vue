@@ -70,7 +70,9 @@ const { t } = useI18n();
 const sendReceiveDialogRef = ref();
 const detailDialogRef = ref();
 const tableRef = ref<RefType>();
-const activeName = ref<string | number>('first');
+import { useRoute } from 'vue-router';
+const route = useRoute();
+const activeName = ref<string | number>((route.query.page as string) || 'first');
 const handleClick = (tab: TabsPaneContext, event: Event) => {
 	activeName.value = tab.paneName as string | number;
 	getTableData(activeName.value === 'first' ? state.tableData : secondState.tableData);
@@ -335,7 +337,7 @@ const selectChange = (query: string) => {
 
 // 页面加载时
 onMounted(() => {
-	getTableData(state.tableData);
+	getTableData(activeName.value === 'first' ? state.tableData : secondState.tableData);
 });
 </script>
 

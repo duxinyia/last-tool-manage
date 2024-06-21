@@ -29,6 +29,7 @@
 				@sortHeader="(data) => onSortHeader(data, secondState.tableData)"
 				@cellclick="qrCodeClick"
 				:cellStyle="cellStyle"
+				@onOpenOtherDialog="lookAttachment"
 			>
 				<template #rowIcons="{ row, itemConfig }">
 					<!-- circleBlueColor: row.isUnderWarranty === null, -->
@@ -61,6 +62,7 @@
 				@sortHeader="(data) => onSortHeader(data, thirdState.tableData)"
 				@cellclick="qrCodeClick"
 				:cellStyle="cellStyle"
+				@onOpenOtherDialog="lookAttachment"
 			/>
 		</el-tab-pane>
 		<Dialog
@@ -83,6 +85,8 @@
 			@inputFocus="onInputFocus"
 			:loadingBtn="loadingBtn"
 			@onImportQrcodeData="onImportQrcodeData"
+			@uploadSuceess="onUploadSuccess"
+			@clearUploadFile="onClearUploadFile"
 		>
 			<template #optionFat="{ row }" v-if="dilogTitle === '轉倉'">
 				<span style="float: left">{{ row.text.split('，')[0] }}</span>
@@ -160,7 +164,13 @@ import {
 	getStockTransferCodesApi,
 	getStockPreExitStoreApi,
 } from '/@/api/toolsReturn/maintentanceTools';
-import { getAdminNamesOfStoreHouseApi, getLegalStoreTypesApi, getQueryStoreHouseExceptIdleStoreNoPageApi, getUserNameApi } from '/@/api/global';
+import {
+	getAdminNamesOfStoreHouseApi,
+	getLegalStoreTypesApi,
+	getOperAttachmentApi,
+	getQueryStoreHouseExceptIdleStoreNoPageApi,
+	getUserNameApi,
+} from '/@/api/global';
 
 import { useI18n } from 'vue-i18n';
 import type { TabsPaneContext } from 'element-plus';
@@ -170,7 +180,9 @@ const Table = defineAsyncComponent(() => import('/@/components/table/index.vue')
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
 const Dialog = defineAsyncComponent(() => import('/@/components/dialog/dialog.vue'));
 const qrCodeDialog = defineAsyncComponent(() => import('/@/components/dialog/qrCodeDialog.vue'));
-const activeName = ref<string | number>('first');
+import { useRoute } from 'vue-router';
+const route = useRoute();
+const activeName = ref<string | number>((route.query.page as string) || 'first');
 const inventoryDialogRef = ref();
 const handleClick = (tab: TabsPaneContext, event: Event) => {
 	activeName.value = tab.paneName as string | number;
@@ -308,12 +320,13 @@ const thirdState = reactive<TableDemoState>({
 			{
 				key: 'hasReceived',
 				colWidth: '',
-				title: '是否已接收',
+				title: '狀態',
 				type: 'text',
 				isCheck: true,
 				transfer: {
-					true: '是',
-					false: '否',
+					1: '發起',
+					2: '接收',
+					3: '退回',
 				},
 			},
 			{ key: 'inDate', colWidth: '', title: '接收日期', type: 'text', isCheck: true },
@@ -326,11 +339,12 @@ const thirdState = reactive<TableDemoState>({
 			isBorder: false, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
 			isSelection: false, // 是否显示表格多选
-			isOperate: false, // 是否显示表格操作栏
+			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
+			operateWidth: 100, //操作栏宽度，如果操作栏有几个按钮就自己定宽度
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
@@ -357,21 +371,22 @@ const thirdState = reactive<TableDemoState>({
 			},
 			{ label: '接收倉庫位置', prop: 'inSLocation', required: false, type: 'input', placeholder: '請輸入倉庫位置' },
 			{
-				label: '是否已接收',
+				label: '狀態',
 				prop: 'hasReceived',
 				required: false,
 				type: 'select',
 				placeholder: '',
 				options: [
-					{ value: true, label: '是', text: '是' },
-					{ value: false, label: '否', text: '否' },
+					{ value: 1, label: '發起', text: '發起' },
+					{ value: 2, label: '接收', text: '接收' },
+					{ value: 3, label: '退回', text: '退回' },
 				],
 			},
 		],
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [],
+		btnConfig: [{ type: 'attachmentUrl', name: '附件', color: '#e6a23c', isSure: false, icon: '' }],
 		// 给后端的数据
 		form: {},
 		dialogConfig: [],
@@ -430,11 +445,12 @@ const secondState = reactive<TableDemoState>({
 			isBorder: false, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
 			isSelection: false, // 是否显示表格多选
-			isOperate: false, // 是否显示表格操作栏
+			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
+			operateWidth: 100, //操作栏宽度，如果操作栏有几个按钮就自己定宽度
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
@@ -479,7 +495,7 @@ const secondState = reactive<TableDemoState>({
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [],
+		btnConfig: [{ type: 'attachmentUrl', name: '附件', color: '#e6a23c', isSure: false, icon: '' }],
 		// 给后端的数据
 		form: {},
 		dialogConfig: [],
@@ -582,6 +598,18 @@ const dialogState = reactive<TableDemoState>({
 				placeholder: '',
 				prop: 'warehouseManager',
 				required: false,
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
+			},
+			{
+				label: '附件',
+				prop: 'attachmentUrl',
+				placeholder: 'message.pages.placeDrawPath',
+				required: false,
+				type: 'inputFile',
 				xs: 24,
 				sm: 24,
 				md: 24,
@@ -693,6 +721,19 @@ const dialogState = reactive<TableDemoState>({
 		],
 	},
 });
+// 查看附件
+// 打開查看二維碼按鈕
+const lookAttachment = async (scope: any, type: string) => {
+	if (activeName.value !== 'first') {
+		const res = await getOperAttachmentApi(
+			activeName.value == 'second' ? 17 : 18,
+			activeName.value == 'second' ? scope.row.exitStoreId : scope.row.stockTransferId
+		);
+		if (res.status) {
+			window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${res.data}`, '_blank');
+		}
+	}
+};
 // 单元格字体颜色
 const cellStyle = ({ row, column }: EmptyObjectType) => {
 	const property = column.property;
@@ -933,6 +974,7 @@ const onInputBlur = async (formData: EmptyObjectType, item: EmptyObjectType) => 
 			exitReason,
 			exitQty,
 			describe,
+			attachmentUrl: formData.attachmentUrlfileUrl || formData.attachmentUrl,
 		});
 		res.status && ElMessage.success(`保存成功`);
 	} else if (
@@ -953,6 +995,7 @@ const onInputBlur = async (formData: EmptyObjectType, item: EmptyObjectType) => 
 			describe,
 			inStorageId: formData.storageid,
 			transferQty: exitQty,
+			attachmentUrl: formData.attachmentUrlfileUrl || formData.attachmentUrl,
 		});
 
 		res.status && ElMessage.success(`保存成功`);
@@ -1004,43 +1047,69 @@ const innnerDialogSubmit = async (formInnerData: any, formData: any) => {
 			}
 		});
 	if (dilogTitle.value === '退庫') {
-		const { draftId, dri, exitType, reasonId, exitQty, describe } = formData;
-		let exitReason: string | number = '';
-		dialogState.tableData.dialogConfig?.forEach(async (item, index) => {
-			// 拿到對應的退庫原因
-			if (item.prop == 'reasonId') {
-				item.options?.forEach((p) => {
-					if (p.value === reasonId) {
-						exitReason = p.label;
-					}
-				});
-			}
-		});
-		const res = await getStockOperDraftModifyExitStoreDraftApi({
-			draftId,
-			dri,
-			exitType,
-			reasonId,
-			exitReason,
-			exitQty,
-			describe,
-		});
-		res.status && ElMessage.success(`保存成功`);
+		exitEditApiData(formData);
 	} else {
-		const { draftId, outDate, describe, exitQty } = formData;
-		options.forEach((item) => {
-			if (item.value === formData.storageId) {
-				formData.storageid = item.value;
-			}
-		});
-		const res = await getStockOperDraftModifyStockTransferDraftApi({
-			draftId,
-			outDate,
-			describe,
-			inStorageId: formData.storageid,
-			transferQty: exitQty,
-		});
-		res.status && ElMessage.success(`保存成功`);
+		transferEditApiData(formData);
+	}
+};
+// 退庫修改接口
+const exitEditApiData = async (formData: EmptyObjectType) => {
+	const { draftId, dri, exitType, reasonId, exitQty, describe } = formData;
+	let exitReason: string | number = '';
+	dialogState.tableData.dialogConfig?.forEach(async (item, index) => {
+		// 拿到對應的退庫原因
+		if (item.prop == 'reasonId') {
+			item.options?.forEach((p) => {
+				if (p.value === reasonId) {
+					exitReason = p.label;
+				}
+			});
+		}
+	});
+	const res = await getStockOperDraftModifyExitStoreDraftApi({
+		draftId,
+		dri,
+		exitType,
+		reasonId,
+		exitReason,
+		exitQty,
+		describe,
+		attachmentUrl: formData.attachmentUrlfileUrl || formData.attachmentUrl,
+	});
+	res.status && ElMessage.success(`保存成功`);
+};
+// 轉倉修改接口
+const transferEditApiData = async (formData: EmptyObjectType) => {
+	const { draftId, outDate, describe, exitQty } = formData;
+	options.forEach((item) => {
+		if (item.value === formData.storageId) {
+			formData.storageid = item.value;
+		}
+	});
+	const res = await getStockOperDraftModifyStockTransferDraftApi({
+		draftId,
+		outDate,
+		describe,
+		inStorageId: formData.storageid,
+		transferQty: exitQty,
+		attachmentUrl: formData.attachmentUrlfileUrl || formData.attachmentUrl,
+	});
+	res.status && ElMessage.success(`保存成功`);
+};
+// 上傳成功之後掉修改接口
+const onUploadSuccess = async (formData: EmptyObjectType) => {
+	if (dilogTitle.value === '退庫') {
+		exitEditApiData(formData);
+	} else {
+		transferEditApiData(formData);
+	}
+};
+// 清空文件也要掉修改接口
+const onClearUploadFile = async (formData: EmptyObjectType) => {
+	if (dilogTitle.value === '退庫') {
+		exitEditApiData(formData);
+	} else {
+		transferEditApiData(formData);
 	}
 };
 // 打开嵌套弹窗
@@ -1252,6 +1321,7 @@ const returnSubmit = async (ruleForm: EmptyObjectType, type: string, formInnerDa
 				getTableData(state.tableData);
 				repairReturnDialogRef.value.closeDialog();
 			}
+			loadingBtn.value = false;
 		} else {
 			// 退库提交
 			if (ruleForm.codeManageMode === 0) {
@@ -1317,7 +1387,15 @@ const onSortHeader = (data: TableHeaderType[], tableData: EmptyObjectType) => {
 
 // 页面加载时
 onMounted(() => {
-	getTableData(state.tableData);
+	let tableForm = state.tableData;
+	if (activeName.value === 'first') {
+		tableForm = state.tableData;
+	} else if (activeName.value === 'second') {
+		tableForm = secondState.tableData;
+	} else {
+		tableForm = thirdState.tableData;
+	}
+	getTableData(tableForm);
 	getSelect();
 });
 </script>

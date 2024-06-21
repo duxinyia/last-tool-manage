@@ -12,7 +12,17 @@
 				@cellclick="qrCodeClick"
 				@onOpenOtherDialog="openTransDialog"
 			/>
-			<Dialog ref="transDialogRef" :dialogConfig="state.tableData.dialogConfig" @addData="onSubmit" :loadingBtn="loadingBtn" />
+			<Dialog
+				ref="transDialogRef"
+				:dialogConfig="state.tableData.dialogConfig"
+				@addData="onSubmit"
+				:loadingBtn="loadingBtn"
+				@dailogFormButton="onFormButton"
+			>
+				<template #dialogBtn="{ data }">
+					<el-button type="warning" size="default" @click="onNullify(data)">退 回</el-button>
+				</template>
+			</Dialog>
 			<qrCodeDialog ref="inventoryDialogRef" :tags="tags" dialogTitle="庫存條碼" />
 		</div>
 	</div>
@@ -20,11 +30,12 @@
 
 <script setup lang="ts" name="transferReceipt">
 import { defineAsyncComponent, reactive, ref, onMounted, computed } from 'vue';
-import { ElMessage } from 'element-plus';
+import { ElMessage, ElMessageBox } from 'element-plus';
 // 引入接口
-import { getQueryTransferPageApi, getReceiveTransferApi } from '/@/api/toolsReturn/transferReceipt';
+import { getQueryTransferPageApi, getReceiveTransferApi, getRejectTransferStorageApi } from '/@/api/toolsReturn/transferReceipt';
 import { useI18n } from 'vue-i18n';
 import { getStockTransferCodesApi } from '/@/api/toolsReturn/maintentanceTools';
+import { getOperAttachmentApi } from '/@/api/global';
 const qrCodeDialog = defineAsyncComponent(() => import('/@/components/dialog/qrCodeDialog.vue'));
 
 // 引入组件
@@ -99,6 +110,30 @@ const state = reactive<TableDemoState>({
 			// { label: '無碼數量', prop: 'notqrqty', placeholder: '', required: false, type: 'text' },
 			{ label: '備註', prop: 'describe', placeholder: '', required: false, type: 'text', xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
 			{ label: '接收日期', prop: 'receiveDate', placeholder: '', required: true, type: 'date', isdisabledDate: true },
+			{
+				label: '查看轉倉轉出附件',
+				prop: 'attachmentUrl',
+				placeholder: 'message.pages.placeDrawPath',
+				required: false,
+				type: 'button',
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
+			},
+			{
+				label: '轉倉接收附件',
+				prop: 'attachmentUrl',
+				placeholder: 'message.pages.placeDrawPath',
+				required: false,
+				type: 'inputFile',
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
+			},
 		],
 		btnConfig: [{ type: 'sendReceive', name: '接收', color: '#36C78B', isSure: false, icon: 'ele-Handbag' }],
 		// 给后端的数据
@@ -182,10 +217,32 @@ const qrCodeClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
 		}
 	}
 };
+// 點擊查看轉倉轉出附件
+const onFormButton = async (formData: EmptyObjectType) => {
+	const res = await getOperAttachmentApi(18, formData.runid);
+	if (res.status) {
+		window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${res.data}`, '_blank');
+	}
+};
+// 退回
+const onNullify = (data: EmptyObjectType) => {
+	ElMessageBox.prompt('請輸入退回原因', '提示', {
+		confirmButtonText: '確定',
+		cancelButtonText: '取消',
+		draggable: true,
+	}).then(async ({ value }) => {
+		const res = await getRejectTransferStorageApi({ transferId: data.formData.runid, rejectReason: value });
+		if (res.status) {
+			ElMessage.success(t('退回成功'));
+			transDialogRef.value.closeDialog();
+			getTableData();
+		}
+	});
+};
 // 提交
 const onSubmit = async (formData: any) => {
 	loadingBtn.value = true;
-	const getData = { receiveDate: formData.receiveDate, operateType: 1, transferId: formData.runid };
+	const getData = { receiveDate: formData.receiveDate, operateType: 1, transferId: formData.runid, attachmentUrl: formData.attachmentUrlfileUrl };
 	const res = await getReceiveTransferApi(getData);
 	if (res.status) {
 		ElMessage.success(t('接收成功'));

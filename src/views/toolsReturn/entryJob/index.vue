@@ -58,6 +58,8 @@
 			:loadingBtn="loadingBtn"
 			@inputBlur="onInputBlur"
 			@inputFocus="onInputFocus"
+			@uploadSuceess="onUploadSuccess"
+			@clearUploadFile="onClearUploadFile"
 		>
 			<template #optionFat="{ row }">
 				<span style="float: left; margin-right: 10px">{{ row.text }}</span>
@@ -65,6 +67,9 @@
 			</template>
 			<template #buttonFooter="{ row, data }">
 				<el-button v-if="row.type === 'button'" type="primary" plain @click="addButton(data)">{{ row.label }}</el-button>
+			</template>
+			<template #dialogBtn="{ data, ref }">
+				<el-button type="warning" size="default" @click="onNullify(data)">退 回</el-button>
 			</template>
 		</Dialog>
 	</el-tabs>
@@ -94,6 +99,7 @@ import {
 	getStockOperDraftModifyPutStorageDraftApi,
 	getStockOperDraftRemoveCodeFromPutStorageDraftApi,
 	getStockOperDraftResetCodesOfPutStorageDraftApi,
+	getToolApplyRejectDispatchApi,
 } from '/@/api/toolsReturn/sampleStorage';
 const activeName = ref<string | number>('first');
 const handleClick = (tab: TabsPaneContext, event: Event) => {
@@ -250,6 +256,18 @@ const state = reactive<TableDemoState>({
 			// validateForm: 'number',
 			// message: '请输入正整数',
 			{
+				label: '入庫附件',
+				prop: 'attachmentUrl',
+				placeholder: 'message.pages.placeDrawPath',
+				required: false,
+				type: 'inputFile',
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
+			},
+			{
 				type: 'textarea',
 				label: '備註:',
 				placeholder: '請輸入備註',
@@ -287,6 +305,7 @@ const state = reactive<TableDemoState>({
 				xl: 4,
 				disabled: false,
 			},
+
 			// {
 			// 	label: '收貨倉庫:',
 			// 	prop: 'storageId',
@@ -396,6 +415,7 @@ const secondState = reactive<TableDemoState>({
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
+			operateWidth: 250, //操作栏宽度，如果操作栏有几个按钮就自己定宽度
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
@@ -420,7 +440,10 @@ const secondState = reactive<TableDemoState>({
 		searchConfig: {
 			isSearchBtn: true,
 		},
-		btnConfig: [{ type: 'detail', name: '查看二維碼', color: '#1890ff', isSure: false, icon: 'ele-View' }],
+		btnConfig: [
+			{ type: 'attachmentUrl', name: '附件', color: '#e6a23c', isSure: false, icon: '' },
+			{ type: 'detail', name: '查看二維碼', color: '#1890ff', isSure: false, icon: 'ele-View' },
+		],
 		// 给后端的数据
 		form: {},
 		dialogConfig: [],
@@ -526,7 +549,7 @@ const getTableData = async (datas: EmptyObjectType) => {
 		delete data.putStorageTime;
 		res = await GetQueryPutStorageRecordApi(data);
 		res.data.data.forEach((item: any) => {
-			item.disabled = item.codeManageMode ? true : false;
+			item.detaildisabled = item.codeManageMode ? true : false;
 		});
 	}
 
@@ -576,11 +599,24 @@ const onInputFocus = (formData: EmptyObjectType) => {
 // 描述失去焦點
 const onInputBlur = async (formData: EmptyObjectType) => {
 	if (oldEntryDescribe === formData.entryDescribe) return;
+	getEditApiData(formData);
+};
+const getEditApiData = async (formData: EmptyObjectType) => {
 	const res = await getStockOperDraftModifyPutStorageDraftApi({
 		draftId,
 		describe: formData.entryDescribe,
+		stockqty: formData.stockqty,
+		attachmentUrl: formData.attachmentUrlfileUrl || formData.attachmentUrl,
 	});
 	res.status && ElMessage.success(`保存成功`);
+};
+// 上傳成功之後掉修改接口
+const onUploadSuccess = async (formData: EmptyObjectType) => {
+	getEditApiData(formData);
+};
+// 清空文件也要掉修改接口
+const onClearUploadFile = async (formData: EmptyObjectType) => {
+	getEditApiData(formData);
 };
 // change掃碼錄入
 const change = async (val: any, prop: string, state: any, iscontu: boolean) => {
@@ -652,6 +688,7 @@ const innnerDialogSubmit = async (formInnerData: any, formData: any) => {
 		draftId,
 		describe: formData.entryDescribe,
 		stockqty: formData.stockqty,
+		attachmentUrl: formData.attachmentUrlfileUrl || formData.attachmentUrl,
 	});
 	res.status && ElMessage.success(`保存成功`);
 };
@@ -662,13 +699,20 @@ const openInnerDialog = (state: any) => {
 	formData['stockqty'] = formInnerData.codeList.length;
 };
 // 打開查看二維碼按鈕
-const openLookQrcodeDialog = async (scope: any) => {
-	let res = await getCodesOfApplyPutStorageApi(scope.row.applyPutStorageId);
-	if (res.data.length == 0) {
-		ElMessage.error('暫無條碼數據');
-	} else if (res.status) {
-		qrCode.value = res.data;
-		inventoryDialogRef.value?.openDialog();
+const openLookQrcodeDialog = async (scope: any, type: string) => {
+	if (type === 'detail') {
+		let res = await getCodesOfApplyPutStorageApi(scope.row.applyPutStorageId);
+		if (res.data.length == 0) {
+			ElMessage.error('暫無條碼數據');
+		} else if (res.status) {
+			qrCode.value = res.data;
+			inventoryDialogRef.value?.openDialog();
+		}
+	} else {
+		const res = await getOperAttachmentApi(11, scope.row.applyPutStorageId);
+		if (res.status) {
+			window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${res.data}`, '_blank');
+		}
 	}
 };
 // 关闭tag标签
@@ -703,6 +747,7 @@ const openEntryDialog = async (scope: any) => {
 	scope.row.entryDescribe = res.data.describe;
 	draftId = res.data.draftId;
 	scope.row.stockqty = res.data.codes?.length || 0;
+	scope.row.attachmentUrl = res.data.attachmentUrl;
 	entryJobDialogRef.value.openDialog('entry', scope.row, '入庫', { codeList: res.data.codes || [] });
 };
 const scanCodeEntry = async (formData: EmptyObjectType, btnConfig: EmptyObjectType) => {
@@ -715,6 +760,21 @@ const scanCodeEntry = async (formData: EmptyObjectType, btnConfig: EmptyObjectTy
 			window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${res.data}`, '_blank');
 		}
 	}
+};
+// 退回
+const onNullify = (data: EmptyObjectType) => {
+	ElMessageBox.prompt('請輸入退回原因', '提示', {
+		confirmButtonText: '確定',
+		cancelButtonText: '取消',
+		draggable: true,
+	}).then(async ({ value }) => {
+		const res = await getToolApplyRejectDispatchApi({ applyCheckId: data.formData.applyCheckId, rejectReason: value });
+		if (res.status) {
+			ElMessage.success(t('退回成功'));
+			entryJobDialogRef.value.closeDialog();
+			getTableData(state.tableData);
+		}
+	});
 };
 //点击确认入库
 const entrySubmit = async (ruleForm: object, type: string, formInnerData: EmptyObjectType) => {

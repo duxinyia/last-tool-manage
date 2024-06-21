@@ -173,7 +173,9 @@ const inputuploadRefs = ref<UploadInstance>();
 const file = ref();
 // 弹窗标题
 const dilogTitle = ref();
-const activeName = ref<string | number>('first');
+import { useRoute } from 'vue-router';
+const route = useRoute();
+const activeName = ref<string | number>((route.query.page as string) || 'first');
 const handleClick = (tab: TabsPaneContext, event: Event) => {
 	activeName.value = tab.paneName as string | number;
 	getTableData(activeName.value === 'first' ? state.tableData : secondState.tableData);
@@ -702,7 +704,7 @@ const onSortHeader = (data: TableHeaderType[], tableData: EmptyObjectType) => {
 
 // 页面加载时
 onMounted(() => {
-	getTableData(state.tableData);
+	getTableData(activeName.value === 'first' ? state.tableData : secondState.tableData);
 });
 </script>
 

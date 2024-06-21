@@ -38,7 +38,7 @@
 					</div>
 				</div>
 			</el-col>
-			<el-col :xs="24" :sm="14" :md="14" :lg="15" :xl="15" class="home-media">
+			<el-col :xs="24" :sm="10" :md="10" :lg="10" :xl="10" class="home-media">
 				<div class="home-card-item">
 					<div class="home-title">
 						<el-icon
@@ -80,7 +80,50 @@
 					</div>
 				</div>
 			</el-col>
-			<el-col :xs="24" :sm="10" :md="10" :lg="9" :xl="9">
+			<!-- 中間 -->
+			<el-col :xs="24" :sm="9" :md="9" :lg="9" :xl="9" class="home-media">
+				<div class="home-card-item">
+					<div class="home-title">
+						<el-icon
+							:style="{
+								color: '#F72B3F',
+							}"
+							:size="20"
+							><ele-Tickets
+						/></el-icon>
+						<span class="home-card-item-title ml10">{{ $t('退回') }}</span>
+					</div>
+					<div style="height: 100%; display: flex; justify-content: center">
+						<el-empty v-if="centeractivities.length <= 0" :description="$t('message.pages.noTodoListYet')" />
+						<div class="time-line pl10" v-else>
+							<el-timeline class="mt20">
+								<el-timeline-item
+									v-for="(activity, index) in centeractivities"
+									:key="index"
+									:icon="MoreFilled"
+									type="primary"
+									size="large"
+									:timestamp="activity.generateTime"
+								>
+									<span>{{ $t(activity.no) }}：</span>
+									<span
+										class="cursor-pointer"
+										style="color: #1890ff; font-weight: 700"
+										:title="$t('message.pages.clickToPage')"
+										@click="routePage(activity.type)"
+										>{{ activity.keyNo }}</span
+									>
+									<span>{{ $t(activity.content) }}</span>
+									<el-icon color="#1890ff" :title="$t('message.pages.clickToCopyNo')" class="ml10" @click="copyText(activity.keyNo)"
+										><ele-CopyDocument
+									/></el-icon>
+								</el-timeline-item>
+							</el-timeline>
+						</div>
+					</div>
+				</div>
+			</el-col>
+			<el-col :xs="24" :sm="5" :md="5" :lg="5" :xl="5">
 				<div class="home-card-item">
 					<span class="home-card-item-title">{{ $t('message.pages.templateDownload') }}</span>
 					<div class="home-monitor">
@@ -144,6 +187,7 @@ const { themeConfig } = storeToRefs(storesThemeConfig);
 // const { isTagsViewCurrenFull } = storeToRefs(storesTagsViewRoutes);
 const topCardItemRefs = ref<RefType[]>([]);
 const activities = ref([{ generateTime: '', content: '', keyNo: '', no: '', type: 0 }]);
+const centeractivities = ref([{ generateTime: '', content: '', keyNo: '', no: '', type: 0 }]);
 // const odd = ref();
 const state = reactive({
 	global: {
@@ -363,6 +407,10 @@ const routePage = (type: number) => {
 		7: '/toolsReturn/entryJob',
 		8: '/toolsReturn/maintainEntry',
 		9: '/toolsReturn/sampleStorage',
+		10: '/requistManage/issueMaterials',
+		11: '/maintenanceManage/maintenanceMaterialIssue',
+		12: '/sampleManage/sampleIssue',
+		13: '/sampleManage/sampleDelivery',
 	};
 	router.push(routeTypeMap[type]);
 };
@@ -376,6 +424,7 @@ const getTodos = async () => {
 	// 	type: 'primary',
 	// 	icon: MoreFilled,
 	// },
+	// 左邊
 	const todoTypeMap: EmptyObjectType = {
 		0: 'message.pages.samplesPurchased',
 		1: 'message.pages.waitAcceptance',
@@ -393,14 +442,37 @@ const getTodos = async () => {
 		1: 'message.pages.sampleSubmission',
 		2: 'message.pages.applicationForm',
 		3: 'message.pages.applicationForm',
-		4: 'message.pages.maintenanceReceipt',
+		4: 'message.pages.applicationForm',
 		5: 'message.pages.maintenanceBill',
 		6: 'message.pages.sampleSubmission',
 		7: 'message.pages.applicationForm',
 		8: 'message.pages.maintenanceBill',
 		9: 'message.pages.sampleSubmission',
 	};
+	// 中間
+	const centerTodoTypeMap: EmptyObjectType = {
+		10: '待重新發料',
+		11: '待重新發料',
+		12: '待重新發料',
+		13: '待重新提交',
+	};
+	const centerNoTypeMap: EmptyObjectType = {
+		10: '申請單',
+		11: '維修單',
+		12: '送樣單',
+		13: '送樣單',
+	};
+	let leftData: EmptyArrayType = [];
+	let centerData: EmptyArrayType = [];
+	let returnData = [10, 11, 12, 13];
 	res.data.forEach((item: any) => {
+		if (returnData.includes(item.todoType)) {
+			centerData.push(item);
+		} else {
+			leftData.push(item);
+		}
+	});
+	leftData.forEach((item: any) => {
 		let type = item.todoType;
 		item['type'] = `${item.todoType}`;
 		item.todoType = todoTypeMap[item.todoType];
@@ -408,7 +480,16 @@ const getTodos = async () => {
 		item['keyNo'] = `${item.keyNo}`;
 		item['content'] = item.todoType;
 	});
-	activities.value = Object.assign([], res.data);
+	centerData.forEach((item: any) => {
+		let type = item.todoType;
+		item['type'] = `${item.todoType}`;
+		item.todoType = centerTodoTypeMap[item.todoType];
+		item['no'] = `${centerNoTypeMap[type]}`;
+		item['keyNo'] = `${item.keyNo}`;
+		item['content'] = item.todoType;
+	});
+	activities.value = Object.assign([], leftData);
+	centeractivities.value = Object.assign([], centerData);
 };
 
 // 页面加载时
@@ -509,7 +590,7 @@ $homeNavLengh: 8;
 			.home-monitor {
 				height: 100%;
 				.flex-warp-item {
-					width: 25%;
+					width: 50%;
 					height: 111px;
 					display: flex;
 

@@ -15,3 +15,12 @@ export function getReceiveTransferApi(data: Object) {
 		data: data,
 	});
 }
+// 转仓退回
+export function getRejectTransferStorageApi(data: Object) {
+	return request({
+		url: '/api/Stock/RejectTransferStorage',
+		method: 'POST',
+		data: data,
+	});
+}
+

@@ -1,5 +1,5 @@
 <template>
-	<div class="main" :style="!isDialog ? 'height: 330px' : ''">
+	<div class="main" :style="!isDialog ? 'height: 400px' : ''">
 		<div class="table-container" :class="{ 'link-width': !isDialog }">
 			<nav v-if="!isDialog" class="pb10">報廢單詳情</nav>
 			<el-form v-if="state.tableData.form" ref="tableSearchRef" :model="state.tableData.form" size="default" label-width="100px" class="table-form">
@@ -25,6 +25,7 @@
 					<span>備註：</span>
 					<span style="width: 100%; font-weight: 700; color: #1890ff">{{ state.tableData.form['describe'] }}</span>
 				</div>
+				<el-button class="mt10" type="primary" plain @click="lookAttachment">查看附件</el-button>
 			</el-form>
 			<el-empty v-else description="數據出錯" />
 		</div>
@@ -38,6 +39,7 @@ import { ElMessage } from 'element-plus';
 import { getUselessDetailApi } from '/@/api/scrapManage/scrapBillQuery';
 
 import { useI18n } from 'vue-i18n';
+import { getOperAttachmentApi } from '/@/api/global';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const route = useRoute();
@@ -115,12 +117,12 @@ watch(
 		deep: true,
 	}
 );
-
+const comkey = props.isDialog ? props.UselessNoRef : route.query.comkey;
 // 初始化数据
 const getTableData = async () => {
 	state.tableData.config['height'] = props.isDialog ? 400 : 200;
 	//link/scrapBillQueryLink?comkey=UL-CSG-2023262-003
-	const comkey = props.isDialog ? props.UselessNoRef : route.query.comkey;
+
 	const res = await getUselessDetailApi(comkey);
 	state.tableData.form = res.data;
 	state.tableData.data = res.data.uselessdetaillist;
@@ -130,7 +132,13 @@ const getTableData = async () => {
 		state.tableData.config.loading = false;
 	}
 };
-
+// 查看附件
+const lookAttachment = async () => {
+	const res = await getOperAttachmentApi(21, comkey as string);
+	if (res.status) {
+		window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${res.data}`, '_blank');
+	}
+};
 // 页面加载时
 onMounted(() => {
 	getTableData();

@@ -38,6 +38,7 @@
 						備註：<span style="color: red" class="ml10">{{ dialogState.tableData.form['describe'] }}</span>
 					</div>
 				</div>
+				<!-- <el-button type="primary" plain @click="lookAttachment">查看附件</el-button> -->
 			</el-dialog>
 			<!-- 閒置詳情彈窗 -->
 			<el-dialog v-model="detaildialogVisible" :title="dilogTitle" width="50%">

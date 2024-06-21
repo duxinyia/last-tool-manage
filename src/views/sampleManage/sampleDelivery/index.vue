@@ -2,15 +2,26 @@
 	<el-tabs v-model="activeName" class="table-container layout-padding" @tab-click="handleClick">
 		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="送樣需求提報" name="first">
 			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" labelWidth=" " />
-			<Table
-				ref="tableRef"
-				v-bind="state.tableData"
-				class="table"
-				@pageChange="onTablePageChange"
-				@onOpenOtherDialog="openSampleDialog"
-				@cellclick="matnoClick"
-				:cellStyle="cellStyle"
-			/>
+			<div style="overflow: overlay">
+				<Table
+					v-if="state1.tableData.data.length > 0"
+					ref="tableRef"
+					v-bind="state1.tableData"
+					style="height: auto"
+					@onOpenOtherDialog="openSampleDialog"
+					class="return-table"
+				>
+				</Table>
+				<Table
+					ref="tableRef"
+					v-bind="state.tableData"
+					class="table"
+					@pageChange="onTablePageChange"
+					@onOpenOtherDialog="openSampleDialog"
+					@cellclick="matnoClick"
+					:cellStyle="cellStyle"
+				/>
+			</div>
 
 			<el-dialog draggable :close-on-click-modal="false" v-model="matNoDetaildialogVisible" title="料號詳情" width="50%">
 				<Table v-bind="dialogState.tableData" :objectSpanMethod="objectSpanMethod" />
@@ -37,7 +48,9 @@
 				<el-button v-if="activeName !== 'first' && data.formData.status === 0" type="danger" @click="onDelDraft(data)" size="default"
 					>刪除草稿</el-button
 				>
+				<el-button v-if="btnType == 'other'" type="danger" size="default" @click="onNullify(data)">作 廢</el-button>
 				<el-button
+					v-if="btnType != 'other'"
 					:disabled="activeName === 'first' || data.formData.status === 0 ? false : true"
 					:loading="loadingSaveBtn"
 					type="success"
@@ -59,6 +72,9 @@ import {
 	getPurchaserGroupApi,
 	getSubmitSampleNeedsApi,
 	getDeleteSampleNeedsDraftApi,
+	getRejectedSampleNeedsApi,
+	postResubmitSampleNeedApi,
+	getCancelSampleNeedApi,
 } from '/@/api/partno/sampleDelivery';
 import { useI18n } from 'vue-i18n';
 import { getQuerySampleNeedsApi } from '/@/api/partno/sampleRequirement';
@@ -92,7 +108,7 @@ const state = reactive<TableDemoState>({
 		// 表头内容（必传，注意格式）
 		header: [
 			{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'text', isCheck: true },
-			{ key: 'depart', colWidth: '', title: '段位', type: 'text', isCheck: true },
+			// { key: 'depart', colWidth: '', title: '段位', type: 'text', isCheck: true },
 			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
 			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
 			{ key: 'drawNo', colWidth: '', title: 'message.pages.drawNo', type: 'text', isCheck: true },
@@ -118,18 +134,18 @@ const state = reactive<TableDemoState>({
 		search: [
 			{ label: '料號', prop: 'matNo', placeholder: '請輸入料號', required: false, type: 'input' },
 			// { label: 'BU', prop: 'bu', placeholder: '', required: false, type: 'input' },
-			{
-				label: '段位',
-				prop: 'depart',
-				placeholder: '',
-				required: false,
-				type: 'select',
-				options: [
-					{ value: 'FOL', label: 'FOL', text: 'FOL' },
-					{ value: 'EOL', label: 'EOL', text: 'EOL' },
-					{ value: 'SMT', label: 'SMT', text: 'SMT' },
-				],
-			},
+			// {
+			// 	label: '段位',
+			// 	prop: 'depart',
+			// 	placeholder: '',
+			// 	required: false,
+			// 	type: 'select',
+			// 	options: [
+			// 		{ value: 'FOL', label: 'FOL', text: 'FOL' },
+			// 		{ value: 'EOL', label: 'EOL', text: 'EOL' },
+			// 		{ value: 'SMT', label: 'SMT', text: 'SMT' },
+			// 	],
+			// },
 			{ label: '品名', prop: 'name', placeholder: '', required: false, type: 'input' },
 			{ label: '圖紙編號', prop: 'drawNo', placeholder: '', required: false, type: 'input' },
 		],
@@ -143,6 +159,7 @@ const state = reactive<TableDemoState>({
 			{ type: 'text', label: '品名-英文', prop: 'nameEn', required: false, placeholder: '' },
 			{ type: 'text', label: '圖紙編號', prop: 'drawNo', required: false, placeholder: '' },
 			{ type: 'text', label: '規格', prop: 'specs', required: false, placeholder: '' },
+
 			{ type: 'number', label: '需求數量', prop: 'needsQty', required: true, placeholder: '', min: 1 },
 			{ type: 'date', label: '需求時間', prop: 'needsDate', required: true, placeholder: '' },
 			{
@@ -168,6 +185,20 @@ const state = reactive<TableDemoState>({
 				message: '請輸入正確的電話格式',
 				maxlength: 20,
 			},
+			{ type: 'text', label: '退單時間', prop: 'modifyTime', required: false, placeholder: '', isCheck: true },
+			{
+				type: 'text',
+				label: '退單原因',
+				prop: 'rejectReason',
+				required: false,
+				placeholder: '',
+				isCheck: true,
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
+			},
 			{
 				label: '附件',
 				prop: 'attachment',
@@ -181,6 +212,52 @@ const state = reactive<TableDemoState>({
 				xl: 24,
 			},
 		],
+		// 给后端的数据
+		form: {},
+		// printName: '表格打印演示',
+		// 页码
+		page: {
+			pageNum: 1,
+			pageSize: 10,
+		},
+	},
+});
+const state1 = reactive<TableDemoState>({
+	tableData: {
+		// 列表数据（必传）
+		data: [],
+		// 表头内容（必传，注意格式）
+		header: [
+			{ key: 'sampleNo', colWidth: '160', title: '退回的樣品需求單號', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '', title: 'message.pages.matNo', type: 'text', isCheck: true },
+			// { key: 'depart', colWidth: '', title: '段位', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '', title: 'message.pages.nameCh', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '', title: 'message.pages.nameEn', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: 'message.pages.drawNo', type: 'text', isCheck: true },
+			{ key: 'specs', colWidth: '', title: 'message.pages.specs', type: 'text', isCheck: true },
+		],
+		// 表格配置项（必传）
+		config: {
+			total: 0, // 列表总数
+			loading: true, // loading 加载
+			isBorder: false, // 是否显示表格边框
+			isSerialNo: false, // 是否显示表格序号
+			isSelection: false, // 是否显示表格多选
+			isOperate: true, // 是否显示表格操作栏
+			isButton: false, //是否显示表格上面的新增删除按钮
+			isInlineEditing: false, //是否是行内编辑
+			isTopTool: false, //是否有表格右上角工具
+			isPage: false, //是否有分页
+			operateWidth: 100,
+		},
+
+		btnConfig: [{ type: 'other', name: '編輯', color: '#e6a23c', isSure: false }],
+		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
+		search: [],
+		searchConfig: {
+			isSearchBtn: true,
+		},
+		dialogConfig: [],
 		// 给后端的数据
 		form: {},
 		// printName: '表格打印演示',
@@ -383,6 +460,24 @@ const onDelDraft = async (data: any) => {
 		})
 		.catch(() => {});
 };
+// 作廢
+const onNullify = (data: any) => {
+	console.log(data.formData);
+	ElMessageBox.confirm('確定作廢嗎?', '提示', {
+		confirmButtonText: '確 定',
+		cancelButtonText: '取 消',
+		type: 'warning',
+		draggable: true,
+	}).then(async () => {
+		const res = await getCancelSampleNeedApi(data.formData.sampleNo);
+		if (res.status) {
+			ElMessage.success(t('作廢成功'));
+			sampleDialogRef.value.closeDialog();
+			getReturnTableData();
+			getTableData();
+		}
+	});
+};
 // 保存
 const onSave = async (data: any, formEl: EmptyObjectType | undefined) => {
 	if (!formEl) return;
@@ -420,43 +515,59 @@ const onSave = async (data: any, formEl: EmptyObjectType | undefined) => {
 	});
 };
 // 提交
-const onSubmit = (formData: any) => {
-	if (!formData.sampleNo) return ElMessage.warning(t('請按保存按鈕得到送樣單號'));
-	ElMessageBox.confirm('確定提交嗎?', '提示', {
-		confirmButtonText: '確 定',
-		cancelButtonText: '取 消',
-		type: 'warning',
-		draggable: true,
-	})
-		.then(async () => {
-			loadingBtn.value = true;
-			const getData = {
-				sampleNo: formData.sampleNo,
-				matNo: formData.matNo,
-				needsQty: formData.needsQty,
-				needsDate: formData.needsDate,
-				purchaser: formData.purchaser,
-				purchaserName: formData.purchaserName,
-				needor: formData.needor,
-				needorTel: formData.needorTel,
-				attachmentUrl: formData.attachmentfileUrl || formData.attachment,
-			};
-			options.forEach((item) => {
-				if (item.value === formData.purchaserName) {
-					getData['purchaser'] = item.label;
-					getData['purchaserName'] = item.text;
-				}
-			});
-			await getAddSampleNeedsApi(getData);
-			const res = await getSubmitSampleNeedsApi({ SampleNo: formData.sampleNo });
-			if (res.status) {
-				ElMessage.success(t('提交成功'));
-				sampleDialogRef.value.closeDialog();
-				getTableData();
-			}
-			loadingBtn.value = false;
+const onSubmit = async (formData: any) => {
+	const getData = {
+		sampleNo: formData.sampleNo,
+		matNo: formData.matNo,
+		needsQty: formData.needsQty,
+		needsDate: formData.needsDate,
+		purchaser: formData.purchaser,
+		purchaserName: formData.purchaserName,
+		needor: formData.needor,
+		needorTel: formData.needorTel,
+		attachmentUrl: formData.attachmentfileUrl || formData.attachment,
+	};
+	options.forEach((item) => {
+		if (item.value === formData.purchaserName) {
+			getData['purchaser'] = item.label;
+			getData['purchaserName'] = item.text;
+		}
+	});
+	if (btnType.value === 'other') {
+		// ElMessageBox.confirm('確定重新提交嗎?', '提示', {
+		// 	confirmButtonText: '確 定',
+		// 	cancelButtonText: '取 消',
+		// 	type: 'warning',
+		// 	draggable: true,
+		// }).then(async () => {
+		const res = await postResubmitSampleNeedApi(getData);
+		if (res.status) {
+			ElMessage.success(t('重新提交成功'));
+			sampleDialogRef.value.closeDialog();
+			getReturnTableData();
+		}
+		// });
+	} else {
+		if (!formData.sampleNo) return ElMessage.warning(t('請按保存按鈕得到送樣單號'));
+		ElMessageBox.confirm('確定提交嗎?', '提示', {
+			confirmButtonText: '確 定',
+			cancelButtonText: '取 消',
+			type: 'warning',
+			draggable: true,
 		})
-		.catch(() => {});
+			.then(async () => {
+				loadingBtn.value = true;
+				await getAddSampleNeedsApi(getData);
+				const res = await getSubmitSampleNeedsApi({ SampleNo: formData.sampleNo });
+				if (res.status) {
+					ElMessage.success(t('提交成功'));
+					sampleDialogRef.value.closeDialog();
+					getTableData();
+				}
+				loadingBtn.value = false;
+			})
+			.catch(() => {});
+	}
 };
 // 搜索点击时表单回调
 const onSearch = (data: EmptyObjectType) => {
@@ -486,17 +597,34 @@ const onDailogFormButton = async (scope: any) => {
 	}
 };
 // 打开样品需求弹窗 1
+const btnType = ref('');
 const openSampleDialog = async (scope: EmptyObjectType, type: string) => {
-	loadingBtn.value = false;
-	footBtnDisabled.value = activeName.value === 'first' || scope.row.status === 0 ? false : true;
-	if (scope.row.status === 0) {
-		const res = await getOperAttachmentApi(1, scope.row.sampleNo);
-		scope.row.attachment = res.data;
+	btnType.value = type;
+	state.tableData.dialogConfig?.forEach((item) => {
+		if (item.prop === 'modifyTime' || item.prop === 'rejectReason') {
+			item.isCheck = type === 'other' ? false : true;
+		}
+	});
+	if (type === 'other') {
+		const res1 = await getOperAttachmentApi(1, scope.row.sampleNo);
+		scope.row.attachment = res1.data || '';
+		footBtnDisabled.value = false;
+		sampleDialogRef.value.openDialog('samp', scope.row, '編輯', {}, '重新提交');
+		let dialogConfig = state.tableData.dialogConfig;
+		dialogConfig![dialogConfig!.length - 1].type = 'inputFile';
+		dialogConfig![dialogConfig!.length - 1].label = '附件';
+	} else {
+		loadingBtn.value = false;
+		footBtnDisabled.value = activeName.value === 'first' || scope.row.status === 0 ? false : true;
+		if (scope.row.status === 0) {
+			const res = await getOperAttachmentApi(1, scope.row.sampleNo);
+			scope.row.attachment = res.data;
+		}
+		sampleDialogRef.value.openDialog('samp', scope.row, activeName.value === 'first' ? '樣品需求' : '提交送樣');
+		let dialogConfig = state.tableData.dialogConfig;
+		dialogConfig![dialogConfig!.length - 1].type = activeName.value === 'first' || scope.row.status === 0 ? 'inputFile' : 'button';
+		dialogConfig![dialogConfig!.length - 1].label = activeName.value === 'first' || scope.row.status === 0 ? '附件' : '查看附件';
 	}
-	sampleDialogRef.value.openDialog('samp', scope.row, activeName.value === 'first' ? '樣品需求' : '提交送樣');
-	let dialogConfig = state.tableData.dialogConfig;
-	dialogConfig![dialogConfig!.length - 1].type = activeName.value === 'first' || scope.row.status === 0 ? 'inputFile' : 'button';
-	dialogConfig![dialogConfig!.length - 1].label = activeName.value === 'first' || scope.row.status === 0 ? '附件' : '查看附件';
 };
 // 点击料号 2
 const matnoClick = async (row: EmptyObjectType, column: EmptyObjectType) => {
@@ -540,9 +668,19 @@ const objectSpanMethod = ({ row, column, rowIndex, columnIndex }: any) => {
 		};
 	}
 };
+// 得到退回的數據
+const getReturnTableData = async () => {
+	state1.tableData.config.loading = true;
+	const res = await getRejectedSampleNeedsApi();
+	state1.tableData.data = res.data;
+	if (res.status) {
+		state1.tableData.config.loading = false;
+	}
+};
 // 页面加载时
 onMounted(() => {
 	getTableData();
+	getReturnTableData();
 });
 </script>
 
@@ -562,5 +700,12 @@ onMounted(() => {
 :deep(.el-tabs__item) {
 	font-weight: 700;
 	font-size: 14px;
+}
+.return-table {
+	:deep(.el-table th.el-table__cell:first-child .cell) {
+		border-radius: 10px;
+		border: 1px solid red;
+		color: red;
+	}
 }
 </style>

@@ -431,7 +431,9 @@ const emit = defineEmits([
 	'inputFocus',
 	'inputHandleExceed',
 	'inputHandleChange',
+	'uploadSuceess',
 	'close',
+	'clearUploadFile',
 ]);
 // 定义父组件传过来的值
 const props = defineProps({
@@ -715,11 +717,15 @@ const handleSinglePageExcel = async (data: any) => {
 	// }
 	// 刪除表头
 	// delete importData[0];
+
 	// 将表格对象数组变成数组
-	const flatArray = importData.reduce((acc, obj) => {
+	let flatArray = importData.reduce((acc, obj) => {
 		const values = Object.values(obj);
 		return acc.concat(values);
 	}, []);
+	flatArray = flatArray.map((item: any) => {
+		return item.toString();
+	});
 	// 重复的条码
 	let repetitionCode: EmptyArrayType = [];
 	// 导入的剩下的不重复的条码
@@ -958,6 +964,7 @@ const getFileData = async (uploadFile: EmptyObjectType, prop: any) => {
 		});
 		state.formData[prop + 'fileUrl'] = res.data;
 		showProgress.value = false;
+		emit('uploadSuceess', state.formData);
 	} else {
 		state.formData[prop + 'fileUrl'] = '';
 		state.formData[prop + 'file'] = [];
@@ -1033,6 +1040,7 @@ const clearUpload = (prop: string) => {
 				}
 			});
 			ElMessage.success(`清空文件成功`);
+			emit('clearUploadFile', state.formData);
 		})
 		.catch(() => {});
 };

@@ -16,6 +16,7 @@
 				@cellclick="matNoClick"
 				:cellStyle="cellStyle"
 				@onOpentopBtnOther="onOpenSendRepair"
+				@onOpenOtherDialog="lookReturnAttachment"
 			>
 				<template #rowIcons="{ row, itemConfig }">
 					<div
@@ -136,6 +137,37 @@
 				></el-input>
 				<span v-else style="color: #1890ff; font-weight: 700; width: 100%">{{ dialogState.tableData.form['describe'] }}</span>
 			</div>
+			<!-- 上傳文件優化 -->
+			<div class="describe" v-if="activeName === 'first'">
+				<span>附件：</span>
+				<el-upload
+					style="width: 100%"
+					v-model:file-list="file"
+					:auto-upload="false"
+					ref="inputuploadRefs"
+					action="#"
+					class="upload"
+					drag
+					:limit="1"
+					:show-file-list="false"
+					:on-exceed="inputHandleExceed"
+					:on-change="inputHandleChange"
+				>
+					<el-input
+						v-model="dialogState.tableData.form['attachmentUrl']"
+						:placeholder="$t('點擊選擇附件')"
+						:readonly="true"
+						:suffix-icon="FolderOpened"
+					>
+						<template #append v-if="dialogState.tableData.form['attachmentUrl']">
+							<text class="look-file mr10" @click.stop="clearUpload">清空文件</text>
+							<text class="look-file" @click.stop="lookUpload">查看文件</text>
+						</template>
+						>
+					</el-input>
+				</el-upload>
+			</div>
+			<el-button class="mt5" v-else size="default" type="success" auto-insert-space @click="lookAttachment"> 查看附件 </el-button>
 			<!-- 提交按钮 -->
 			<template #footer>
 				<span class="dialog-footer" v-if="activeName === 'first'">
@@ -173,6 +205,15 @@
 				</el-form>
 			</template>
 		</Dialog>
+		<!-- 上传进度条弹窗 -->
+		<el-dialog v-model="showProgress" title="上傳進度" width="30%" :close-on-click-modal="false" :modal="false" :show-close="false">
+			<div>
+				<div>
+					<!-- 进度条百分比 -->
+					<el-progress :percentage="uploadPercentage" :format="format" max="100"></el-progress>
+				</div>
+			</div>
+		</el-dialog>
 	</el-tabs>
 </template>
 <!-- <el-dialog v-model="inventoryDialogRef" title="庫存條碼" width="30%" draggable>
@@ -182,7 +223,8 @@
 			</el-dialog> -->
 <script setup lang="ts" name="maintenanceOrderSub">
 import { defineAsyncComponent, reactive, ref, onMounted, computed, watch, nextTick } from 'vue';
-import { ElMessage, ElMessageBox, FormInstance, TabsPaneContext } from 'element-plus';
+import { ElMessage, ElMessageBox, FormInstance, genFileId, TabsPaneContext, UploadInstance, UploadProps, UploadRawFile } from 'element-plus';
+import { FolderOpened } from '@element-plus/icons-vue';
 const presentationDialogVisible = ref(false);
 // 引入接口
 import {
@@ -198,6 +240,7 @@ import {
 } from '/@/api/maintenanceManage/maintenanceOrderSub';
 import { useI18n } from 'vue-i18n';
 import { getQueryNoPageApi } from '/@/api/requistManage/presentation';
+import { getOperAttachmentApi, getUploadFileApi } from '/@/api/global';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const TableSearch = defineAsyncComponent(() => import('/@/components/search/search.vue'));
@@ -221,6 +264,8 @@ const changeMatDialogRef = ref();
 let tags = ref<EmptyArrayType>([]);
 const resDataRef = ref([]);
 const rerepairRecordsDialogRef = ref();
+const file = ref();
+const inputuploadRefs = ref<UploadInstance>();
 // 送修弹窗标题
 const dilogTitle = ref();
 const activeName = ref<string | number>('first');
@@ -303,7 +348,7 @@ const state = reactive<TableDemoState>({
 			isBorder: false, // 是否显示表格边框
 			isSerialNo: true, // 是否显示表格序号
 			isSelection: true, // 是否显示表格多选
-			isOperate: false, // 是否显示表格操作栏
+			isOperate: true, // 是否显示表格操作栏
 			isButton: false, //是否显示表格上面的新增删除按钮
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
@@ -324,7 +369,7 @@ const state = reactive<TableDemoState>({
 		searchConfig: {
 			isSearchBtn: true,
 		},
-
+		btnConfig: [{ type: 'attachmentUrl', name: '退庫附件', color: '#e6a23c', isSure: false, icon: '' }],
 		// 给后端的数据
 		form: {
 			matNo: '',
@@ -528,6 +573,89 @@ watch(
 		}
 	}
 );
+// 上传百分比
+const uploadPercentage = ref(0);
+watch(
+	() => uploadPercentage.value,
+	() => {
+		if (uploadPercentage.value >= 90) clearInterval(times!);
+	},
+	{
+		deep: true,
+	}
+);
+// 改變文件
+const inputHandleExceed: UploadProps['onExceed'] = (files) => {
+	let inputRef = inputuploadRefs.value;
+	inputRef!.clearFiles();
+	const file = files[0] as UploadRawFile;
+	file.uid = genFileId();
+	inputRef!.handleStart(file);
+};
+// 文件input框里面的数据
+const inputHandleChange: UploadProps['onChange'] = (uploadFile) => {
+	dialogState.tableData.form['attachmentUrl'] = uploadFile.name;
+	getFileData(uploadFile.raw);
+};
+const showProgress = ref(false);
+// 格式化进度，使用百分比进行展示
+const format = (percentage: any) => `${percentage}%`;
+let times = null;
+const getFileData = async (uploadFileRaw: UploadRawFile | undefined) => {
+	// 打开进度条弹窗
+	showProgress.value = true;
+	uploadPercentage.value = 0;
+	times = setInterval(() => {
+		uploadPercentage.value = (uploadPercentage.value % 100) + 10;
+	}, 1000);
+
+	const res = await getUploadFileApi('', uploadFileRaw);
+	if (res.status) {
+		uploadPercentage.value = 100;
+		ElMessage.success(`上傳成功`);
+		dialogState.tableData.form['attachmentUrl'] = res.data;
+		showProgress.value = false;
+	} else {
+		file.value = [];
+		dialogState.tableData.form['attachmentUrl'] = '';
+		showProgress.value = false;
+	}
+};
+// 查看上传的文件
+const lookUpload = () => {
+	if (dialogState.tableData.form['attachmentUrl']) {
+		window.open(
+			`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${
+				dialogState.tableData.form['attachmentUrl']
+			}`,
+			'_blank'
+		);
+	} else {
+		ElMessage.warning(`暫無附件`);
+	}
+};
+// 清除文件
+const clearUpload = () => {
+	ElMessageBox.confirm('確定清除文件嗎?', '提示', {
+		confirmButtonText: '確 定',
+		cancelButtonText: '取 消',
+		type: 'warning',
+		draggable: true,
+	})
+		.then(async () => {
+			file.value = [];
+			dialogState.tableData.form['attachmentUrl'] = '';
+			ElMessage.success(`清空文件成功`);
+		})
+		.catch(() => {});
+};
+// 查看附件
+const lookAttachment = async () => {
+	const res = await getOperAttachmentApi(12, detaileRow.repairNo);
+	if (res.status) {
+		window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${res.data}`, '_blank');
+	}
+};
 let openChangeMatRow: EmptyObjectType = {};
 // 打開更改料號彈簧
 const openChangeMatno = (scope: EmptyObjectType, type: string) => {
@@ -841,9 +969,11 @@ const getRepairDraftData = async (selectlist?: EmptyArrayType) => {
 const onDelRow = (row: EmptyObjectType, i: number) => {
 	dialogState.tableData.data.splice(i, row.changedMatNo ? 2 : 1);
 };
+let detaileRow: EmptyObjectType = {};
 // 查看詳情（又是不一樣的參數名，煩人）
 const openDetailDialog = async (row: EmptyObjectType) => {
 	dialogState.tableData.config.loading = true;
+	detaileRow = row.row;
 	dilogTitle.value = '詳情';
 	presentationDialogVisible.value = true;
 	let tableData = dialogState.tableData;
@@ -890,6 +1020,13 @@ const openDetailDialog = async (row: EmptyObjectType) => {
 	);
 	if (res.status) {
 		tableData.config.loading = false;
+	}
+};
+// 查看附件
+const lookReturnAttachment = async (scope: any, type: string) => {
+	const res = await getOperAttachmentApi(17, scope.row.runid);
+	if (res.status) {
+		window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${res.data}`, '_blank');
 	}
 };
 let dialogType = '';
@@ -1166,5 +1303,14 @@ onMounted(() => {
 .circle span {
 	font-size: 10px;
 	padding: 0 1px;
+}
+:deep(.el-upload-dragger) {
+	border: 0;
+	padding: 0;
+	background-color: transparent;
+	border-radius: unset;
+}
+.look-file {
+	color: var(--el-color-primary) !important;
 }
 </style>

@@ -2,14 +2,25 @@
 	<el-tabs v-model="currName" class="table-container layout-padding" @tab-click="handleClick">
 		<el-tab-pane class="table-padding layout-padding-view layout-padding-auto" label="維修發料" name="first">
 			<TableSearch :search="state.tableData.search" @search="onSearch" :searchConfig="state.tableData.searchConfig" labelWidth="70px" />
-			<Table
-				ref="tableRef"
-				v-bind="state.tableData"
-				class="table"
-				@pageChange="onTablePageChange"
-				@sortHeader="onSortHeader"
-				@onOpenOtherDialog="openArriveJobDialog"
-			/>
+			<div style="overflow: overlay">
+				<Table
+					v-if="state1.tableData.data.length > 0"
+					ref="tableRef"
+					v-bind="state1.tableData"
+					style="height: auto"
+					@onOpenOtherDialog="openArriveJobDialog"
+					class="return-table"
+				>
+				</Table>
+				<Table
+					ref="tableRef"
+					v-bind="state.tableData"
+					class="table"
+					@pageChange="onTablePageChange"
+					@sortHeader="onSortHeader"
+					@onOpenOtherDialog="openArriveJobDialog"
+				/>
+			</div>
 		</el-tab-pane>
 		<el-tab-pane label="發料記錄" name="second" class="table-padding layout-padding-view layout-padding-auto">
 			<TableSearch
@@ -56,6 +67,8 @@ import {
 	getQueryDispatchedRepairCheckDetailsApi,
 	getToolRepairDispatchApi,
 	getQueryDispatchRecordApi,
+	getToolRepairRejectedDispatchApi,
+	getResubmitDispatchApi,
 } from '/@/api/maintenanceManage/maintenanceMaterialIssue';
 import {
 	getAdminNamesOfStoreHouseApi,
@@ -105,6 +118,7 @@ const state = reactive<TableDemoState>({
 			isInlineEditing: false, //是否是行内编辑
 			isTopTool: true, //是否有表格右上角工具
 			isPage: true, //是否有分页
+			height: 580,
 		},
 		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
 		search: [
@@ -131,7 +145,20 @@ const state = reactive<TableDemoState>({
 			{ type: 'text', label: '驗收數量', placeholder: '', prop: 'checkQty', required: false },
 			{ type: 'text', label: '通过數量', placeholder: '', prop: 'passQty', required: false },
 			{ type: 'text', label: '驗收人', placeholder: '', prop: 'checker', required: false },
-
+			{ type: 'text', label: '退單時間', prop: 'rejectTime', required: false, placeholder: '', isCheck: true },
+			{
+				type: 'text',
+				label: '退單原因',
+				prop: 'rejectReason',
+				required: false,
+				placeholder: '',
+				isCheck: true,
+				xs: 24,
+				sm: 24,
+				md: 24,
+				lg: 24,
+				xl: 24,
+			},
 			{ type: 'button', label: '查看驗收報告', placeholder: '', prop: 'accepReportUrl', required: false, xs: 24, sm: 24, md: 24, lg: 24, xl: 24 },
 			{
 				label: '倉庫類型',
@@ -191,6 +218,55 @@ const state = reactive<TableDemoState>({
 			// 	xl: 24,
 			// },
 		],
+		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
+		page: {
+			pageNum: 1,
+			pageSize: 10,
+		},
+		// 打印标题
+		printName: '表格打印演示',
+	},
+});
+const state1 = reactive<TableDemoState>({
+	tableData: {
+		// 列表数据（必传）
+		data: [],
+		// 表头内容（必传，注意格式）
+		header: [
+			{ key: 'returnData', colWidth: '70', title: '退回', type: 'text', isCheck: true },
+			{ key: 'repairNo', colWidth: '', title: '維修單號', type: 'text', isCheck: true },
+			{ key: 'matNo', colWidth: '', title: '料號', type: 'text', isCheck: true },
+			{ key: 'drawNo', colWidth: '', title: '圖紙編號', type: 'text', isCheck: true },
+			{ key: 'nameCh', colWidth: '', title: '品名-中文', type: 'text', isCheck: true },
+			{ key: 'nameEn', colWidth: '', title: '品名-英文', type: 'text', isCheck: true },
+			{ key: 'checkTimeStr', colWidth: '', title: '驗收時間', type: 'text', isCheck: true },
+			{ key: 'checkQty', colWidth: '', title: '驗收數量', type: 'text', isCheck: true },
+			{ key: 'passQty', colWidth: '', title: '通过數量', type: 'text', isCheck: true },
+			{ key: 'checker', colWidth: '', title: '驗收人', type: 'text', isCheck: true },
+		],
+		// 配置项（必传）
+		config: {
+			total: 0, // 列表总数
+			loading: true, // loading 加载
+			isBorder: false, // 是否显示表格边框
+			isSerialNo: false, // 是否显示表格序号
+			isSelection: false, // 是否显示表格多选
+			isOperate: true, // 是否显示表格操作栏
+			isButton: false, //是否显示表格上面的新增删除按钮
+			isInlineEditing: false, //是否是行内编辑
+			isTopTool: false, //是否有表格右上角工具
+			isPage: false, //是否有分页
+			operateWidth: 100,
+		},
+		// 搜索表单，动态生成（传空数组时，将不显示搜索，注意格式）
+		search: [],
+		searchConfig: {
+			isSearchBtn: true,
+		},
+		btnConfig: [{ type: 'others', name: '編輯', color: '#67c23a', isSure: false, icon: '' }],
+		// 给后端的数据
+		form: {},
+		dialogConfig: [],
 		// 搜索参数（不用传，用于分页、搜索时传给后台的值，`getTableData` 中使用）
 		page: {
 			pageNum: 1,
@@ -328,9 +404,26 @@ const handleClick = (tab: TabsPaneContext, event: Event) => {
 };
 // 点击發料按鈕
 const currentData = ref<EmptyObjectType>([]);
-const openArriveJobDialog = (scope: EmptyObjectType) => {
+let dialogType = '';
+const openArriveJobDialog = async (scope: EmptyObjectType, type: string) => {
 	loadingBtn.value = false;
-	issueMaterialsDialogRef.value.openDialog('samp', scope.row, '發料');
+	dialogType = type;
+	let rows = scope.row;
+	// 倉庫類型
+	rows.storeType = rows.receiveStorageType ? rows.receiveStorageType : rows.storeType;
+	rows.sLocation = rows.receiveSLocation ? rows.receiveSLocation : rows.sLocation;
+	state.tableData.dialogConfig?.forEach((item) => {
+		if (item.prop === 'rejectTime' || item.prop === 'rejectReason') {
+			item.isCheck = type === 'others' ? false : true;
+		}
+	});
+	if (type === 'others') {
+		const res = await getAdminNamesOfStoreHouseApi(rows.receiveStorageId);
+		rows.warehouseManager = res.data;
+		const res1 = await getOperAttachmentApi(15, rows.repairCheckDetailId);
+		rows.attachment = res1.data || '';
+	}
+	issueMaterialsDialogRef.value.openDialog('samp', scope.row, type === 'others' ? '编辑' : '發料', {}, type === 'others' ? '重新提交' : '提交');
 	currentData.value = scope.row;
 };
 // 查看附件
@@ -482,19 +575,23 @@ const onSubmit = async (formData: any) => {
 	const getData = {
 		repairCheckDetailId: formData.repairCheckDetailId,
 		storageId: '',
-		attachmentUrl: formData.attachmentfileUrl,
+		attachmentUrl: formData.attachmentfileUrl || formData.attachment,
 	};
 	option.forEach((item) => {
 		if (item.value === formData.sLocation) {
 			getData['storageId'] = item.value;
 		}
 	});
+	if (formData.receiveStorageId) {
+		getData['storageId'] = formData.receiveStorageId;
+	}
 	// console.log(getData);
-	const res = await getToolRepairDispatchApi(getData);
+	const res = dialogType === 'others' ? await getResubmitDispatchApi(getData) : await getToolRepairDispatchApi(getData);
 	if (res.status) {
 		ElMessage.success(t('發料成功'));
 		issueMaterialsDialogRef.value.closeDialog();
 		getTableData();
+		getReturnTableData();
 	}
 	loadingBtn.value = false;
 };
@@ -523,9 +620,18 @@ const onTablePageChange = (page: TableDemoPageType) => {
 const onSortHeader = (data: TableHeaderType[]) => {
 	state.tableData.header = data;
 };
-
+// 得到退回的數據
+const getReturnTableData = async () => {
+	state1.tableData.config.loading = true;
+	const res = await getToolRepairRejectedDispatchApi();
+	state1.tableData.data = res.data;
+	if (res.status) {
+		state1.tableData.config.loading = false;
+	}
+};
 // 页面加载时
 onMounted(() => {
+	getReturnTableData();
 	getTableData();
 	getSelect();
 });
@@ -557,5 +663,12 @@ onMounted(() => {
 }
 :deep(.el-input-group__prepend) {
 	padding: 0;
+}
+.return-table {
+	:deep(.el-table th.el-table__cell:first-child .cell) {
+		border-radius: 10px;
+		border: 1px solid red;
+		color: red;
+	}
 }
 </style>

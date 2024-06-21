@@ -1,5 +1,5 @@
 <template>
-	<div class="main" :style="!isDialog ? 'height: 330px' : ''">
+	<div class="main" :style="!isDialog ? 'height: 400px' : ''">
 		<div class="table-container" :class="{ 'link-width': !isDialog }">
 			<nav v-if="!isDialog" class="pb10">閒置單詳情</nav>
 			<el-form v-if="state.tableData.form" ref="tableSearchRef" :model="state.tableData.form" size="default" label-width="100px" class="table-form">
@@ -25,6 +25,7 @@
 					<span>備註：</span>
 					<span style="width: 100%; font-weight: 700; color: #1890ff">{{ state.tableData.form['describe'] }}</span>
 				</div>
+				<el-button class="mt10" type="primary" plain @click="lookAttachment">查看附件</el-button>
 			</el-form>
 			<el-empty v-else description="數據出錯" />
 		</div>
@@ -38,6 +39,7 @@ import { ElMessage } from 'element-plus';
 import { GetIdleDetailApi } from '/@/api/unusedManage/unusedInquiry';
 
 import { useI18n } from 'vue-i18n';
+import { getOperAttachmentApi } from '/@/api/global';
 // 引入组件
 const Table = defineAsyncComponent(() => import('/@/components/table/index.vue'));
 const route = useRoute();
@@ -110,12 +112,12 @@ watch(
 		deep: true,
 	}
 );
-
+const comkey = props.isDialog ? props.IdleNoRef : route.query.comkey;
 // 初始化数据
 const getTableData = async () => {
 	state.tableData.config['height'] = props.isDialog ? 400 : 200;
-	//link/idleInquiryLink?comkey=ID-CSG-2023262-002
-	const comkey = props.isDialog ? props.IdleNoRef : route.query.comkey;
+	//link/idleInquiryLink?comkey=ID-CSG-2024156-002
+
 	const res = await GetIdleDetailApi(comkey);
 	state.tableData.form = res.data;
 	state.tableData.data = res.data.idledetaillist;
@@ -125,7 +127,13 @@ const getTableData = async () => {
 		state.tableData.config.loading = false;
 	}
 };
-
+// 查看附件
+const lookAttachment = async () => {
+	const res = await getOperAttachmentApi(20, comkey as string);
+	if (res.status) {
+		window.open(`${import.meta.env.MODE === 'development' ? import.meta.env.VITE_API_URL : window.webConfig.webApiBaseUrl}${res.data}`, '_blank');
+	}
+};
 // 页面加载时
 onMounted(() => {
 	getTableData();

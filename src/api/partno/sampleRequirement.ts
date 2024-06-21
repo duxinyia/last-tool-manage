@@ -39,4 +39,12 @@ export function getSampleDetailProgressApi(sampleNo:string) {
   	params:{sampleNo}
   });
 }
+// 退回
+export function getRejectSampleNeedApi(data:Object) {
+  return request({
+    url: '/api/Material/RejectSampleNeed',
+    method: 'POST',
+  	data:data
+  });
+}
 
